@@ -8,6 +8,7 @@ import DeityPage from "./pages/DeityPage";
 import BhajanPage from "./pages/BhajanPage";
 import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
+import AIAssistant from "./components/AIAssistant";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/search" element={<SearchPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <AIAssistant />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
