@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Mic } from "lucide-react";
+import { Search } from "lucide-react";
 import { motion } from "framer-motion";
+import VoiceSearchButton from "./VoiceSearchButton";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -12,6 +13,11 @@ export default function SearchBar() {
     if (query.trim()) {
       navigate(`/search?q=${encodeURIComponent(query.trim())}`);
     }
+  };
+
+  const handleVoiceResult = (transcript: string) => {
+    setQuery(transcript);
+    navigate(`/search?q=${encodeURIComponent(transcript)}`);
   };
 
   return (
@@ -31,16 +37,12 @@ export default function SearchBar() {
           placeholder="Search bhajans, deities, singers..."
           className="w-full pl-14 pr-16 py-5 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground touch-target"
         />
-        <button
-          type="button"
-          className="absolute right-4 p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors touch-target"
-          aria-label="Voice search"
-        >
-          <Mic className="w-5 h-5" />
-        </button>
+        <div className="absolute right-4">
+          <VoiceSearchButton onResult={handleVoiceResult} />
+        </div>
       </div>
       <p className="text-center text-sm text-muted-foreground mt-3 hindi-text">
-        भजन, देवता, या गायक खोजें • Search in Hindi or English
+        भजन, देवता, या गायक खोजें • Search in Hindi or English • 🎤 Voice supported
       </p>
     </motion.form>
   );
