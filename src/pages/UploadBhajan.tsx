@@ -13,9 +13,10 @@ import { Loader2 } from 'lucide-react';
 export default function UploadBhajan() {
   const { user, loading: authLoading } = useAuth();
   const [currentStep, setCurrentStep] = useState<'upload' | 'extract' | 'form'>('upload');
-  const [uploadedImage, setUploadedImage] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState('');
+  const [uploadedImagePreview, setUploadedImagePreview] = useState('');
   const [extractedText, setExtractedText] = useState('');
+  const [isImageLoading, setIsImageLoading] = useState(false);
   const navigate = useNavigate();
 
   if (authLoading) {
@@ -59,9 +60,9 @@ export default function UploadBhajan() {
     );
   }
 
-  const handleFileSelect = (file: File, preview: string) => {
-    setUploadedFile(file);
-    setUploadedImage(preview);
+  const handleFileSelect = (url: string, preview: string) => {
+    setUploadedImageUrl(url);
+    setUploadedImagePreview(preview);
     setCurrentStep('extract');
   };
 
@@ -117,7 +118,10 @@ export default function UploadBhajan() {
                 <h2 className="text-3xl font-bold text-center mb-8">
                   Upload Bhajan Photo
                 </h2>
-                <FileUpload onFileSelect={handleFileSelect} />
+                <FileUpload 
+                  onFileSelect={handleFileSelect}
+                  onLoading={setIsImageLoading}
+                />
               </div>
             )}
 
@@ -127,11 +131,12 @@ export default function UploadBhajan() {
                   Enter Bhajan Lyrics
                 </h2>
                 <TextExtractor
-                  imageUrl={uploadedImage}
+                  imageUrl={uploadedImagePreview}
                   onExtract={handleExtractText}
                   onBack={() => {
                     setCurrentStep('upload');
-                    setUploadedImage('');
+                    setUploadedImageUrl('');
+                    setUploadedImagePreview('');
                   }}
                 />
               </div>
@@ -144,7 +149,7 @@ export default function UploadBhajan() {
                 </h2>
                 <BhajanForm
                   lyrics={extractedText}
-                  imageUrl={uploadedImage}
+                  imageUrl={uploadedImageUrl}
                   onSuccess={handleUploadSuccess}
                   onBack={() => setCurrentStep('extract')}
                 />

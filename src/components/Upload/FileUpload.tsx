@@ -1,18 +1,40 @@
 import { useState } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 interface FileUploadProps {
-  onFileSelect: (file: File, preview: string) => void;
+  onFileSelect: (url: string, preview: string) => void;
+  onLoading?: (loading: boolean) => void;
 }
 
-export default function FileUpload({ onFileSelect }: FileUploadProps) {
+export default function FileUpload({ onFileSelect, onLoading }: FileUploadProps) {
   const [preview, setPreview] = useState<string>('');
   const [isDragActive, setIsDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState<string>('');
+  const [error, setError] = useState('');
+
+  const uploadFile = async (file: File) => {
+    setError('');
+    setIsUploading(true);
+    onLoading?.(true);
+
+    try {
+      const url = await uploadToCloudinary(file);
+      setUploadedUrl(url);
+      onFileSelect(url, preview);
+    } catch (err: any) {
+      setError(err.message || 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      onLoading?.(false);
+    }
+  };
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      setError('Please upload an image file');
       return;
     }
 
@@ -20,7 +42,7 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
     reader.onload = (e) => {
       const result = e.target?.result as string;
       setPreview(result);
-      onFileSelect(file, result);
+      uploadFile(file);
     };
     reader.readAsDataURL(file);
   };
@@ -48,6 +70,12 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {error && (
+        <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+      
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -57,10 +85,11 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
           isDragActive
             ? 'border-primary bg-primary/5'
             : 'border-border hover:border-primary/50'
-        }`}
+        } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
       >
-        {preview ? (
+        {uploadedUrl ? (
           <div className="space-y-4">
+            <div className="text-green-500 text-center mb-2">✓ Image Uploaded</div>
             <img
               src={preview}
               alt="Preview"
@@ -69,12 +98,29 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setPreview('')}
+              onClick={() => {
+                setPreview('');
+                setUploadedUrl('');
+              }}
               className="w-full"
             >
               <X className="w-4 h-4 mr-2" />
               Choose Different Image
             </Button>
+          </div>
+        ) : isUploading ? (
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+            <p className="text-muted-foreground">Uploading to Cloudinary...</p>
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="max-h-64 mx-auto rounded-lg shadow-lg opacity-50"
+              />
+            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -89,7 +135,7 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
                 Drag and drop your image here or click to select
               </p>
               <p className="text-sm text-muted-foreground mb-6">
-                Supported formats: JPG, PNG, WebP
+                Supported formats: JPG, PNG, WebP (max 10MB)
               </p>
             </div>
 
@@ -98,9 +144,10 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
                 type="file"
                 accept="image/*"
                 onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+                disabled={isUploading}
                 className="hidden"
               />
-              <Button asChild>
+              <Button asChild disabled={isUploading}>
                 <span>
                   <Upload className="w-4 h-4 mr-2" />
                   Upload Image

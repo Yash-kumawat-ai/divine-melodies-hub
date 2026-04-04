@@ -21,6 +21,7 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack }: Bhaj
   const [deityId, setDeityId] = useState('1');
   const [singerName, setSingerName] = useState('');
   const [composerName, setComposerName] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +64,7 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack }: Bhaj
             composer_name: composerName || '',
             lyrics_hindi: lyrics,
             image_url: imageUrl || '',
+            youtube_url: youtubeUrl || '',
             status: 'pending',
           },
         ]);
@@ -159,6 +161,19 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack }: Bhaj
             placeholder="e.g., Traditional"
           />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">YouTube URL (Optional)</label>
+        <Input
+          type="url"
+          value={youtubeUrl}
+          onChange={(e) => setYoutubeUrl(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=..."
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          Link to the bhajan on YouTube (if available)
+        </p>
       </div>
 
       <div>

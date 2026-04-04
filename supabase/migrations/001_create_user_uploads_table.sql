@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS user_uploads (
   composer_name TEXT,
   lyrics_hindi TEXT NOT NULL,
   image_url TEXT,
+  youtube_url TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   approved_at TIMESTAMP WITH TIME ZONE,
