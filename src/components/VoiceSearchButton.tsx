@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface VoiceSearchButtonProps {
@@ -10,53 +10,74 @@ interface VoiceSearchButtonProps {
 export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) {
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState("");
+  const recognitionRef = useRef<any>(null);
 
   const isSupported = typeof window !== "undefined" && 
     ("webkitSpeechRecognition" in window || "SpeechRecognition" in window);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (!isSupported) {
       setError("Voice search not supported in your browser");
       return;
     }
 
-    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = "hi-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setIsListening(true);
-      setError("");
-    };
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
-      setIsListening(false);
-    };
-
-    recognition.onerror = (event: any) => {
-      setIsListening(false);
-      if (event.error === "no-speech") {
-        setError("No speech detected. Try again.");
-      } else if (event.error === "not-allowed") {
-        setError("Microphone access denied.");
-      } else {
-        setError("Voice recognition failed.");
-      }
-    };
-
-    recognition.onend = () => setIsListening(false);
-
     try {
-      recognition.start();
-    } catch {
-      setError("Failed to start voice recognition");
+      // Request microphone permission first
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop the stream immediately as we just needed permission
+      stream.getTracks().forEach(track => track.stop());
+      
+      setError("");
+      
+      // Initialize recognition if not already done
+      if (!recognitionRef.current) {
+        const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+        recognitionRef.current = new SpeechRecognition();
+        
+        recognitionRef.current.lang = "hi-IN";
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.maxAlternatives = 1;
+
+        recognitionRef.current.onstart = () => {
+          setIsListening(true);
+          setError("");
+        };
+
+        recognitionRef.current.onresult = (event: any) => {
+          if (event.results && event.results[0]) {
+            const transcript = event.results[0][0].transcript;
+            onResult(transcript);
+            setIsListening(false);
+          }
+        };
+
+        recognitionRef.current.onerror = (event: any) => {
+          setIsListening(false);
+          if (event.error === "no-speech") {
+            setError("No speech detected. Try again.");
+          } else if (event.error === "not-allowed") {
+            setError("Microphone access denied.");
+          } else if (event.error === "network") {
+            setError("Network error. Try again.");
+          } else {
+            setError(`Voice error: ${event.error}`);
+          }
+        };
+
+        recognitionRef.current.onend = () => setIsListening(false);
+      }
+      
+      recognitionRef.current.start();
+    } catch (error: any) {
       setIsListening(false);
+      if (error.name === "NotAllowedError") {
+        setError("Microphone access denied");
+      } else if (error.name === "NotFoundError") {
+        setError("No microphone found");
+      } else {
+        setError("Microphone access failed");
+      }
     }
   }, [isSupported, onResult]);
 

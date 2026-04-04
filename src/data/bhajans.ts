@@ -140,9 +140,9 @@ export function getFeaturedBhajans(): Bhajan[] {
   return bhajans.filter(b => b.featured);
 }
 
-export function searchBhajans(query: string): Bhajan[] {
+export function searchBhajans(query: string, source: Bhajan[] = bhajans): Bhajan[] {
   const q = query.toLowerCase();
-  return bhajans.filter(b =>
+  return source.filter(b =>
     b.title.toLowerCase().includes(q) ||
     b.titleHindi.includes(query) ||
     b.singerName.toLowerCase().includes(q) ||
