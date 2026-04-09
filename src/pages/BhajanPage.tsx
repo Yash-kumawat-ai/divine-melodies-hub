@@ -4,12 +4,75 @@ import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { bhajans, getDeityById } from "@/data/bhajans";
-import { useState } from "react";
+import { generateBhajanSlug } from "@/lib/slugUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+
+interface UserBhajan {
+  id: string;
+  user_id: string;
+  title: string;
+  title_hindi: string;
+  deity_id: number;
+  singer_name: string;
+  composer_name?: string;
+  image_url?: string;
+  youtube_url?: string;
+  lyrics_hindi: string;
+  created_at: string;
+  status: string;
+}
 
 export default function BhajanPage() {
   const { slug } = useParams<{ slug: string }>();
-  const bhajan = bhajans.find((b) => b.slug === slug);
+  const [userBhajan, setUserBhajan] = useState<UserBhajan | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
   const [showTransliteration, setShowTransliteration] = useState(false);
+
+  const staticBhajan = bhajans.find((b) => b.slug === slug);
+
+  // Fetch user bhajans to find matching slug
+  useEffect(() => {
+    const fetchUserBhajan = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_uploads')
+          .select('*')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          // Find matching bhajan by slug
+          const matched = data.find(
+            (b: UserBhajan) => generateBhajanSlug(b.title) === slug
+          );
+          setUserBhajan(matched || null);
+        }
+      } catch (err) {
+        console.error('Error fetching user bhajan:', err);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    // Only fetch if not found in static bhajans
+    if (!staticBhajan) {
+      fetchUserBhajan();
+    } else {
+      setLoadingUser(false);
+    }
+  }, [slug, staticBhajan]);
+
+  const bhajan = staticBhajan || userBhajan;
+
+  if (loadingUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!bhajan) {
     return (
@@ -23,7 +86,9 @@ export default function BhajanPage() {
     );
   }
 
-  const deity = getDeityById(bhajan.deityId);
+  const deity = staticBhajan 
+    ? getDeityById(staticBhajan.deityId)
+    : getDeityById((bhajan as UserBhajan).deity_id);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -53,52 +118,63 @@ export default function BhajanPage() {
                 </Link>
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">{bhajan.title}</h1>
-              <p className="hindi-text text-2xl text-muted-foreground mt-1">{bhajan.titleHindi}</p>
-              <p className="text-muted-foreground mt-3">by {bhajan.singerName}</p>
+              <p className="hindi-text text-2xl text-muted-foreground mt-1">{staticBhajan ? bhajan.titleHindi : (bhajan as UserBhajan).title_hindi}</p>
+              <p className="text-muted-foreground mt-3">by {staticBhajan ? bhajan.singerName : (bhajan as UserBhajan).singer_name}</p>
               <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1"><Play className="w-4 h-4" /> {(bhajan.playCount / 1000).toFixed(0)}K plays</span>
-                <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-secondary text-secondary" /> {bhajan.rating.toFixed(1)}</span>
+                {staticBhajan && (
+                  <>
+                    <span className="flex items-center gap-1"><Play className="w-4 h-4" /> {(bhajan.playCount / 1000).toFixed(0)}K plays</span>
+                    <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-secondary text-secondary" /> {bhajan.rating.toFixed(1)}</span>
+                  </>
+                )}
                 <button onClick={handleShare} className="flex items-center gap-1 hover:text-primary transition-colors touch-target">
                   <Share2 className="w-4 h-4" /> Share
                 </button>
               </div>
 
               {/* Tags */}
-              <div className="flex flex-wrap gap-2 mt-4">
-                {bhajan.tags.map((tag) => (
-                  <span key={tag} className="px-3 py-1 rounded-full bg-muted text-sm text-muted-foreground capitalize">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              {staticBhajan && bhajan.tags && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {bhajan.tags.map((tag) => (
+                    <span key={tag} className="px-3 py-1 rounded-full bg-muted text-sm text-muted-foreground capitalize">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Lyrics Toggle */}
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setShowTransliteration(false)}
-                className={`px-5 py-3 rounded-xl text-base font-medium transition-colors touch-target ${
-                  !showTransliteration ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                हिन्दी Lyrics
-              </button>
-              <button
-                onClick={() => setShowTransliteration(true)}
-                className={`px-5 py-3 rounded-xl text-base font-medium transition-colors touch-target ${
-                  showTransliteration ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}
-              >
-                Transliteration
-              </button>
-            </div>
+            {staticBhajan && (
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => setShowTransliteration(false)}
+                  className={`px-5 py-3 rounded-xl text-base font-medium transition-colors touch-target ${
+                    !showTransliteration ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  हिन्दी Lyrics
+                </button>
+                <button
+                  onClick={() => setShowTransliteration(true)}
+                  className={`px-5 py-3 rounded-xl text-base font-medium transition-colors touch-target ${
+                    showTransliteration ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  Transliteration
+                </button>
+              </div>
+            )}
 
             {/* Lyrics */}
             <div className="bg-card rounded-xl shadow-temple p-6 md:p-10">
               <pre className={`whitespace-pre-wrap leading-relaxed text-xl ${
-                showTransliteration ? 'font-body text-foreground' : 'hindi-text text-foreground'
+                !showTransliteration && staticBhajan ? 'hindi-text text-foreground' : 'font-body text-foreground'
               }`}>
-                {showTransliteration ? bhajan.lyricsTransliteration : bhajan.lyricsHindi}
+                {staticBhajan 
+                  ? (showTransliteration ? bhajan.lyricsTransliteration : bhajan.lyricsHindi)
+                  : (bhajan as UserBhajan).lyrics_hindi
+                }
               </pre>
             </div>
           </motion.div>

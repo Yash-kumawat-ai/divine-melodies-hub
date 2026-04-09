@@ -7,8 +7,22 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  if (!cloudName || !uploadPreset) {
-    throw new Error('Cloudinary config missing. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET');
+  console.log('Cloudinary config:', { cloudName, uploadPreset });
+
+  if (!cloudName) {
+    throw new Error('VITE_CLOUDINARY_CLOUD_NAME not set. Check .env.local file.');
+  }
+
+  if (!uploadPreset) {
+    throw new Error('VITE_CLOUDINARY_UPLOAD_PRESET not set. Check .env.local file.');
+  }
+
+  if (!cloudName.trim()) {
+    throw new Error('VITE_CLOUDINARY_CLOUD_NAME is empty. Update .env.local with your Cloudinary cloud name.');
+  }
+
+  if (!uploadPreset.trim()) {
+    throw new Error('VITE_CLOUDINARY_UPLOAD_PRESET is empty. Update .env.local with your upload preset.');
   }
 
   const formData = new FormData();
@@ -24,12 +38,14 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error?.message || 'Upload failed');
+      console.error('Cloudinary error:', error);
+      throw new Error(error.error?.message || `Upload failed with status ${response.status}`);
     }
 
     const data = await response.json();
     return data.secure_url; // Returns HTTPS URL
   } catch (error: any) {
+    console.error('Upload error details:', error);
     throw new Error(error.message || 'Failed to upload image to Cloudinary');
   }
 }

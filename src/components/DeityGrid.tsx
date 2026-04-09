@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { deities } from "@/data/bhajans";
+import { ChevronRight } from "lucide-react";
 
 export default function DeityGrid() {
+  const displayDeities = deities.slice(0, 4); // Show only first 4 deities
+  
   return (
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -13,7 +16,7 @@ export default function DeityGrid() {
           देवता के अनुसार भजन खोजें
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {deities.map((deity, i) => (
+          {displayDeities.map((deity, i) => (
             <motion.div
               key={deity.id}
               initial={{ opacity: 0, y: 20 }}
@@ -34,6 +37,19 @@ export default function DeityGrid() {
             </motion.div>
           ))}
         </div>
+        
+        {/* See More Button */}
+        {deities.length > 4 && (
+          <div className="text-center mt-10">
+            <Link
+              to="/all-deities"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all touch-target"
+            >
+              See More Deities
+              <ChevronRight className="w-5 h-5" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

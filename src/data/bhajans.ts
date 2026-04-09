@@ -24,6 +24,7 @@ export interface Bhajan {
   tags: string[];
   featured: boolean;
   videoEmbedId?: string;
+  youtubeUrl?: string;
 }
 
 export const deities: Deity[] = [

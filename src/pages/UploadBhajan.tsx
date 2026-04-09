@@ -3,20 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
-import FileUpload from '@/components/Upload/FileUpload';
-import TextExtractor from '@/components/Upload/TextExtractor';
+import DeitySelector from '@/components/Upload/DeitySelector';
+import AddDeity from '@/components/Upload/AddDeity';
+import LyricsUpload from '@/components/Upload/FileUpload';
 import BhajanForm from '@/components/Upload/BhajanForm';
 import LoginForm from '@/components/Auth/LoginForm';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { Deity } from '@/hooks/useDeities';
+
+type Step = 'deity' | 'addDeity' | 'lyrics' | 'details';
+
+interface SelectedDeity {
+  id?: number;
+  name: string;
+  emoji: string;
+  description?: string;
+  imageUrl?: string;
+}
 
 export default function UploadBhajan() {
   const { user, loading: authLoading } = useAuth();
-  const [currentStep, setCurrentStep] = useState<'upload' | 'extract' | 'form'>('upload');
-  const [uploadedImageUrl, setUploadedImageUrl] = useState('');
-  const [uploadedImagePreview, setUploadedImagePreview] = useState('');
-  const [extractedText, setExtractedText] = useState('');
-  const [isImageLoading, setIsImageLoading] = useState(false);
+  const { t } = useLanguage();
+  const [step, setStep] = useState<Step>('deity');
+  const [selectedDeity, setSelectedDeity] = useState<SelectedDeity | null>(null);
+  const [lyricsUrl, setLyricsUrl] = useState('');
+  const [lyricsType, setLyricsType] = useState<'image' | 'text'>('image');
+  const [lyricsContent, setLyricsContent] = useState('');
   const navigate = useNavigate();
 
   if (authLoading) {
@@ -40,9 +54,9 @@ export default function UploadBhajan() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-warm py-12 px-4 rounded-lg max-w-md mx-auto mb-8 text-center"
           >
-            <h1 className="text-3xl font-bold mb-2">Upload Bhajan</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('addBhajan')}</h1>
             <p className="text-muted-foreground">
-              Save and share bhajans with our community
+              {t('shareCommunity')}
             </p>
           </motion.div>
 
@@ -60,44 +74,78 @@ export default function UploadBhajan() {
     );
   }
 
-  const handleFileSelect = (url: string, preview: string) => {
-    setUploadedImageUrl(url);
-    setUploadedImagePreview(preview);
-    setCurrentStep('extract');
+  const handleDeitySelect = (deity: Deity) => {
+    setSelectedDeity({
+      id: deity.id,
+      name: deity.name,
+      emoji: deity.emoji,
+      description: deity.description,
+      imageUrl: deity.imageUrl,
+    });
+    setStep('lyrics');
   };
 
-  const handleExtractText = (text: string) => {
-    setExtractedText(text);
-    setCurrentStep('form');
+  const handleAddNewDeity = () => {
+    setStep('addDeity');
+  };
+
+  const handleDeityAdded = (deity: any) => {
+    setSelectedDeity(deity);
+    setStep('lyrics');
+  };
+
+  const handleLyricsSelect = (url: string, type: 'image' | 'text', content: string) => {
+    setLyricsUrl(url);
+    setLyricsType(type);
+    setLyricsContent(content);
+    setStep('details');
   };
 
   const handleUploadSuccess = () => {
     navigate('/');
   };
 
+  const getStepNumber = () => {
+    if (step === 'deity') return 1;
+    if (step === 'addDeity') return 1;
+    if (step === 'lyrics') return 2;
+    if (step === 'details') return 3;
+    return 1;
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      
+
       <div className="flex-1 py-12 px-4">
         <div className="container mx-auto max-w-6xl">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-3xl font-bold mb-2">{t('addBhajan')}</h1>
+            <p className="text-muted-foreground">
+              {t('shareCommunity')}
+            </p>
+          </motion.div>
+
           {/* Progress Indicator */}
           <div className="mb-12">
             <div className="flex items-center justify-between max-w-md mx-auto">
-              {['Upload', 'Lyrics', 'Details'].map((step, idx) => (
-                <div key={step} className="flex items-center">
+              {[t('god'), t('lyrics'), t('details')].map((label, idx) => (
+                <div key={label} className="flex items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-                      (currentStep === 'upload' && idx <= 0) ||
-                      (currentStep === 'extract' && idx <= 1) ||
-                      (currentStep === 'form' && idx <= 2)
+                      getStepNumber() >= idx + 1
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {idx + 1}
                   </div>
-                  <p className="text-sm font-medium ml-3">{step}</p>
+                  <p className="text-sm font-medium ml-3">{label}</p>
                   {idx < 2 && (
                     <div className="w-12 h-0.5 bg-muted ml-4 hidden sm:block" />
                   )}
@@ -108,50 +156,57 @@ export default function UploadBhajan() {
 
           {/* Content */}
           <motion.div
-            key={currentStep}
+            key={step}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {currentStep === 'upload' && (
+            {step === 'deity' && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-center mb-8">
-                  Upload Bhajan Photo
-                </h2>
-                <FileUpload 
-                  onFileSelect={handleFileSelect}
-                  onLoading={setIsImageLoading}
+                <DeitySelector onDeitySelect={handleDeitySelect} onAddNewDeity={handleAddNewDeity} />
+              </div>
+            )}
+
+            {step === 'addDeity' && (
+              <div className="space-y-6">
+                <AddDeity
+                  onDeityAdded={handleDeityAdded}
+                  onBack={() => setStep('deity')}
                 />
               </div>
             )}
 
-            {currentStep === 'extract' && (
+            {step === 'lyrics' && selectedDeity && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-center mb-8">
-                  Enter Bhajan Lyrics
-                </h2>
-                <TextExtractor
-                  imageUrl={uploadedImagePreview}
-                  onExtract={handleExtractText}
-                  onBack={() => {
-                    setCurrentStep('upload');
-                    setUploadedImageUrl('');
-                    setUploadedImagePreview('');
-                  }}
-                />
+                <div className="text-center mb-8">
+                  <div className="text-6xl mb-2">{selectedDeity.emoji}</div>
+                  <h2 className="text-2xl font-bold mb-2">{selectedDeity.name}</h2>
+                  <p className="text-muted-foreground">Add lyrics for this bhajan</p>
+                </div>
+
+                <LyricsUpload onLyricsSelect={handleLyricsSelect} />
+
+                <div className="text-center">
+                  <button
+                    onClick={() => setStep('deity')}
+                    className="text-primary hover:underline text-sm"
+                  >
+                    ← {t('changeGod')}
+                  </button>
+                </div>
               </div>
             )}
 
-            {currentStep === 'form' && (
+            {step === 'details' && selectedDeity && (
               <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-center mb-8">
-                  Bhajan Information
-                </h2>
+                <h2 className="text-2xl font-bold text-center mb-8">Bhajan Information</h2>
                 <BhajanForm
-                  lyrics={extractedText}
-                  imageUrl={uploadedImageUrl}
+                  lyrics={lyricsContent}
+                  imageUrl={lyricsUrl}
+                  deityId={selectedDeity.id}
+                  deityName={selectedDeity.name}
                   onSuccess={handleUploadSuccess}
-                  onBack={() => setCurrentStep('extract')}
+                  onBack={() => setStep('lyrics')}
                 />
               </div>
             )}

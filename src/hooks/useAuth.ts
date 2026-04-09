@@ -10,6 +10,8 @@ export interface UserProfile {
   created_at: string;
 }
 
+type UserProfileUpdate = Partial<Pick<UserProfile, 'name' | 'avatar_url'>>;
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -45,17 +47,21 @@ export function useAuth() {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const client = supabase as any;
+      const { data, error } = await client
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.log('Profile fetch error:', error);
         setProfile(null);
-      } else {
+      } else if (data) {
         setProfile(data);
+      } else {
+        // No profile exists, set to null (this is fine)
+        setProfile(null);
       }
     } catch (err) {
       console.log('Error fetching profile:', err);
@@ -77,7 +83,8 @@ export function useAuth() {
 
       // Create user profile
       if (data.user) {
-        const { error: profileError } = await supabase.from('user_profiles').insert([
+        const client = supabase as any;
+        const { error: profileError } = await client.from('user_profiles').insert([
           {
             id: data.user.id,
             email,
@@ -124,5 +131,30 @@ export function useAuth() {
     }
   };
 
-  return { user, profile, loading, error, signUp, signIn, signOut, fetchUserProfile };
+  const updateProfile = async (updates: UserProfileUpdate) => {
+    if (!user) {
+      return { error: new Error('You must be logged in') };
+    }
+
+    try {
+      setError(null);
+      const { error } = await (supabase as any)
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (error) {
+        setError(error.message);
+        return { error };
+      }
+
+      await fetchUserProfile(user.id);
+      return { error: null };
+    } catch (err: any) {
+      setError(err.message);
+      return { error: err };
+    }
+  };
+
+  return { user, profile, loading, error, signUp, signIn, signOut, fetchUserProfile, updateProfile };
 }
