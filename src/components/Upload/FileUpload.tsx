@@ -29,8 +29,8 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
         throw new Error('Failed to get upload URL from Cloudinary');
       }
       setUploadedUrl(url);
-      // Pass the Cloudinary URL as the image to display
-      onLyricsSelect(url, 'image', preview || url);
+      // Keep lyrics text empty for image mode and store URL only in image field.
+      onLyricsSelect(url, 'image', '');
     } catch (err: any) {
       const errorMsg = err.message || 'Upload failed. Please check your Cloudinary setup.';
       setError(errorMsg);

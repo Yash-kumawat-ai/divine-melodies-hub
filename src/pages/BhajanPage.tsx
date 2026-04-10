@@ -89,6 +89,10 @@ export default function BhajanPage() {
   const deity = staticBhajan 
     ? getDeityById(staticBhajan.deityId)
     : getDeityById((bhajan as UserBhajan).deity_id);
+  const userBhajanData = !staticBhajan ? (bhajan as UserBhajan) : null;
+  const lyricsText = staticBhajan ? bhajan.lyricsHindi : (userBhajanData?.lyrics_hindi || '');
+  const hasUploadedImage = Boolean(userBhajanData?.image_url);
+  const hasOnlyUrlInLyrics = /^https?:\/\//i.test((lyricsText || '').trim());
 
   const handleShare = () => {
     if (navigator.share) {
@@ -166,8 +170,26 @@ export default function BhajanPage() {
               </div>
             )}
 
+            {/* Lyrics Image */}
+            {hasUploadedImage && (
+              <div className="bg-card rounded-xl shadow-temple p-6 md:p-10 mb-6">
+                <p className="text-sm font-semibold text-muted-foreground mb-4">Lyrics Image</p>
+                <img
+                  src={userBhajanData?.image_url}
+                  alt={`Lyrics for ${bhajan.title}`}
+                  className="w-full rounded-lg border border-border"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
             {/* Lyrics */}
             <div className="bg-card rounded-xl shadow-temple p-6 md:p-10">
+              {hasOnlyUrlInLyrics ? (
+                <p className="text-muted-foreground text-lg">
+                  Lyrics text is not available for this upload yet.
+                </p>
+              ) : (
               <pre className={`whitespace-pre-wrap leading-relaxed text-xl ${
                 !showTransliteration && staticBhajan ? 'hindi-text text-foreground' : 'font-body text-foreground'
               }`}>
@@ -176,6 +198,7 @@ export default function BhajanPage() {
                   : (bhajan as UserBhajan).lyrics_hindi
                 }
               </pre>
+              )}
             </div>
           </motion.div>
         </div>

@@ -22,7 +22,7 @@ export default function BhajanCard({ bhajan }: BhajanCardProps) {
       /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/
     );
     if (!match?.[1]) return null;
-    return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
+    return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=1&rel=0&modestbranding=1`;
   };
 
   const embedUrl = bhajan.youtubeUrl ? getYouTubeEmbedUrl(bhajan.youtubeUrl) : null;

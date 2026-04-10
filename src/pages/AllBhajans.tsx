@@ -48,7 +48,6 @@ const SORT_OPTIONS = [
   { value: 'latest', label: 'Latest' },
   { value: 'most-played', label: 'Most Played' },
   { value: 'highest-rated', label: 'Highest Rated' },
-  { value: 'trending', label: 'Trending' },
 ];
 
 export const AllBhajans = () => {
@@ -128,13 +127,6 @@ export const AllBhajans = () => {
         break;
       case 'highest-rated':
         results.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
-        break;
-      case 'trending':
-        results.sort((a, b) => {
-          const aScore = (b.play_count || 0) + (b.average_rating || 0) * 10;
-          const bScore = (a.play_count || 0) + (a.average_rating || 0) * 10;
-          return aScore - bScore;
-        });
         break;
       case 'latest':
       default:

@@ -68,7 +68,6 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-8 text-base font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
-          <Link to="/trending" className="text-foreground hover:text-primary transition-colors">{t('trending')}</Link>
           <Link to="/search" className="text-foreground hover:text-primary transition-colors">{t('search')}</Link>
           <Link
             to="/upload-bhajan"
@@ -153,7 +152,6 @@ export default function Header() {
         <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
           <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
-          <Link to="/trending" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('trending')}</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
           <Link to="/upload-bhajan" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-primary flex items-center gap-2">
             <Upload className="w-4 h-4" />

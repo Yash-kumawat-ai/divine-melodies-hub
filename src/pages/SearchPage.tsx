@@ -1,5 +1,5 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { Search as SearchIcon, Music2, Globe2, BookText, Loader2 } from "lucide-react";
+import { Search as SearchIcon, Music2, Globe2, BookText, Loader2, Youtube, ExternalLink, PlayCircle } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
@@ -11,6 +11,13 @@ import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
 import { fetchGlobalLyricsWithSource, LyricsResult, searchGlobalSongs, SongSuggestion } from "@/lib/globalLyrics";
+import { buildYouTubeEmbedUrl, searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserBhajan {
   id: string;
@@ -40,7 +47,13 @@ export default function SearchPage() {
   const [globalLoading, setGlobalLoading] = useState(false);
   const [globalLyricsLoading, setGlobalLyricsLoading] = useState(false);
   const [globalError, setGlobalError] = useState('');
-  const [activeMode, setActiveMode] = useState<'bhajans' | 'global'>('bhajans');
+  const [youtubeQuery, setYoutubeQuery] = useState(initialQuery);
+  const [youtubeResults, setYoutubeResults] = useState<YouTubeVideoResult[]>([]);
+  const [youtubeLoading, setYoutubeLoading] = useState(false);
+  const [youtubeError, setYoutubeError] = useState('');
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoResult | null>(null);
+  const [isYouTubePlayerOpen, setIsYouTubePlayerOpen] = useState(false);
+  const [activeMode, setActiveMode] = useState<'bhajans' | 'global' | 'youtube'>('bhajans');
   const [selectedDeity, setSelectedDeity] = useState(initialDeity);
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
@@ -69,6 +82,31 @@ export default function SearchPage() {
     const timer = setTimeout(run, 350);
     return () => clearTimeout(timer);
   }, [globalQuery]);
+
+  useEffect(() => {
+    const run = async () => {
+      const q = youtubeQuery.trim();
+      if (q.length < 2) {
+        setYoutubeResults([]);
+        setYoutubeError('');
+        return;
+      }
+
+      setYoutubeLoading(true);
+      setYoutubeError('');
+      try {
+        const results = await searchYouTubeVideos(q);
+        setYoutubeResults(results);
+      } catch (error: any) {
+        setYoutubeError(error.message || 'Unable to search YouTube right now.');
+      } finally {
+        setYoutubeLoading(false);
+      }
+    };
+
+    const timer = setTimeout(run, 350);
+    return () => clearTimeout(timer);
+  }, [youtubeQuery]);
 
   // Fetch user uploads on mount
   useEffect(() => {
@@ -232,6 +270,16 @@ export default function SearchPage() {
             >
               <Globe2 className="w-4 h-4" /> Global Song Lyrics
             </button>
+            <button
+              onClick={() => setActiveMode('youtube')}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
+                activeMode === 'youtube'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card text-foreground border-border hover:border-primary'
+              }`}
+            >
+              <Youtube className="w-4 h-4" /> YouTube Discovery
+            </button>
           </motion.div>
 
           {/* Search Bar */}
@@ -244,18 +292,22 @@ export default function SearchPage() {
             <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
             <input
               type="text"
-              value={activeMode === 'bhajans' ? query : globalQuery}
+              value={activeMode === 'bhajans' ? query : activeMode === 'global' ? globalQuery : youtubeQuery}
               onChange={(e) => {
                 if (activeMode === 'bhajans') {
                   setQuery(e.target.value);
-                } else {
+                } else if (activeMode === 'global') {
                   setGlobalQuery(e.target.value);
+                } else {
+                  setYoutubeQuery(e.target.value);
                 }
               }}
               placeholder={
                 activeMode === 'bhajans'
                   ? 'Search by title or tags...'
-                  : 'Search any song in the world (title, artist)...'
+                  : activeMode === 'global'
+                    ? 'Search any song in the world (title, artist)...'
+                    : 'Search bhajans and songs on YouTube...'
               }
               className="w-full pl-14 pr-6 py-4 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 touch-target"
               autoFocus
@@ -352,7 +404,7 @@ export default function SearchPage() {
                 </motion.div>
               )}
             </>
-          ) : (
+          ) : activeMode === 'global' ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-card border border-border rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-4">
@@ -424,7 +476,149 @@ export default function SearchPage() {
                 )}
               </div>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-card border border-border rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Youtube className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-2xl font-semibold">YouTube Results</h2>
+                </div>
+                {youtubeLoading ? (
+                  <div className="py-8 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : youtubeError ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">{youtubeError}</p>
+                    {youtubeQuery.trim().length >= 2 && (
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery.trim())}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full border border-border hover:border-primary"
+                      >
+                        <ExternalLink className="w-4 h-4" /> Open search directly on YouTube
+                      </a>
+                    )}
+                  </div>
+                ) : youtubeResults.length > 0 ? (
+                  <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                    {youtubeResults.map((video) => (
+                      <div
+                        key={video.id}
+                        className={`p-3 rounded-xl border transition-colors ${
+                          selectedVideo?.id === video.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/60'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setSelectedVideo(video)}
+                          className="w-full text-left"
+                        >
+                          <p className="font-semibold text-foreground line-clamp-2">{video.title}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{video.channel}</p>
+                          <div className="text-xs text-muted-foreground mt-1 flex gap-3">
+                            {video.duration && <span>{video.duration}</span>}
+                            {video.viewsText && <span>{video.viewsText}</span>}
+                          </div>
+                        </button>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedVideo(video);
+                              setIsYouTubePlayerOpen(true);
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full bg-primary text-primary-foreground"
+                          >
+                            <PlayCircle className="w-4 h-4" /> Play
+                          </button>
+                          <a
+                            href={`https://www.youtube.com/watch?v=${video.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full border border-border hover:border-primary"
+                          >
+                            <ExternalLink className="w-4 h-4" /> Open on YouTube
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-6 space-y-3">
+                    <p className="text-muted-foreground">
+                      Search a bhajan or song name to discover YouTube videos.
+                    </p>
+                    {youtubeQuery.trim().length >= 2 && (
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery.trim())}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full border border-border hover:border-primary"
+                      >
+                        <ExternalLink className="w-4 h-4" /> Open search directly on YouTube
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-card border border-border rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Music2 className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-2xl font-semibold">Playback Info</h2>
+                </div>
+
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    Local uploaded audio is ad-free.
+                  </p>
+                  <p>
+                    YouTube videos may include ads controlled by YouTube.
+                  </p>
+                </div>
+
+                {selectedVideo ? (
+                  <div className="mt-6 space-y-3">
+                    <p className="font-semibold text-foreground">{selectedVideo.title}</p>
+                    <p className="text-sm text-muted-foreground">{selectedVideo.channel}</p>
+                    <button
+                      onClick={() => setIsYouTubePlayerOpen(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground"
+                    >
+                      <PlayCircle className="w-4 h-4" /> Play Selected Video
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground py-6">
+                    Choose any result from the left to play here.
+                  </p>
+                )}
+              </div>
+            </div>
           )}
+
+          <Dialog open={isYouTubePlayerOpen} onOpenChange={setIsYouTubePlayerOpen}>
+            <DialogContent className="sm:max-w-3xl">
+              <DialogHeader>
+                <DialogTitle className="font-display text-xl">
+                  {selectedVideo?.title || 'YouTube Playback'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
+                {selectedVideo ? (
+                  <iframe
+                    src={buildYouTubeEmbedUrl(selectedVideo.id)}
+                    title={`YouTube player for ${selectedVideo.title}`}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : null}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </section>
 
