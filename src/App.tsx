@@ -15,32 +15,35 @@ import SignupForm from "./components/Auth/SignupForm";
 import NotFound from "./pages/NotFound";
 import AIAssistant from "./components/AIAssistant";
 import { LanguageProvider } from "./hooks/useLanguage";
+import { AssistantContextProvider } from "./hooks/useAssistantContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/browse" element={<Index />} />
-            <Route path="/all-bhajans" element={<AllBhajans />} />
-            <Route path="/all-deities" element={<AllDeities />} />
-            <Route path="/deity/:slug" element={<DeityPage />} />
-            <Route path="/bhajan/:slug" element={<BhajanPage />} />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/upload-bhajan" element={<UploadBhajan />} />
-            <Route path="/auth/login" element={<div className="min-h-screen bg-background py-12"><LoginForm /></div>} />
-            <Route path="/auth/signup" element={<div className="min-h-screen bg-background py-12"><SignupForm /></div>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <AIAssistant />
-        </BrowserRouter>
-      </TooltipProvider>
+      <AssistantContextProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/browse" element={<Index />} />
+              <Route path="/all-bhajans" element={<AllBhajans />} />
+              <Route path="/all-deities" element={<AllDeities />} />
+              <Route path="/deity/:slug" element={<DeityPage />} />
+              <Route path="/bhajan/:slug" element={<BhajanPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/upload-bhajan" element={<UploadBhajan />} />
+              <Route path="/auth/login" element={<div className="min-h-screen bg-background py-12"><LoginForm /></div>} />
+              <Route path="/auth/signup" element={<div className="min-h-screen bg-background py-12"><SignupForm /></div>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <AIAssistant />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AssistantContextProvider>
     </LanguageProvider>
   </QueryClientProvider>
 );

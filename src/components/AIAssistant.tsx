@@ -2,84 +2,169 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Loader2, Bot, User, Mic, Volume2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAssistantContext } from "@/hooks/useAssistantContext";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type Language = "en" | "hi";
+
+/**
+ * Context passed from search or other components
+ * Allows assistant to provide grounded, personalized recommendations
+ */
+export interface AssistantContext {
+  searchQuery?: string; // What user searched for
+  searchResults?: Array<{
+    title: string;
+    source: "local" | "cache" | "lrclib" | "lyrics.ovh" | "backend_fallback";
+    confidence?: number;
+  }>;
+  recentBhajans?: Array<{
+    title: string;
+    deity?: string;
+  }>;
+  availableLyricsLocally?: boolean;
+}
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bhajan-assistant`;
 
 async function streamChat({
   messages,
   language,
+  context,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
   language: Language;
+  context?: AssistantContext;
   onDelta: (text: string) => void;
   onDone: () => void;
-  onError: (err: string) => void;
+  onError: (err: string, isOfflineMode?: boolean) => void;
 }) {
-  const resp = await fetch(CHAT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-    },
-    body: JSON.stringify({ messages, language }),
-  });
+  try {
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages, language, context }),
+    });
 
-  if (resp.status === 429) {
-    onError("Too many requests. Please wait a moment.");
-    return;
-  }
-  if (resp.status === 401) {
-    onError("API authentication failed. Please check your API key.");
-    return;
-  }
-  if (resp.status === 402) {
-    onError("API quota exceeded. Please check your account.");
-    return;
-  }
-  if (!resp.ok || !resp.body) {
-    const errorText = await resp.text();
-    console.error("API error:", resp.status, errorText);
-    onError(`API error: ${resp.status}. Please try again.`);
-    return;
-  }
+    // Handle different error statuses
+    if (resp.status === 429) {
+      onError("Too many requests. Please wait a moment.", false);
+      return;
+    }
+    if (resp.status === 401) {
+      onError("API authentication failed. Please check your configuration.", false);
+      return;
+    }
+    if (resp.status === 402) {
+      onError("API quota exceeded. Please check your account.", false);
+      return;
+    }
+    if (resp.status === 503) {
+      // Graceful fallback mode - still stream but from local response
+      if (!resp.body) {
+        onError("Unable to connect. Running in offline mode.", true);
+        return;
+      }
+    } else if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error("API error:", resp.status, errorText);
+      onError(`Connection error (${resp.status}). Please try again.`, false);
+      return;
+    }
 
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+    if (!resp.body) {
+      onError("No response received from server.", false);
+      return;
+    }
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+    // Parse SSE stream with robust error handling
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let isComplete = false;
+    let hasReceivedData = false;
 
-    let idx: number;
-    while ((idx = buffer.indexOf("\n")) !== -1) {
-      let line = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { onDone(); return; }
-      try {
-        const parsed = JSON.parse(json);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
-      } catch {
-        buffer = line + "\n" + buffer;
-        break;
+    try {
+      while (!isComplete) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          // Process any remaining data in buffer
+          if (buffer.trim()) {
+            console.warn("Incomplete SSE chunk at end:", buffer);
+          }
+          isComplete = true;
+          onDone();
+          return;
+        }
+
+        // Decode with stream flag to handle multi-byte characters
+        buffer += decoder.decode(value, { stream: true });
+        hasReceivedData = true;
+
+        // Process complete lines
+        let lineEndIdx: number;
+        while ((lineEndIdx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, lineEndIdx);
+          buffer = buffer.slice(lineEndIdx + 1);
+
+          // Clean up line
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          
+          // Skip empty lines
+          if (!line.trim()) continue;
+
+          // Handle SSE format
+          if (!line.startsWith("data: ")) {
+            console.warn("Invalid SSE format:", line);
+            continue;
+          }
+
+          const jsonStr = line.slice(6).trim();
+
+          // Handle stream end marker
+          if (jsonStr === "[DONE]") {
+            isComplete = true;
+            onDone();
+            return;
+          }
+
+          // Parse JSON payload
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              onDelta(content);
+            }
+          } catch (parseErr) {
+            console.warn("Failed to parse SSE JSON:", jsonStr, parseErr);
+            // Keep the line in buffer for retry (might be incomplete)
+            buffer = line + "\n" + buffer;
+            break;
+          }
+        }
+      }
+    } catch (readErr) {
+      if (hasReceivedData) {
+        onDone(); // Partial response is better than error
+      } else {
+        throw readErr;
       }
     }
+  } catch (fetchErr) {
+    const msg = fetchErr instanceof Error ? fetchErr.message : "Unknown error";
+    onError(`Connection failed: ${msg}`, false);
   }
-  onDone();
 }
 
 export default function AIAssistant() {
+  const { context } = useAssistantContext();
   const [isOpen, setIsOpen] = useState(false);
   const [language, setLanguage] = useState<Language>("en");
   const [isListening, setIsListening] = useState(false);
@@ -184,30 +269,34 @@ export default function AIAssistant() {
       await streamChat({
         messages: allMessages,
         language,
+        context,
         onDelta: (chunk) => {
           assistantSoFar += chunk;
           setMessages(prev => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "assistant" && prev.length > 1 && assistantSoFar.startsWith(chunk.length > 1 ? chunk.slice(0, 1) : chunk)) {
-              // First token
+            const newMessages = [...prev];
+            // If last message is not assistant, add new one
+            if (newMessages[newMessages.length - 1]?.role !== "assistant") {
+              newMessages.push({ role: "assistant", content: assistantSoFar });
+            } else {
+              // Update existing assistant message
+              newMessages[newMessages.length - 1] = {
+                role: "assistant",
+                content: assistantSoFar,
+              };
             }
-            if (last?.role === "assistant" && last.content === assistantSoFar.slice(0, -chunk.length)) {
-              return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-            }
-            if (prev[prev.length - 1]?.role === "assistant" && assistantSoFar.length > chunk.length) {
-              return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-            }
-            return [...prev, { role: "assistant", content: assistantSoFar }];
+            return newMessages;
           });
         },
         onDone: () => setIsLoading(false),
-        onError: (err) => {
-          setMessages(prev => [...prev, { role: "assistant", content: `⚠️ ${err}` }]);
+        onError: (err, isOfflineMode) => {
+          const errorPrefix = isOfflineMode ? "🌐 Offline mode: " : "⚠️ ";
+          setMessages(prev => [...prev, { role: "assistant", content: `${errorPrefix}${err}` }]);
           setIsLoading(false);
         },
       });
-    } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "⚠️ Something went wrong. Please try again." }]);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Something went wrong";
+      setMessages(prev => [...prev, { role: "assistant", content: `⚠️ ${errorMsg}` }]);
       setIsLoading(false);
     }
   }, [input, isLoading, messages]);

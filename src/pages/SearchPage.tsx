@@ -1,5 +1,5 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { Search as SearchIcon, Music2, Globe2, BookText, Loader2, Youtube, ExternalLink, PlayCircle } from "lucide-react";
+import { Search as SearchIcon, Music2, Globe2, BookText, Loader2, Youtube, ExternalLink, PlayCircle, MessageSquare } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
@@ -10,6 +10,8 @@ import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
+import { useLyricsFallback } from "@/hooks/useLyricsFallback";
+import { useAssistantContext } from "@/hooks/useAssistantContext";
 import { fetchGlobalLyricsWithSource, LyricsResult, searchGlobalSongs, SongSuggestion } from "@/lib/globalLyrics";
 import { buildYouTubeEmbedUrl, searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 import {
@@ -58,6 +60,13 @@ export default function SearchPage() {
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
   const { deities: allDeities, loading: deitiesLoading } = useDeities();
+  
+  // Lyrics fallback orchestration
+  const lyricsFallback = useLyricsFallback();
+  const [showFallbackLyrics, setShowFallbackLyrics] = useState(false);
+  
+  // Assistant context management
+  const { setContext: setAssistantContext } = useAssistantContext();
 
   useEffect(() => {
     const run = async () => {
@@ -132,6 +141,16 @@ export default function SearchPage() {
 
     fetchUserBhajans();
   }, []);
+
+  // Trigger lyrics fallback when local results are empty
+  useEffect(() => {
+    if (activeMode === 'bhajans' && query.trim() && results.length === 0) {
+      lyricsFallback.searchLyrics(query);
+      setShowFallbackLyrics(true);
+    } else {
+      setShowFallbackLyrics(false);
+    }
+  }, [results.length, query, activeMode]);
 
   const results = useMemo(() => {
     // Keep a stable source key so React list keys are always unique.
@@ -391,16 +410,121 @@ export default function SearchPage() {
                 </div>
               ) : (
                 <motion.div
-                  className="text-center py-16"
+                  className="space-y-6"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
-                  <p className="text-muted-foreground text-lg hindi-text mb-4">
-                    कोई भजन नहीं मिला • No bhajans found
-                  </p>
-                  <p className="text-muted-foreground">
-                    Try a different search or filter by another deity
-                  </p>
+                  {/* No local results message */}
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground text-lg hindi-text mb-4">
+                      कोई भजन नहीं मिला • No bhajans found
+                    </p>
+                    <p className="text-muted-foreground mb-8">
+                      Try a different search or filter by another deity
+                    </p>
+                  </div>
+
+                  {/* Fallback lyrics section */}
+                  {showFallbackLyrics && (
+                    <motion.div
+                      className="bg-gradient-warm/5 border border-primary/30 rounded-2xl p-8"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <div className="flex items-center gap-3 mb-6">
+                        <BookText className="w-6 h-6 text-primary" />
+                        <h3 className="font-display text-2xl font-semibold text-foreground">
+                          Search Results from External Sources
+                        </h3>
+                      </div>
+
+                      {lyricsFallback.isLoading ? (
+                        <div className="flex items-center justify-center py-12 gap-3">
+                          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                          <span className="text-muted-foreground">Searching lyrics databases...</span>
+                        </div>
+                      ) : lyricsFallback.error ? (
+                        <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+                          <p className="text-sm text-destructive">{lyricsFallback.error}</p>
+                        </div>
+                      ) : lyricsFallback.result?.lyrics ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm text-muted-foreground">
+                              Source:
+                            </span>
+                            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                              {lyricsFallback.result.source?.toUpperCase() || 'Unknown'}
+                            </span>
+                            {lyricsFallback.result.confidence && (
+                              <span className="text-xs text-muted-foreground">
+                                Match: {Math.round(lyricsFallback.result.confidence * 100)}%
+                              </span>
+                            )}
+                            {lyricsFallback.result.cached && (
+                              <span className="px-2 py-1 rounded text-xs bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                                📦 Cached
+                              </span>
+                            )}
+                          </div>
+                          <pre className="whitespace-pre-wrap text-sm leading-relaxed max-h-[400px] overflow-y-auto p-4 rounded-xl bg-muted/50 font-sans">
+                            {lyricsFallback.result.lyrics}
+                          </pre>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-center py-8">
+                          No lyrics found in external sources. Try a different search or ask the Bhajan Assistant.
+                        </p>
+                      )}
+
+                      {/* Assistant handoff suggestion */}
+                      {lyricsFallback.showAssistantSuggestion && (
+                        <motion.div
+                          className="mt-6 p-4 bg-primary/5 border border-primary/30 rounded-lg flex items-start gap-3"
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <MessageSquare className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground mb-2">
+                              💡 Can't find what you're looking for?
+                            </p>
+                            <p className="text-xs text-muted-foreground mb-3">
+                              Ask the Bhajan Assistant for personalized recommendations or help finding specific songs.
+                            </p>
+                            <button
+                              onClick={() => {
+                                // Set context for assistant
+                                if (lyricsFallback.result) {
+                                  setAssistantContext({
+                                    searchQuery: query,
+                                    searchResults: lyricsFallback.result.source
+                                      ? [{
+                                          title: lyricsFallback.result.title || query,
+                                          source: lyricsFallback.result.source,
+                                          confidence: lyricsFallback.result.confidence,
+                                        }]
+                                      : undefined,
+                                  });
+                                } else {
+                                  setAssistantContext({
+                                    searchQuery: query,
+                                  });
+                                }
+                                // Open assistant
+                                const fab = document.querySelector('[aria-label="Open AI assistant"]');
+                                if (fab) (fab as HTMLElement).click();
+                              }}
+                              className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              Ask Assistant
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </>
