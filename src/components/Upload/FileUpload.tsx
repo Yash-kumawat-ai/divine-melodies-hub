@@ -3,6 +3,7 @@ import { Upload, X, Image as ImageIcon, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LyricsUploadProps {
   onLyricsSelect: (url: string, type: 'image' | 'text', content: string) => void;
@@ -17,6 +18,8 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
   const [uploadedUrl, setUploadedUrl] = useState<string>('');
   const [textLyrics, setTextLyrics] = useState('');
   const [error, setError] = useState('');
+  const MAX_IMAGE_SIZE_MB = 10;
+  const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   const uploadFile = async (file: File) => {
     setError('');
@@ -28,6 +31,19 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
       if (!url) {
         throw new Error('Failed to get upload URL from Cloudinary');
       }
+
+      const { data: scanResult, error: scanError } = await supabase.functions.invoke('scan-upload', {
+        body: { fileUrl: url },
+      });
+
+      if (scanError) {
+        throw new Error('Security scan failed. Please try again later.');
+      }
+
+      if (!scanResult?.clean) {
+        throw new Error(scanResult?.reason || 'Uploaded file did not pass security checks');
+      }
+
       setUploadedUrl(url);
       // Keep lyrics text empty for image mode and store URL only in image field.
       onLyricsSelect(url, 'image', '');
@@ -42,8 +58,13 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
   };
 
   const handleFile = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
+    if (!allowedImageTypes.includes(file.type)) {
+      setError('Please upload a JPG, PNG, or WebP image');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      setError(`Image is too large. Max allowed size is ${MAX_IMAGE_SIZE_MB}MB`);
       return;
     }
 

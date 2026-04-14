@@ -107,7 +107,7 @@ const Index = () => {
           <p className="text-center text-muted-foreground text-lg mb-10 hindi-text">
             लोकप्रिय भजन
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {featured.map((bhajan) => (
               <BhajanCard key={bhajan.id} bhajan={bhajan} />
             ))}

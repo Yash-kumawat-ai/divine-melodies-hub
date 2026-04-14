@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { getTrendingBhajans, queryUserUploads } from '@/lib/supabaseQueries';
+import { generateBhajanSlug } from '@/lib/slugUtils';
 
 interface UserBhajan {
   id: string;
@@ -66,7 +67,7 @@ export const TrendingPage = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {bhajans.map((bhajan, index) => (
           <motion.div
             key={bhajan.id}
@@ -83,7 +84,7 @@ export const TrendingPage = () => {
             <BhajanCard
               bhajan={{
                 id: parseInt(bhajan.id),
-                slug: bhajan.title.toLowerCase().replace(/\s+/g, '-'),
+                slug: generateBhajanSlug(bhajan.title),
                 title: bhajan.title,
                 titleHindi: bhajan.title_hindi,
                 deityId: bhajan.deity_id,

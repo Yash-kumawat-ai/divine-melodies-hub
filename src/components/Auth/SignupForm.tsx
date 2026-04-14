@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Mail, Lock, User, Loader2, Chrome } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function SignupForm() {
+  const SIGNUP_COOLDOWN_KEY = 'signupCooldownUntil';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -14,12 +15,70 @@ export default function SignupForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [retryAfter, setRetryAfter] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
   const { signUp } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const storedValue = window.localStorage.getItem(SIGNUP_COOLDOWN_KEY);
+    if (!storedValue) return;
+
+    const parsed = Number(storedValue);
+    if (!Number.isNaN(parsed) && parsed > Date.now()) {
+      setRetryAfter(parsed);
+    } else {
+      window.localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!retryAfter) return;
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((retryAfter - Date.now()) / 1000));
+      setSecondsRemaining(remaining);
+
+      if (remaining <= 0) {
+        setRetryAfter(null);
+        window.localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
+      }
+    };
+
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [retryAfter]);
+
+  const isRateLimited = retryAfter !== null && Date.now() < retryAfter;
+
+  const toFriendlySignupError = (message: string): { message: string; isRateLimit: boolean } => {
+    const normalized = message.toLowerCase();
+
+    if (normalized.includes('rate limit') || normalized.includes('too many requests') || normalized.includes('email rate limit exceeded')) {
+      const cooldownMs = 180_000; // 3 minutes - Supabase rolling window
+      const cooldownUntil = Date.now() + cooldownMs;
+      setRetryAfter(cooldownUntil);
+      window.localStorage.setItem(SIGNUP_COOLDOWN_KEY, String(cooldownUntil));
+      return { message: '', isRateLimit: true };
+    }
+
+    if (normalized.includes('user already registered')) {
+      return { message: 'This email is already registered. Please log in instead.', isRateLimit: false };
+    }
+
+    return { message, isRateLimit: false };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    if (!isRateLimited) {
+      setError('');
+    }
+
+    if (isRateLimited) {
+      return;
+    }
 
     if (!name.trim()) {
       setError('Please enter your name');
@@ -36,11 +95,25 @@ export default function SignupForm() {
       return;
     }
 
+    // Final defensive check: read localStorage directly to prevent any race condition
+    const storedCooldown = window.localStorage.getItem(SIGNUP_COOLDOWN_KEY);
+    if (storedCooldown) {
+      const cooldownUntil = Number(storedCooldown);
+      if (!Number.isNaN(cooldownUntil) && cooldownUntil > Date.now()) {
+        const waitSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
+        setError(`Too many signup attempts. Email provider is rate-limiting. Please wait ${waitSeconds} seconds or use Google signup.`);
+        return;
+      }
+    }
+
     setLoading(true);
     const { error } = await signUp(email, password, name);
     
     if (error) {
-      setError(error.message || 'Signup failed');
+      const parsed = toFriendlySignupError(error.message || 'Signup failed');
+      if (!parsed.isRateLimit) {
+        setError(parsed.message);
+      }
     } else {
       setSuccess(true);
       setTimeout(() => {
@@ -64,9 +137,17 @@ export default function SignupForm() {
           },
         },
       });
-      if (error) setError(error.message);
+      if (error) {
+        const parsed = toFriendlySignupError(error.message);
+        if (!parsed.isRateLimit) {
+          setError(parsed.message);
+        }
+      }
     } catch (err: any) {
-      setError(err.message || 'Google signup failed');
+      const parsed = toFriendlySignupError(err.message || 'Google signup failed');
+      if (!parsed.isRateLimit) {
+        setError(parsed.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -74,10 +155,10 @@ export default function SignupForm() {
 
   if (success) {
     return (
-      <div className="text-center w-full max-w-md mx-auto py-12">
-        <div className="text-4xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
-        <p className="text-muted-foreground mb-4">
+      <div className="w-full py-8 text-center">
+        <div className="mb-4 text-4xl">✅</div>
+        <h2 className="mb-2 text-2xl font-bold">Account Created!</h2>
+        <p className="mb-4 text-muted-foreground">
           Welcome, {name}! Check your email to verify your account.
         </p>
         <p className="text-sm text-muted-foreground">
@@ -88,17 +169,26 @@ export default function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+    <form onSubmit={handleSubmit} className="space-y-4 w-full">
+      <div className="space-y-1 text-center">
+        <h2 className="text-3xl font-semibold text-foreground">Create Account</h2>
+        <p className="text-sm text-muted-foreground">Build your profile and share your devotion with everyone.</p>
+      </div>
       
       {error && (
-        <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
+      {isRateLimited && (
+        <div className="rounded-xl border-2 border-red-400 bg-red-50 p-4 text-sm font-semibold text-red-700">
+          ⏱️ Signup blocked for {secondsRemaining}s. Your email provider is rate-limiting. Try Google signup instead.
+        </div>
+      )}
+
       <div className="space-y-2">
-        <label className="text-sm font-medium">Full Name *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Full Name *</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -106,14 +196,14 @@ export default function SignupForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your Full Name"
-            className="pl-10"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Email *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email *</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -121,14 +211,14 @@ export default function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="pl-10"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Password *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password *</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -136,14 +226,14 @@ export default function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="pl-10"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Confirm Password *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Confirm Password *</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -151,23 +241,23 @@ export default function SignupForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
-            className="pl-10"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all ${isRateLimited ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'}`}>
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-        Sign Up
+        {isRateLimited ? `🔒 Blocked ${secondsRemaining}s` : 'Create Sacred Account'}
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
+          <span className="w-full border-t border-orange-100" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
+          <span className="bg-white px-3 text-muted-foreground">Or seek with</span>
         </div>
       </div>
 
@@ -176,7 +266,7 @@ export default function SignupForm() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="w-full"
+        className="h-12 w-full rounded-xl border-orange-200 bg-white"
       >
         <Chrome className="mr-2 w-4 h-4" />
         Sign up with Google

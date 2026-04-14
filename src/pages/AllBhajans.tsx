@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { queryUserUploads } from '@/lib/supabaseQueries';
+import { generateBhajanSlug } from '@/lib/slugUtils';
 
 interface UserBhajan {
   id: string;
@@ -302,14 +303,14 @@ export const AllBhajans = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
             >
               {filteredBhajans.map((bhajan) => (
                 <BhajanCard
                   key={bhajan.id}
                   bhajan={{
                     id: parseInt(bhajan.id),
-                    slug: bhajan.title.toLowerCase().replace(/\s+/g, '-'),
+                    slug: generateBhajanSlug(bhajan.title),
                     title: bhajan.title,
                     titleHindi: bhajan.title_hindi,
                     deityId: bhajan.deity_id,

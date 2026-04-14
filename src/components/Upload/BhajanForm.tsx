@@ -31,6 +31,13 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
   const [extractingMetadata, setExtractingMetadata] = useState(false);
   const [metadataError, setMetadataError] = useState('');
 
+  const sanitizeText = (value: string) => value.replace(/[<>]/g, '').trim();
+
+  const isValidYouTubeUrl = (url: string) => {
+    if (!url) return true;
+    return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/i.test(url.trim());
+  };
+
   // Auto-populate singer name with user profile name
   useEffect(() => {
     if (profile?.name && !singerName) {
@@ -109,10 +116,30 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
       return;
     }
 
+    if (!isValidYouTubeUrl(youtubeUrl)) {
+      setError('Please provide a valid YouTube URL');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
+      const { data: canSubmit, error: rateLimitError } = await (supabase as any).rpc(
+        'check_submission_rate_limit',
+        { p_user_id: user.id, p_limit: 5 }
+      );
+
+      if (rateLimitError) {
+        throw new Error('Rate limit check failed. Please try again.');
+      }
+
+      if (!canSubmit) {
+        setError('Upload limit reached. You can submit up to 5 bhajans per hour.');
+        setLoading(false);
+        return;
+      }
+
       // Let's just save to a simple JSON structure for now
       // In production, you'd save to Supabase
       
@@ -121,15 +148,15 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
         .insert([
           {
             user_id: user.id,
-            title: title,
-            title_hindi: titleHindi,
+            title: sanitizeText(title),
+            title_hindi: sanitizeText(titleHindi),
             deity_id: parseInt(deityId),
-            singer_name: singerName,
-            composer_name: composerName || '',
-            lyrics_hindi: lyrics,
+            singer_name: sanitizeText(singerName),
+            composer_name: sanitizeText(composerName) || '',
+            lyrics_hindi: sanitizeText(lyrics),
             image_url: imageUrl || '',
-            youtube_url: youtubeUrl || '',
-            status: 'approved',
+            youtube_url: youtubeUrl.trim() || '',
+            status: 'pending',
           },
         ]);
 
@@ -160,7 +187,7 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
           Title: <span className="font-semibold">{title}</span>
         </p>
         <p className="text-muted-foreground">
-          Your bhajan has been submitted. Thank you for contributing!
+          Your bhajan has been submitted for admin review. It will be published after approval.
         </p>
       </div>
     );

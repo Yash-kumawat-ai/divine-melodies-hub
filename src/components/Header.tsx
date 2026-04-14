@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles } from "lucide-react";
+import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAIModal } from "@/hooks/useAIModal";
@@ -18,7 +18,7 @@ import { languageOptions, useLanguage } from "@/hooks/useLanguage";
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const { user, profile, signOut, updateProfile } = useAuth();
+  const { user, profile, isAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { openAI } = useAIModal();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -70,6 +70,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-8 text-base font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
+          <Link to="/recent-bhajans" className="text-foreground hover:text-primary transition-colors">Recent</Link>
           <Link to="/search" className="text-foreground hover:text-primary transition-colors">{t('search')}</Link>
           <Link
             to="/upload-bhajan"
@@ -85,9 +86,23 @@ export default function Header() {
             <Sparkles className="w-4 h-4" />
             Kirtan AI
           </Link>
+          {isAdmin && (
+            <Link
+              to="/admin/moderation"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Admin
+            </Link>
+          )}
           <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
             <Search className="w-5 h-5" />
           </Link>
+          {user && (
+            <Link to="/notifications" className="text-foreground hover:text-primary transition-colors text-sm">
+              Notifications
+            </Link>
+          )}
 
           <select
             value={language}
@@ -126,6 +141,26 @@ export default function Header() {
                     <Camera className="mr-2 h-4 w-4" />
                     {isUploadingAvatar ? 'Uploading...' : t('setPhoto')}
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin/moderation')}>
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Moderation Queue
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/accounts')}>
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Admin Accounts
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/audit')}>
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Audit Log
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate('/notifications')}>
+                    <User className="mr-2 h-4 w-4" />
+                    Notifications
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     {t('logout')}
@@ -161,11 +196,47 @@ export default function Header() {
         <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
           <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
+          <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">Recent</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
+          {user && (
+            <Link to="/notifications" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">
+              Notifications
+            </Link>
+          )}
           <Link to="/upload-bhajan" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-primary flex items-center gap-2">
             <Upload className="w-4 h-4" />
             {t('upload')}
           </Link>
+          {isAdmin && (
+            <Link
+              to="/admin/moderation"
+              onClick={() => setMenuOpen(false)}
+              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Admin Moderation
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin/accounts"
+              onClick={() => setMenuOpen(false)}
+              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Admin Accounts
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin/audit"
+              onClick={() => setMenuOpen(false)}
+              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Audit Log
+            </Link>
+          )}
           <div className="pt-2">
             <label className="block text-sm text-muted-foreground mb-1">{t('language')}</label>
             <select

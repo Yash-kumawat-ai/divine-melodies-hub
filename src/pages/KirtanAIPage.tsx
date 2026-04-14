@@ -7,6 +7,7 @@ import { useDeities } from '../hooks/useDeities';
 import { useToast } from '../hooks/use-toast';
 import { processElderlyRequest } from '../lib/elderlyAI';
 import { searchUserBhajans } from '../lib/supabaseQueries';
+import { generateBhajanSlug } from '../lib/slugUtils';
 import Header from '../components/Header';
 import { VoiceManager, TextToSpeech, checkVoiceSupport } from '../lib/voiceUtils';
 import type { Bhajan } from '../data/bhajans';
@@ -40,7 +41,7 @@ async function searchBhajansByName(query: string): Promise<Bhajan[]> {
     const results = await searchUserBhajans(query, 5);
     return results.map((b: any) => ({
       id: parseInt(b.id),
-      slug: b.title.toLowerCase().replace(/\s+/g, '-'),
+      slug: generateBhajanSlug(b.title),
       title: b.title,
       titleHindi: b.title_hindi,
       deityId: b.deity_id,

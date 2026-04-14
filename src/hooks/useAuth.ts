@@ -7,14 +7,19 @@ export interface UserProfile {
   email: string;
   name: string;
   avatar_url?: string;
+  role?: 'user' | 'moderator' | 'admin' | 'super_admin';
+  mfa_enabled?: boolean;
+  last_admin_activity_at?: string;
   created_at: string;
 }
 
 type UserProfileUpdate = Partial<Pick<UserProfile, 'name' | 'avatar_url'>>;
 
 export function useAuth() {
+  const ADMIN_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [mfaAal, setMfaAal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +76,21 @@ export function useAuth() {
     }
   };
 
+  const refreshMfaAssurance = async () => {
+    try {
+      const authAny = supabase.auth as any;
+      if (!authAny?.mfa?.getAuthenticatorAssuranceLevel) {
+        setMfaAal(null);
+        return;
+      }
+
+      const { data } = await authAny.mfa.getAuthenticatorAssuranceLevel();
+      setMfaAal(data?.currentLevel || null);
+    } catch {
+      setMfaAal(null);
+    }
+  };
+
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setError(null);
@@ -81,21 +101,17 @@ export function useAuth() {
         return { data, error };
       }
 
-      // Create user profile
+      // Profile is created automatically by database trigger
+      // Just update the name since trigger couldn't get it from form
       if (data.user) {
         const client = supabase as any;
-        const { error: profileError } = await client.from('user_profiles').insert([
-          {
-            id: data.user.id,
-            email,
-            name,
-          },
-        ]);
+        const { error: profileError } = await client.from('user_profiles')
+          .update({ name })
+          .eq('id', data.user.id);
 
         if (profileError) {
-          console.log('Profile creation error:', profileError);
-          setError(profileError.message);
-          return { data: null, error: profileError };
+          console.log('Profile update error:', profileError);
+          // Don't fail signup if update fails - profile was already created by trigger
         }
       }
 
@@ -156,5 +172,52 @@ export function useAuth() {
     }
   };
 
-  return { user, profile, loading, error, signUp, signIn, signOut, fetchUserProfile, updateProfile };
+  const isAdmin = Boolean(profile?.role && ['moderator', 'admin', 'super_admin'].includes(profile.role));
+  const isSuperAdmin = profile?.role === 'super_admin';
+
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const resetTimer = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        supabase.auth.signOut();
+      }, ADMIN_IDLE_TIMEOUT_MS);
+    };
+
+    const events: Array<keyof WindowEventMap> = ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'];
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [user, isAdmin]);
+
+  useEffect(() => {
+    if (!user) {
+      setMfaAal(null);
+      return;
+    }
+    refreshMfaAssurance();
+  }, [user?.id]);
+
+  return {
+    user,
+    profile,
+    isAdmin,
+    isSuperAdmin,
+    mfaAal,
+    loading,
+    error,
+    signUp,
+    signIn,
+    signOut,
+    fetchUserProfile,
+    updateProfile,
+    refreshMfaAssurance,
+  };
 }

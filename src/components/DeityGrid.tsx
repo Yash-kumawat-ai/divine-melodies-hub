@@ -27,7 +27,17 @@ export default function DeityGrid() {
                 to={`/deity/${deity.slug}`}
                 className="group block rounded-xl bg-card p-6 shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center touch-target"
               >
-                <span className="text-5xl block mb-3">{deity.emoji}</span>
+                <div className="text-5xl block mb-3 flex items-center justify-center h-40 overflow-hidden">
+                  {deity.imageUrl ? (
+                    <img 
+                      src={deity.imageUrl} 
+                      alt={deity.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <span>{deity.emoji}</span>
+                  )}
+                </div>
                 <h3 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
                   {deity.name}
                 </h3>

@@ -14,6 +14,17 @@ export default function LoginForm() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
+  const toFriendlyError = (message: string) => {
+    const normalized = message.toLowerCase();
+    if (normalized.includes('invalid login credentials')) {
+      return 'No account found for this email, or the password is incorrect. If signup failed earlier, create your account first.';
+    }
+    if (normalized.includes('email not confirmed')) {
+      return 'Please verify your email first, then sign in.';
+    }
+    return message;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -21,7 +32,7 @@ export default function LoginForm() {
 
     const { error } = await signIn(email, password);
     if (error) {
-      setError(error.message || 'Login failed');
+      setError(toFriendlyError(error.message || 'Login failed'));
     } else {
       navigate('/upload-bhajan');
     }
@@ -44,39 +55,42 @@ export default function LoginForm() {
       });
       if (error) setError(error.message);
     } catch (err: any) {
-      setError(err.message || 'Google login failed');
+      setError(toFriendlyError(err.message || 'Google login failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
+    <form onSubmit={handleSubmit} className="space-y-5 w-full">
+      <div className="space-y-1 text-center">
+        <h2 className="text-3xl font-semibold text-foreground">Welcome Back</h2>
+        <p className="text-sm text-muted-foreground">Continue your journey of bhajans and devotion.</p>
+      </div>
       
       {error && (
-        <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Email</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email Address</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="pl-10"
+            placeholder="namaste@example.com"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Password</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -84,23 +98,23 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="pl-10"
+            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
             required
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white hover:from-orange-600 hover:to-amber-600">
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-        Login
+        Enter The Sanctuary
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
+          <span className="w-full border-t border-orange-100" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
+          <span className="bg-white px-3 text-muted-foreground">Or seek with</span>
         </div>
       </div>
 
@@ -109,16 +123,16 @@ export default function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="w-full"
+        className="h-12 w-full rounded-xl border-orange-200 bg-white"
       >
         <Chrome className="mr-2 w-4 h-4" />
         Sign in with Google
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Don't have an account?{' '}
+        New to the Editorial?{' '}
         <Link to="/auth/signup" className="text-primary hover:underline font-medium">
-          Sign up
+          Create Account
         </Link>
       </p>
     </form>
