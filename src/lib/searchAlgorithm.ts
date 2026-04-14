@@ -196,3 +196,65 @@ export function smartSearchBhajans(query: string, source: any[] = []): any[] {
   // Remove the score property before returning
   return deduplicated.map(({ _searchScore, ...rest }) => rest);
 }
+
+/**
+ * Get related/recommended bhajans based on the current bhajan
+ * Prioritizes by: deity > singer > mood/tags > language > popularity
+ */
+export function getRelatedBhajans(
+  currentBhajan: any,
+  allBhajans: any[],
+  limit: number = 6
+): any[] {
+  // Exclude the current bhajan
+  const candidates = allBhajans.filter(b => b.id !== currentBhajan.id);
+
+  // Score related bhajans
+  const scored = candidates.map(bhajan => {
+    let score = 0;
+
+    // Same deity (highest priority) - 100 points
+    if (bhajan.deityId === currentBhajan.deityId) {
+      score += 100;
+    }
+
+    // Same singer (priority 2) - 80 points
+    if (
+      bhajan.singerName &&
+      currentBhajan.singerName &&
+      bhajan.singerName.toLowerCase() === currentBhajan.singerName.toLowerCase()
+    ) {
+      score += 80;
+    }
+
+    // Similar mood/tags (priority 3) - up to 60 points
+    if (bhajan.tags && currentBhajan.tags) {
+      const commonTags = bhajan.tags.filter(tag =>
+        currentBhajan.tags.some(cTag => calculateSimilarity(tag, cTag) > 70)
+      );
+      score += Math.min(commonTags.length * 20, 60);
+    }
+
+    // Same language (if available) - 30 points
+    if (bhajan.language && currentBhajan.language && bhajan.language === currentBhajan.language) {
+      score += 30;
+    }
+
+    // By popularity (rating * play count) - fallback recommendation - up to 20 points
+    if (bhajan.rating && currentBhajan.rating) {
+      const popularityScore = (bhajan.rating / 5) * 10; // Normalize to 10 points
+      score += Math.min(popularityScore, 20);
+    }
+
+    // Small random factor to vary results (up to 5 points)
+    score += Math.random() * 5;
+
+    return { ...bhajan, _relationScore: score };
+  });
+
+  // Sort by relation score and return top results
+  return scored
+    .sort((a, b) => b._relationScore - a._relationScore)
+    .slice(0, limit)
+    .map(({ _relationScore, ...rest }) => rest);
+}

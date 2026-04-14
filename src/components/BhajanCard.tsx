@@ -11,9 +11,10 @@ import {
 
 interface BhajanCardProps {
   bhajan: Bhajan;
+  onCardClick?: (bhajan: Bhajan) => void;
 }
 
-export default function BhajanCard({ bhajan }: BhajanCardProps) {
+export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
@@ -28,9 +29,17 @@ export default function BhajanCard({ bhajan }: BhajanCardProps) {
   const embedUrl = bhajan.youtubeUrl ? getYouTubeEmbedUrl(bhajan.youtubeUrl) : null;
   const canPlayHere = Boolean(embedUrl);
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (onCardClick) {
+      e.preventDefault();
+      onCardClick(bhajan);
+    }
+  };
+
   return (
     <Link
       to={`/bhajan/${bhajan.slug}`}
+      onClick={handleCardClick}
       className="group block rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
     >
       <div className={`h-1.5 ${deity?.colorClass ?? 'bg-primary'}`} />

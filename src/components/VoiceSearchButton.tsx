@@ -34,6 +34,7 @@ export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) 
         const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
         recognitionRef.current = new SpeechRecognition();
         
+        // Set language to Hindi (India) by default
         recognitionRef.current.lang = "hi-IN";
         recognitionRef.current.continuous = false;
         recognitionRef.current.interimResults = false;
@@ -47,6 +48,7 @@ export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) 
         recognitionRef.current.onresult = (event: any) => {
           if (event.results && event.results[0]) {
             const transcript = event.results[0][0].transcript;
+            console.log('Voice transcript received:', transcript);
             onResult(transcript);
             setIsListening(false);
           }
@@ -54,23 +56,33 @@ export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) 
 
         recognitionRef.current.onerror = (event: any) => {
           setIsListening(false);
+          console.error('Voice recognition error:', event.error);
+          
           if (event.error === "no-speech") {
             setError("No speech detected. Try again.");
-          } else if (event.error === "not-allowed") {
+          } else if (event.error === "not-allowed" || event.error === "permission-denied") {
             setError("Microphone access denied.");
           } else if (event.error === "network") {
             setError("Network error. Try again.");
+          } else if (event.error === "service-not-allowed") {
+            setError("Voice service not available.");
           } else {
             setError(`Voice error: ${event.error}`);
           }
         };
 
-        recognitionRef.current.onend = () => setIsListening(false);
+        recognitionRef.current.onend = () => {
+          console.log('Voice recognition ended');
+          setIsListening(false);
+        };
       }
       
       recognitionRef.current.start();
+      console.log('Voice recognition started');
     } catch (error: any) {
       setIsListening(false);
+      console.error('Microphone access error:', error);
+      
       if (error.name === "NotAllowedError") {
         setError("Microphone access denied");
       } else if (error.name === "NotFoundError") {

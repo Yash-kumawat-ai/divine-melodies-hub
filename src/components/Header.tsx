@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera } from "lucide-react";
+import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAIModal } from "@/hooks/useAIModal";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -19,6 +20,7 @@ export default function Header() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { openAI } = useAIModal();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
@@ -75,6 +77,13 @@ export default function Header() {
           >
             <Upload className="w-4 h-4" />
             {t('upload')}
+          </Link>
+          <Link
+            to="/kirtan-ai"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-all font-semibold"
+          >
+            <Sparkles className="w-4 h-4" />
+            Kirtan AI
           </Link>
           <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
             <Search className="w-5 h-5" />

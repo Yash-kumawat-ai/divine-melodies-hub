@@ -1,18 +1,19 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { Search as SearchIcon, Music2, Globe2, BookText, Loader2, Youtube, ExternalLink, PlayCircle, MessageSquare } from "lucide-react";
+import { Search as SearchIcon, Music2, BookText, Loader2, Youtube, ExternalLink, PlayCircle, MessageSquare } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BhajanCard from "@/components/BhajanCard";
-import { bhajans, deities } from "@/data/bhajans";
+import BhajanDetailModal from "@/components/BhajanDetailModal";
+import FilterPanel from "@/components/FilterPanel";
+import { bhajans, deities, Bhajan } from "@/data/bhajans";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
 import { useLyricsFallback } from "@/hooks/useLyricsFallback";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
-import { fetchGlobalLyricsWithSource, LyricsResult, searchGlobalSongs, SongSuggestion } from "@/lib/globalLyrics";
 import { buildYouTubeEmbedUrl, searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 import {
   Dialog,
@@ -41,24 +42,18 @@ export default function SearchPage() {
   const initialQuery = searchParams.get("q") || "";
   const initialDeity = searchParams.get("deity") || "";
   const [query, setQuery] = useState(initialQuery);
-  const [globalQuery, setGlobalQuery] = useState(initialQuery);
-  const [globalSuggestions, setGlobalSuggestions] = useState<SongSuggestion[]>([]);
-  const [selectedSong, setSelectedSong] = useState<SongSuggestion | null>(null);
-  const [globalLyrics, setGlobalLyrics] = useState('');
-  const [globalLyricsSource, setGlobalLyricsSource] = useState('');
-  const [globalLoading, setGlobalLoading] = useState(false);
-  const [globalLyricsLoading, setGlobalLyricsLoading] = useState(false);
-  const [globalError, setGlobalError] = useState('');
   const [youtubeQuery, setYoutubeQuery] = useState(initialQuery);
   const [youtubeResults, setYoutubeResults] = useState<YouTubeVideoResult[]>([]);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState('');
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoResult | null>(null);
   const [isYouTubePlayerOpen, setIsYouTubePlayerOpen] = useState(false);
-  const [activeMode, setActiveMode] = useState<'bhajans' | 'global' | 'youtube'>('bhajans');
+  const [activeMode, setActiveMode] = useState<'bhajans' | 'youtube'>('bhajans');
   const [selectedDeity, setSelectedDeity] = useState(initialDeity);
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
+  const [selectedBhajanForDetail, setSelectedBhajanForDetail] = useState<Bhajan | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { deities: allDeities, loading: deitiesLoading } = useDeities();
   
   // Lyrics fallback orchestration
@@ -68,90 +63,7 @@ export default function SearchPage() {
   // Assistant context management
   const { setContext: setAssistantContext } = useAssistantContext();
 
-  useEffect(() => {
-    const run = async () => {
-      const q = globalQuery.trim();
-      if (q.length < 2) {
-        setGlobalSuggestions([]);
-        return;
-      }
-
-      setGlobalLoading(true);
-      setGlobalError('');
-      try {
-        const results = await searchGlobalSongs(q);
-        setGlobalSuggestions(results);
-      } catch (error: any) {
-        setGlobalError(error.message || 'Unable to search songs right now.');
-      } finally {
-        setGlobalLoading(false);
-      }
-    };
-
-    const timer = setTimeout(run, 350);
-    return () => clearTimeout(timer);
-  }, [globalQuery]);
-
-  useEffect(() => {
-    const run = async () => {
-      const q = youtubeQuery.trim();
-      if (q.length < 2) {
-        setYoutubeResults([]);
-        setYoutubeError('');
-        return;
-      }
-
-      setYoutubeLoading(true);
-      setYoutubeError('');
-      try {
-        const results = await searchYouTubeVideos(q);
-        setYoutubeResults(results);
-      } catch (error: any) {
-        setYoutubeError(error.message || 'Unable to search YouTube right now.');
-      } finally {
-        setYoutubeLoading(false);
-      }
-    };
-
-    const timer = setTimeout(run, 350);
-    return () => clearTimeout(timer);
-  }, [youtubeQuery]);
-
-  // Fetch user uploads on mount
-  useEffect(() => {
-    const fetchUserBhajans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('user_uploads')
-          .select('*')
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Error fetching user bhajans:', error);
-        } else if (data) {
-          setUserBhajans(data as UserBhajan[]);
-        }
-      } catch (err) {
-        console.error('Error fetching user bhajans:', err);
-      } finally {
-        setLoadingUserBhajans(false);
-      }
-    };
-
-    fetchUserBhajans();
-  }, []);
-
-  // Trigger lyrics fallback when local results are empty
-  useEffect(() => {
-    if (activeMode === 'bhajans' && query.trim() && results.length === 0) {
-      lyricsFallback.searchLyrics(query);
-      setShowFallbackLyrics(true);
-    } else {
-      setShowFallbackLyrics(false);
-    }
-  }, [results.length, query, activeMode]);
-
+  // Define results BEFORE using it in useEffect dependency arrays
   const results = useMemo(() => {
     // Keep a stable source key so React list keys are always unique.
     const staticBhajans = bhajans.map((b) => ({
@@ -213,26 +125,69 @@ export default function SearchPage() {
     return filtered;
   }, [query, selectedDeity, userBhajans, allDeities]);
 
+  useEffect(() => {
+    const run = async () => {
+      const q = youtubeQuery.trim();
+      if (q.length < 2) {
+        setYoutubeResults([]);
+        setYoutubeError('');
+        return;
+      }
+
+      setYoutubeLoading(true);
+      setYoutubeError('');
+      try {
+        const results = await searchYouTubeVideos(q);
+        setYoutubeResults(results);
+      } catch (error: any) {
+        setYoutubeError(error.message || 'Unable to search YouTube right now.');
+      } finally {
+        setYoutubeLoading(false);
+      }
+    };
+
+    const timer = setTimeout(run, 350);
+    return () => clearTimeout(timer);
+  }, [youtubeQuery]);
+
+  // Fetch user uploads on mount
+  useEffect(() => {
+    const fetchUserBhajans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_uploads')
+          .select('*')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching user bhajans:', error);
+        } else if (data) {
+          setUserBhajans(data as UserBhajan[]);
+        }
+      } catch (err) {
+        console.error('Error fetching user bhajans:', err);
+      } finally {
+        setLoadingUserBhajans(false);
+      }
+    };
+
+    fetchUserBhajans();
+  }, []);
+
+  // Disabled: Lyrics fallback search causing API errors
+  // TODO: Re-enable when we want to support external lyrics search again
+  // useEffect(() => {
+  //   if (activeMode === 'bhajans' && query.trim() && results.length === 0) {
+  //     lyricsFallback.searchLyrics(query);
+  //     setShowFallbackLyrics(true);
+  //   } else {
+  //     setShowFallbackLyrics(false);
+  //   }
+  // }, [results.length, query, activeMode]);
+
   const handleDeityFilter = (slug: string) => {
     setSelectedDeity(slug === selectedDeity ? "" : slug);
-  };
-
-  const handleSelectSong = async (song: SongSuggestion) => {
-    setSelectedSong(song);
-    setGlobalLyrics('');
-    setGlobalLyricsSource('');
-    setGlobalError('');
-    setGlobalLyricsLoading(true);
-
-    try {
-      const result: LyricsResult = await fetchGlobalLyricsWithSource(song.title, song.artist);
-      setGlobalLyrics(result.lyrics);
-      setGlobalLyricsSource(result.source);
-    } catch (error: any) {
-      setGlobalError(error.message || 'Lyrics not available for this selection.');
-    } finally {
-      setGlobalLyricsLoading(false);
-    }
   };
 
   return (
@@ -280,16 +235,6 @@ export default function SearchPage() {
               <BookText className="w-4 h-4" /> Bhajans In App
             </button>
             <button
-              onClick={() => setActiveMode('global')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
-                activeMode === 'global'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card text-foreground border-border hover:border-primary'
-              }`}
-            >
-              <Globe2 className="w-4 h-4" /> Global Song Lyrics
-            </button>
-            <button
               onClick={() => setActiveMode('youtube')}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${
                 activeMode === 'youtube'
@@ -311,12 +256,10 @@ export default function SearchPage() {
             <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
             <input
               type="text"
-              value={activeMode === 'bhajans' ? query : activeMode === 'global' ? globalQuery : youtubeQuery}
+              value={activeMode === 'bhajans' ? query : youtubeQuery}
               onChange={(e) => {
                 if (activeMode === 'bhajans') {
                   setQuery(e.target.value);
-                } else if (activeMode === 'global') {
-                  setGlobalQuery(e.target.value);
                 } else {
                   setYoutubeQuery(e.target.value);
                 }
@@ -324,9 +267,7 @@ export default function SearchPage() {
               placeholder={
                 activeMode === 'bhajans'
                   ? 'Search by title or tags...'
-                  : activeMode === 'global'
-                    ? 'Search any song in the world (title, artist)...'
-                    : 'Search bhajans and songs on YouTube...'
+                  : 'Search bhajans and songs on YouTube...'
               }
               className="w-full pl-14 pr-6 py-4 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 touch-target"
               autoFocus
@@ -404,7 +345,13 @@ export default function SearchPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + index * 0.05 }}
                     >
-                      <BhajanCard bhajan={bhajan} />
+                      <BhajanCard
+                        bhajan={bhajan}
+                        onCardClick={(clickedBhajan) => {
+                          setSelectedBhajanForDetail(clickedBhajan);
+                          setIsDetailModalOpen(true);
+                        }}
+                      />
                     </motion.div>
                   ))}
                 </div>
@@ -528,78 +475,6 @@ export default function SearchPage() {
                 </motion.div>
               )}
             </>
-          ) : activeMode === 'global' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-card border border-border rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Music2 className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-semibold">Song Results</h2>
-                </div>
-                {globalLoading ? (
-                  <div className="py-8 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  </div>
-                ) : globalSuggestions.length > 0 ? (
-                  <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
-                    {globalSuggestions.map((song) => (
-                      <button
-                        key={song.id}
-                        onClick={() => handleSelectSong(song)}
-                        className={`w-full text-left p-3 rounded-xl border transition-colors ${
-                          selectedSong?.id === song.id
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/60'
-                        }`}
-                      >
-                        <p className="font-semibold text-foreground">{song.title}</p>
-                        <p className="text-sm text-muted-foreground">{song.artist}</p>
-                        {song.album && (
-                          <p className="text-xs text-muted-foreground mt-1">Album: {song.album}</p>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground py-6">
-                    Search for any song name to get suggestions.
-                  </p>
-                )}
-              </div>
-
-              <div className="bg-card border border-border rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <BookText className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-semibold">Lyrics</h2>
-                </div>
-
-                {selectedSong && (
-                  <div className="mb-3 space-y-1">
-                    <p className="text-sm text-muted-foreground">
-                      Showing: <span className="text-foreground font-medium">{selectedSong.title}</span> by {selectedSong.artist}
-                    </p>
-                    {globalLyricsSource && (
-                      <p className="text-xs text-muted-foreground">Source: {globalLyricsSource}</p>
-                    )}
-                  </div>
-                )}
-
-                {globalLyricsLoading ? (
-                  <div className="py-10 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                  </div>
-                ) : globalError ? (
-                  <p className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">{globalError}</p>
-                ) : globalLyrics ? (
-                  <pre className="whitespace-pre-wrap text-base leading-relaxed max-h-[520px] overflow-y-auto p-3 rounded-xl bg-muted/50">
-                    {globalLyrics}
-                  </pre>
-                ) : (
-                  <p className="text-muted-foreground py-6">
-                    Pick a song from the left side to load lyrics.
-                  </p>
-                )}
-              </div>
-            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-card border border-border rounded-2xl p-5">
@@ -745,6 +620,17 @@ export default function SearchPage() {
           </Dialog>
         </div>
       </section>
+
+      {/* Bhajan Detail Modal */}
+      <BhajanDetailModal
+        bhajan={selectedBhajanForDetail}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedBhajanForDetail(null);
+        }}
+        allBhajans={results}
+      />
 
       <Footer />
     </div>

@@ -4,7 +4,24 @@
  */
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { AssistantContext } from '@/components/AIAssistant';
+
+/**
+ * Context passed from search or other components
+ * Allows assistant to provide grounded, personalized recommendations
+ */
+export interface AssistantContext {
+  searchQuery?: string; // What user searched for
+  searchResults?: Array<{
+    title: string;
+    source: "local" | "cache" | "lrclib" | "lyrics.ovh" | "backend_fallback";
+    confidence?: number;
+  }>;
+  recentBhajans?: Array<{
+    title: string;
+    deity?: string;
+  }>;
+  availableLyricsLocally?: boolean;
+}
 
 interface AssistantContextProviderState {
   context: AssistantContext | null;

@@ -50,6 +50,27 @@ export const getTrendingBhajans = (period: string) => {
     .order('play_count', { ascending: false });
 };
 
+export const searchUserBhajans = async (searchQuery: string, limit: number = 10) => {
+  const client = supabase as any;
+  const searchTerm = searchQuery.toLowerCase().trim();
+
+  const { data, error } = await client
+    .from('user_uploads')
+    .select('*')
+    .or(`status.eq.approved,status.is.null`)
+    .or(
+      `title.ilike.%${searchTerm}%,title_hindi.ilike.%${searchTerm}%,singer_name.ilike.%${searchTerm}%,lyrics_hindi.ilike.%${searchTerm}%`
+    )
+    .limit(limit);
+
+  if (error) {
+    console.error('Error searching bhajans:', error);
+    return [];
+  }
+
+  return data || [];
+};
+
 export default queryUserUploads;
 
 // ============= Lyrics Cache Helpers =============
