@@ -17,6 +17,7 @@ export interface Bhajan {
   deityId: number;
   lyricsHindi: string;
   lyricsTransliteration: string;
+  imageUrl?: string;
   singerName: string;
   composerName?: string;
   playCount: number;

@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { languageOptions, useLanguage } from "@/hooks/useLanguage";
+import { useLanguage } from "@/hooks/useLanguage";
+import { languageOptions } from "@/constants/languageOptions";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);

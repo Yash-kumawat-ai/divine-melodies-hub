@@ -40,7 +40,6 @@ function AppContent() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/browse" element={<Index />} />
           <Route path="/all-bhajans" element={<AllBhajans />} />
           <Route path="/recent-bhajans" element={<RecentBhajans />} />
           <Route path="/all-deities" element={<AllDeities />} />

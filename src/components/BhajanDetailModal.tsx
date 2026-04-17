@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
 import {
@@ -88,6 +89,12 @@ export default function BhajanDetailModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Hidden DialogTitle for accessibility */}
+        <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
+        <DialogDescription className="sr-only">
+          {bhajan.titleHindi} by {bhajan.singerName}
+        </DialogDescription>
+        
         {/* Header */}
         <div className={`${deity?.colorClass ?? 'bg-primary'} p-6 text-white`}>
           <div className="flex items-start justify-between gap-4">
@@ -217,6 +224,7 @@ export default function BhajanDetailModal({
               lyricsHindi={bhajan.lyricsHindi}
               lyricsTransliteration={bhajan.lyricsTransliteration}
               singerName={bhajan.singerName}
+              imageUrl={bhajan.imageUrl}
             />
           </motion.div>
 

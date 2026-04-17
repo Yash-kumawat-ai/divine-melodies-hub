@@ -10,6 +10,7 @@ import { getFeaturedBhajans } from "@/data/bhajans";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface UserBhajan {
   id: string;
@@ -27,6 +28,7 @@ interface UserBhajan {
 }
 
 const Index = () => {
+  const { t } = useLanguage();
   const featured = getFeaturedBhajans();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +75,7 @@ const Index = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="text-gradient-saffron">Bhajan Sangrah</span>
+            <span className="text-gradient-saffron">{t('bhajansSandhya')}</span>
           </motion.h1>
           <motion.p
             className="hindi-text text-2xl md:text-3xl text-foreground/80 mb-2"
@@ -89,7 +91,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.25 }}
           >
-            Your complete devotional music collection — lyrics, audio & more
+            {t('completeDevotionalMusic')}
           </motion.p>
           <SearchBar />
         </div>
@@ -98,14 +100,15 @@ const Index = () => {
       {/* Deity Grid */}
       <DeityGrid />
 
+
       {/* Featured Bhajans */}
       <section className="py-16 px-4 bg-card/50">
         <div className="container mx-auto max-w-6xl">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
-            Featured Bhajans
+            {t('featuredBhajans')}
           </h2>
           <p className="text-center text-muted-foreground text-lg mb-10 hindi-text">
-            लोकप्रिय भजन
+            {t('popularBhajans')}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {featured.map((bhajan) => (
@@ -120,10 +123,10 @@ const Index = () => {
         <section className="py-16 px-4 bg-background">
           <div className="container mx-auto max-w-6xl">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
-              Community Bhajans
+              {t('communityBhajans')}
             </h2>
             <p className="text-center text-muted-foreground text-lg mb-10 hindi-text">
-              समुदाय द्वारा साझा किए गए भजन
+              {t('sharedByOurCommunity')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userBhajans.map((bhajan) => {

@@ -2,18 +2,20 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { deities } from "@/data/bhajans";
 import { ChevronRight } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function DeityGrid() {
+  const { t } = useLanguage();
   const displayDeities = deities.slice(0, 4); // Show only first 4 deities
   
   return (
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
-          Browse by Deity
+          {t('browseByDeity')}
         </h2>
         <p className="text-center text-muted-foreground text-lg mb-10 hindi-text">
-          देवता के अनुसार भजन खोजें
+          {t('devotionalSongs')}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {displayDeities.map((deity, i) => (
@@ -42,7 +44,7 @@ export default function DeityGrid() {
                   {deity.name}
                 </h3>
                 <p className="hindi-text text-lg text-muted-foreground mt-1">{deity.nameHindi}</p>
-                <p className="text-sm text-muted-foreground mt-2">{deity.bhajanCount} bhajans</p>
+                <p className="text-sm text-muted-foreground mt-2">{deity.bhajanCount} {t('bhajansCount')}</p>
               </Link>
             </motion.div>
           ))}
@@ -55,7 +57,7 @@ export default function DeityGrid() {
               to="/all-deities"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all touch-target"
             >
-              See More Deities
+              {t('allDeities')}
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>

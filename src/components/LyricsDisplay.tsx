@@ -7,6 +7,7 @@ interface LyricsDisplayProps {
   lyricsHindi: string;
   lyricsTransliteration: string;
   singerName: string;
+  imageUrl?: string;
 }
 
 export default function LyricsDisplay({
@@ -14,11 +15,19 @@ export default function LyricsDisplay({
   lyricsHindi,
   lyricsTransliteration,
   singerName,
+  imageUrl,
 }: LyricsDisplayProps) {
   const [fontSize, setFontSize] = useState(16);
   const [showTransliteration, setShowTransliteration] = useState(true);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const trimmedLyrics = (lyricsHindi || '').trim();
+  const looksLikeUrl = /^https?:\/\//i.test(trimmedLyrics);
+  const looksLikeImageUrl =
+    looksLikeUrl &&
+    (/\.(png|jpe?g|webp|gif|svg)(\?|$)/i.test(trimmedLyrics) || trimmedLyrics.includes('cloudinary.com'));
+  const resolvedImageUrl = (imageUrl || '').trim() || (looksLikeImageUrl ? trimmedLyrics : '');
+  const hideLyricsText = !trimmedLyrics || (resolvedImageUrl && looksLikeImageUrl && trimmedLyrics === resolvedImageUrl);
 
   const handleCopyLyrics = async () => {
     try {
@@ -130,13 +139,32 @@ export default function LyricsDisplay({
 
       {/* Lyrics display */}
       <div className="space-y-4">
+        {resolvedImageUrl && (
+          <div className="rounded-xl border border-border bg-card p-4">
+            <img
+              src={resolvedImageUrl}
+              alt="Lyrics"
+              className="w-full rounded-lg"
+              loading="lazy"
+            />
+          </div>
+        )}
+
         {/* Hindi lyrics */}
-        <div
-          className="whitespace-pre-wrap leading-relaxed p-6 rounded-xl bg-muted/50 font-hindi break-words"
-          style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}
-        >
-          {lyricsHindi}
-        </div>
+        {!hideLyricsText && (
+          <div
+            className="whitespace-pre-wrap leading-relaxed p-6 rounded-xl bg-muted/50 font-hindi break-words"
+            style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}
+          >
+            {lyricsHindi}
+          </div>
+        )}
+
+        {hideLyricsText && !resolvedImageUrl && (
+          <div className="p-6 rounded-xl bg-muted/50 text-muted-foreground">
+            Lyrics text is not available yet.
+          </div>
+        )}
 
         {/* Transliteration */}
         {showTransliteration && lyricsTransliteration && (

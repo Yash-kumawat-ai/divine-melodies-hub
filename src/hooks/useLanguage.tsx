@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-type SupportedLanguage = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta';
+export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta';
 
 type TranslationKey =
   | 'home'
@@ -21,7 +21,67 @@ type TranslationKey =
   | 'selectGodForBhajan'
   | 'addAnotherGod'
   | 'addDeityHint'
-  | 'changeGod';
+  | 'changeGod'
+  | 'bhajansCount'
+  | 'allBhajans'
+  | 'browseOurCollection'
+  | 'findLyricsAndMeaning'
+  | 'bhajansSandhya'
+  | 'completeDevotionalMusic'
+  | 'featuredBhajans'
+  | 'popularBhajans'
+  | 'communityBhajans'
+  | 'sharedByOurCommunity'
+  | 'allDeities'
+  | 'exploreDeities'
+  | 'browseByDeity'
+  | 'devotionalSongs'
+  | 'recentBhajans'
+  | 'latestUploads'
+  | 'trending'
+  | 'trendingHour'
+  | 'trendingDaily'
+  | 'trendingWeekly'
+  | 'trendingAllTime'
+  | 'plays'
+  | 'rating'
+  | 'play'
+  | 'viewDetails'
+  | 'noResults'
+  | 'tryAdjustingFilters'
+  | 'allRatings'
+  | 'stars'
+  | 'latest'
+  | 'mostPlayed'
+  | 'highestRated'
+  | 'sortBy'
+  | 'filterByDeity'
+  | 'clearFilters'
+  | 'showing'
+  | 'of'
+  | 'notifications'
+  | 'whatsapp'
+  | 'telegram'
+  | 'email'
+  | 'copyLink'
+  | 'copied'
+  | 'deity'
+  | 'singer'
+  | 'tags'
+  | 'relatedBhajans'
+  | 'shareOnWhatsapp'
+  | 'shareOnTelegram'
+  | 'shareViaEmail'
+  | 'copyShareLink'
+  | 'linkCopied'
+  | 'kirtanAi'
+  | 'elderlyAssistant'
+  | 'uploadBhajan'
+  | 'adminModeration'
+  | 'adminAccounts'
+  | 'auditLog'
+  | 'admin'
+  | 'setProfilePhoto';
 
 const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = {
   en: {
@@ -44,6 +104,66 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'Add Another God',
     addDeityHint: 'Add a deity not in the list',
     changeGod: 'Change God',
+    bhajansCount: 'Bhajans',
+    allBhajans: 'All Bhajans',
+    browseOurCollection: 'Browse our collection of sacred songs, stotrams, and mantras',
+    findLyricsAndMeaning: 'Find the lyrics and meaning for your daily devotion',
+    bhajansSandhya: 'Bhajan Sangrah',
+    completeDevotionalMusic: 'Your complete devotional music collection — lyrics, audio & more',
+    featuredBhajans: 'Featured Bhajans',
+    popularBhajans: 'लोकप्रिय भजन',
+    communityBhajans: 'Community Bhajans',
+    sharedByOurCommunity: 'समुदाय द्वारा साझा किए गए भजन',
+    allDeities: 'All Deities',
+    exploreDeities: 'Explore the divine across traditions and stories',
+    browseByDeity: 'Browse by Deity',
+    devotionalSongs: 'देवता के अनुसार भजन खोजें',
+    recentBhajans: 'Recent Bhajans',
+    latestUploads: 'Latest uploads from our community',
+    trending: 'Trending',
+    trendingHour: 'Trending This Hour',
+    trendingDaily: 'Trending Today',
+    trendingWeekly: 'Trending This Week',
+    trendingAllTime: 'All Time Trending',
+    plays: 'plays',
+    rating: 'rating',
+    play: 'Play',
+    viewDetails: 'View Details',
+    noResults: 'No bhajans found',
+    tryAdjustingFilters: 'Try adjusting your filters or search terms',
+    allRatings: 'All Ratings',
+    stars: 'Stars',
+    latest: 'Latest',
+    mostPlayed: 'Most Played',
+    highestRated: 'Highest Rated',
+    sortBy: 'Sort By',
+    filterByDeity: 'Filter By Deity',
+    clearFilters: 'Clear',
+    showing: 'Showing',
+    of: 'of',
+    notifications: 'Notifications',
+    whatsapp: 'WhatsApp',
+    telegram: 'Telegram',
+    email: 'Email',
+    copyLink: 'Copy Link',
+    copied: 'Copied!',
+    deity: 'Deity',
+    singer: 'Singer',
+    tags: 'Tags',
+    relatedBhajans: 'Related Bhajans',
+    shareOnWhatsapp: 'Share on WhatsApp',
+    shareOnTelegram: 'Share on Telegram',
+    shareViaEmail: 'Share via Email',
+    copyShareLink: 'Copy link',
+    linkCopied: 'Link copied!',
+    kirtanAi: 'Kirtan AI',
+    elderlyAssistant: 'Elderly Assistant',
+    uploadBhajan: 'Upload',
+    adminModeration: 'Moderation Queue',
+    adminAccounts: 'Admin Accounts',
+    auditLog: 'Audit Log',
+    admin: 'Admin',
+    setProfilePhoto: 'Set profile photo',
   },
   hi: {
     home: 'होम',
@@ -65,6 +185,66 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'एक और भगवान जोड़ें',
     addDeityHint: 'सूची में न होने पर नया जोड़ें',
     changeGod: 'भगवान बदलें',
+    bhajansCount: 'भजन',
+    allBhajans: 'सभी भजन',
+    browseOurCollection: 'पवित्र गीतों, स्तोत्रों और मंत्रों का हमारा संग्रह ब्राउज़ करें',
+    findLyricsAndMeaning: 'अपनी दैनिक पूजा के लिए गीतों और अर्थ खोजें',
+    bhajansSandhya: 'भजन संग्रह',
+    completeDevotionalMusic: 'आपका पूर्ण भक्तिपूर्ण संगीत संग्रह — गीत, ऑडियो और अधिक',
+    featuredBhajans: 'विशेष भजन',
+    popularBhajans: 'लोकप्रिय भजन',
+    communityBhajans: 'समुदाय भजन',
+    sharedByOurCommunity: 'समुदाय द्वारा साझा किए गए भजन',
+    allDeities: 'सभी देवता',
+    exploreDeities: 'परंपराओं और कहानियों के साथ दिव्य का अन्वेषण करें',
+    browseByDeity: 'देवता के अनुसार ब्राउज़ करें',
+    devotionalSongs: 'देवता के अनुसार भजन खोजें',
+    recentBhajans: 'हाल के भजन',
+    latestUploads: 'हमारे समुदाय से नवीनतम अपलोड',
+    trending: 'ट्रेंडिंग',
+    trendingHour: 'इस घंटे ट्रेंडिंग',
+    trendingDaily: 'आज ट्रेंडिंग',
+    trendingWeekly: 'इस हफ्ते ट्रेंडिंग',
+    trendingAllTime: 'सभी समय की ट्रेंडिंग',
+    plays: 'बार चलाया गया',
+    rating: 'रेटिंग',
+    play: 'चलाएं',
+    viewDetails: 'विवरण देखें',
+    noResults: 'कोई भजन नहीं मिला',
+    tryAdjustingFilters: 'अपने फ़िल्टर या खोज शर्तों को समायोजित करने का प्रयास करें',
+    allRatings: 'सभी रेटिंग',
+    stars: 'तारके',
+    latest: 'नवीनतम',
+    mostPlayed: 'सबसे अधिक चलाया गया',
+    highestRated: 'सबसे अधिक रेटेड',
+    sortBy: 'इसके द्वारा सॉर्ट करें',
+    filterByDeity: 'देवता के अनुसार फ़िल्टर करें',
+    clearFilters: 'साफ़ करें',
+    showing: 'दिखा रहा है',
+    of: 'का',
+    notifications: 'सूचनाएं',
+    whatsapp: 'व्हाट्सएप',
+    telegram: 'टेलीग्राम',
+    email: 'ईमेल',
+    copyLink: 'लिंक कॉपी करें',
+    copied: 'कॉपी किया गया!',
+    deity: 'देवता',
+    singer: 'गायक',
+    tags: 'टैग',
+    relatedBhajans: 'संबंधित भजन',
+    shareOnWhatsapp: 'व्हाट्सएप पर साझा करें',
+    shareOnTelegram: 'टेलीग्राम पर साझा करें',
+    shareViaEmail: 'ईमेल के माध्यम से साझा करें',
+    copyShareLink: 'लिंक कॉपी करें',
+    linkCopied: 'लिंक कॉपी किया गया!',
+    kirtanAi: 'कीर्तन एआई',
+    elderlyAssistant: 'बुजुर्ग सहायक',
+    uploadBhajan: 'अपलोड',
+    adminModeration: 'संयोजन कतार',
+    adminAccounts: 'प्रशासक खाते',
+    auditLog: 'ऑडिट लॉग',
+    admin: 'प्रशासक',
+    setProfilePhoto: 'प्रोफाइल फोटो सेट करें',
   },
   gu: {
     home: 'હોમ',
@@ -86,6 +266,7 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'બીજા ભગવાન ઉમેરો',
     addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
     changeGod: 'ભગવાન બદલો',
+    bhajansCount: 'ભજનો',
   },
   mr: {
     home: 'मुख्यपृष्ठ',
@@ -107,6 +288,7 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'आणखी एक देव जोडा',
     addDeityHint: 'यादीत नसल्यास नवीन जोडा',
     changeGod: 'देव बदला',
+    bhajansCount: 'भजने',
   },
   bn: {
     home: 'হোম',
@@ -128,6 +310,7 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন',
     addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
     changeGod: 'ঈশ্বর পরিবর্তন করুন',
+    bhajansCount: 'ভজন',
   },
   ta: {
     home: 'முகப்பு',
@@ -149,6 +332,7 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     addAnotherGod: 'மற்றொரு கடவுளை சேர்',
     addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
     changeGod: 'கடவுளை மாற்று',
+    bhajansCount: 'பஜன்கள்',
   },
 };
 
@@ -192,12 +376,3 @@ export function useLanguage() {
   }
   return context;
 }
-
-export const languageOptions: Array<{ code: SupportedLanguage; label: string }> = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'Hindi' },
-  { code: 'gu', label: 'Gujarati' },
-  { code: 'mr', label: 'Marathi' },
-  { code: 'bn', label: 'Bengali' },
-  { code: 'ta', label: 'Tamil' },
-];

@@ -81,6 +81,7 @@ export default function SearchPage() {
       singerName: ub.singer_name,
       composerName: ub.composer_name || '',
       youtubeUrl: ub.youtube_url || '',
+      imageUrl: ub.image_url || '',
       lyricsHindi: ub.lyrics_hindi,
       lyricsTransliteration: '',
       playCount: 0,

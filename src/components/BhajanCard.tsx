@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface BhajanCardProps {
@@ -45,15 +46,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
       <div className={`h-1.5 ${deity?.colorClass ?? 'bg-primary'}`} />
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
-          {deity?.imageUrl ? (
-            <img 
-              src={deity.imageUrl} 
-              alt={deity?.name}
-              className="w-8 h-8 rounded-full object-cover border border-border"
-            />
-          ) : (
-            <span className="text-lg">{deity?.emoji}</span>
-          )}
+          <span className="text-lg">{deity?.emoji}</span>
           <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
         </div>
         <h3 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
@@ -93,6 +86,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle className="font-display text-xl">{bhajan.title}</DialogTitle>
+              <DialogDescription>
+                {bhajan.titleHindi} by {bhajan.singerName}
+              </DialogDescription>
             </DialogHeader>
             <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
               <iframe
