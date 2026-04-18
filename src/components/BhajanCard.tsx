@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface BhajanCardProps {
   bhajan: Bhajan;
@@ -18,6 +19,7 @@ interface BhajanCardProps {
 export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const { t, language } = useLanguage();
 
   const getYouTubeEmbedUrl = (url: string) => {
     const match = url.match(
@@ -53,7 +55,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           {bhajan.title}
         </h3>
         <p className="hindi-text text-base text-muted-foreground mt-1">{bhajan.titleHindi}</p>
-        <p className="text-sm text-muted-foreground mt-2">by {bhajan.singerName}</p>
+        <p className="text-sm text-muted-foreground mt-2">{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -74,9 +76,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
               setIsPlayerOpen(true);
             }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-            aria-label={canPlayHere ? `Play ${bhajan.title}` : `Open ${bhajan.title}`}
+            aria-label={canPlayHere ? `${t('play')} ${bhajan.title}` : `${language === 'hi' ? 'खोलें' : 'Open'} ${bhajan.title}`}
           >
-            <Play className="w-4 h-4" /> Play
+            <Play className="w-4 h-4" /> {t('play')}
           </button>
         </div>
       </div>
@@ -87,7 +89,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
             <DialogHeader>
               <DialogTitle className="font-display text-xl">{bhajan.title}</DialogTitle>
               <DialogDescription>
-                {bhajan.titleHindi} by {bhajan.singerName}
+                {bhajan.titleHindi} {language === 'hi' ? '• गायक:' : 'by'} {bhajan.singerName}
               </DialogDescription>
             </DialogHeader>
             <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
@@ -95,7 +97,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
                 src={embedUrl || undefined}
                 title={`YouTube player for ${bhajan.title}`}
                 className="h-full w-full"
-                allow="autoplay; encrypted-media; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
               />
             </div>

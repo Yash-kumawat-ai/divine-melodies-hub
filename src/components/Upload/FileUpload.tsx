@@ -3,7 +3,6 @@ import { Upload, X, Image as ImageIcon, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { uploadToCloudinary } from '@/lib/cloudinary';
-import { supabase } from '@/integrations/supabase/client';
 
 interface LyricsUploadProps {
   onLyricsSelect: (url: string, type: 'image' | 'text', content: string) => void;
@@ -18,7 +17,7 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
   const [uploadedUrl, setUploadedUrl] = useState<string>('');
   const [textLyrics, setTextLyrics] = useState('');
   const [error, setError] = useState('');
-  const MAX_IMAGE_SIZE_MB = 10;
+  const MAX_IMAGE_SIZE_MB = 5;
   const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   const uploadFile = async (file: File) => {
@@ -27,21 +26,9 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
     onLoading?.(true);
 
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, 'lyrics');
       if (!url) {
         throw new Error('Failed to get upload URL from Cloudinary');
-      }
-
-      const { data: scanResult, error: scanError } = await supabase.functions.invoke('scan-upload', {
-        body: { fileUrl: url },
-      });
-
-      if (scanError) {
-        throw new Error('Security scan failed. Please try again later.');
-      }
-
-      if (!scanResult?.clean) {
-        throw new Error(scanResult?.reason || 'Uploaded file did not pass security checks');
       }
 
       setUploadedUrl(url);
@@ -208,7 +195,7 @@ export default function LyricsUpload({ onLyricsSelect, onLoading }: LyricsUpload
                   Drag and drop image of lyrics or click to select
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Supported formats: JPG, PNG, WebP (max 10MB)
+                  Supported formats: JPG, PNG, WebP (max 5MB)
                 </p>
               </div>
 

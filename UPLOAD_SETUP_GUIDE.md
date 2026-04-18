@@ -108,7 +108,7 @@ User Upload Flow:
 Already set in `.env.local`:
 - ✅ `VITE_SUPABASE_URL`
 - ✅ `VITE_SUPABASE_PUBLISHABLE_KEY`
-- ✅ `VITE_OPENAI_API_KEY`
+- ✅ No server-only secrets are stored in frontend env files
 
 ---
 

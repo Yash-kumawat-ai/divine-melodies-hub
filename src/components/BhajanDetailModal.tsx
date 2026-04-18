@@ -29,6 +29,7 @@ import {
 import { getRelatedBhajans } from '@/lib/searchAlgorithm';
 import { Bhajan, getDeityById } from '@/data/bhajans';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface BhajanDetailModalProps {
   bhajan: Bhajan | null;
@@ -45,6 +46,7 @@ export default function BhajanDetailModal({
 }: BhajanDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
 
   if (!bhajan) return null;
 
@@ -68,8 +70,8 @@ export default function BhajanDetailModal({
           if (success) {
             setCopied(true);
             toast({
-              title: 'Link copied!',
-              description: 'Bhajan link copied to clipboard',
+              title: t('linkCopied'),
+              description: language === 'hi' ? 'भजन लिंक क्लिपबोर्ड पर कॉपी हो गया' : 'Bhajan link copied to clipboard',
               duration: 2000,
             });
             setTimeout(() => setCopied(false), 2000);
@@ -79,8 +81,8 @@ export default function BhajanDetailModal({
     } catch (error) {
       console.error(`Failed to share on ${platform}:`, error);
       toast({
-        title: 'Share failed',
-        description: `Could not share on ${platform}`,
+        title: language === 'hi' ? 'साझा करना विफल' : 'Share failed',
+        description: language === 'hi' ? `${platform} पर साझा नहीं हो सका` : `Could not share on ${platform}`,
         variant: 'destructive',
       });
     }
@@ -92,7 +94,7 @@ export default function BhajanDetailModal({
         {/* Hidden DialogTitle for accessibility */}
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
         <DialogDescription className="sr-only">
-          {bhajan.titleHindi} by {bhajan.singerName}
+          {bhajan.titleHindi} {language === 'hi' ? '• गायक:' : 'by'} {bhajan.singerName}
         </DialogDescription>
         
         {/* Header */}
@@ -106,9 +108,9 @@ export default function BhajanDetailModal({
                   <p className="hindi-text text-xl opacity-90">{bhajan.titleHindi}</p>
                 </div>
               </div>
-              <p className="text-white/80 text-lg">by {bhajan.singerName}</p>
+              <p className="text-white/80 text-lg">{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
               {bhajan.composerName && (
-                <p className="text-white/70 text-sm mt-1">Composer: {bhajan.composerName}</p>
+                <p className="text-white/70 text-sm mt-1">{language === 'hi' ? 'संगीतकार:' : 'Composer:'} {bhajan.composerName}</p>
               )}
             </div>
             <DialogClose className="opacity-70 hover:opacity-100 transition-opacity">
@@ -120,11 +122,11 @@ export default function BhajanDetailModal({
           <div className="flex items-center gap-6 mt-4 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <Play className="w-4 h-4" />
-              <span>{(bhajan.playCount / 1000).toFixed(0)}K plays</span>
+              <span>{(bhajan.playCount / 1000).toFixed(0)}K {t('plays')}</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-4 h-4 fill-white" />
-              <span>{bhajan.rating.toFixed(1)} rating</span>
+              <span>{bhajan.rating.toFixed(1)} {t('rating')}</span>
             </div>
           </div>
         </div>
@@ -141,34 +143,34 @@ export default function BhajanDetailModal({
             <button
               onClick={() => handleShare('whatsapp')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors font-medium text-sm"
-              title="Share on WhatsApp"
+              title={t('shareOnWhatsapp')}
             >
               <MessageCircle className="w-4 h-4" />
-              WhatsApp
+              {t('whatsapp')}
             </button>
             <button
               onClick={() => handleShare('telegram')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 transition-colors font-medium text-sm"
-              title="Share on Telegram"
+              title={t('shareOnTelegram')}
             >
               <Send className="w-4 h-4" />
-              Telegram
+              {t('telegram')}
             </button>
             <button
               onClick={() => handleShare('email')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 transition-colors font-medium text-sm"
-              title="Share via Email"
+              title={t('shareViaEmail')}
             >
               <Mail className="w-4 h-4" />
-              Email
+              {t('email')}
             </button>
             <button
               onClick={() => handleShare('copy')}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium text-sm"
-              title="Copy link"
+              title={t('copyShareLink')}
             >
               <LinkIcon className="w-4 h-4" />
-              {copied ? 'Copied!' : 'Copy Link'}
+              {copied ? t('copied') : t('copyShareLink')}
             </button>
           </motion.div>
 
@@ -180,21 +182,21 @@ export default function BhajanDetailModal({
             transition={{ delay: 0.2 }}
           >
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Deity</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">{t('deity')}</p>
               <p className="text-sm font-medium text-foreground mt-1">{deity?.name}</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Singer</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">{t('singer')}</p>
               <p className="text-sm font-medium text-foreground mt-1">{bhajan.singerName}</p>
             </div>
             {bhajan.composerName && (
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">Composer</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase">{language === 'hi' ? 'संगीतकार' : 'Composer'}</p>
                 <p className="text-sm font-medium text-foreground mt-1">{bhajan.composerName}</p>
               </div>
             )}
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">Tags</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase">{t('tags')}</p>
               <div className="flex flex-wrap gap-1 mt-1">
                 {bhajan.tags.slice(0, 2).map((tag) => (
                   <span
@@ -239,7 +241,7 @@ export default function BhajanDetailModal({
                 <div className="flex items-center gap-2 mb-6">
                   <Music2 className="w-5 h-5 text-primary" />
                   <h3 className="font-display text-2xl font-semibold text-foreground">
-                    Related Bhajans
+                    {t('relatedBhajans')}
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

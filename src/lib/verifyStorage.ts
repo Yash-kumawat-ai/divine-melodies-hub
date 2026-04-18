@@ -69,45 +69,103 @@ export async function verifySub(): Promise<VerificationResult> {
 export async function verifyCloudinary(): Promise<VerificationResult> {
   try {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-    if (!cloudName || !uploadPreset) {
+    if (!cloudName) {
       return {
         component: 'Cloudinary Config',
         status: 'error',
-        message: 'Missing Cloudinary credentials in .env.local',
-        details: { hasCloudName: !!cloudName, hasUploadPreset: !!uploadPreset }
+        message: 'Missing VITE_CLOUDINARY_CLOUD_NAME in .env.local',
+        details: { hasCloudName: !!cloudName }
       };
     }
 
-    // Test connection by making a dummy request
-    const testFormData = new FormData();
-    testFormData.append('file', new Blob(['test'], { type: 'text/plain' }));
-    testFormData.append('upload_preset', uploadPreset);
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: 'POST',
-      body: testFormData,
+    // Probe secure upload edge function and treat expected validation/auth failures as reachable.
+    const { error } = await supabase.functions.invoke('upload-lyric-image', {
+      body: new FormData(),
     });
 
-    if (response.status === 404) {
-      return {
-        component: 'Cloudinary Connection',
-        status: 'error',
-        message: 'Cloud name or upload preset not found',
-        details: { cloudName, uploadPreset }
-      };
+    if (error) {
+      const message = String(error.message || '').toLowerCase();
+      const reachable =
+        message.includes('unauthorized') ||
+        message.includes('file is required') ||
+        message.includes('invalid upload type') ||
+        message.includes('400') ||
+        message.includes('401');
+
+      if (!reachable) {
+        return {
+          component: 'Cloudinary Connection',
+          status: 'error',
+          message: `Secure upload gateway failed: ${error.message}`,
+          details: error,
+        };
+      }
     }
 
     return {
       component: 'Cloudinary Connection',
       status: 'success',
-      message: '✅ Connected to Cloudinary',
-      details: { cloudName, uploadPreset }
+      message: '✅ Secure upload gateway is configured',
+      details: { cloudName, gateway: 'upload-lyric-image' }
     };
   } catch (error: any) {
     return {
       component: 'Cloudinary Config',
+      status: 'error',
+      message: error.message,
+      details: error
+    };
+  }
+}
+
+async function createOnePixelPngBlob(): Promise<Blob | null> {
+  return await new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    canvas.toBlob((blob) => resolve(blob), 'image/png');
+  });
+}
+
+/**
+ * Sample Image Upload (requires user logged in)
+ */
+export async function testImageUpload(): Promise<VerificationResult> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      return {
+        component: 'Image Upload Test',
+        status: 'warning',
+        message: 'Cannot test - user not logged in',
+        details: { requiresAuth: true }
+      };
+    }
+
+    const blob = await createOnePixelPngBlob();
+    if (!blob) {
+      return {
+        component: 'Image Upload Test',
+        status: 'error',
+        message: 'Failed to generate test image blob',
+        details: {},
+      };
+    }
+
+    const file = new File([blob], 'test.png', { type: 'image/png' });
+    const url = await uploadToCloudinary(file, 'lyrics');
+
+    return {
+      component: 'Image Upload Test',
+      status: 'success',
+      message: '✅ Image uploaded successfully via secure gateway',
+      details: { url, size: blob.size },
+    };
+  } catch (error: any) {
+    return {
+      component: 'Image Upload Test',
       status: 'error',
       message: error.message,
       details: error
@@ -244,66 +302,6 @@ export async function getDataCounts(): Promise<VerificationResult[]> {
   }
 
   return results;
-}
-
-/**
- * Sample Image Upload (requires user logged in)
- */
-export async function testImageUpload(): Promise<VerificationResult> {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return {
-        component: 'Image Upload Test',
-        status: 'warning',
-        message: 'Cannot test - user not logged in',
-        details: { requiresAuth: true }
-      };
-    }
-
-    // Create a small test image (1x1 pixel)
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
-      
-      try {
-        const file = new File([blob], 'test.png', { type: 'image/png' });
-        const url = await uploadToCloudinary(file);
-        
-        return {
-          component: 'Image Upload Test',
-          status: 'success',
-          message: `✅ Image uploaded successfully`,
-          details: { url, size: blob.size }
-        };
-      } catch (error: any) {
-        return {
-          component: 'Image Upload Test',
-          status: 'error',
-          message: error.message,
-          details: error
-        };
-      }
-    });
-
-    return {
-      component: 'Image Upload Test',
-      status: 'success',
-      message: 'Test in progress...',
-      details: {}
-    };
-  } catch (error: any) {
-    return {
-      component: 'Image Upload Test',
-      status: 'error',
-      message: error.message,
-      details: error
-    };
-  }
 }
 
 /**

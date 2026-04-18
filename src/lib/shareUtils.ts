@@ -30,7 +30,7 @@ const getShareText = (bhajan: Bhajan) => {
 export const shareOnWhatsApp = (bhajan: Bhajan) => {
   const text = encodeURIComponent(`${getShareText(bhajan)}\n${getBhajanUrl(bhajan)}`);
   const whatsappUrl = `https://wa.me/?text=${text}`;
-  window.open(whatsappUrl, '_blank', 'width=600,height=400');
+  window.open(whatsappUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
 };
 
 /**
@@ -39,7 +39,7 @@ export const shareOnWhatsApp = (bhajan: Bhajan) => {
 export const shareOnTelegram = (bhajan: Bhajan) => {
   const text = encodeURIComponent(`${getShareText(bhajan)}\n${getBhajanUrl(bhajan)}`);
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(getBhajanUrl(bhajan))}&text=${text}`;
-  window.open(telegramUrl, '_blank', 'width=600,height=400');
+  window.open(telegramUrl, '_blank', 'noopener,noreferrer,width=600,height=400');
 };
 
 /**
@@ -51,7 +51,7 @@ export const shareViaEmail = (bhajan: Bhajan) => {
     `I found this beautiful bhajan that I thought you might enjoy:\n\n"${bhajan.title}" (${bhajan.titleHindi})\nSinger: ${bhajan.singerName}\n\nListen here: ${getBhajanUrl(bhajan)}\n\n🙏 Enjoy!`
   );
   const mailtoUrl = `mailto:?subject=${subject}&body=${body}`;
-  window.open(mailtoUrl);
+  window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
 };
 
 /**

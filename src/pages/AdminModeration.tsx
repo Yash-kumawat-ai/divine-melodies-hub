@@ -182,7 +182,9 @@ export default function AdminModeration() {
                           src={`https://www.youtube-nocookie.com/embed/${videoId}`}
                           title={`Preview ${item.title}`}
                           className="w-full h-full"
-                          allow="autoplay; encrypted-media; picture-in-picture"
+                          sandbox="allow-scripts allow-same-origin allow-presentation"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                           allowFullScreen
                         />
                       </div>

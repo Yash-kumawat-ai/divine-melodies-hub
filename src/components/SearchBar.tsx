@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 import VoiceSearchButton from "./VoiceSearchButton";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function SearchBar() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search bhajans, deities, singers..."
+          placeholder={t('searchBhajansOrSingersPlaceholder')}
           className="w-full pl-14 pr-16 py-5 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground touch-target"
         />
         <div className="absolute right-4">
@@ -42,7 +44,7 @@ export default function SearchBar() {
         </div>
       </div>
       <p className="text-center text-sm text-muted-foreground mt-3 hindi-text">
-        भजन, देवता, या गायक खोजें • Search in Hindi or English • 🎤 Voice supported
+        {t('searchHint')}
       </p>
     </motion.form>
   );

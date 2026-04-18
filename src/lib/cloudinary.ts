@@ -1,53 +1,40 @@
-/**
- * Cloudinary image upload utility
- * Uses unsigned uploads - no backend needed
- */
+import { supabase } from '@/integrations/supabase/client';
 
-export async function uploadToCloudinary(file: File): Promise<string> {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-  console.log('Cloudinary config:', { cloudName, uploadPreset });
+export type SecureUploadType = 'lyrics' | 'avatar' | 'deity';
 
-  if (!cloudName) {
-    throw new Error('VITE_CLOUDINARY_CLOUD_NAME not set. Check .env.local file.');
+function validateUploadFile(file: File) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Only JPG, PNG, and WebP files are allowed');
   }
 
-  if (!uploadPreset) {
-    throw new Error('VITE_CLOUDINARY_UPLOAD_PRESET not set. Check .env.local file.');
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error('File exceeds 5MB size limit');
   }
+}
 
-  if (!cloudName.trim()) {
-    throw new Error('VITE_CLOUDINARY_CLOUD_NAME is empty. Update .env.local with your Cloudinary cloud name.');
-  }
-
-  if (!uploadPreset.trim()) {
-    throw new Error('VITE_CLOUDINARY_UPLOAD_PRESET is empty. Update .env.local with your upload preset.');
-  }
+export async function uploadToCloudinary(file: File, uploadType: SecureUploadType = 'lyrics'): Promise<string> {
+  validateUploadFile(file);
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('resource_type', 'auto');
+  formData.append('uploadType', uploadType);
 
-  try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: 'POST',
-      body: formData,
-    });
+  const { data, error } = await supabase.functions.invoke('upload-lyric-image', {
+    body: formData,
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('Cloudinary error:', error);
-      throw new Error(error.error?.message || `Upload failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.secure_url; // Returns HTTPS URL
-  } catch (error: any) {
-    console.error('Upload error details:', error);
-    throw new Error(error.message || 'Failed to upload image to Cloudinary');
+  if (error) {
+    throw new Error(error.message || 'Secure upload gateway failed');
   }
+
+  if (!data?.url || typeof data.url !== 'string') {
+    throw new Error('Upload succeeded but no image URL was returned');
+  }
+
+  return data.url;
 }
 
 /**

@@ -25,6 +25,7 @@ import AIAssistantModal from "./components/AIAssistantModal";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { AssistantContextProvider } from "./hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "./hooks/useAIModal";
+import { ThemeProvider } from "./hooks/useTheme";
 import { bhajans } from "./data/bhajans";
 import { useDeities } from "./hooks/useDeities";
 
@@ -72,17 +73,19 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AssistantContextProvider>
-        <AIModalProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppContent />
-          </TooltipProvider>
-        </AIModalProvider>
-      </AssistantContextProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AssistantContextProvider>
+          <AIModalProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
+          </AIModalProvider>
+        </AssistantContextProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

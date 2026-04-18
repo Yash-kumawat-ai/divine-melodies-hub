@@ -7,9 +7,11 @@ import { deities } from "@/data/bhajans";
 import { useDeities } from "@/hooks/useDeities";
 import { generateDeitySlug } from "@/lib/slugUtils";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function AllDeities() {
   const { deities: allDeities, loading } = useDeities();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,15 +22,15 @@ export default function AllDeities() {
             to="/" 
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 touch-target"
           >
-            <ArrowLeft className="w-5 h-5" /> Back
+            <ArrowLeft className="w-5 h-5" /> {t('back')}
           </Link>
 
           <div className="text-center mb-12">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
-              All Deities
+              {t('allDeities')}
             </h1>
             <p className="text-lg text-muted-foreground hindi-text">
-              सभी देवताओं के भजन देखें
+              {t('allDeitiesSubtitle')}
             </p>
           </div>
 
@@ -65,7 +67,7 @@ export default function AllDeities() {
                     </h3>
                     {deity.isCustom && (
                       <span className="inline-block text-xs px-2 py-1 bg-primary/20 text-primary rounded-full mt-2">
-                        New
+                        {t('new')}
                       </span>
                     )}
                   </Link>

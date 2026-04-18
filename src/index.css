@@ -88,6 +88,12 @@
     --sidebar-accent-foreground: 35 30% 90%;
     --sidebar-border: 20 15% 20%;
     --sidebar-ring: 30 100% 50%;
+
+    --saffron-light: 28 40% 18%;
+    --gold-light: 42 35% 20%;
+    --maroon: 0 45% 45%;
+    --cream: 24 20% 14%;
+    --temple-shadow: 0 12px 40px -12px hsl(0 0% 0% / 0.55);
   }
 }
 
@@ -96,7 +102,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
     font-family: var(--font-body);
     font-size: 18px;
   }
@@ -105,6 +111,31 @@
   }
   .hindi-text {
     font-family: var(--font-hindi);
+  }
+
+  .lang-hi body,
+  .lang-hi p,
+  .lang-hi span,
+  .lang-hi a,
+  .lang-hi button,
+  .lang-hi input,
+  .lang-hi select,
+  .lang-hi textarea,
+  .lang-hi label,
+  .lang-hi li {
+    font-family: var(--font-hindi);
+    letter-spacing: 0.01em;
+  }
+
+  .lang-hi h1,
+  .lang-hi h2,
+  .lang-hi h3,
+  .lang-hi h4,
+  .lang-hi h5,
+  .lang-hi h6 {
+    font-family: var(--font-hindi);
+    letter-spacing: 0.01em;
+    font-weight: 700;
   }
 }
 

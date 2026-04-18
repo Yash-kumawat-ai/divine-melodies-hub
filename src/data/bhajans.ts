@@ -37,6 +37,7 @@ export const deities: Deity[] = [
   { id: 6, slug: 'ganesh', name: 'Ganesh', nameHindi: 'गणेश', description: 'Remover of obstacles', emoji: '🐘', colorClass: 'bg-yellow-500', bhajanCount: 25 },
   { id: 7, slug: 'sai-baba', name: 'Sai Baba', nameHindi: 'साईं बाबा', description: 'Saint of Shirdi', emoji: '✨', colorClass: 'bg-amber-400', bhajanCount: 20 },
   { id: 8, slug: 'lakshmi', name: 'Lakshmi', nameHindi: 'लक्ष्मी', description: 'Goddess of wealth and prosperity', emoji: '🪷', colorClass: 'bg-pink-500', bhajanCount: 22 },
+  { id: 9, slug: 'khatu-shyam', name: 'Khatu Shyam', nameHindi: 'खाटू श्याम', description: 'The compassionate form of Barbarika revered as Shyam Baba', emoji: '🏇', colorClass: 'bg-rose-500', bhajanCount: 12 },
 ];
 
 export const bhajans: Bhajan[] = [

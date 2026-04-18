@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Copy, Check, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface LyricsDisplayProps {
   titleHindi: string;
@@ -21,6 +22,7 @@ export default function LyricsDisplay({
   const [showTransliteration, setShowTransliteration] = useState(true);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { t, language } = useLanguage();
   const trimmedLyrics = (lyricsHindi || '').trim();
   const looksLikeUrl = /^https?:\/\//i.test(trimmedLyrics);
   const looksLikeImageUrl =
@@ -49,15 +51,15 @@ export default function LyricsDisplay({
       
       setCopied(true);
       toast({
-        title: 'Copied!',
-        description: 'Lyrics copied to clipboard',
+        title: t('copied'),
+        description: language === 'hi' ? 'गीत क्लिपबोर्ड पर कॉपी हो गए' : 'Lyrics copied to clipboard',
         duration: 2000,
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to copy lyrics',
+        title: language === 'hi' ? 'त्रुटि' : 'Error',
+        description: language === 'hi' ? 'गीत कॉपी नहीं हो सके' : 'Failed to copy lyrics',
         variant: 'destructive',
       });
     }
@@ -72,15 +74,15 @@ export default function LyricsDisplay({
       <div className="flex items-center justify-between gap-4 pb-4 border-b border-border">
         <div className="flex-1">
           <h3 className="hindi-text text-lg font-semibold text-foreground">{titleHindi}</h3>
-          <p className="text-sm text-muted-foreground mt-1">by {singerName}</p>
+          <p className="text-sm text-muted-foreground mt-1">{language === 'hi' ? 'गायक:' : 'by'} {singerName}</p>
         </div>
         
         <div className="flex items-center gap-2">
           <button
             onClick={decreaseFontSize}
             className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border hover:bg-muted transition-colors"
-            title="Decrease font size"
-            aria-label="Decrease font size"
+            title={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
+            aria-label={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
           >
             <ZoomOut className="w-4 h-4" />
           </button>
@@ -90,8 +92,8 @@ export default function LyricsDisplay({
           <button
             onClick={increaseFontSize}
             className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border hover:bg-muted transition-colors"
-            title="Increase font size"
-            aria-label="Increase font size"
+            title={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
+            aria-label={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
           >
             <ZoomIn className="w-4 h-4" />
           </button>
@@ -99,14 +101,14 @@ export default function LyricsDisplay({
           <button
             onClick={handleCopyLyrics}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            title="Copy lyrics"
+            title={language === 'hi' ? 'गीत कॉपी करें' : 'Copy lyrics'}
           >
             {copied ? (
               <Check className="w-4 h-4" />
             ) : (
               <Copy className="w-4 h-4" />
             )}
-            <span className="text-sm">{copied ? 'Copied' : 'Copy'}</span>
+            <span className="text-sm">{copied ? t('copied') : (language === 'hi' ? 'कॉपी' : 'Copy')}</span>
           </button>
         </div>
       </div>
@@ -122,7 +124,7 @@ export default function LyricsDisplay({
                 : 'bg-muted text-foreground hover:bg-muted/80'
             }`}
           >
-            Hindi Only
+            {language === 'hi' ? 'केवल हिंदी' : 'Hindi Only'}
           </button>
           <button
             onClick={() => setShowTransliteration(true)}
@@ -132,7 +134,7 @@ export default function LyricsDisplay({
                 : 'bg-muted text-foreground hover:bg-muted/80'
             }`}
           >
-            Hindi + Transliteration
+            {language === 'hi' ? 'हिंदी + लिप्यंतरण' : 'Hindi + Transliteration'}
           </button>
         </div>
       )}
@@ -162,7 +164,7 @@ export default function LyricsDisplay({
 
         {hideLyricsText && !resolvedImageUrl && (
           <div className="p-6 rounded-xl bg-muted/50 text-muted-foreground">
-            Lyrics text is not available yet.
+            {language === 'hi' ? 'गीत पाठ अभी उपलब्ध नहीं है।' : 'Lyrics text is not available yet.'}
           </div>
         )}
 
@@ -170,7 +172,7 @@ export default function LyricsDisplay({
         {showTransliteration && lyricsTransliteration && (
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Transliteration (English)
+              {language === 'hi' ? 'लिप्यंतरण (अंग्रेज़ी)' : 'Transliteration (English)'}
             </p>
             <div
               className="whitespace-pre-wrap leading-relaxed p-6 rounded-xl bg-card border border-border/50 break-words"

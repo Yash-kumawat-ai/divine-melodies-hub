@@ -5,6 +5,7 @@ export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta';
 type TranslationKey =
   | 'home'
   | 'browse'
+  | 'recent'
   | 'trending'
   | 'search'
   | 'upload'
@@ -81,12 +82,37 @@ type TranslationKey =
   | 'adminAccounts'
   | 'auditLog'
   | 'admin'
-  | 'setProfilePhoto';
+  | 'setProfilePhoto'
+  | 'back'
+  | 'new'
+  | 'browseAllBhajans'
+  | 'allDeitiesSubtitle'
+  | 'searchBhajansOrSingers'
+  | 'searchHint'
+  | 'browseAllBhajansSubtitle'
+  | 'allLanguages'
+  | 'allOccasions'
+  | 'allMoods'
+  | 'morning'
+  | 'evening'
+  | 'meditation'
+  | 'worship'
+  | 'festival'
+  | 'peaceful'
+  | 'energizing'
+  | 'devotional'
+  | 'celebratory'
+  | 'meditative'
+  | 'searchBhajansOrSingersPlaceholder'
+  | 'noBhajansFound'
+  | 'switchToDarkMode'
+  | 'switchToLightMode';
 
-const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = {
+const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, string>>> = {
   en: {
     home: 'Home',
     browse: 'Browse',
+    recent: 'Recent',
     trending: 'Trending',
     search: 'Search',
     upload: 'Upload',
@@ -120,7 +146,6 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     devotionalSongs: 'देवता के अनुसार भजन खोजें',
     recentBhajans: 'Recent Bhajans',
     latestUploads: 'Latest uploads from our community',
-    trending: 'Trending',
     trendingHour: 'Trending This Hour',
     trendingDaily: 'Trending Today',
     trendingWeekly: 'Trending This Week',
@@ -164,10 +189,35 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     auditLog: 'Audit Log',
     admin: 'Admin',
     setProfilePhoto: 'Set profile photo',
+    back: 'Back',
+    new: 'New',
+    browseAllBhajans: 'Browse All Bhajans',
+    allDeitiesSubtitle: 'View bhajans by all deities',
+    searchBhajansOrSingers: 'Search bhajans or singers...',
+    searchHint: 'Search bhajans, deities, or singers • Search in Hindi or English • Voice supported',
+    browseAllBhajansSubtitle: 'Explore our complete devotional music collection with filters and search',
+    allLanguages: 'All Languages',
+    allOccasions: 'All Occasions',
+    allMoods: 'All Moods',
+    morning: 'Morning',
+    evening: 'Evening',
+    meditation: 'Meditation',
+    worship: 'Worship',
+    festival: 'Festival',
+    peaceful: 'Peaceful',
+    energizing: 'Energizing',
+    devotional: 'Devotional',
+    celebratory: 'Celebratory',
+    meditative: 'Meditative',
+    searchBhajansOrSingersPlaceholder: 'Search bhajans or singers...',
+    noBhajansFound: 'No bhajans found',
+    switchToDarkMode: 'Switch to Dark Mode',
+    switchToLightMode: 'Switch to Light Mode',
   },
   hi: {
     home: 'होम',
     browse: 'भजन सूची',
+    recent: 'नवीन',
     trending: 'ट्रेंडिंग',
     search: 'खोज',
     upload: 'अपलोड',
@@ -201,7 +251,6 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     devotionalSongs: 'देवता के अनुसार भजन खोजें',
     recentBhajans: 'हाल के भजन',
     latestUploads: 'हमारे समुदाय से नवीनतम अपलोड',
-    trending: 'ट्रेंडिंग',
     trendingHour: 'इस घंटे ट्रेंडिंग',
     trendingDaily: 'आज ट्रेंडिंग',
     trendingWeekly: 'इस हफ्ते ट्रेंडिंग',
@@ -245,6 +294,30 @@ const translations: Record<SupportedLanguage, Record<TranslationKey, string>> = 
     auditLog: 'ऑडिट लॉग',
     admin: 'प्रशासक',
     setProfilePhoto: 'प्रोफाइल फोटो सेट करें',
+    back: 'वापस',
+    new: 'नया',
+    browseAllBhajans: 'सभी भजन देखें',
+    allDeitiesSubtitle: 'सभी देवताओं के भजन देखें',
+    searchBhajansOrSingers: 'भजन या गायक खोजें...',
+    searchHint: 'भजन, देवता, या गायक खोजें • हिंदी या अंग्रेजी में खोजें • वॉइस सपोर्ट उपलब्ध',
+    browseAllBhajansSubtitle: 'फ़िल्टर और खोज के साथ हमारा पूरा भक्तिमय संगीत संग्रह देखें',
+    allLanguages: 'सभी भाषाएं',
+    allOccasions: 'सभी अवसर',
+    allMoods: 'सभी भाव',
+    morning: 'प्रातः',
+    evening: 'सायं',
+    meditation: 'ध्यान',
+    worship: 'पूजा',
+    festival: 'उत्सव',
+    peaceful: 'शांत',
+    energizing: 'ऊर्जावान',
+    devotional: 'भक्तिमय',
+    celebratory: 'उत्सवपूर्ण',
+    meditative: 'ध्यानमय',
+    searchBhajansOrSingersPlaceholder: 'भजन या गायक खोजें...',
+    noBhajansFound: 'कोई भजन नहीं मिला',
+    switchToDarkMode: 'डार्क मोड चालू करें',
+    switchToLightMode: 'लाइट मोड चालू करें',
   },
   gu: {
     home: 'હોમ',
@@ -353,6 +426,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('app_language', language);
     document.documentElement.lang = language;
+    document.documentElement.classList.toggle('lang-hi', language === 'hi');
   }, [language]);
 
   const value = useMemo(
@@ -360,7 +434,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       language,
       setLanguage,
       t: (key: TranslationKey, fallback?: string) => {
-        return translations[language][key] || fallback || key;
+        return translations[language][key] || translations.en[key] || fallback || key;
       },
     }),
     [language]

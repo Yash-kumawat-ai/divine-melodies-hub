@@ -1,13 +1,13 @@
 # Cloudinary Setup Guide
 
-This app uses **Cloudinary** to handle image uploads. This is free and handles unlimited storage on their free tier.
+This app uses **Cloudinary** to handle image uploads through a **Supabase Edge Function gateway**.
 
 ## Why Cloudinary?
 
 - **Free 25GB/month** image storage
 - **Automatic optimization** - compresses images for web
 - **CDN delivery** - fast worldwide distribution
-- **No backend needed** - upload directly from React
+- **Signed server-side uploads** - browser never receives upload preset or API secret
 - **Unlimited uploads** - scales with your bhajans database
 
 ## Step-by-Step Setup
@@ -22,27 +22,32 @@ This app uses **Cloudinary** to handle image uploads. This is free and handles u
 2. Look for **Cloud Name** at the top
 3. Copy it (e.g., "dhvj3k8f2")
 
-### 3. Create Upload Preset
-1. Go to **Settings** (gear icon)
-2. Go to **Upload** tab
-3. Scroll to **Upload presets**
-4. Click **Add upload preset**
-5. Set:
-   - **Name**: `bhajan-uploads` (or any name)
-   - **Unsigned**: Turn ON
-   - **Auto-tag**: (leave blank)
-   - **Folder**: `bhajans` (optional, for organization)
-6. Save
+### 3. Create/Collect API Credentials
+1. Open **Dashboard** -> **API Keys**
+2. Collect:
+   - **Cloud name**
+   - **API key**
+   - **API secret**
+3. Keep API secret server-side only
 
 ### 4. Update `.env.local`
 In your project root, update `.env.local`:
 
 ```
 VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name_from_step_2
-VITE_CLOUDINARY_UPLOAD_PRESET=bhajan-uploads
 ```
 
-### 5. Restart Dev Server
+### 5. Configure Supabase Edge Function Secrets
+Set these in Supabase project secrets (not frontend env files):
+
+```
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_MODERATION=aws_rek
+```
+
+### 6. Restart Dev Server
 ```bash
 npm run dev
 ```
@@ -50,10 +55,12 @@ npm run dev
 ## How It Works
 
 When users upload bhajans:
-1. Image goes directly to Cloudinary (not your server)
-2. You get back a URL like: `https://res.cloudinary.com/[cloud]/image/upload/[id]`
-3. URL is saved in Supabase database
-4. Displays on your site with automatic optimization
+1. Image goes from browser to `upload-lyric-image` Edge Function
+2. Edge Function validates auth, MIME, size, and rate limits
+3. Edge Function signs upload and sends to Cloudinary
+4. You get back a URL like: `https://res.cloudinary.com/[cloud]/image/upload/[id]`
+5. URL is saved in Supabase database
+6. Displays on your site with automatic optimization
 
 ## Cost
 
@@ -71,19 +78,19 @@ When users upload bhajans:
 2. Go to `/upload-bhajan`
 3. Sign up/login
 4. Try uploading an image
-5. Should see it upload to Cloudinary
+5. Should see it upload via Edge Function and then appear in Cloudinary
 6. Image URL saved in database
 
 ## Troubleshooting
 
 **"Cloudinary config missing" error:**
-- Check `.env.local` has both variables set
+- Check `.env.local` has `VITE_CLOUDINARY_CLOUD_NAME`
 - No extra spaces or quotes
 - Restart dev server after changes
 
-**Upload stuck on "Uploading to Cloudinary...":**
+**Upload stuck on "Uploading...":**
 - Check internet connection
-- Verify Cloud Name and Upload Preset are correct
+- Verify Edge Function secrets are configured in Supabase
 - Try smaller image file
 
 **Images not displaying:**

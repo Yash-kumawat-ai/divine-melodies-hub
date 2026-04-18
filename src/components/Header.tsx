@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck } from "lucide-react";
+import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAIModal } from "@/hooks/useAIModal";
+import { useTheme } from "@/hooks/useTheme";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +22,7 @@ export default function Header() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, isAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
   const { openAI } = useAIModal();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
@@ -36,7 +38,7 @@ export default function Header() {
 
     try {
       setIsUploadingAvatar(true);
-      const avatarUrl = await uploadToCloudinary(file);
+      const avatarUrl = await uploadToCloudinary(file, 'avatar');
       await updateProfile({ avatar_url: avatarUrl });
     } catch (err) {
       console.error('Avatar upload failed:', err);
@@ -71,7 +73,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-8 text-base font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
-          <Link to="/recent-bhajans" className="text-foreground hover:text-primary transition-colors">Recent</Link>
+          <Link to="/recent-bhajans" className="text-foreground hover:text-primary transition-colors">{t('recent')}</Link>
           <Link to="/search" className="text-foreground hover:text-primary transition-colors">{t('search')}</Link>
           <Link
             to="/upload-bhajan"
@@ -85,7 +87,7 @@ export default function Header() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-all font-semibold"
           >
             <Sparkles className="w-4 h-4" />
-            Kirtan AI
+            {t('kirtanAi')}
           </Link>
           {isAdmin && (
             <Link
@@ -93,15 +95,24 @@ export default function Header() {
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
             >
               <ShieldCheck className="w-4 h-4" />
-              Admin
+                {t('admin')}
             </Link>
           )}
           <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
             <Search className="w-5 h-5" />
           </Link>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors"
+            aria-label={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
+            title={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {user && (
             <Link to="/notifications" className="text-foreground hover:text-primary transition-colors text-sm">
-              Notifications
+              {t('notifications')}
             </Link>
           )}
 
@@ -146,21 +157,21 @@ export default function Header() {
                     <>
                       <DropdownMenuItem onClick={() => navigate('/admin/moderation')}>
                         <ShieldCheck className="mr-2 h-4 w-4" />
-                        Moderation Queue
+                        {t('adminModeration')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/accounts')}>
                         <ShieldCheck className="mr-2 h-4 w-4" />
-                        Admin Accounts
+                        {t('adminAccounts')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/audit')}>
                         <ShieldCheck className="mr-2 h-4 w-4" />
-                        Audit Log
+                        {t('auditLog')}
                       </DropdownMenuItem>
                     </>
                   )}
                   <DropdownMenuItem onClick={() => navigate('/notifications')}>
                     <User className="mr-2 h-4 w-4" />
-                    Notifications
+                    {t('notifications')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -197,11 +208,11 @@ export default function Header() {
         <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
           <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
-          <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">Recent</Link>
+          <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('recent')}</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
           {user && (
             <Link to="/notifications" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">
-              Notifications
+              {t('notifications')}
             </Link>
           )}
           <Link to="/upload-bhajan" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-primary flex items-center gap-2">
@@ -215,7 +226,7 @@ export default function Header() {
               className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
             >
               <ShieldCheck className="w-4 h-4" />
-              Admin Moderation
+              {t('adminModeration')}
             </Link>
           )}
           {isAdmin && (
@@ -225,7 +236,7 @@ export default function Header() {
               className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
             >
               <ShieldCheck className="w-4 h-4" />
-              Admin Accounts
+              {t('adminAccounts')}
             </Link>
           )}
           {isAdmin && (
@@ -235,7 +246,7 @@ export default function Header() {
               className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
             >
               <ShieldCheck className="w-4 h-4" />
-              Audit Log
+              {t('auditLog')}
             </Link>
           )}
           <div className="pt-2">
@@ -252,6 +263,14 @@ export default function Header() {
               ))}
             </select>
           </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="w-full h-10 rounded-md border border-border bg-background px-3 text-left text-sm font-medium text-foreground flex items-center gap-2"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
+          </button>
           {!user && (
             <button
               onClick={() => {

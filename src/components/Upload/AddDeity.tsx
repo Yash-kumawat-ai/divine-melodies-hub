@@ -62,7 +62,7 @@ export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
       // Upload image to Cloudinary
       let imageUrl = '';
       if (imageFile) {
-        imageUrl = await uploadToCloudinary(imageFile);
+        imageUrl = await uploadToCloudinary(imageFile, 'deity');
       }
 
       // Save custom deity to Supabase

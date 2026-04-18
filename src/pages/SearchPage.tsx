@@ -612,7 +612,9 @@ export default function SearchPage() {
                     src={buildYouTubeEmbedUrl(selectedVideo.id)}
                     title={`YouTube player for ${selectedVideo.title}`}
                     className="h-full w-full"
-                    allow="autoplay; encrypted-media; picture-in-picture"
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                     allowFullScreen
                   />
                 ) : null}

@@ -1,0 +1,75 @@
+-- Seed Khatu Shyam Ji bhajans into user_uploads.
+-- NOTE: Update seed_admin_email to your known admin account if needed.
+
+DO $$
+DECLARE
+  seed_admin_email text := 'admin@example.com';
+  seed_owner uuid;
+BEGIN
+  -- Select seed_owner by email (case-insensitive), with fallback.
+  SELECT id INTO seed_owner
+  FROM auth.users
+  WHERE LOWER(email) = LOWER(seed_admin_email)
+  LIMIT 1;
+
+  -- Fallback: get first super_admin or admin from public.user_profiles.
+  IF seed_owner IS NULL THEN
+    SELECT id INTO seed_owner
+    FROM public.user_profiles
+    WHERE role IN ('super_admin', 'admin')
+    ORDER BY
+      CASE WHEN role = 'super_admin' THEN 0 ELSE 1 END,
+      created_at ASC
+    LIMIT 1;
+  END IF;
+
+  -- Raise exception if still null.
+  IF seed_owner IS NULL THEN
+    RAISE EXCEPTION 'No admin user found for seeding khatu_shyam_bhajans';
+  END IF;
+
+  WITH seed_rows(title, title_hindi, singer_name, composer_name, lyrics_hindi) AS (
+    VALUES
+      ('Shyam Charno Mein', 'Shyam Charno Mein', 'Unknown', 'Traditional', 'Khatu Shyam Bhajan hindi lyrics :\n\nO Shyam Charno Mein Dedo Thikhana Mujhe, Na Kuch Aur Chahiye.\n\nDekhi Duniya Daari, Apne Aur Paraye Dekhe Dekhi Rishtedari,\n\nPaet Bhar Gaya Hai Inn Sabse Tpda Dil In Sabne,\n\nTabhi To Aaya Lakkha Sharan Mein O Khatu Shyam Bihari.\n\nO Shyam Charno Mein Mein Dedo Thikhana Mujhe Na Kuch Aur Chahiye.\n\nO Shyam Charno Mein Mein Dedo Thikhana Mujhe Na Kuch Aur Chahiye.\n\nO Puch Liya Chail Chabila Hai Tu Natkhat Rang Rangeela.\n\nTeri Sawariya Surat Pyari Tujhpe Jau Mai Balhari,\n\nYe Jag Kahe Mujhe Tera Deewana  Mujhe Na Kuch Aur Chahiye.\n\nJisko Tu Ghar Par Tu Bulaye Sawariya Ghar Se Na Tu Khali Laut Aaye Sawariya,\n\nJisko Tu Ghar Par Tu Bulaye Sawariya Daulat Shohrat Bangla Gaadi.\n\nMujhe Bhakti Ka De Do Khazana Mujhe Na Kuch Aur Chahiye,\n\nO Shyam Charno Mein Dedo Thikhana Mujhe Na Kuch Aur Chahiye.\n\nDuniya Mein Jinse Dil Lagaya Hai Sawariya Han Dhokha Unhi Se Khaya Hai Sawariya.\n\nDuniya Mei  Jin Se Dil Lagaya Hai Sawariya Han Dekh Liya Hai Maine Kahna Matlab Ka Saara Zamana.\n\nApni Sewa Mein Mujhko Lagana Mujhe Na Kuch Aur Chahiye,\n\nO Shyam Charno Mein Dedo Thikhana Mujhe Na Kuch Aur Chahiye.\n\nKya Mai Batau Kya Kiya Hai Mujh Sawariya,\n\nDuniya Ka Har Sukh Diya Hai Tune Sawariya Laga Ke Per  Mujhe Uncha Udaa Diya Tumne.\n\nMai Kya Tha Aur Mujhe Kya Bana Diya Hai Tumne,\n\nDuniya Ka Har Sukh Diya Hai Tune Sawariya.\n\nYe Lakkha Puche Tumse  Kahna Kab Hoga Mera Ghar Aana.\n\nO Bedhadak Ko Tum Darshan Dikhana Mujhe Na Kuch Aur Chahiye.\n\nO Shyam Charno Mein Dedo Thikhana Mujhe Na Kuch Aur Chahiye.'),
+      ('Adhi Raat Ko Shyam Dhani', 'Adhi Raat Ko Shyam Dhani', 'Unknown', 'Traditional', 'Shyam Bhajan lyrics :\n\nAadhi Raat Ko Shyam Dhani Teri Kundi Na Khadkata Mai.\n\nAur Sahara Hota To Mera Tere Pass Na Aata Mai.\n\nRota Hua To Babaji Mai Tere Dwaar Aaya Hu.\n\nPhuti Kismat Sawariya Mai Apne Saath Laaya Hu.\n\nDukh Na Hota Dil Mein Mere To Tumko Yu Na Sunata Mai.\n\nAur Sahara Hota To Mera Tere Pass Na Aata Mai.\n\nAur Kisi Ki Aas Nahi Bas Tu Hi Ek Sahara Hai.\n\nDub Rhi Jeevan Ki Naiya Dar Tera Hi Kinara Hai.\n\nJo Hota Na Behaal Saware Tujhe Yu Na  Btata Mai.\n\nAur Sahara Hota To Mera Tere Pass Na Aata Mai.\n\nHaare Ke Sahare Shyam Tum Itna Na Mujhe Tarsao,\n\nTeri Chokhat Per Khada Hu Aake Surat Dikhlao.\n\nParveen Jangra Kahe Re Baba Gaake Na Sunata Mai,\n\nAur Sahara Hota To Mera Tere Pass Na Aata Mai.\n\nAadhi Raat Ko Shyam Dhani Teri Kundi Na Khadkata Mai,\n\nAur Sahara Hota To Mera Tere Pass Na Aata Mai.'),
+      ('Mujhe Khatu Bulalo', 'Mujhe Khatu Bulalo', 'Unknown', 'Traditional', 'Khatu Shyam Bhajan Hindi Lyrics - Mujhe Khatu Bulalo\n\nMere Khatu Wale Shyam Mere Khatu Wale Shyam,\n\nKardo Rahem Mujhpe Mujhko Khatu Bula Lo Na.\n\nMai Haari Duniya Se Mai Haari Duniya Se Jeet Dilao Na  Mujhe Seene Se Laga Lo Na.\n\nKardo Rahem Sawarein Mujhe Khatu Bula Lo Na,\n\nEk Yehi Icha Hai Meri Mai Nishaan Uthau Ji.\n\nMai Jor Jor Shor Kar Ke Tujhko Bulau Ji,\n\nEk Yehi Icha Hai Meri Mai Nishaan Uthau Ji.\n\nKi Mere Khatu Wale Shyam Ghadi,\n\nMujhe Khatu Bula Lo Na.\n\nHan Krdo Rehem Mujhpe Mujhe Khatu Bula Lo Na....\n\nMaine Bahut Suna Hai Ji Khatu Wale Naam Tera,\n\nBina Mile Hi Bana Daala Bigda Jo Kaam Tha Mera,\n\nMaine Bhut Suna Hai Ji Khatu Wale Naam Tera.\n\nBina Mile Hi Bana Daala Bigda Jo Kaam Tha Mera.\n\nMere Khatu Wale Shyam Ghadi,\n\nMujhe Khatu Bulalo Na.\n\nHan Krdo Rehem Mujhpe Mujhe Khatu Bula Lo Na.'),
+      ('Khatu Wale Teri Mehfil', 'Khatu Wale Teri Mehfil', 'Unknown', 'Traditional', 'Hum Shyam Deewane Khatu Nagri Bha Gyi,\n\nHum Shyam Deewane Khatu Nagri Bha Gyi,\n\nO Khatu Wale Teri Mehfil Hume Raas Aagyi.\n\nO Hum Shyam Deewane ...\n\nArey Bade Hai Daani Mere Shyam Jaisa Koi Nahi,\n\nDaan Diya Isne Sabko Shri Krishna Ko Bhi Chhoda Nahi.\n\nIsliye Hi Shyam Teri Masti Cha Gyi.\n\nO Khatu Wale Teri Mehfil Hume Raas Aagyi....\n\nO Hum Shyam Deewane ...\n\nKhatu Mein Jiska Basera Hai Vo Shyam Baba Mera Hai,\n\nShyam Teri Mehfil Mein Gunje Vo Shyam Baba Mera Hai.\n\nVo Shyam Baba Mera Hai.\n\nShyam Bhakto Par Baba Teri Kripya Chah Gyi,\n\nO Khatu Wale Teri Mehfil Hume Raas Aagyi.\n\nO Hum Shyam Deewane...\n\nArey Jeet Ke Saathi Hai Bade,\n\nHaare Ka Bas Shyam Hi.\n\nKuch Nahi Leta Bhakto Se,\n\nBolo Jai Shree Shyam Wahi.\n\nDeepak Sharma Ko Teri Yaad Aagyi,\n\nO Khatu Wale Teri Mehfil Hume Raas Aagyi.\n\nKhatu shyam bhajan list :-'),
+      ('Khatu Wale Das Banale', 'Khatu Wale Das Banale', 'Unknown', 'Traditional', 'Shyam Shyam Tera Japu Naam,  Mere Saath Mein Baba Shyam.\n\nAilahawati Ko Mai Na Jaanu Morwinandan Shyam Bada.\n\nMorwi Maa Ko Vachan Dekr, De Diya Fir Ye Sheesh Daan.\n\nHaare Ka Dunga Mai Saath Tune Kasam Ye Khayi Thi,\n\nSun Khatu Wale Re Mujhee Das Bana Lo Ji.\n\nKhatu Beech Basera Tera Phoolon Se Saja Hai Baitha\n\nKisi Raja Ke Jaisa Lage Kalyug Mein Raj Tera.\n\nTu Raj Kare Se Kalyug Mein,\n\nMeraa Tere Bin Hai Koi Na.\n\nYa Zindagi Hui Rangeen Meri ,\n\nJis Din Baba Shyam Mila.\n\nDar Pe Bula Le  Shyam Gani Mera Lage Koi Na Jee.\n\nSun Khatu Wale Re Mane Das Bana Lo Ji.\n\nTeri Kripya Sab Par Ho Jaye Dil Se Jo Tumko Dhyae,\n\nAhankar Ka Ant Karo Ye Jagt Tumse Hi To Paae.\n\nTeen Lok Ke Dhari Ho Tum,\n\nShakti Ka Koi Ant Nahi.\n\nMorwi Mandir Hai Banaya,\n\nHimadri Jaisai  Bhakt Nahi.\n\nHimadri Behan Jaisa Koi Nahi.\n\nDeepak Sharma Ki Bhi Tune Laaj Bachayi Thi,\n\nSun Khatu Wale Re Mujhe Das Bana Lo Ji.'),
+      ('Baba Shyam Hi Shyam', 'Baba Shyam Hi Shyam', 'Unknown', 'Traditional', 'Baba Shyam bhajan lyrics in hindi-\n\nMai pehli dafa jab khatu gaya baba dekha tujhe tera hi ban gaya\n\nYaad aati rahi mujhko bahati rhi\n\nKhatu ki galiya ho jaise vadhiya\n\nJisko tune diya hai sahara vo jag mein hai haara nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi\n\nTumse dil ki lagi wo baba hai shyam\n\nJapta rehta hu mai din bhar tera hi naam\n\nTumko hum kya parkhe tum to malik ho shyam\n\nKrishna ke kehne par de diya apna sheesh daan\n\nSabko bahata hai tera ye muskurana aur kuch bhi jarurat nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi\n\nHo na kripya teri kya aukaat meri\n\nMitti ka hu shyam mitti ban jaunga\n\nKalyug mein gunjta baba shyam hi shyam\n\nKripya teri se mai naam kar jaunga\n\nDeepak sharma ke sang tera yaarana\n\nAshok thakaran bhi hai tera deewana koi jhootha afsana nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi\n\nHumko mil gya tera dar shyama hume duniya ki parwah nahi'),
+      ('Teri Khatu Nagri Mein Zindagi Bitaunga', 'Teri Khatu Nagri Mein Zindagi Bitaunga', 'Unknown', 'Traditional', 'Teri Khatu Nagri Mein Zindagi Bitaunga Lyrics:\n\nHar gya ras per baba tere dar pe aaunga\n\nHar gya ras per baba tere dar pe aaunga\n\nTeri khatu nagri mein zindagi bitaunga\n\nTeri khatu nagri mein zindagi bitaunga\n\nMai deewana ban gaya hu sawariya tere pyaar mein\n\nKuch daya to karde baba mere bhi iss jeevan mein\n\nMujhko tu chahiye tera pyaar chahiye\n\nEk bar nahi har baar chahiye\n\nBhao ke bhajano se tujhko rijhaunga\n\nTeri  khatu nagri mein zindagi bitaunga\n\nBhakti kya hai bhav kya hai na mai samjhta tha\n\nDar dar thokar kha kr baba khud se mai to haara tha\n\nJabse tu hai mila mujhko sab mil gaya mai tera hogya tu mera hogya\n\nCharno mein baba tere duniya basaunga\n\nTeri khatu nagri mein zindagi bitaunga\n\nSun kanhaiya dil ki baatein dil se hi batlata hu\n\nSanjeev ka har lamha beete khatu mere chahta hu\n\nShyam premi jo  bane bas yehi woh kahe\n\nBaba kripya ho teri baba bulata rhe\n\nSaari umar bhajan tere gaunga\n\nTere khatu nagri mein zindagi bitaunga\n\nHar gya ras per baba tere dar pe aaunga\n\nHar gya ras per baba tere dar pe aaunga\n\nTeri khatu nagri mein zindagi bitaunga\n\nTeri khatu nagri mein zindagi bitaunga'),
+      ('Tera Jadu Khatu Wale', 'Tera Jadu Khatu Wale', 'Unknown', 'Traditional', 'Tera jaadu khatu wale dar pe kaisa chah gya\n\nMai firse firse firse khatu aagya\n\nJab jabhi mai saware thoda udaas ho jaata hu dauda dauda mai khatu teri chokhat aata hu\n\nSang lekr bhakto ki toli gaadi bhar ke aagya\n\nMai firse firse firse khatu aagya\n\nMai firse firse firse khatu aagya\n\nArey pyaara se mukhda ghunghrale tere kalyug ka raja khatu naresh.\n\nHaare ka sahara hai mera shyam dhani.\n\nGhar se lekr ringas tak ringas se lekr khatu tak\n\nChain nahi aata baba teri sidi.\n\nSang lekr bhakto ki toli gaadi bhar ke aagya\n\nMai firse firse firse khatu aagya\n\nO tere ghar aaya main aya tujhse milne\n\nDil ke bdle mei dil ka gajrna de de\n\nDil ki dhadkan bhi kya kehti hai sun sun\n\nSaavariya ghar aya sawariya ghar aaya\n\nItni kripya kar dena sang mai lo parivaar ji\n\nHar mahine nahi mai har hafte aaya'),
+      ('Shyam Leele Ghode Wala', 'Shyam Leele Ghode Wala', 'Unknown', 'Traditional', 'Shyam apna banakar duniya badal di meri tumko dekha pehli dafa hum tumhare ho gye\n\nShyam hum to hai  tumhper fida hogye Shyam hum to hai tumhper fida hogye\n\nShyam hum to hai  tumhper fida hogye\n\nYe shyam leele ghode wala leele ghode wala morwi ka lala\n\nYe shyam leele ghode wala leele ghode wala morwi ka lala\n\nO isne hi to bhakto ko sambhala Hare ko jeeton wala\n\nBigdi  bano waleya o haare ko jeeton wala\n\nYe shyam leele ghode wala leele ghode wala morwi ka lala\n\nKaam bante nahi ganghyam dhani Lehra kar baba apni mor chardi\n\nKaam bante nahi ganghyam dhani Lehra kar baba apni mor chardi\n\nKripa hum par bhi hogi teri sawaran Kripa hum par bhi hogi teri sawaran\n\nKripa hum par bhi hogi teri sawaran\n\nNaam tera jo subah shaam japta Naam tera jo subah shaam japta\n\nO banjata tu uska rakhwala\n\nO haarein ko jeeton walaya haye bigdi bano waleya\n\nYe shyam leele ghode wala leele ghode wala morwi ka lala\n\nBade daani ho tum hum sab maante &lsquoMorwi ke lala ho ye bhi hai jaante\n\nBade daani ho tum hum sab maante Morwi ke lala ho ye bhi hai jaante\n\nMorwi nandan ho tum mere shyam sawaran\n\nMadri behen ne bataya morwi ka shama Ailavati ko baba mai nahi manta\n\nDeepak sharma ko tune hi to paala Deepak sharma ko tune hi to paala\n\nO haarein ko jeeton walaya haye bigdi bano waleya\n\nYe shyam leele ghode wala leele ghode wala morwi ka lala'),
+      ('Shyam Ke Jaisa Koi Lakhdatar', 'Shyam Ke Jaisa Koi Lakhdatar', 'Unknown', 'Traditional', 'Shyam ke jaisa koi lakhdatar nahi Shyam ke jaisa koi lakhdatar nahi\n\nMere shyam ke jaise ki koi sarkar nahi\n\nShyam ke jaisa koi lakhdatar nahi Mere shyam ke jaise ki koi sarkar nahi\n\nHaare ka sahara khatu wala hai\n\nHaare ka sahara khatu wala hai\n\nMere shyam ka harr andaj nirala ha\n\nKhatu wala karta kabhi inkaar nahi\n\nMere shyam ke jaise ki koi sarkar nahi\n\nSheesh ke daani baba neele ki sawari hai\n\nKrishan kanhaiya murli wale ke avtari hai\n\nJo bhi khatu wale ko dil se bulata hai\n\nRingas ke uss mod per vo  lene aata hai\n\nHaath pakad le jinka bhao paar wahi\n\nMere shyam ke jaise ki koi sarkar nahi\n\nShyam ke jaisa koi lakhdatar nahi Mere shyam ke jaise ki koi sarkar nahi\n\nLekr jo nishaan jo khaatu mein chadhata hai\n\nJeevan ki saari khushiya vo baba se pata hai\n\nJiska koi nahi hai usko gale lagata hai\n\nSabki sunta hai mera baba dauda aata hai\n\nGagandeep ka khatam kabhi na ho bhandar kabhi\n\nMere shyam ke jaise ki koi sarkar nahi\n\nShyam ke jaisa koi lakhdatar nahi Mere shyam ke jaise ki koi sarkar nahi\n\nHaare ka sahara khatu wala hai Haare ka sahara khatu wala hai\n\nMere shyam ka harr andaj nirala hai\n\nKhatu wala karta kabhi inkaar nahi\n\nMere shyam ke jaise ki koi sarkar nahi'),
+      ('Khatu Wala Mere Sath Hai', 'Khatu Wala Mere Sath Hai', 'Unknown', 'Traditional', 'Mujhe duniya se kya chaiye Khatu wala mere saath h\n\nAb koi fikar na mujhe Mere sar pe tera haath hai\n\nJo bhi dar pe tere aa gaya baba vo tera ho gaya\n\nTeri masti jo aisi chadhi teri masti mein woh aise kho gaya\n\nVo deewana hogya baba wah teri kya baat hai\n\nAb koi fikar na mujhe mere sar pe tera haath hai\n\nSabki bigadi bnata hai tu baba tu sabka rakhwala hai\n\nSabki karta hai pal mein bhali\n\nBaba mor chadi wala hai\n\nVo deta sabko sawera naya\n\nChahe kaali ghani raat hai\n\nAb koi fikar na mujhe Mere sar pe tera haath hai\n\nMujhe duniya se kya chaiye Khatu wala mere saath h\n\nAb koi fikar na mujhe Mere sar pe tera haath hai'),
+      ('Shyam Khatu Wale', 'Shyam Khatu Wale', 'Unknown', 'Traditional', 'Shyam khatu wale mere shyam khatu wale\n\nHum aaye tere dwar baba sunle meri pukar\n\nGhar aaja re  aaja re\n\nShyam khatu wale mere shyam khatu wale\n\nRoz nihare rahe teri baba tum jaane kab aaoge\n\nGhar  mein humare jo bane bhojan aakr tum kab khaoge\n\nAur na deri karo mere baba thoda kar ehsaan re\n\nShyam khatu wale mere shyam khatu wale\n\nHum aaye tere dwar baba sunle meri pukar\n\nGhar aaja re  aaja re\n\nShyam khatu wale mere shyam khatu wale\n\nKya apne bhakto ke ghar bhi aana jaana chhod diya\n\nKya apne bhakto se pyaara tumne naata tod diya\n\nKyu ruthe ho humse baba\n\nHo Gayi kya koi bhul re\n\nShyam khatu wale mere shyam khatu wale\n\nHum aaye tere dwar baba sunle meri pukar\n\nGhar aaja re  aaja re\n\nShyam khatu wale mere shyam khatu wale\n\nHum bhakto ka ek shahara tu maane ya na maane re\n\nChodein tera daman kaise baat sabhi tu jaane re\n\nAnchaliya sone ke binte ab to baba maan re\n\nShyam khatu wale mere shyam khatu wale\n\nHum aaye tere dwar baba sunle meri pukar\n\nGhar aaja re  aaja re\n\nShyam khatu wale mere shyam khatu wale')
+  )
+  INSERT INTO public.user_uploads (
+    user_id,
+    title,
+    title_hindi,
+    deity_id,
+    singer_name,
+    composer_name,
+    lyrics_hindi,
+    status,
+    language
+  )
+  SELECT
+    seed_owner,
+    sr.title,
+    sr.title_hindi,
+    9,
+    sr.singer_name,
+    sr.composer_name,
+    REPLACE(sr.lyrics_hindi, '\n', E'\n'),
+    'approved',
+    'Hindi'
+  FROM seed_rows sr
+  WHERE NOT EXISTS (
+    SELECT 1
+    FROM public.user_uploads uu
+    WHERE uu.deity_id = 9
+      AND LOWER(uu.title) = LOWER(sr.title)
+  );
+END
+$$;

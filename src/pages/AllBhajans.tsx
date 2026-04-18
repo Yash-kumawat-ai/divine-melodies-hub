@@ -16,6 +16,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { queryUserUploads } from '@/lib/supabaseQueries';
 import { generateBhajanSlug } from '@/lib/slugUtils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface UserBhajan {
   id: string;
@@ -42,16 +43,8 @@ interface FilterState {
   search: string;
 }
 
-const LANGUAGES = ['All', 'Hindi', 'Sanskrit', 'English', 'Transliteration'];
-const OCCASIONS = ['All', 'Morning', 'Evening', 'Meditation', 'Worship', 'Festival'];
-const MOODS = ['All', 'Peaceful', 'Energizing', 'Devotional', 'Celebratory', 'Meditative'];
-const SORT_OPTIONS = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'most-played', label: 'Most Played' },
-  { value: 'highest-rated', label: 'Highest Rated' },
-];
-
 export const AllBhajans = () => {
+  const { t, language } = useLanguage();
   const [bhajans, setBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<FilterState>({
@@ -157,6 +150,38 @@ export const AllBhajans = () => {
     (f) => f !== 'All' && f !== '0' && f !== 'latest' && f !== ''
   );
 
+  const languageOptions = [
+    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
+    { value: 'Hindi', label: language === 'hi' ? 'हिंदी' : 'Hindi' },
+    { value: 'Sanskrit', label: language === 'hi' ? 'संस्कृत' : 'Sanskrit' },
+    { value: 'English', label: language === 'hi' ? 'अंग्रेजी' : 'English' },
+    { value: 'Transliteration', label: language === 'hi' ? 'लिप्यंतरण' : 'Transliteration' },
+  ];
+
+  const occasionOptions = [
+    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
+    { value: 'Morning', label: t('morning') },
+    { value: 'Evening', label: t('evening') },
+    { value: 'Meditation', label: t('meditation') },
+    { value: 'Worship', label: t('worship') },
+    { value: 'Festival', label: t('festival') },
+  ];
+
+  const moodOptions = [
+    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
+    { value: 'Peaceful', label: t('peaceful') },
+    { value: 'Energizing', label: t('energizing') },
+    { value: 'Devotional', label: t('devotional') },
+    { value: 'Celebratory', label: t('celebratory') },
+    { value: 'Meditative', label: t('meditative') },
+  ];
+
+  const sortOptions = [
+    { value: 'latest', label: t('latest') },
+    { value: 'most-played', label: t('mostPlayed') },
+    { value: 'highest-rated', label: t('highestRated') },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -170,11 +195,10 @@ export const AllBhajans = () => {
             className="text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
-              Browse All <span className="text-gradient-saffron">Bhajans</span>
+              <span className="text-gradient-saffron">{t('allBhajans')}</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore our complete collection of devotional music — filtered by language,
-              occasion, mood, and more
+              {t('browseAllBhajansSubtitle')}
             </p>
           </motion.div>
         </div>
@@ -187,7 +211,7 @@ export const AllBhajans = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search bhajans or singers..."
+              placeholder={t('searchBhajansOrSingers')}
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               className="pl-10"
@@ -198,12 +222,12 @@ export const AllBhajans = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             <Select value={filters.language} onValueChange={(v) => handleFilterChange('language', v)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder={t('allLanguages')} />
               </SelectTrigger>
               <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang} value={lang}>
-                    {lang}
+                {languageOptions.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -211,12 +235,12 @@ export const AllBhajans = () => {
 
             <Select value={filters.occasion} onValueChange={(v) => handleFilterChange('occasion', v)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder={t('allOccasions')} />
               </SelectTrigger>
               <SelectContent>
-                {OCCASIONS.map((occ) => (
-                  <SelectItem key={occ} value={occ}>
-                    {occ}
+                {occasionOptions.map((occ) => (
+                  <SelectItem key={occ.value} value={occ.value}>
+                    {occ.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -224,12 +248,12 @@ export const AllBhajans = () => {
 
             <Select value={filters.mood} onValueChange={(v) => handleFilterChange('mood', v)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder={t('allMoods')} />
               </SelectTrigger>
               <SelectContent>
-                {MOODS.map((mood) => (
-                  <SelectItem key={mood} value={mood}>
-                    {mood}
+                {moodOptions.map((mood) => (
+                  <SelectItem key={mood.value} value={mood.value}>
+                    {mood.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -240,7 +264,7 @@ export const AllBhajans = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SORT_OPTIONS.map((opt) => (
+                {sortOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>
@@ -253,10 +277,10 @@ export const AllBhajans = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">All Ratings</SelectItem>
-                <SelectItem value="3">3+ Stars</SelectItem>
-                <SelectItem value="4">4+ Stars</SelectItem>
-                <SelectItem value="5">5 Stars</SelectItem>
+                <SelectItem value="0">{t('allRatings')}</SelectItem>
+                <SelectItem value="3">3+ {t('stars')}</SelectItem>
+                <SelectItem value="4">4+ {t('stars')}</SelectItem>
+                <SelectItem value="5">5 {t('stars')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -268,14 +292,14 @@ export const AllBhajans = () => {
                 className="gap-2"
               >
                 <X className="w-4 h-4" />
-                Clear
+                {t('clearFilters')}
               </Button>
             )}
           </div>
 
           {/* Results Count */}
           <div className="text-sm text-muted-foreground">
-            Showing {filteredBhajans.length} of {bhajans.length} bhajans
+            {t('showing')} {filteredBhajans.length} {t('of')} {bhajans.length} {t('bhajansCount')}
           </div>
         </div>
       </section>
@@ -294,9 +318,9 @@ export const AllBhajans = () => {
               className="text-center py-20"
             >
               <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">No bhajans found</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('noBhajansFound')}</h3>
               <p className="text-muted-foreground">
-                Try adjusting your filters or search terms
+                {t('tryAdjustingFilters')}
               </p>
             </motion.div>
           ) : (

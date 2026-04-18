@@ -20,10 +20,12 @@ interface TestResult {
 }
 
 export default function StorageVerification() {
+  const db = supabase as any;
+
   const [results, setResults] = useState<TestResult[]>([
     { name: 'Supabase Configuration', status: 'idle', message: '' },
     { name: 'Supabase Connection', status: 'idle', message: '' },
-    { name: 'Cloudinary Configuration', status: 'idle', message: '' },
+    { name: 'Secure Upload Gateway', status: 'idle', message: '' },
     { name: 'Database Tables', status: 'idle', message: '' },
     { name: 'User Authentication', status: 'idle', message: '' },
     { name: 'Data Statistics', status: 'idle', message: '' },
@@ -56,7 +58,7 @@ export default function StorageVerification() {
       // Test 2: Supabase Connection
       updateResult(1, 'testing', 'Testing database connection...');
       try {
-        const { data, error } = await supabase.from('user_profiles').select('count').limit(1);
+        const { data, error } = await db.from('user_profiles').select('count').limit(1);
         if (error) {
           updateResult(1, 'error', `Connection failed: ${error.message}`);
         } else {
@@ -66,15 +68,34 @@ export default function StorageVerification() {
         updateResult(1, 'error', err.message);
       }
 
-      // Test 3: Cloudinary Configuration
-      updateResult(2, 'testing', 'Checking Cloudinary credentials...');
+      // Test 3: Secure upload gateway configuration
+      updateResult(2, 'testing', 'Checking secure upload gateway...');
       const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-      if (!cloudName || !uploadPreset) {
-        updateResult(2, 'error', 'Missing Cloudinary credentials');
+      if (!cloudName) {
+        updateResult(2, 'error', 'Missing VITE_CLOUDINARY_CLOUD_NAME');
       } else {
-        updateResult(2, 'success', `Cloud: ${cloudName}, Preset: ${uploadPreset}`);
+        const { error } = await supabase.functions.invoke('upload-lyric-image', {
+          body: new FormData(),
+        });
+
+        if (error) {
+          const message = String(error.message || '').toLowerCase();
+          const gatewayReachable =
+            message.includes('unauthorized') ||
+            message.includes('file is required') ||
+            message.includes('invalid upload type') ||
+            message.includes('400') ||
+            message.includes('401');
+
+          if (!gatewayReachable) {
+            updateResult(2, 'error', `Gateway check failed: ${error.message}`);
+          } else {
+            updateResult(2, 'success', `Gateway reachable, Cloud: ${cloudName}`);
+          }
+        } else {
+          updateResult(2, 'success', `Gateway reachable, Cloud: ${cloudName}`);
+        }
       }
 
       // Test 4: Database Tables
@@ -84,7 +105,7 @@ export default function StorageVerification() {
 
       for (const table of tables) {
         try {
-          await supabase.from(table).select('count').limit(1);
+          await db.from(table).select('count').limit(1);
         } catch (err) {
           allTablesExist = false;
         }
@@ -114,11 +135,11 @@ export default function StorageVerification() {
       // Test 6: Data Statistics
       updateResult(5, 'testing', 'Loading data statistics...');
       try {
-        const { count: userCount } = await supabase
+        const { count: userCount } = await db
           .from('user_profiles')
           .select('id', { count: 'exact', head: true });
 
-        const { count: bhajanCount } = await supabase
+        const { count: bhajanCount } = await db
           .from('user_uploads')
           .select('id', { count: 'exact', head: true });
 

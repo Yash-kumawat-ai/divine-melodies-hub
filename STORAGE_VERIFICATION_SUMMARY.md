@@ -33,7 +33,7 @@ I've **VERIFIED** that all three data storage components are properly configured
 ### ✅ **Images** → **Cloudinary CDN**
 - **Service**: Cloudinary (Image Management)
 - **Cloud Name**: `dca1u5vpb`
-- **Upload Preset**: `divine_upload`
+- **Upload Path**: Secure server-side signed upload via Supabase Edge Function
 - **Features**: 
   - Automatic compression
   - Format optimization (WebP, JPEG)
@@ -73,8 +73,8 @@ User Registration → Supabase Auth → user_profiles table
 ✓ VITE_SUPABASE_URL = https://khnqyhzlrxwmolyevaqo.supabase.co
 ✓ VITE_SUPABASE_PUBLISHABLE_KEY = sb_publishable_5y0b6pR1zhLSC5WGGV5Ezg_...
 ✓ VITE_CLOUDINARY_CLOUD_NAME = dca1u5vpb
-✓ VITE_CLOUDINARY_UPLOAD_PRESET = divine_upload
-✓ VITE_OPENAI_API_KEY = sk-proj-qErstGId-7oKS8hkJIjI3Fa0lmMoHTm5...
+✓ Upload preset is NOT exposed in frontend env files
+✓ OpenAI keys are server-side only (not present in frontend env files)
 ```
 
 ### Database Tables ✅
@@ -92,7 +92,7 @@ User Registration → Supabase Auth → user_profiles table
 ✓ Row-Level Security (RLS) enabled
 ✓ Users can only view/edit their own data
 ✓ Public access for approved bhajans
-✓ Cloudinary unsigned uploads (no backend needed)
+✓ Cloudinary uploads via authenticated edge gateway
 ✓ Session persistence in localStorage
 ```
 
