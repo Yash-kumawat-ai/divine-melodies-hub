@@ -190,7 +190,7 @@ export default function AIAssistantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden bg-gradient-to-b from-amber-50 to-white">
+      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-800">
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
           <div>
@@ -217,40 +217,40 @@ export default function AIAssistantModal({
             >
               <div className="mb-8 space-y-6">
                 <div className="text-center">
-                  <h3 className="text-3xl font-bold text-gray-800 mb-3">🙏 Welcome to Kirtan AI</h3>
-                  <p className="text-gray-700 text-lg leading-relaxed">Your AI-powered companion for spiritual exploration, bhajan discovery, and sacred knowledge.</p>
+                  <h3 className="text-3xl font-bold text-white mb-3">🙏 Welcome to Kirtan AI</h3>
+                  <p className="text-slate-300 text-lg leading-relaxed">Your AI-powered companion for spiritual exploration, bhajan discovery, and sacred knowledge.</p>
                 </div>
 
                 {/* Features Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-orange-50 border-l-4 border-orange-500 rounded-lg">
-                    <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-slate-700/50 border-l-4 border-orange-500 rounded-lg">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
                       <span className="text-2xl">🎵</span> Bhajan Discovery
                     </h4>
-                    <p className="text-sm text-gray-600">Find perfect bhajans for any mood or occasion with personalized recommendations</p>
+                    <p className="text-sm text-slate-300">Find perfect bhajans for any mood or occasion with personalized recommendations</p>
                   </div>
-                  <div className="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                    <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-slate-700/50 border-l-4 border-yellow-500 rounded-lg">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
                       <span className="text-2xl">📚</span> Sacred Knowledge
                     </h4>
-                    <p className="text-sm text-gray-600">Learn meanings of mantras, sutras, and spiritual teachings in simple Hindi</p>
+                    <p className="text-sm text-slate-300">Learn meanings of mantras, sutras, and spiritual teachings in simple Hindi</p>
                   </div>
-                  <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                    <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-slate-700/50 border-l-4 border-red-500 rounded-lg">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
                       <span className="text-2xl">🎤</span> Voice Enabled
                     </h4>
-                    <p className="text-sm text-gray-600">Ask in Hindi using voice or type your questions - we listen & understand</p>
+                    <p className="text-sm text-slate-300">Ask in Hindi using voice or type your questions - we listen & understand</p>
                   </div>
-                  <div className="p-4 bg-violet-50 border-l-4 border-violet-500 rounded-lg">
-                    <h4 className="font-bold text-gray-800 mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-slate-700/50 border-l-4 border-violet-500 rounded-lg">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
                       <span className="text-2xl">🧘</span> Meditation Guide
                     </h4>
-                    <p className="text-sm text-gray-600">Get guidance on spiritual practices and meditation techniques</p>
+                    <p className="text-sm text-slate-300">Get guidance on spiritual practices and meditation techniques</p>
                   </div>
                 </div>
 
-                <div className="border-t-2 border-gray-200 pt-6">
-                  <p className="text-center text-gray-700 font-semibold mb-4">💡 Try one of these popular questions:</p>
+                <div className="border-t-2 border-slate-600 pt-6">
+                  <p className="text-center text-slate-300 font-semibold mb-4">💡 Try one of these popular questions:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {QUICK_ACTIONS.map((action, idx) => {
                       const Icon = action.icon;
@@ -260,13 +260,13 @@ export default function AIAssistantModal({
                           onClick={() => handleQuickAction(action.query)}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className="p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:shadow-lg transition-all group text-left"
+                          className="p-4 bg-slate-700 border-2 border-slate-600 rounded-xl hover:border-orange-400 hover:shadow-lg transition-all group text-left"
                         >
                           <div className="flex items-start gap-3">
                             <Icon className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                             <div className="flex-1">
-                              <p className="font-semibold text-gray-800 group-hover:text-orange-600 text-sm">{action.title}</p>
-                              <p className="text-xs text-gray-600 group-hover:text-gray-700 mt-1">{action.subtitle}</p>
+                              <p className="font-semibold text-white group-hover:text-orange-300 text-sm">{action.title}</p>
+                              <p className="text-xs text-slate-400 group-hover:text-slate-300 mt-1">{action.subtitle}</p>
                             </div>
                           </div>
                         </motion.button>
@@ -291,7 +291,7 @@ export default function AIAssistantModal({
                   <div
                     className={`max-w-xl p-4 rounded-2xl break-words ${
                       msg.intent === 'greeting' || msg.intent === 'help' || msg.intent === 'explain'
-                        ? 'bg-white border-l-4 border-orange-500 shadow-md'
+                        ? 'bg-slate-700 text-white border-l-4 border-orange-500 shadow-md'
                         : 'bg-orange-500 text-white'
                     }`}
                   >
@@ -323,7 +323,7 @@ export default function AIAssistantModal({
                       voiceSupport.synthesis && (
                         <button
                           onClick={() => handleSpeakResponse(msg.text)}
-                          className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm bg-orange-100 text-orange-700 hover:bg-orange-200 rounded-full transition-colors font-medium"
+                          className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-sm bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 rounded-full transition-colors font-medium"
                         >
                           <Volume2 className={`w-4 h-4 ${isSpeaking ? 'animate-pulse' : ''}`} />
                           {isSpeaking ? 'सुन रहे हैं...' : 'सुनें'}
@@ -345,7 +345,7 @@ export default function AIAssistantModal({
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 p-6 bg-white space-y-4 sticky bottom-0">
+        <div className="border-t border-slate-600 p-6 bg-slate-800 space-y-4 sticky bottom-0">
           {/* Voice Button - LARGE */}
           <motion.button
             onClick={isListening ? handleStopListening : handleStartListening}
@@ -379,14 +379,14 @@ export default function AIAssistantModal({
               onChange={(e) => setTextInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSubmitMessage(textInput)}
               placeholder="या यहां लिखें..."
-              className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none text-base"
+              className="flex-1 px-4 py-3 border-2 border-slate-600 bg-slate-700 text-white rounded-lg focus:border-orange-500 focus:outline-none text-base placeholder:text-slate-500"
             />
             <motion.button
               onClick={() => handleSubmitMessage(textInput)}
               disabled={!textInput.trim() || isLoading}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white rounded-lg font-semibold transition-colors"
+              className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
             >
               <Send className="w-5 h-5" />
             </motion.button>

@@ -84,7 +84,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
           {bhajans.map((bhajan, index) => (
             <div key={bhajan.id} className="relative">
               {/* Rank Badge */}
-              <div className="absolute top-2 left-2 z-10 bg-saffron-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg">
+              <div className="absolute top-2 left-2 z-10 bg-saffron-600 text-white rounded-full w-8 h-8 md:w-10 md:h-10 flex items-center justify-center font-bold text-sm md:text-lg">
                 {index + 1}
               </div>
               <BhajanCard bhajan={bhajan} />

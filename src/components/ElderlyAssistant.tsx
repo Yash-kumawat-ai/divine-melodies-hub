@@ -189,7 +189,7 @@ export default function ElderlyAssistant({
       initial={{ opacity: 0, y: 100 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 100 }}
-      className="fixed bottom-4 right-4 w-full max-w-md h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col overflow-hidden"
+      className="fixed bottom-4 right-4 w-full max-w-md max-h-[90vh] md:h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 flex flex-col overflow-hidden"
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-accent p-6 text-white flex items-center justify-between">

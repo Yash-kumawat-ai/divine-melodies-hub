@@ -442,7 +442,14 @@ const SidebarMenuButton = React.forwardRef<
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(({ asChild = false, isActive = false, variant = "default", size = "default", tooltip, className, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
-  const { isMobile, state } = useSidebar();
+  const { isMobile, state, setOpenMobile } = useSidebar();
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+    props.onClick?.(e as any);
+  };
 
   const button = (
     <Comp
@@ -451,6 +458,7 @@ const SidebarMenuButton = React.forwardRef<
       data-size={size}
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      onClick={handleClick}
       {...props}
     />
   );

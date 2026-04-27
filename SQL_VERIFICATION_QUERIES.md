@@ -127,7 +127,7 @@ SELECT
   CASE 
     WHEN u.image_url LIKE '%cloudinary.com%' THEN '✅ Cloudinary'
     WHEN u.image_url LIKE '%res.cloudinary.com%' THEN '✅ Cloudinary (CDN)'
-    WHEN u.image_url ISNULL THEN '⚠️ No Image'
+    WHEN u.image_url IS NULL THEN '⚠️ No Image'
     ELSE '❌ Other Source'
   END as image_source,
   CASE
@@ -146,12 +146,143 @@ ORDER BY u.created_at DESC;
 SELECT 
   CASE 
     WHEN image_url LIKE '%cloudinary.com%' THEN 'Cloudinary'
-    WHEN image_url ISNULL THEN 'No Image'
+    WHEN image_url IS NULL THEN 'No Image'
     ELSE 'Other'
   END as source,
   COUNT(*) as count
 FROM user_uploads
 GROUP BY source;
+```
+
+---
+
+## 🐎 **PART 7: KHATU SHYAM 12-TITLE IMPORT VERIFICATION**
+
+### Check Exact 12 Titles Under deity_id = 9
+```sql
+WITH expected_titles(title) AS (
+  VALUES
+    ('Shyam Charno Mein'),
+    ('Adhi Raat Ko Shyam Dhani'),
+    ('Mujhe Khatu Bulalo'),
+    ('Khatu Wale Teri Mehfil'),
+    ('Khatu Wale Das Banale'),
+    ('Baba Shyam Hi Shyam'),
+    ('Teri Khatu Nagri Mein Zindagi Bitaunga'),
+    ('Tera Jadu Khatu Wale'),
+    ('Shyam Leele Ghode Wala'),
+    ('Shyam Ke Jaisa Koi Lakhdatar'),
+    ('Khatu Wala Mere Sath Hai'),
+    ('Shyam Khatu Wale')
+)
+SELECT
+  et.title,
+  CASE
+    WHEN EXISTS (
+      SELECT 1
+      FROM user_uploads u
+      WHERE u.deity_id = 9
+        AND LOWER(u.title) = LOWER(et.title)
+    ) THEN '✅ Present'
+    ELSE '❌ Missing'
+  END AS import_status
+FROM expected_titles et
+ORDER BY et.title;
+```
+
+### Check Missing Count For 12-Title Set
+```sql
+WITH expected_titles(title) AS (
+  VALUES
+    ('Shyam Charno Mein'),
+    ('Adhi Raat Ko Shyam Dhani'),
+    ('Mujhe Khatu Bulalo'),
+    ('Khatu Wale Teri Mehfil'),
+    ('Khatu Wale Das Banale'),
+    ('Baba Shyam Hi Shyam'),
+    ('Teri Khatu Nagri Mein Zindagi Bitaunga'),
+    ('Tera Jadu Khatu Wale'),
+    ('Shyam Leele Ghode Wala'),
+    ('Shyam Ke Jaisa Koi Lakhdatar'),
+    ('Khatu Wala Mere Sath Hai'),
+    ('Shyam Khatu Wale')
+)
+SELECT COUNT(*) AS missing_titles
+FROM expected_titles et
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM user_uploads u
+  WHERE u.deity_id = 9
+    AND LOWER(u.title) = LOWER(et.title)
+);
+```
+
+### Check Duplicate Titles (Should Be 0 Rows)
+```sql
+SELECT
+  LOWER(title) AS normalized_title,
+  deity_id,
+  COUNT(*) AS duplicate_count
+FROM user_uploads
+WHERE deity_id = 9
+GROUP BY LOWER(title), deity_id
+HAVING COUNT(*) > 1;
+```
+
+### Check Wrong Deity Mapping For The Same 12 Titles (Should Be 0)
+```sql
+WITH expected_titles(title) AS (
+  VALUES
+    ('Shyam Charno Mein'),
+    ('Adhi Raat Ko Shyam Dhani'),
+    ('Mujhe Khatu Bulalo'),
+    ('Khatu Wale Teri Mehfil'),
+    ('Khatu Wale Das Banale'),
+    ('Baba Shyam Hi Shyam'),
+    ('Teri Khatu Nagri Mein Zindagi Bitaunga'),
+    ('Tera Jadu Khatu Wale'),
+    ('Shyam Leele Ghode Wala'),
+    ('Shyam Ke Jaisa Koi Lakhdatar'),
+    ('Khatu Wala Mere Sath Hai'),
+    ('Shyam Khatu Wale')
+)
+SELECT
+  u.id,
+  u.title,
+  u.deity_id,
+  u.status,
+  u.created_at
+FROM user_uploads u
+JOIN expected_titles et ON LOWER(u.title) = LOWER(et.title)
+WHERE u.deity_id <> 9
+ORDER BY u.title;
+```
+
+### Check Singer Mapping For Curated Titles
+```sql
+SELECT
+  u.title,
+  u.singer_name,
+  u.composer_name,
+  u.status,
+  u.language
+FROM user_uploads u
+WHERE u.deity_id = 9
+  AND LOWER(u.title) IN (
+    LOWER('Shyam Charno Mein'),
+    LOWER('Adhi Raat Ko Shyam Dhani'),
+    LOWER('Mujhe Khatu Bulalo'),
+    LOWER('Khatu Wale Teri Mehfil'),
+    LOWER('Khatu Wale Das Banale'),
+    LOWER('Baba Shyam Hi Shyam'),
+    LOWER('Teri Khatu Nagri Mein Zindagi Bitaunga'),
+    LOWER('Tera Jadu Khatu Wale'),
+    LOWER('Shyam Leele Ghode Wala'),
+    LOWER('Shyam Ke Jaisa Koi Lakhdatar'),
+    LOWER('Khatu Wala Mere Sath Hai'),
+    LOWER('Shyam Khatu Wale')
+  )
+ORDER BY u.title;
 ```
 
 ### Find Missing Images

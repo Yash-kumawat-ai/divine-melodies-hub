@@ -63,9 +63,9 @@ async function searchBhajansByName(query: string): Promise<Bhajan[]> {
 
 const QUICK_ACTIONS = [
   { icon: '🎵', title: 'लोकप्रिय भजन', query: 'मुझे सबसे लोकप्रिय भजन दिखाएं' },
-  { icon: '🙏', title: 'कृष्ण भजन', query: 'कृष्ण के भजन खोजें' },
-  { icon: '☮️', title: 'शांति के गीत', query: 'शांति के भजन' },
-  { icon: '💫', title: 'नई चीजें', query: 'मुझे कुछ नया भजन दिखाएं' }
+  { icon: '🙏', title: 'कृष्ण कौन हैं?', query: 'कृष्ण कौन हैं?' },
+  { icon: '☮️', title: 'शांति के भजन', query: 'शांति के भजन' },
+  { icon: '💫', title: 'ध्यान के भजन', query: 'ध्यान के लिए कौन से भजन सबसे अच्छे हैं?' }
 ];
 
 const SIDEBAR_NAVIGATION = [
@@ -344,10 +344,10 @@ export default function KirtanAIPage() {
                     onClick={() => handleQuickAction(action.query)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-6 bg-gradient-to-br from-violet-50 to-purple-50 border-2 border-violet-200 rounded-lg hover:border-violet-400 transition-colors text-left group"
+                    className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-700 rounded-lg hover:border-orange-500 transition-colors text-left group text-white shadow-lg"
                   >
                     <div className="text-3xl mb-2">{action.icon}</div>
-                    <p className="font-semibold text-foreground text-sm group-hover:text-violet-600 transition-colors">{action.title}</p>
+                    <p className="font-semibold text-white text-sm group-hover:text-orange-400 transition-colors">{action.title}</p>
                   </motion.button>
                 ))}
               </div>
@@ -363,29 +363,31 @@ export default function KirtanAIPage() {
                     className={`flex ${msg.intent === 'search' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-2xl p-4 rounded-lg break-words ${
+                      className={`max-w-[85vw] md:max-w-2xl p-4 rounded-lg break-words ${
                         msg.intent === 'search'
-                          ? 'bg-primary text-primary-foreground rounded-br-none'
-                          : 'bg-card border border-border rounded-bl-none'
+                          ? 'bg-orange-600 text-white rounded-br-none shadow-lg'
+                          : msg.isQA
+                          ? 'bg-slate-800 text-white border-l-4 border-orange-500 rounded-bl-none shadow-lg'
+                          : 'bg-slate-800 text-white border border-slate-700 rounded-bl-none shadow-lg'
                       }`}
                     >
                       <p className="text-base leading-relaxed">{msg.text}</p>
 
                       {msg.bhajans && msg.bhajans.length > 0 && (
                         <div className="mt-4 space-y-3">
-                          <p className="text-sm font-semibold text-foreground">यहाँ भजन हैं:</p>
+                          <p className="text-sm font-semibold text-white">यहाँ भजन हैं:</p>
                           {msg.bhajans.map(bhajan => (
                             <motion.div
                               key={bhajan.id}
                               whileHover={{ scale: 1.02 }}
-                              className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 border-2 border-orange-300 rounded-lg"
+                              className="p-4 bg-gradient-to-r from-slate-800 to-slate-900 border-2 border-orange-500 rounded-lg shadow-lg"
                             >
                               <div className="space-y-2">
                                 <div>
-                                  <p className="font-semibold text-foreground">{bhajan.title}</p>
-                                  <p className="text-sm text-muted-foreground">{bhajan.titleHindi}</p>
+                                  <p className="font-semibold text-white">{bhajan.title}</p>
+                                  <p className="text-sm text-slate-300">{bhajan.titleHindi}</p>
                                 </div>
-                                <p className="text-xs text-primary font-medium">♪ {bhajan.singerName}</p>
+                                <p className="text-xs text-orange-400 font-medium">♪ {bhajan.singerName}</p>
 
                                 <div className="flex gap-2 pt-2">
                                   <Link
@@ -429,9 +431,9 @@ export default function KirtanAIPage() {
               {isLoading && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start py-4">
                   <div className="flex gap-2">
-                    <div className="w-2 h-2 bg-muted rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
                   </div>
                 </motion.div>
               )}
@@ -463,7 +465,7 @@ export default function KirtanAIPage() {
               onChange={(e) => setTextInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSubmitMessage(textInput)}
               placeholder="अपना प्रश्न पूछें... या Enter दबाएं"
-              className="flex-1 px-4 py-3 border border-border rounded-lg focus:border-primary focus:outline-none bg-background text-foreground"
+              className="flex-1 px-4 py-3 border border-slate-600 rounded-lg focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 bg-slate-800 text-white placeholder:text-slate-400 shadow-lg"
             />
             <motion.button
               onClick={() => handleSubmitMessage(textInput)}

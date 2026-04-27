@@ -12,6 +12,7 @@ import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useLyricsFallback } from "@/hooks/useLyricsFallback";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
 import { buildYouTubeEmbedUrl, searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
@@ -50,11 +51,13 @@ export default function SearchPage() {
   const [isYouTubePlayerOpen, setIsYouTubePlayerOpen] = useState(false);
   const [activeMode, setActiveMode] = useState<'bhajans' | 'youtube'>('bhajans');
   const [selectedDeity, setSelectedDeity] = useState(initialDeity);
+  const [showAllDeities, setShowAllDeities] = useState(false);
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
   const [selectedBhajanForDetail, setSelectedBhajanForDetail] = useState<Bhajan | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const { deities: allDeities, loading: deitiesLoading } = useDeities();
+  const isMobile = useIsMobile();
   
   // Lyrics fallback orchestration
   const lyricsFallback = useLyricsFallback();
@@ -191,6 +194,27 @@ export default function SearchPage() {
     setSelectedDeity(slug === selectedDeity ? "" : slug);
   };
 
+  const getDeitySlug = (deity: typeof allDeities[number]) => {
+    if (deity.isCustom) {
+      return deity.name.toLowerCase().replace(/\s+/g, '-');
+    }
+    return deities.find(d => d.id === deity.id)?.slug || deity.name.toLowerCase();
+  };
+
+  const visibleDeities = useMemo(() => {
+    const mobileLimit = 5;
+    if (!isMobile || showAllDeities) return allDeities;
+
+    const limitedDeities = allDeities.slice(0, mobileLimit);
+    if (!selectedDeity) return limitedDeities;
+
+    const selectedDeityItem = allDeities.find((deity) => getDeitySlug(deity) === selectedDeity);
+    if (!selectedDeityItem) return limitedDeities;
+
+    const alreadyVisible = limitedDeities.some((deity) => getDeitySlug(deity) === selectedDeity);
+    return alreadyVisible ? limitedDeities : [...limitedDeities, selectedDeityItem];
+  }, [allDeities, isMobile, showAllDeities, selectedDeity]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -298,10 +322,8 @@ export default function SearchPage() {
                   >
                     All
                   </button>
-                  {allDeities.map((deity) => {
-                    const deitySlug = deity.isCustom
-                      ? deity.name.toLowerCase().replace(/\s+/g, '-')
-                      : (deities.find(d => d.id === deity.id)?.slug || deity.name.toLowerCase());
+                  {visibleDeities.map((deity) => {
+                    const deitySlug = getDeitySlug(deity);
 
                     return (
                       <button
@@ -318,6 +340,16 @@ export default function SearchPage() {
                     );
                   })}
                 </div>
+                {isMobile && allDeities.length > 5 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => setShowAllDeities((prev) => !prev)}
+                      className="px-4 py-2 rounded-full text-sm font-medium bg-card text-foreground border border-border hover:border-primary transition-all touch-target"
+                    >
+                      {showAllDeities ? 'View less deities' : 'View more deities'}
+                    </button>
+                  </div>
+                )}
               </motion.div>
 
               <motion.div

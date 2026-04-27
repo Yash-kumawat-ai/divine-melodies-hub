@@ -1,17 +1,25 @@
 /**
- * Elderly-Friendly Bhajan Search
- * Simple database search only - no external APIs
- * Voice and text input → Database search → Display results
+ * Elderly-Friendly Bhajan Search with Q&A Knowledge Base
+ * Simple database search + knowledge base Q&A - no external APIs
+ * Voice and text input → Intent detection → Knowledge base OR Database search → Display results
  * Production-ready
  */
 
 import { Bhajan } from '@/data/bhajans';
 import { searchUserBhajans } from './supabaseQueries';
+import { 
+  findMatchingKnowledge, 
+  getRelatedKeywords, 
+  isQuestionQuery,
+  type KnowledgeItem 
+} from './bhajanKnowledgeBase';
 
 export interface AIResponse {
-  text: string; // Simple acknowledgment message
+  text: string; // Simple acknowledgment message or Q&A answer
   bhajans?: Bhajan[]; // Search results from database
-  intent: 'search' | 'recommend' | 'explain' | 'greeting' | 'help';
+  intent: 'search' | 'recommend' | 'explain' | 'greeting' | 'help' | 'question';
+  isQA?: boolean; // True if this is a Q&A response
+  knowledgeItem?: KnowledgeItem; // Original knowledge base item
 }
 
 // Hindi stop words to ignore when extracting keywords
@@ -54,6 +62,11 @@ export function extractKeywords(message: string): string[] {
  */
 export function parseIntent(message: string): AIResponse['intent'] {
   const lower = message.toLowerCase();
+
+  // Check if it's a question first
+  if (isQuestionQuery(message)) {
+    return 'question';
+  }
 
   if (
     lower.includes('नमस्ते') ||
@@ -151,7 +164,7 @@ export function formatForElderly(text: string): string {
 }
 
 /**
- * Main function to process elderly user request (Database search only)
+ * Main function to process elderly user request (Database search + Q&A Knowledge Base)
  */
 export async function processElderlyRequest(
   userMessage: string,
@@ -163,9 +176,55 @@ export async function processElderlyRequest(
   const intent = parseIntent(userMessage);
 
   try {
-    console.log('Processing message:', userMessage);
+    console.log('Processing message:', userMessage, 'Intent:', intent);
     
-    // Extract keywords from the user message
+    // First, check if it's a Q&A question
+    if (intent === 'question') {
+      const knowledgeItem = findMatchingKnowledge(userMessage);
+      
+      if (knowledgeItem) {
+        console.log('Found knowledge item:', knowledgeItem.id);
+        
+        // Get related bhajans using keywords from knowledge base
+        const relatedKeywords = getRelatedKeywords(knowledgeItem);
+        let relatedBhajans: Bhajan[] = [];
+        
+        if (relatedKeywords.length > 0) {
+          try {
+            const matchedResults = await searchUserBhajans(relatedKeywords.join(' '), 5);
+            relatedBhajans = matchedResults.map((b: any) => ({
+              id: parseInt(b.id),
+              slug: b.title.toLowerCase().replace(/\s+/g, '-'),
+              title: b.title,
+              titleHindi: b.title_hindi,
+              deityId: b.deity_id,
+              singerName: b.singer_name,
+              composerName: b.composer_name || '',
+              youtubeUrl: b.youtube_url || '',
+              lyricsHindi: b.lyrics_hindi,
+              lyricsTransliteration: '',
+              playCount: b.play_count || 0,
+              rating: b.average_rating || 0,
+              tags: b.mood_tags || [],
+              featured: false,
+            }));
+          } catch (searchError) {
+            console.log('Could not find related bhajans:', searchError);
+          }
+        }
+
+        // Use Hindi answer by default
+        return {
+          text: knowledgeItem.answerHindi || knowledgeItem.answer,
+          bhajans: relatedBhajans.length > 0 ? relatedBhajans : undefined,
+          intent: 'question',
+          isQA: true,
+          knowledgeItem
+        };
+      }
+    }
+    
+    // If not a Q&A or no knowledge match, do regular bhajan search
     const keywords = extractKeywords(userMessage);
     
     if (keywords.length === 0) {
@@ -179,7 +238,7 @@ export async function processElderlyRequest(
 
     // Search database for matching bhajans using first keyword
     const searchQuery = keywords.join(' ');
-    console.log('Searching for:', searchQuery);
+    console.log('Searching for bhajans:', searchQuery);
     
     const matchedBhajans = await searchUserBhajans(searchQuery, 10);
     

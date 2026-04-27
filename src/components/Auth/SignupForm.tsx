@@ -171,8 +171,8 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="text-3xl font-semibold text-foreground">Create Account</h2>
-        <p className="text-sm text-muted-foreground">Build your profile and share your devotion with everyone.</p>
+        <h2 className="text-3xl font-semibold text-white">Create Account</h2>
+        <p className="text-sm text-slate-400">Build your profile and share your devotion with everyone.</p>
       </div>
       
       {error && (
@@ -182,82 +182,82 @@ export default function SignupForm() {
       )}
 
       {isRateLimited && (
-        <div className="rounded-xl border-2 border-red-400 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-xl border-2 border-red-500/50 bg-red-500/10 p-4 text-sm font-semibold text-red-400">
           ⏱️ Signup blocked for {secondsRemaining}s. Your email provider is rate-limiting. Try Google signup instead.
         </div>
       )}
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Full Name *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Full Name *</label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your Full Name"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email *</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password *</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Confirm Password *</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Confirm Password *</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all ${isRateLimited ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600'}`}>
+      <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all shadow-lg ${isRateLimited ? 'bg-slate-600 text-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-orange-500/30'}`}>
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
         {isRateLimited ? `🔒 Blocked ${secondsRemaining}s` : 'Create Sacred Account'}
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-orange-100" />
+          <span className="w-full border-t border-orange-500/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-3 text-muted-foreground">Or seek with</span>
+          <span className="bg-slate-800/50 px-3 text-slate-400">Or seek with</span>
         </div>
       </div>
 
@@ -266,15 +266,15 @@ export default function SignupForm() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="h-12 w-full rounded-xl border-orange-200 bg-white"
+        className="h-12 w-full rounded-xl border border-orange-500/30 bg-slate-800/50 text-white hover:bg-slate-700/50 hover:border-orange-500/50"
       >
         <Chrome className="mr-2 w-4 h-4" />
         Sign up with Google
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-slate-400">
         Already have an account?{' '}
-        <Link to="/auth/login" className="text-primary hover:underline font-medium">
+        <Link to="/auth/login" className="text-orange-400 hover:text-orange-300 hover:underline font-medium">
           Login
         </Link>
       </p>

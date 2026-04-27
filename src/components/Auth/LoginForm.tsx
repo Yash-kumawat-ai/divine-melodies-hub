@@ -64,8 +64,8 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="text-3xl font-semibold text-foreground">Welcome Back</h2>
-        <p className="text-sm text-muted-foreground">Continue your journey of bhajans and devotion.</p>
+        <h2 className="text-3xl font-semibold text-white">Welcome Back</h2>
+        <p className="text-sm text-slate-400">Continue your journey of bhajans and devotion.</p>
       </div>
       
       {error && (
@@ -75,46 +75,46 @@ export default function LoginForm() {
       )}
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Email Address</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email Address</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="namaste@example.com"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Password</label>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-12 rounded-xl border-orange-200/80 bg-orange-50/30 pl-10 focus-visible:ring-orange-400"
+            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
             required
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white hover:from-orange-600 hover:to-amber-600">
+      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/30 transition-all">
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
         Enter The Sanctuary
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-orange-100" />
+          <span className="w-full border-t border-orange-500/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-3 text-muted-foreground">Or seek with</span>
+          <span className="bg-slate-800/50 px-3 text-slate-400">Or seek with</span>
         </div>
       </div>
 
@@ -123,15 +123,15 @@ export default function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="h-12 w-full rounded-xl border-orange-200 bg-white"
+        className="h-12 w-full rounded-xl border border-orange-500/30 bg-slate-800/50 text-white hover:bg-slate-700/50 hover:border-orange-500/50"
       >
         <Chrome className="mr-2 w-4 h-4" />
         Sign in with Google
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-slate-400">
         New to the Editorial?{' '}
-        <Link to="/auth/signup" className="text-primary hover:underline font-medium">
+        <Link to="/auth/signup" className="text-orange-400 hover:text-orange-300 hover:underline font-medium">
           Create Account
         </Link>
       </p>

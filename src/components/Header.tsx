@@ -84,7 +84,7 @@ export default function Header() {
           </Link>
           <Link
             to="/kirtan-ai"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-all font-semibold"
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-all font-semibold touch-target"
           >
             <Sparkles className="w-4 h-4" />
             {t('kirtanAi')}
@@ -205,8 +205,17 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
-          <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
+        <div className="md:hidden border-t border-border bg-background px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
+            <h3 className="text-sm font-semibold text-foreground">Menu</h3>
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="p-2 hover:bg-muted rounded-lg transition-colors touch-target"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
           <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('recent')}</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>

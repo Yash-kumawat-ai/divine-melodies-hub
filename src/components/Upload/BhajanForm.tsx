@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { deities } from '@/data/bhajans';
-import { Loader2, Check, ChevronLeft, User } from 'lucide-react';
+import { Loader2, Check, ChevronLeft, User, CheckCircle2 } from 'lucide-react';
 
 interface BhajanFormProps {
   lyrics: string;
@@ -125,24 +125,8 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
     setError('');
 
     try {
-      const { data: canSubmit, error: rateLimitError } = await (supabase as any).rpc(
-        'check_submission_rate_limit',
-        { p_user_id: user.id, p_limit: 5 }
-      );
-
-      if (rateLimitError) {
-        throw new Error('Rate limit check failed. Please try again.');
-      }
-
-      if (!canSubmit) {
-        setError('Upload limit reached. You can submit up to 5 bhajans per hour.');
-        setLoading(false);
-        return;
-      }
-
-      // Let's just save to a simple JSON structure for now
-      // In production, you'd save to Supabase
-      
+      // Upload bhajan for admin review
+      // Saves with status='pending' - will appear in admin moderation panel
       const { error: insertError } = await supabase
         .from('user_uploads')
         .insert([
@@ -161,8 +145,7 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
         ]);
 
       if (insertError) {
-        // If table doesn't exist yet, show success anyway for now
-        console.log('Note: Database table setup needed for permanent storage');
+        throw new Error('Failed to submit bhajan. Please try again.');
       }
 
       setSuccess(true);
@@ -178,23 +161,73 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
 
   if (success) {
     return (
-      <div className="w-full max-w-2xl mx-auto text-center py-12">
-        <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-          <Check className="w-8 h-8 text-green-500" />
+      <div className="w-full max-w-2xl mx-auto py-12">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-500" />
+          </div>
+          <h3 className="text-3xl font-bold mb-1">✅ Submitted Successfully!</h3>
+          <p className="text-lg text-orange-600 dark:text-orange-400 font-semibold mb-6">🙏 Under Admin Review</p>
         </div>
-        <h3 className="text-2xl font-bold mb-2">Bhajan Uploaded! 🎉</h3>
-        <p className="text-muted-foreground mb-2">
-          Title: <span className="font-semibold">{title}</span>
-        </p>
-        <p className="text-muted-foreground">
-          Your bhajan has been submitted for admin review. It will be published after approval.
-        </p>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-6 mb-6">
+          <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
+            <span>📋</span> Your Bhajan Details
+          </p>
+          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 space-y-2">
+            <p className="text-sm">
+              <span className="font-medium text-muted-foreground">Title:</span>
+              <span className="ml-2 font-semibold text-foreground">{title}</span>
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-muted-foreground">Hindi:</span>
+              <span className="ml-2 font-semibold text-foreground hindi-text">{titleHindi}</span>
+            </p>
+            <p className="text-sm">
+              <span className="font-medium text-muted-foreground">Status:</span>
+              <span className="ml-2 inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full text-xs font-semibold">
+                ⏳ Pending Approval
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-200 dark:border-orange-800 rounded-xl p-6">
+          <p className="text-sm font-semibold text-orange-900 dark:text-orange-300 mb-3 flex items-center gap-2">
+            <span>📍</span> What Happens Next
+          </p>
+          <ul className="space-y-2 text-sm text-orange-800 dark:text-orange-200">
+            <li className="flex items-start gap-3">
+              <span className="text-lg">1️⃣</span>
+              <span>Admin reviews your bhajan for quality and authenticity</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-lg">2️⃣</span>
+              <span>You'll receive a notification when it's approved</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-lg">3️⃣</span>
+              <span>Once approved, your bhajan appears for everyone in the app</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-lg">⏱️</span>
+              <span className="font-medium">Typical review time: 24-48 hours</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="text-center mt-8">
+          <p className="text-sm text-muted-foreground mb-4">Check your notifications for updates</p>
+          <Button onClick={() => onSuccess?.()} className="gap-2">
+            ← Back to Upload
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto bg-card rounded-lg p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto bg-card rounded-lg p-4 md:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold">Bhajan Details</h3>
         {profile && (

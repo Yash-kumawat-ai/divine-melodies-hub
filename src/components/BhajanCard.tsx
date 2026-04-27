@@ -10,6 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BhajanCardProps {
   bhajan: Bhajan;
@@ -19,7 +20,9 @@ interface BhajanCardProps {
 export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
 
   const getYouTubeEmbedUrl = (url: string) => {
     const match = url.match(
@@ -39,6 +42,13 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
     }
   };
 
+  const handleTitleToggle = (e: React.MouseEvent | React.KeyboardEvent) => {
+    if (!isMobile) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsTitleExpanded((prev) => !prev);
+  };
+
   return (
     <Link
       to={`/bhajan/${bhajan.slug}`}
@@ -51,11 +61,27 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           <span className="text-lg">{deity?.emoji}</span>
           <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
         </div>
-        <h3 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+        <h3
+          role={isMobile ? "button" : undefined}
+          tabIndex={isMobile ? 0 : -1}
+          aria-expanded={isMobile ? isTitleExpanded : undefined}
+          onClick={handleTitleToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleTitleToggle(e);
+            }
+          }}
+          className={`font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug ${
+            isTitleExpanded
+              ? "line-clamp-none"
+              : "line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
+          } ${isMobile ? "cursor-pointer" : ""}`}
+          title={bhajan.title}
+        >
           {bhajan.title}
         </h3>
-        <p className="hindi-text text-base text-muted-foreground mt-1">{bhajan.titleHindi}</p>
-        <p className="text-sm text-muted-foreground mt-2">{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
+        <p className="hindi-text text-base text-muted-foreground mt-1 line-clamp-1" title={bhajan.titleHindi}>{bhajan.titleHindi}</p>
+        <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">

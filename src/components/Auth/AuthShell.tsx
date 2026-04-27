@@ -26,9 +26,9 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
   const sacredBackground = `linear-gradient(145deg,rgba(12,21,49,0.62) 0%,rgba(15,23,42,0.52) 35%,rgba(217,119,6,0.4) 100%), url('/auth-sacred-bg.jpg'), url(${heroMandala})`;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,183,77,0.28),transparent_55%),radial-gradient(circle_at_bottom,rgba(239,108,0,0.18),transparent_45%),#f8f3eb] px-4 py-6 sm:py-10">
-      <div className="pointer-events-none absolute -left-20 top-16 h-64 w-64 rounded-full bg-orange-300/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 px-4 py-6 sm:py-10">
+      <div className="pointer-events-none absolute -left-20 top-16 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-orange-500/5 blur-3xl" />
 
       <div className="relative mx-auto grid min-h-[92vh] w-full max-w-6xl overflow-hidden rounded-3xl border border-orange-200/60 bg-white/75 shadow-[0_28px_80px_-28px_rgba(146,64,14,0.35)] backdrop-blur-xl lg:grid-cols-[1.1fr_0.9fr]">
         <aside
@@ -67,13 +67,13 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
           </p>
         </aside>
 
-        <main className="relative flex items-center justify-center bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,248,238,0.96))] p-5 sm:p-8 lg:p-10">
-          <div className="w-full max-w-md rounded-2xl border border-orange-100/90 bg-white/95 p-6 shadow-[0_18px_40px_-22px_rgba(194,65,12,0.45)] sm:p-7">
+        <main className="relative flex items-center justify-center bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 p-5 sm:p-8 lg:p-10">
+          <div className="w-full max-w-md rounded-2xl border border-orange-500/30 bg-slate-800/50 backdrop-blur-sm p-6 shadow-[0_18px_40px_-22px_rgba(249,115,22,0.3)] sm:p-7">
             {children}
-            <div className="mt-6 border-t border-orange-100 pt-4 text-center text-xs text-orange-900/70">
+            <div className="mt-6 border-t border-orange-500/20 pt-4 text-center text-xs text-slate-400">
               <p>By continuing, you agree to our sacred community guidelines.</p>
               <p className="mt-2">
-                <Link className="font-semibold hover:text-orange-600" to="/">
+                <Link className="font-semibold hover:text-orange-400" to="/">
                   Return to Home
                 </Link>
               </p>
