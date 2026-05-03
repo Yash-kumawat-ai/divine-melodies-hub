@@ -41,7 +41,7 @@ function normalizeText(text: string): string {
   return text
     .replace(FEATURED_PATTERN, '')
     .replace(TRAILING_TAG_PATTERN, '')
-    .replace(/[\(\[][^\)\]]*[\)\]]/g, '')
+    .replace(/[([][^)\]]*[)\]]/g, '')
     .replace(/["'`]/g, '')
     .replace(/\s+/g, ' ')
     .trim();

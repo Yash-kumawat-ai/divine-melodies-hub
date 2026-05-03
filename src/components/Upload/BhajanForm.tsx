@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { deities } from '@/data/bhajans';
-import { Loader2, Check, ChevronLeft, User, CheckCircle2 } from 'lucide-react';
+import { deities, bhajans, Bhajan as StaticBhajan } from '@/data/bhajans';
+import { Loader2, Check, ChevronLeft, User, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface BhajanFormProps {
   lyrics: string;
@@ -14,6 +14,11 @@ interface BhajanFormProps {
   onBack?: () => void;
   deityId?: number;
   deityName?: string;
+}
+
+interface DuplicateBhajan {
+  bhajan: StaticBhajan;
+  similarity: number;
 }
 
 export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityId: initialDeityId, deityName: initialDeityName }: BhajanFormProps) {
@@ -30,6 +35,53 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
   const [error, setError] = useState('');
   const [extractingMetadata, setExtractingMetadata] = useState(false);
   const [metadataError, setMetadataError] = useState('');
+  const [duplicates, setDuplicates] = useState<DuplicateBhajan[]>([]);
+  const [checkedDuplicates, setCheckedDuplicates] = useState(false);
+
+  // Levenshtein distance for duplicate detection
+  const levenshteinSimilarity = (str1: string, str2: string): number => {
+    const s1 = str1.toLowerCase().trim();
+    const s2 = str2.toLowerCase().trim();
+    if (s1 === s2) return 100;
+    const longer = s1.length > s2.length ? s1 : s2;
+    if (longer.length === 0) return 100;
+    const track = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(null));
+    for (let i = 0; i <= s1.length; i++) track[0][i] = i;
+    for (let j = 0; j <= s2.length; j++) track[j][0] = j;
+    for (let j = 1; j <= s2.length; j++) {
+      for (let i = 1; i <= s1.length; i++) {
+        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+        track[j][i] = Math.min(track[j][i - 1] + 1, track[j - 1][i] + 1, track[j - 1][i - 1] + indicator);
+      }
+    }
+    const distance = track[s2.length][s1.length];
+    return Math.max(0, ((longer.length - distance) / longer.length) * 100);
+  };
+
+  // Check for duplicates when title changes
+  useEffect(() => {
+    if (!title.trim() || title.length < 3) {
+      setDuplicates([]);
+      setCheckedDuplicates(false);
+      return;
+    }
+
+    const found: DuplicateBhajan[] = [];
+    const titleLower = title.toLowerCase();
+
+    for (const b of bhajans) {
+      const similarity = levenshteinSimilarity(titleLower, b.title);
+      if (similarity >= 70) {
+        found.push({ bhajan: b, similarity });
+      } else if (b.titleHindi.includes(title) || title.includes(b.titleHindi)) {
+        found.push({ bhajan: b, similarity: 85 });
+      }
+      if (found.length >= 3) break;
+    }
+
+    setDuplicates(found);
+    setCheckedDuplicates(true);
+  }, [title]);
 
   const sanitizeText = (value: string) => value.replace(/[<>]/g, '').trim();
 
@@ -118,6 +170,13 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
 
     if (!isValidYouTubeUrl(youtubeUrl)) {
       setError('Please provide a valid YouTube URL');
+      return;
+    }
+
+    // Check for high-similarity duplicates
+    const hasHighDuplicate = duplicates.some(d => d.similarity >= 85);
+    if (hasHighDuplicate) {
+      setError('A very similar bhajan already exists. Please check the warnings below or modify your title.');
       return;
     }
 
@@ -283,6 +342,31 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
           />
         </div>
       </div>
+
+      {/* Duplicate Warning */}
+      {checkedDuplicates && duplicates.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 mb-2">
+            <AlertTriangle className="w-5 h-5" />
+            <span className="font-medium">Similar bhajans found</span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">
+            The following bhajans have similar titles. Please verify that your bhajan is unique:
+          </p>
+          <div className="space-y-2">
+            {duplicates.slice(0, 3).map((dup, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-background/50 rounded p-2 text-sm">
+                <span>{dup.bhajan.title}</span>
+                <span className={`px-2 py-0.5 rounded text-xs ${
+                  dup.similarity >= 85 ? 'bg-red-500/20 text-red-600' : 'bg-amber-500/20 text-amber-600'
+                }`}>
+                  {dup.similarity}% match
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

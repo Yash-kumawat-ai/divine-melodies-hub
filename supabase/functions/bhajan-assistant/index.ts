@@ -205,6 +205,8 @@ function buildSystemPrompt(language: "en" | "hi", context?: AssistantContext): s
 
   return basePrompt + contextSection;
 }
+
+async function* generateFallbackResponse(
   userMessage: string,
   language: "en" | "hi"
 ): AsyncGenerator<string> {

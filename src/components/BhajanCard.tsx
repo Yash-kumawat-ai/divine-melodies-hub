@@ -10,19 +10,18 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BhajanCardProps {
   bhajan: Bhajan;
   onCardClick?: (bhajan: Bhajan) => void;
+  openOnFirstClick?: boolean;
 }
 
-export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
+export default function BhajanCard({ bhajan, onCardClick, openOnFirstClick = false }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   const { t, language } = useLanguage();
-  const isMobile = useIsMobile();
 
   const getYouTubeEmbedUrl = (url: string) => {
     const match = url.match(
@@ -36,6 +35,18 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const canPlayHere = Boolean(embedUrl);
 
   const handleCardClick = (e: React.MouseEvent) => {
+    if (openOnFirstClick && onCardClick) {
+      e.preventDefault();
+      onCardClick(bhajan);
+      return;
+    }
+
+    if (!isTitleExpanded) {
+      e.preventDefault();
+      setIsTitleExpanded(true);
+      return;
+    }
+
     if (onCardClick) {
       e.preventDefault();
       onCardClick(bhajan);
@@ -43,10 +54,10 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   };
 
   const handleTitleToggle = (e: React.MouseEvent | React.KeyboardEvent) => {
-    if (!isMobile) return;
+    if (isTitleExpanded) return;
     e.preventDefault();
     e.stopPropagation();
-    setIsTitleExpanded((prev) => !prev);
+    setIsTitleExpanded(true);
   };
 
   return (
@@ -62,9 +73,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
         </div>
         <h3
-          role={isMobile ? "button" : undefined}
-          tabIndex={isMobile ? 0 : -1}
-          aria-expanded={isMobile ? isTitleExpanded : undefined}
+          role="button"
+          tabIndex={0}
+          aria-expanded={isTitleExpanded}
           onClick={handleTitleToggle}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -75,7 +86,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
             isTitleExpanded
               ? "line-clamp-none"
               : "line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
-          } ${isMobile ? "cursor-pointer" : ""}`}
+          } cursor-pointer`}
           title={bhajan.title}
         >
           {bhajan.title}

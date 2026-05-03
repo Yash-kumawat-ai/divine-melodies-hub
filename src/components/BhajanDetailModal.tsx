@@ -65,7 +65,7 @@ export default function BhajanDetailModal({
         case 'email':
           shareViaEmail(bhajan);
           break;
-        case 'copy':
+        case 'copy': {
           const success = await copyShareLink(bhajan);
           if (success) {
             setCopied(true);
@@ -77,6 +77,7 @@ export default function BhajanDetailModal({
             setTimeout(() => setCopied(false), 2000);
           }
           break;
+        }
       }
     } catch (error) {
       console.error(`Failed to share on ${platform}:`, error);

@@ -84,19 +84,33 @@ function areSynonyms(word1: string, word2: string): boolean {
 // Score a bhajan based on search query relevance
 function scoreBhajan(bhajan: any, query: string): number {
   let score = 0;
+  let hasTitleMatch = false;
+  let hasSingerMatch = false;
   const queryWords = extractWords(query);
   const queryLower = query.toLowerCase();
 
   // Exact title match - highest priority
-  if (bhajan.title.toLowerCase() === queryLower) score += 100;
+  if (bhajan.title.toLowerCase() === queryLower) {
+    score += 200;
+    hasTitleMatch = true;
+  }
   // Title contains exact query
-  else if (bhajan.title.toLowerCase().includes(queryLower)) score += 80;
+  else if (bhajan.title.toLowerCase().includes(queryLower)) {
+    score += 100;
+    hasTitleMatch = true;
+  }
 
   // Title Hindi match
-  if (bhajan.titleHindi.includes(query)) score += 75;
+  if (bhajan.titleHindi.includes(query)) {
+    score += 80;
+    hasTitleMatch = true;
+  }
 
   // Singer name match
-  if (bhajan.singerName.toLowerCase().includes(queryLower)) score += 60;
+  if (bhajan.singerName.toLowerCase().includes(queryLower)) {
+    score += 70;
+    hasSingerMatch = true;
+  }
 
   // Match individual words in title (fuzzy)
   const titleWords = extractWords(bhajan.title);
@@ -105,34 +119,39 @@ function scoreBhajan(bhajan: any, query: string): number {
       const similarity = calculateSimilarity(qWord, tWord);
       if (similarity > 75) {
         score += similarity * 0.6; // Weight word similarity
+        hasTitleMatch = true;
       }
       // Check for synonyms
       if (areSynonyms(qWord, tWord)) {
         score += 55;
+        hasTitleMatch = true;
       }
     }
   }
 
-  // Search in lyrics - crucial for finding relevant songs
-  const lyricsWords = extractWords(bhajan.lyricsHindi + ' ' + bhajan.lyricsTransliteration);
-  let lyricsMatchCount = 0;
-  for (const qWord of queryWords) {
-    for (const lWord of lyricsWords) {
-      const similarity = calculateSimilarity(qWord, lWord);
-      if (similarity > 80) {
-        lyricsMatchCount++;
-        score += similarity * 0.4; // Weight lyrics matches less than title
-      }
-      if (areSynonyms(qWord, lWord)) {
-        lyricsMatchCount++;
-        score += 40;
+  // Only search in lyrics if there's some title/singer match
+  // This prevents irrelevant results
+  if (hasTitleMatch || hasSingerMatch) {
+    const lyricsWords = extractWords(bhajan.lyricsHindi + ' ' + bhajan.lyricsTransliteration);
+    let lyricsMatchCount = 0;
+    for (const qWord of queryWords) {
+      for (const lWord of lyricsWords) {
+        const similarity = calculateSimilarity(qWord, lWord);
+        if (similarity > 80) {
+          lyricsMatchCount++;
+          score += similarity * 0.2; // Weight lyrics matches less
+        }
+        if (areSynonyms(qWord, lWord)) {
+          lyricsMatchCount++;
+          score += 20;
+        }
       }
     }
-  }
 
-  // Bonus for multiple word matches in lyrics
-  if (lyricsMatchCount > 1) {
-    score += lyricsMatchCount * 10;
+    // Bonus for multiple word matches in lyrics
+    if (lyricsMatchCount > 1) {
+      score += lyricsMatchCount * 5;
+    }
   }
 
   // Tags match
@@ -187,7 +206,7 @@ export function smartSearchBhajans(query: string, source: any[] = []): any[] {
       ...bhajan,
       _searchScore: scoreBhajan(bhajan, query)
     }))
-    .filter(b => b._searchScore > 0) // Only keep results with positive score
+    .filter(b => b._searchScore > 30) // Require minimum score threshold for relevance
     .sort((a, b) => b._searchScore - a._searchScore); // Sort by relevance
 
   // Remove duplicates and cleanup
