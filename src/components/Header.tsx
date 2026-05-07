@@ -6,6 +6,7 @@ import { useAIModal } from "@/hooks/useAIModal";
 import { useTheme } from "@/hooks/useTheme";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import dhyaanLogo from "@/assets/dhyaan-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,11 +63,15 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
         <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-2xl md:text-3xl font-display font-bold">
-            <span className="text-gradient-saffron">ॐ</span>
-          </span>
+          <img 
+            src={dhyaanLogo} 
+            alt="Divine Melodies Hub" 
+            className="w-10 h-10 object-contain"
+            width={40}
+            height={40}
+          />
           <span className="font-display text-lg md:text-xl font-bold text-foreground hidden sm:inline">
-            Bhajan Sandhya
+            Divine Melodies Hub
           </span>
         </Link>
 

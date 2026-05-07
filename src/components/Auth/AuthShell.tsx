@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
-import heroMandala from '@/assets/hero-mandala.png';
+import dhyaanLogo from '@/assets/dhyaan-logo.png';
 
 interface AuthShellProps {
   mode: 'login' | 'signup';
@@ -23,7 +23,7 @@ const shellContent = {
 
 export default function AuthShell({ mode, children }: AuthShellProps) {
   const content = shellContent[mode];
-  const sacredBackground = `linear-gradient(145deg,rgba(12,21,49,0.62) 0%,rgba(15,23,42,0.52) 35%,rgba(217,119,6,0.4) 100%), url('/auth-sacred-bg.jpg'), url(${heroMandala})`;
+  const sacredBackground = `linear-gradient(145deg,rgba(12,21,49,0.62) 0%,rgba(15,23,42,0.52) 35%,rgba(217,119,6,0.4) 100%), url('/auth-sacred-bg.jpg'), url(${dhyaanLogo})`;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 px-4 py-6 sm:py-10">

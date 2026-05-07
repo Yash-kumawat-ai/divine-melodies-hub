@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIAssistantModal from "./components/AIAssistantModal";
 import { LanguageProvider } from "./hooks/useLanguage";
@@ -27,7 +28,7 @@ const AdminAccounts = lazy(() => import("./pages/AdminAccounts"));
 const AdminAuditLog = lazy(() => import("./pages/AdminAuditLog"));
 const MyNotifications = lazy(() => import("./pages/MyNotifications"));
 const LoginForm = lazy(() => import("./components/Auth/LoginForm"));
-const SignupForm = lazy(() => import("./components/Auth/SignupForm"));
+const SignupTabs = lazy(() => import("./components/Auth/SignupTabs"));
 const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AIAssistantModalHost = lazy(() => import("./components/AIAssistantModalHost"));
@@ -60,9 +61,9 @@ function AppContent() {
             <Route path="/admin/accounts" element={<ProtectedRoute requireAdmin><AdminAccounts /></ProtectedRoute>} />
             <Route path="/admin/audit" element={<ProtectedRoute requireAdmin><AdminAuditLog /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><MyNotifications /></ProtectedRoute>} />
-            <Route path="/upload-bhajan" element={<UploadBhajan />} />
+            <Route path="/upload-bhajan" element={<ProtectedRoute><UploadBhajan /></ProtectedRoute>} />
             <Route path="/auth/login" element={<AuthShell mode="login"><LoginForm /></AuthShell>} />
-            <Route path="/auth/signup" element={<AuthShell mode="signup"><SignupForm /></AuthShell>} />
+            <Route path="/auth/signup" element={<AuthShell mode="signup"><SignupTabs /></AuthShell>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -78,21 +79,23 @@ function AppContent() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <LanguageProvider>
-        <AssistantContextProvider>
-          <AIModalProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <AppContent />
-            </TooltipProvider>
-          </AIModalProvider>
-        </AssistantContextProvider>
-      </LanguageProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AssistantContextProvider>
+            <AIModalProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <AppContent />
+              </TooltipProvider>
+            </AIModalProvider>
+          </AssistantContextProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

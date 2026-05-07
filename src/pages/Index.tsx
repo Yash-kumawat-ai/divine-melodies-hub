@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import heroMandala from "@/assets/hero-mandala.png";
+import dhyaanLogo from "@/assets/dhyaan-logo.png";
 import SearchBar from "@/components/SearchBar";
 import DeityGrid from "@/components/DeityGrid";
 import BhajanCard from "@/components/BhajanCard";
@@ -62,8 +62,8 @@ const Index = () => {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-warm py-20 md:py-28 px-4">
         <img
-          src={heroMandala}
-          alt=""
+          src={dhyaanLogo}
+          alt="Divine Melodies Hub Logo"
           className="absolute right-[-10%] top-[-20%] w-[500px] opacity-10 animate-float pointer-events-none select-none"
           width={500}
           height={500}

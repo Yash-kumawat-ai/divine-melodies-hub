@@ -7,13 +7,14 @@ export interface UserProfile {
   email: string;
   name: string;
   avatar_url?: string;
+  phone_number?: string;
   role?: 'user' | 'moderator' | 'admin' | 'super_admin';
   mfa_enabled?: boolean;
   last_admin_activity_at?: string;
   created_at: string;
 }
 
-type UserProfileUpdate = Partial<Pick<UserProfile, 'name' | 'avatar_url'>>;
+type UserProfileUpdate = Partial<Pick<UserProfile, 'name' | 'avatar_url' | 'phone_number'>>;
 
 export function useAuth() {
   const ADMIN_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
@@ -91,7 +92,7 @@ export function useAuth() {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string, phone_number?: string) => {
     try {
       setError(null);
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -102,11 +103,16 @@ export function useAuth() {
       }
 
       // Profile is created automatically by database trigger
-      // Just update the name since trigger couldn't get it from form
+      // Update the name and phone_number since trigger couldn't get them from form
       if (data.user) {
         const client = supabase as any;
+        const profileUpdate: Record<string, any> = { name };
+        if (phone_number) {
+          profileUpdate.phone_number = phone_number;
+        }
+        
         const { error: profileError } = await client.from('user_profiles')
-          .update({ name })
+          .update(profileUpdate)
           .eq('id', data.user.id);
 
         if (profileError) {
@@ -120,7 +126,7 @@ export function useAuth() {
       setError(err.message);
       return { data: null, error: err };
     }
-  };
+  }
 
   const signIn = async (email: string, password: string) => {
     try {

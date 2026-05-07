@@ -1,18 +1,36 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, Lock, Loader2, Chrome } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { loginSchema, type LoginInput } from '@/schemas';
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginInput) => {
+    setError('');
+    setLoading(true);
+
+    const { error } = await signIn(data.email, data.password);
+    if (error) {
+      setError(toFriendlyError(error.message || 'Login failed'));
+    } else {
+      navigate('/upload-bhajan');
+    }
+    setLoading(false);
+  };
 
   const toFriendlyError = (message: string) => {
     const normalized = message.toLowerCase();
@@ -23,20 +41,6 @@ export default function LoginForm() {
       return 'Please verify your email first, then sign in.';
     }
     return message;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const { error } = await signIn(email, password);
-    if (error) {
-      setError(toFriendlyError(error.message || 'Login failed'));
-    } else {
-      navigate('/upload-bhajan');
-    }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -54,15 +58,15 @@ export default function LoginForm() {
         },
       });
       if (error) setError(error.message);
-    } catch (err: any) {
-      setError(toFriendlyError(err.message || 'Google login failed'));
+    } catch (err: unknown) {
+      setError(toFriendlyError(err instanceof Error ? err.message : 'Google login failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 w-full">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
       <div className="space-y-1 text-center">
         <h2 className="text-3xl font-semibold text-white">Welcome Back</h2>
         <p className="text-sm text-slate-400">Continue your journey of bhajans and devotion.</p>
@@ -75,33 +79,37 @@ export default function LoginForm() {
       )}
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email Address</label>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email Address</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
+            id="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            {...register('email')}
             placeholder="namaste@example.com"
             className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
-            required
           />
         </div>
+        {errors.email && (
+          <p className="text-xs text-destructive">{errors.email.message}</p>
+        )}
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
+            id="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register('password')}
             placeholder="••••••••"
             className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
-            required
           />
         </div>
+        {errors.password && (
+          <p className="text-xs text-destructive">{errors.password.message}</p>
+        )}
       </div>
 
       <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/30 transition-all">
