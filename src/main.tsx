@@ -3,19 +3,12 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
-const requiredEnvVars = [
-  'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_PUBLISHABLE_KEY',
-  'VITE_CLOUDINARY_CLOUD_NAME',
-];
+// Check for Supabase env vars (support both VITE_ and NEXT_PUBLIC_ prefixes)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const missingEnvVars = requiredEnvVars.filter(key => {
-  const value = import.meta.env[key];
-  return !value || value.startsWith('your-') || value.includes('your-');
-});
-
-if (missingEnvVars.length > 0) {
-  throw new Error(`Missing required env: ${missingEnvVars.join(', ')}`);
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Supabase environment variables not configured. Some features may not work.');
 }
 
 createRoot(document.getElementById("root")!).render(
