@@ -17,6 +17,7 @@ export default {
         display: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
         hindi: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
         body: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
+        sans: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
       },
       fontSize: {
         'base': '18px',
@@ -72,6 +73,13 @@ export default {
         },
         maroon: "hsl(var(--maroon))",
         cream: "hsl(var(--cream))",
+        brand: {
+          saffron: "#FF6B00",
+          gold: "#F5A623",
+          cream: "#FFF8F0",
+          brown: "#3B1F0A",
+          dark: "#1a1006",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

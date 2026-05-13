@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SuspenseFallback from "./components/SuspenseFallback";
 import AIAssistantModal from "./components/AIAssistantModal";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { AssistantContextProvider } from "./hooks/useAssistantContext";
@@ -14,7 +15,7 @@ import { ThemeProvider } from "./hooks/useTheme";
 
 const queryClient = new QueryClient();
 
-const Index = lazy(() => import("./pages/Index"));
+const Home = lazy(() => import("./pages/Home"));
 const AllDeities = lazy(() => import("./pages/AllDeities"));
 const AllBhajans = lazy(() => import("./pages/AllBhajans"));
 const DeityPage = lazy(() => import("./pages/DeityPage"));
@@ -33,29 +34,36 @@ const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AIAssistantModalHost = lazy(() => import("./components/AIAssistantModalHost"));
 
-function RouteFallback() {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-}
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const About = lazy(() => import("./pages/About"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
-  
+
   return (
     <>
       <BrowserRouter>
-        <Suspense fallback={<RouteFallback />}>
+        <Suspense fallback={<SuspenseFallback />}>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Home />} />
             <Route path="/all-bhajans" element={<AllBhajans />} />
             <Route path="/recent-bhajans" element={<RecentBhajans />} />
             <Route path="/all-deities" element={<AllDeities />} />
             <Route path="/deity/:slug" element={<DeityPage />} />
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/kirtan-ai" element={<ProtectedRoute><KirtanAIPage /></ProtectedRoute>} />
             <Route path="/admin/moderation" element={<ProtectedRoute requireAdmin><AdminModeration /></ProtectedRoute>} />
             <Route path="/admin/accounts" element={<ProtectedRoute requireAdmin><AdminAccounts /></ProtectedRoute>} />
@@ -68,7 +76,7 @@ function AppContent() {
           </Routes>
         </Suspense>
       </BrowserRouter>
-      
+
       {isOpen && (
         <Suspense fallback={null}>
           <AIAssistantModalHost />

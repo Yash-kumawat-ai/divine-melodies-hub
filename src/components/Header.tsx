@@ -82,8 +82,9 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
-          <Link to="/recent-bhajans" className="text-foreground hover:text-primary transition-colors">{t('recent')}</Link>
-          <Link to="/search" className="text-foreground hover:text-primary transition-colors">{t('search')}</Link>
+          <Link to="/blog" className="text-foreground hover:text-primary transition-colors">{t('blog')}</Link>
+          <Link to="/pricing" className="text-foreground hover:text-primary transition-colors">{t('pricing')}</Link>
+          <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
           <Link
             to="/upload-bhajan"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
@@ -98,15 +99,6 @@ export default function Header() {
             <Sparkles className="w-3.5 h-3.5" />
             {t('kirtanAi')}
           </Link>
-          {isAdmin && (
-            <Link
-              to="/admin/moderation"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 text-xs font-medium text-orange-400 hover:bg-orange-500/20 transition-colors"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              Admin
-            </Link>
-          )}
           <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
             <Search className="w-5 h-5" />
           </Link>
@@ -231,7 +223,9 @@ export default function Header() {
             </button>
           </div>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
-          <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('recent')}</Link>
+          <Link to="/blog" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('blog')}</Link>
+          <Link to="/pricing" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('pricing')}</Link>
+          <Link to="/about" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('about')}</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
           <Link
             to="/kirtan-ai"
@@ -251,16 +245,6 @@ export default function Header() {
             <Upload className="w-4 h-4" />
             {t('upload')}
           </Link>
-          {isAdmin && (
-            <Link
-              to="/admin/moderation"
-              onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 py-3 text-lg font-medium text-orange-400"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Admin Panel
-            </Link>
-          )}
           <div className="pt-2">
             <label className="block text-sm text-muted-foreground mb-1">{t('language')}</label>
             <select

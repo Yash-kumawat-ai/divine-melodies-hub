@@ -1,5 +1,15 @@
 import { supabase } from '@/lib/supabaseClient';
 
+/*
+ * RLS Policy Reminders (enforced at database level):
+ *
+ * user_uploads   – users can only read/write their own rows; admins can read/update all
+ * bhajans        – public read only if visible = true; no public write
+ * user_profiles  – users can only update their own row; cannot update role column directly
+ * moderation_notifications – users can only read their own notifications
+ * newsletter_subscribers   – anyone can insert; only admins can read
+ */
+
 export const queryUserUploads = async (options?: { orderBy?: string; limit?: number; includeUnapproved?: boolean }) => {
   const client = supabase as any;
   let query = client

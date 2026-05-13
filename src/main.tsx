@@ -18,6 +18,10 @@ if (missingEnvVars.length > 0) {
   throw new Error(`Missing required env: ${missingEnvVars.join(', ')}`);
 }
 
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('[UnhandledRejection]', event.reason);
+});
+
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <App />

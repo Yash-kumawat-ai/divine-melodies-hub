@@ -18,3 +18,11 @@ export const supabase = createClient<Database>(SUPABASE_URL ?? '', SUPABASE_KEY 
     autoRefreshToken: true,
   },
 });
+
+export async function getAuthenticatedClient() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session) {
+    throw new Error('Authentication required. Please log in.');
+  }
+  return supabase;
+}

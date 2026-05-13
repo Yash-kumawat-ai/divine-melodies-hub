@@ -15,7 +15,6 @@ import BhajanCard from './BhajanCard';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogClose,
@@ -36,6 +35,7 @@ interface BhajanDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   allBhajans?: Bhajan[];
+  onSelectBhajan?: (bhajan: Bhajan) => void;
 }
 
 export default function BhajanDetailModal({
@@ -43,6 +43,7 @@ export default function BhajanDetailModal({
   isOpen,
   onClose,
   allBhajans = [],
+  onSelectBhajan,
 }: BhajanDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
@@ -89,10 +90,15 @@ export default function BhajanDetailModal({
     }
   };
 
+  const handleRelatedClick = (clickedBhajan: Bhajan) => {
+    if (onSelectBhajan) {
+      onSelectBhajan(clickedBhajan);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-        {/* Hidden DialogTitle for accessibility */}
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {bhajan.titleHindi} {language === 'hi' ? '• गायक:' : 'by'} {bhajan.singerName}
@@ -119,7 +125,6 @@ export default function BhajanDetailModal({
             </DialogClose>
           </div>
 
-          {/* Stats */}
           <div className="flex items-center gap-6 mt-4 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <Play className="w-4 h-4" />
@@ -253,7 +258,10 @@ export default function BhajanDetailModal({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + index * 0.1 }}
                     >
-                      <BhajanCard bhajan={relatedBhajan} />
+                      <BhajanCard
+                        bhajan={relatedBhajan}
+                        onCardClick={handleRelatedClick}
+                      />
                     </motion.div>
                   ))}
                 </div>

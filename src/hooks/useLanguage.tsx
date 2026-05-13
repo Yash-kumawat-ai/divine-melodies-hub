@@ -107,7 +107,105 @@ type TranslationKey =
   | 'searchBhajansOrSingersPlaceholder'
   | 'noBhajansFound'
   | 'switchToDarkMode'
-  | 'switchToLightMode';
+  | 'switchToLightMode'
+  // Navbar / Header
+  | 'blog'
+  | 'pricing'
+  | 'about'
+  // Home page
+  | 'discoverThe'
+  | 'divine'
+  | 'heroSubtitle'
+  | 'browseBhajans'
+  | 'uploadYours'
+  | 'bhajans'
+  | 'artists'
+  | 'listeners'
+  | 'whyHariKirtan'
+  | 'uploadAndShare'
+  | 'uploadAndShareDesc'
+  | 'discoverBhajans'
+  | 'discoverBhajansDesc'
+  | 'communityDriven'
+  | 'communityDrivenDesc'
+  | 'curatedQuality'
+  | 'curatedQualityDesc'
+  | 'lovedByDevotees'
+  | 'joinThousands'
+  | 'joinThousandsSubtitle'
+  | 'getStartedFree'
+  // Pricing page
+  | 'simpleHonestPricing'
+  | 'choosePlan'
+  | 'monthly'
+  | 'annual'
+  | 'save20'
+  | 'mostPopular'
+  | 'free'
+  | 'devotee'
+  | 'seva'
+  | 'getStarted'
+  | 'subscribe'
+  | 'perMonth'
+  | 'perYear'
+  | 'billedAnnually'
+  | 'faq'
+  | 'browseBhajansFeature'
+  | 'uploadLimit3'
+  | 'uploadUnlimited'
+  | 'priorityReview'
+  | 'devoteeBadge'
+  | 'exclusiveBhajans'
+  | 'supportPlatform'
+  | 'earlyAccess'
+  // Blog
+  | 'blogTitle'
+  | 'blogSubtitle'
+  | 'searchArticles'
+  | 'all'
+  | 'devotion'
+  | 'culture'
+  | 'appUpdates'
+  | 'stories'
+  | 'noArticlesFound'
+  | 'backToBlog'
+  | 'shareArticle'
+  | 'relatedArticles'
+  | 'postNotFound'
+  // About page
+  | 'ourMission'
+  | 'ourValues'
+  | 'meetTheFounder'
+  | 'founderAndDeveloper'
+  | 'ourStory'
+  | 'getInTouch'
+  | 'getInTouchSubtitle'
+  | 'emailUs'
+  | 'devotionValue'
+  | 'devotionValueDesc'
+  | 'authenticityValue'
+  | 'authenticityValueDesc'
+  | 'communityValue'
+  | 'communityValueDesc'
+  | 'sevaValue'
+  | 'sevaValueDesc'
+  // Footer
+  | 'footerDescription'
+  | 'emailForUpdates'
+  | 'explore'
+  | 'community'
+  | 'legal'
+  | 'privacyPolicy'
+  | 'termsOfService'
+  | 'cookiePolicy'
+  | 'madeWithDevotion'
+  // Legal
+  | 'lastUpdated'
+  // Misc
+  | 'loading'
+  | 'somethingWentWrong'
+  | 'goHome'
+  | 'refreshPage';
 
 const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, string>>> = {
   en: {
@@ -139,13 +237,13 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     completeDevotionalMusic: 'Your complete Hari Kirtan collection — lyrics, audio & more',
     footerTagline: 'Hari Kirtan — your treasury of devotional music',
     featuredBhajans: 'Featured Bhajans',
-    popularBhajans: 'लोकप्रिय भजन',
+    popularBhajans: 'Popular Bhajans',
     communityBhajans: 'Community Bhajans',
-    sharedByOurCommunity: 'समुदाय द्वारा साझा किए गए भजन',
+    sharedByOurCommunity: 'Shared by our community of devotees',
     allDeities: 'All Deities',
     exploreDeities: 'Explore the divine across traditions and stories',
     browseByDeity: 'Browse by Deity',
-    devotionalSongs: 'देवता के अनुसार भजन खोजें',
+    devotionalSongs: 'Find bhajans by deity',
     recentBhajans: 'Recent Bhajans',
     latestUploads: 'Latest uploads from our community',
     trendingHour: 'Trending This Hour',
@@ -215,6 +313,104 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     noBhajansFound: 'No bhajans found',
     switchToDarkMode: 'Switch to Dark Mode',
     switchToLightMode: 'Switch to Light Mode',
+    // Navbar
+    blog: 'Blog',
+    pricing: 'Pricing',
+    about: 'About',
+    // Home
+    discoverThe: 'Discover the',
+    divine: 'Divine',
+    heroSubtitle: 'The largest community-driven collection of Hindu devotional music. Browse, listen, and share bhajans with devotees worldwide.',
+    browseBhajans: 'Browse Bhajans',
+    uploadYours: 'Upload Yours',
+    bhajans: 'Bhajans',
+    artists: 'Artists',
+    listeners: 'Listeners',
+    whyHariKirtan: 'Why Hari Kirtan?',
+    uploadAndShare: 'Upload & Share',
+    uploadAndShareDesc: 'Share your favorite bhajans with the community in minutes.',
+    discoverBhajans: 'Discover Bhajans',
+    discoverBhajansDesc: 'Find devotional songs by deity, singer, language, or mood.',
+    communityDriven: 'Community Driven',
+    communityDrivenDesc: 'Join thousands of devotees preserving our musical heritage.',
+    curatedQuality: 'Curated Quality',
+    curatedQualityDesc: 'Every submission is reviewed for accuracy before publishing.',
+    lovedByDevotees: 'Loved by Devotees',
+    joinThousands: 'Join Thousands of Devotees',
+    joinThousandsSubtitle: 'Start exploring the divine world of bhajans. Create a free account and begin your journey.',
+    getStartedFree: 'Get Started Free',
+    // Pricing
+    simpleHonestPricing: 'Simple, Honest Pricing',
+    choosePlan: 'Choose the plan that fits your devotional journey. All prices in INR.',
+    monthly: 'Monthly',
+    annual: 'Annual',
+    save20: 'Save 20%',
+    mostPopular: 'Most Popular',
+    free: 'Free',
+    devotee: 'Devotee',
+    seva: 'Seva',
+    getStarted: 'Get Started',
+    subscribe: 'Subscribe',
+    perMonth: '/month',
+    perYear: '/year',
+    billedAnnually: 'billed annually',
+    faq: 'Frequently Asked Questions',
+    browseBhajansFeature: 'Browse bhajans',
+    uploadLimit3: 'Upload bhajans (3/month)',
+    uploadUnlimited: 'Upload bhajans (Unlimited)',
+    priorityReview: 'Priority review',
+    devoteeBadge: 'Devotee badge',
+    exclusiveBhajans: 'Exclusive bhajans',
+    supportPlatform: 'Support the platform',
+    earlyAccess: 'Early access',
+    // Blog
+    blogTitle: 'Blog',
+    blogSubtitle: 'Stories, culture, and updates from the world of devotional music.',
+    searchArticles: 'Search articles...',
+    all: 'All',
+    devotion: 'Devotion',
+    culture: 'Culture',
+    appUpdates: 'App Updates',
+    stories: 'Stories',
+    noArticlesFound: 'No articles found.',
+    backToBlog: 'Back to Blog',
+    shareArticle: 'Share this article',
+    relatedArticles: 'Related Articles',
+    postNotFound: 'Post not found',
+    // About
+    ourMission: 'Our Mission',
+    ourValues: 'Our Values',
+    meetTheFounder: 'Meet the Founder',
+    founderAndDeveloper: 'Founder & Developer',
+    ourStory: 'Our Story',
+    getInTouch: 'Get in Touch',
+    getInTouchSubtitle: 'Have questions, suggestions, or want to contribute? We\'d love to hear from you.',
+    emailUs: 'Email Us',
+    devotionValue: 'Devotion',
+    devotionValueDesc: 'Every feature we build is rooted in reverence for India\'s spiritual traditions.',
+    authenticityValue: 'Authenticity',
+    authenticityValueDesc: 'We verify lyrics, attribute artists, and preserve the original form of every bhajan.',
+    communityValue: 'Community',
+    communityValueDesc: 'Built by devotees, for devotees. Every upload enriches our shared heritage.',
+    sevaValue: 'Seva',
+    sevaValueDesc: 'Service to the devotional arts. Our core features remain free, always.',
+    // Footer
+    footerDescription: 'Preserving devotion, one bhajan at a time. The largest community-driven collection of Hindu devotional music.',
+    emailForUpdates: 'Your email for updates',
+    explore: 'Explore',
+    community: 'Community',
+    legal: 'Legal',
+    privacyPolicy: 'Privacy Policy',
+    termsOfService: 'Terms of Service',
+    cookiePolicy: 'Cookie Policy',
+    madeWithDevotion: 'Made with devotion in India.',
+    // Legal
+    lastUpdated: 'Last updated',
+    // Misc
+    loading: 'Loading...',
+    somethingWentWrong: 'Something went wrong',
+    goHome: 'Go Home',
+    refreshPage: 'Refresh Page',
   },
   hi: {
     home: 'होम',
@@ -321,94 +517,144 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     noBhajansFound: 'कोई भजन नहीं मिला',
     switchToDarkMode: 'डार्क मोड चालू करें',
     switchToLightMode: 'लाइट मोड चालू करें',
+    // Navbar
+    blog: 'ब्लॉग',
+    pricing: 'मूल्य',
+    about: 'हमारे बारे में',
+    // Home
+    discoverThe: 'खोजें',
+    divine: 'दिव्य संगीत',
+    heroSubtitle: 'हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह। भजन खोजें, सुनें और भक्तों के साथ साझा करें।',
+    browseBhajans: 'भजन देखें',
+    uploadYours: 'अपना अपलोड करें',
+    bhajans: 'भजन',
+    artists: 'कलाकार',
+    listeners: 'श्रोता',
+    whyHariKirtan: 'हरि कीर्तन क्यों?',
+    uploadAndShare: 'अपलोड और साझा करें',
+    uploadAndShareDesc: 'अपने पसंदीदा भजन मिनटों में समुदाय के साथ साझा करें।',
+    discoverBhajans: 'भजन खोजें',
+    discoverBhajansDesc: 'देवता, गायक, भाषा या भाव के अनुसार भजन खोजें।',
+    communityDriven: 'समुदाय संचालित',
+    communityDrivenDesc: 'हमारी संगीत विरासत को संरक्षित करने वाले हजारों भक्तों से जुड़ें।',
+    curatedQuality: 'क्यूरेटेड गुणवत्ता',
+    curatedQualityDesc: 'प्रकाशन से पहले हर भजन की सटीकता की समीक्षा की जाती है।',
+    lovedByDevotees: 'भक्तों द्वारा प्रिय',
+    joinThousands: 'हजारों भक्तों से जुड़ें',
+    joinThousandsSubtitle: 'भजनों की दिव्य दुनिया खोजना शुरू करें। मुफ्त खाता बनाएं और अपनी यात्रा शुरू करें।',
+    getStartedFree: 'मुफ्त शुरू करें',
+    // Pricing
+    simpleHonestPricing: 'सरल, ईमानदार मूल्य',
+    choosePlan: 'अपनी भक्ति यात्रा के लिए सही योजना चुनें। सभी मूल्य भारतीय रुपये में।',
+    monthly: 'मासिक',
+    annual: 'वार्षिक',
+    save20: '20% बचाएं',
+    mostPopular: 'सबसे लोकप्रिय',
+    free: 'मुफ्त',
+    devotee: 'भक्त',
+    seva: 'सेवा',
+    getStarted: 'शुरू करें',
+    subscribe: 'सदस्यता लें',
+    perMonth: '/माह',
+    perYear: '/वर्ष',
+    billedAnnually: 'वार्षिक बिलिंग',
+    faq: 'अक्सर पूछे जाने वाले प्रश्न',
+    browseBhajansFeature: 'भजन ब्राउज़ करें',
+    uploadLimit3: 'भजन अपलोड (3/माह)',
+    uploadUnlimited: 'भजन अपलोड (असीमित)',
+    priorityReview: 'प्राथमिकता समीक्षा',
+    devoteeBadge: 'भक्त बैज',
+    exclusiveBhajans: 'विशेष भजन',
+    supportPlatform: 'मंच का समर्थन करें',
+    earlyAccess: 'शीघ्र पहुँच',
+    // Blog
+    blogTitle: 'ब्लॉग',
+    blogSubtitle: 'भक्ति संगीत की दुनिया से कहानियां, संस्कृति और अपडेट।',
+    searchArticles: 'लेख खोजें...',
+    all: 'सभी',
+    devotion: 'भक्ति',
+    culture: 'संस्कृति',
+    appUpdates: 'ऐप अपडेट',
+    stories: 'कहानियां',
+    noArticlesFound: 'कोई लेख नहीं मिला।',
+    backToBlog: 'ब्लॉग पर वापस',
+    shareArticle: 'यह लेख साझा करें',
+    relatedArticles: 'संबंधित लेख',
+    postNotFound: 'पोस्ट नहीं मिली',
+    // About
+    ourMission: 'हमारा उद्देश्य',
+    ourValues: 'हमारे मूल्य',
+    meetTheFounder: 'संस्थापक से मिलें',
+    founderAndDeveloper: 'संस्थापक और डेवलपर',
+    ourStory: 'हमारी कहानी',
+    getInTouch: 'संपर्क करें',
+    getInTouchSubtitle: 'प्रश्न, सुझाव या योगदान करना चाहते हैं? हमें आपसे सुनकर खुशी होगी।',
+    emailUs: 'ईमेल करें',
+    devotionValue: 'भक्ति',
+    devotionValueDesc: 'हम जो भी बनाते हैं वह भारत की आध्यात्मिक परंपराओं के प्रति श्रद्धा पर आधारित है।',
+    authenticityValue: 'प्रामाणिकता',
+    authenticityValueDesc: 'हम गीतों की पुष्टि करते हैं, कलाकारों का श्रेय देते हैं, और हर भजन के मूल रूप को संरक्षित करते हैं।',
+    communityValue: 'समुदाय',
+    communityValueDesc: 'भक्तों द्वारा, भक्तों के लिए बनाया गया। हर अपलोड हमारी साझा विरासत को समृद्ध करता है।',
+    sevaValue: 'सेवा',
+    sevaValueDesc: 'भक्ति कलाओं की सेवा। हमारी मुख्य सुविधाएं हमेशा मुफ्त रहेंगी।',
+    // Footer
+    footerDescription: 'एक-एक भजन से भक्ति को संरक्षित करना। हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह।',
+    emailForUpdates: 'अपडेट के लिए ईमेल',
+    explore: 'खोजें',
+    community: 'समुदाय',
+    legal: 'कानूनी',
+    privacyPolicy: 'गोपनीयता नीति',
+    termsOfService: 'सेवा की शर्तें',
+    cookiePolicy: 'कुकी नीति',
+    madeWithDevotion: 'भारत में भक्ति से बनाया गया।',
+    // Legal
+    lastUpdated: 'अंतिम अपडेट',
+    // Misc
+    loading: 'लोड हो रहा है...',
+    somethingWentWrong: 'कुछ गलत हो गया',
+    goHome: 'होम जाएं',
+    refreshPage: 'पेज रिफ्रेश करें',
   },
   gu: {
-    home: 'હોમ',
-    browse: 'ભજન',
-    trending: 'ટ્રેન્ડિંગ',
-    search: 'શોધો',
-    upload: 'અપલોડ',
-    login: 'લોગ ઇન',
-    logout: 'લોગ આઉટ',
-    profile: 'પ્રોફાઇલ',
-    setPhoto: 'પ્રોફાઇલ ફોટો સેટ કરો',
-    language: 'ભાષા',
-    addBhajan: 'ભજન ઉમેરો',
-    shareCommunity: 'તમારા પ્રિય ભજન સમાજ સાથે શેર કરો',
-    god: 'ભગવાન',
-    lyrics: 'ગીત',
-    details: 'વિગતો',
-    selectGodForBhajan: 'ભજન માટે ભગવાન પસંદ કરો',
-    addAnotherGod: 'બીજા ભગવાન ઉમેરો',
-    addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
-    changeGod: 'ભગવાન બદલો',
-    bhajansCount: 'ભજનો',
+    home: 'હોમ', browse: 'ભજન', trending: 'ટ્રેન્ડિંગ', search: 'શોધો',
+    upload: 'અપલોડ', login: 'લોગ ઇન', logout: 'લોગ આઉટ', profile: 'પ્રોફાઇલ',
+    setPhoto: 'પ્રોફાઇલ ફોટો સેટ કરો', language: 'ભાષા', addBhajan: 'ભજન ઉમેરો',
+    shareCommunity: 'તમારા પ્રિય ભજન સમાજ સાથે શેર કરો', god: 'ભગવાન',
+    lyrics: 'ગીત', details: 'વિગતો', selectGodForBhajan: 'ભજન માટે ભગવાન પસંદ કરો',
+    addAnotherGod: 'બીજા ભગવાન ઉમેરો', addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
+    changeGod: 'ભગવાન બદલો', bhajansCount: 'ભજનો',
+    blog: 'બ્લોગ', pricing: 'કિંમત', about: 'અમારા વિશે',
   },
   mr: {
-    home: 'मुख्यपृष्ठ',
-    browse: 'भजने',
-    trending: 'ट्रेंडिंग',
-    search: 'शोधा',
-    upload: 'अपलोड',
-    login: 'लॉग इन',
-    logout: 'लॉग आउट',
-    profile: 'प्रोफाइल',
-    setPhoto: 'प्रोफाइल फोटो सेट करा',
-    language: 'भाषा',
-    addBhajan: 'भजन जोडा',
-    shareCommunity: 'तुमची आवडती भजने समुदायासोबत शेअर करा',
-    god: 'देव',
-    lyrics: 'गीत',
-    details: 'तपशील',
-    selectGodForBhajan: 'भजनासाठी देव निवडा',
-    addAnotherGod: 'आणखी एक देव जोडा',
-    addDeityHint: 'यादीत नसल्यास नवीन जोडा',
-    changeGod: 'देव बदला',
-    bhajansCount: 'भजने',
+    home: 'मुख्यपृष्ठ', browse: 'भजने', trending: 'ट्रेंडिंग', search: 'शोधा',
+    upload: 'अपलोड', login: 'लॉग इन', logout: 'लॉग आउट', profile: 'प्रोफाइल',
+    setPhoto: 'प्रोफाइल फोटो सेट करा', language: 'भाषा', addBhajan: 'भजन जोडा',
+    shareCommunity: 'तुमची आवडती भजने समुदायासोबत शेअर करा', god: 'देव',
+    lyrics: 'गीत', details: 'तपशील', selectGodForBhajan: 'भजनासाठी देव निवडा',
+    addAnotherGod: 'आणखी एक देव जोडा', addDeityHint: 'यादीत नसल्यास नवीन जोडा',
+    changeGod: 'देव बदला', bhajansCount: 'भजने',
+    blog: 'ब्लॉग', pricing: 'किंमत', about: 'आमच्याबद्दल',
   },
   bn: {
-    home: 'হোম',
-    browse: 'ভজন',
-    trending: 'ট্রেন্ডিং',
-    search: 'খুঁজুন',
-    upload: 'আপলোড',
-    login: 'লগ ইন',
-    logout: 'লগ আউট',
-    profile: 'প্রোফাইল',
-    setPhoto: 'প্রোফাইল ছবি সেট করুন',
-    language: 'ভাষা',
-    addBhajan: 'ভজন যোগ করুন',
-    shareCommunity: 'আপনার প্রিয় ভজন কমিউনিটির সাথে শেয়ার করুন',
-    god: 'ঈশ্বর',
-    lyrics: 'গান',
-    details: 'বিস্তারিত',
-    selectGodForBhajan: 'ভজনের জন্য ঈশ্বর নির্বাচন করুন',
-    addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন',
-    addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
-    changeGod: 'ঈশ্বর পরিবর্তন করুন',
-    bhajansCount: 'ভজন',
+    home: 'হোম', browse: 'ভজন', trending: 'ট্রেন্ডিং', search: 'খুঁজুন',
+    upload: 'আপলোড', login: 'লগ ইন', logout: 'লগ আউট', profile: 'প্রোফাইল',
+    setPhoto: 'প্রোফাইল ছবি সেট করুন', language: 'ভাষা', addBhajan: 'ভজন যোগ করুন',
+    shareCommunity: 'আপনার প্রিয় ভজন কমিউনিটির সাথে শেয়ার করুন', god: 'ঈশ্বর',
+    lyrics: 'গান', details: 'বিস্তারিত', selectGodForBhajan: 'ভজনের জন্য ঈশ্বর নির্বাচন করুন',
+    addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন', addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
+    changeGod: 'ঈশ্বর পরিবর্তন করুন', bhajansCount: 'ভজন',
+    blog: 'ব্লগ', pricing: 'মূল্য', about: 'আমাদের সম্পর্কে',
   },
   ta: {
-    home: 'முகப்பு',
-    browse: 'பஜன்கள்',
-    trending: 'டிரெண்டிங்',
-    search: 'தேடல்',
-    upload: 'பதிவேற்று',
-    login: 'உள்நுழை',
-    logout: 'வெளியேறு',
-    profile: 'சுயவிவரம்',
-    setPhoto: 'சுயவிவரப் புகைப்படம் அமை',
-    language: 'மொழி',
-    addBhajan: 'பஜன் சேர்க்கவும்',
-    shareCommunity: 'உங்கள் விருப்ப பஜன்களை சமூகத்துடன் பகிரவும்',
-    god: 'கடவுள்',
-    lyrics: 'வரிகள்',
-    details: 'விவரங்கள்',
-    selectGodForBhajan: 'பஜனுக்கு கடவுளை தேர்வு செய்யவும்',
-    addAnotherGod: 'மற்றொரு கடவுளை சேர்',
-    addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
-    changeGod: 'கடவுளை மாற்று',
-    bhajansCount: 'பஜன்கள்',
+    home: 'முகப்பு', browse: 'பஜன்கள்', trending: 'டிரெண்டிங்', search: 'தேடல்',
+    upload: 'பதிவேற்று', login: 'உள்நுழை', logout: 'வெளியேறு', profile: 'சுயவிவரம்',
+    setPhoto: 'சுயவிவரப் புகைப்படம் அமை', language: 'மொழி', addBhajan: 'பஜன் சேர்க்கவும்',
+    shareCommunity: 'உங்கள் விருப்ப பஜன்களை சமூகத்துடன் பகிரவும்', god: 'கடவுள்',
+    lyrics: 'வரிகள்', details: 'விவரங்கள்', selectGodForBhajan: 'பஜனுக்கு கடவுளை தேர்வு செய்யவும்',
+    addAnotherGod: 'மற்றொரு கடவுளை சேர்', addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
+    changeGod: 'கடவுளை மாற்று', bhajansCount: 'பஜன்கள்',
+    blog: 'வலைப்பதிவு', pricing: 'விலை', about: 'எங்களை பற்றி',
   },
 };
 

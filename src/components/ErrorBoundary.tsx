@@ -25,6 +25,10 @@ export default class ErrorBoundary extends Component<Props, State> {
     console.error('[ErrorBoundary]', error, errorInfo);
   }
 
+  handleGoHome = () => {
+    window.location.href = '/';
+  };
+
   handleRefresh = () => {
     window.location.reload();
   };
@@ -43,11 +47,16 @@ export default class ErrorBoundary extends Component<Props, State> {
               Something went wrong
             </h1>
             <p className="text-muted-foreground mb-6">
-              We're sorry, but something unexpected happened. Please refresh the page to try again.
+              We're sorry, but something unexpected happened. Please try again.
             </p>
-            <Button onClick={this.handleRefresh} className="inline-flex">
-              Refresh Page
-            </Button>
+            <div className="flex items-center justify-center gap-3">
+              <Button onClick={this.handleGoHome} variant="default">
+                Go Home
+              </Button>
+              <Button onClick={this.handleRefresh} variant="outline">
+                Refresh Page
+              </Button>
+            </div>
           </div>
         </div>
       );

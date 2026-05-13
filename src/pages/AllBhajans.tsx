@@ -205,7 +205,7 @@ export const AllBhajans = () => {
       </section>
 
       {/* Filters Section */}
-      <section className="sticky top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4 px-4">
+      <section className=" top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4 px-4">
         <div className="container mx-auto max-w-6xl space-y-4">
           {/* Search Bar */}
           <div className="relative">

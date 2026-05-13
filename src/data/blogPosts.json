@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "slug": "why-we-built-hari-kirtan",
+    "title": "Why We Built Hari Kirtan",
+    "excerpt": "The story behind India's devotional music platform — preserving bhajans for generations to come.",
+    "content": "Every evening in millions of Indian homes, the sound of bhajans fills the air. These devotional songs have been passed down through generations, carrying with them the essence of our spiritual heritage.\n\nYet, as we moved into the digital age, we noticed something troubling. Many beautiful bhajans were scattered across the internet without proper attribution, lyrics were incomplete or incorrect, and there was no single platform dedicated to preserving this rich tradition.\n\nThat's why we created Hari Kirtan. Our mission is simple: to build the most comprehensive, accurate, and accessible collection of Hindu devotional music. We believe every bhajan deserves to be preserved with its complete lyrics, proper attribution to the singer and composer, and historical context.\n\nWe started with a small collection of bhajans dedicated to Lord Krishna, and the response from the community was overwhelming. Devotees from across India and the diaspora reached out, sharing rare bhajans, correcting lyrics, and expressing gratitude for a platform that truly cared about devotional music.\n\nToday, Hari Kirtan is more than just a website. It's a community of devotees who share a common love for bhajan singing. Whether you're looking for a specific bhajan for your morning puja, want to learn new devotional songs, or wish to share your own compositions — Hari Kirtan is your home.\n\nWe're committed to keeping this platform free for basic use, because we believe devotion should never have a paywall. At the same time, our premium plans help us sustain the platform and add new features that benefit the entire community.\n\nJoin us in preserving India's devotional music heritage. Upload your favorite bhajans, share them with fellow devotees, and help us build something truly special.",
+    "author": "Hari Kirtan Team",
+    "authorRole": "Founders",
+    "date": "2026-01-15",
+    "readTime": "5 min read",
+    "category": "App Updates",
+    "coverImage": "/mandala-logo.png"
+  },
+  {
+    "id": "2",
+    "slug": "history-of-bhajan-singing",
+    "title": "The History of Bhajan Singing in India",
+    "excerpt": "From the Bhakti movement to modern devotional music — tracing the evolution of bhajan singing across centuries.",
+    "content": "Bhajan singing is one of the oldest and most cherished forms of worship in Indian culture. The word 'bhajan' comes from the Sanskrit root 'bhaj', meaning to share, to worship, or to adore. This simple act of singing devotional songs has shaped Indian spirituality for over a thousand years.\n\nThe roots of bhajan singing can be traced back to the Bhakti movement, which emerged in South India around the 7th century CE. Saints like the Alvars and Nayanars composed beautiful devotional poetry in Tamil, expressing their love for Vishnu and Shiva respectively. These compositions were meant to be sung, making music an integral part of worship.\n\nThe Bhakti movement spread northward over the centuries, producing some of the greatest poet-saints in Indian history. Kabir, Tulsidas, Surdas, and Meera Bai composed bhajans that are still sung in homes and temples today. Their genius lay in using simple, everyday language to express profound spiritual truths.\n\nMeera Bai, the 16th-century Rajput princess who renounced royal life for her devotion to Krishna, composed hundreds of bhajans that remain beloved to this day. Her bhajans like 'Mere To Giridhar Gopal' and 'Payoji Maine Ram Ratan Dhan Payo' express a devotee's complete surrender to the divine.\n\nIn the modern era, bhajan singing has evolved while retaining its spiritual core. Anup Jalota, Anuradha Paudwal, Jagjit Singh, and many others have brought bhajans to millions through recordings and concerts. Television channels and streaming platforms have made devotional music more accessible than ever.\n\nYet something was missing. While Bollywood songs have extensive databases with complete lyrics and metadata, bhajans often lack proper documentation. Many traditional bhajans exist only in the memories of elderly devotees, at risk of being lost forever.\n\nThis is where platforms like Hari Kirtan play a crucial role. By creating a community-driven repository of bhajans with verified lyrics, proper attribution, and easy search, we can ensure that this precious heritage is preserved for future generations.\n\nWhether you prefer the classical compositions of Tulsidas or the melodious renditions of modern artists, bhajan singing remains a powerful way to connect with the divine. As the great saint Kabir said: 'Where there is bhajan, there the Lord resides.'",
+    "author": "Hari Kirtan Team",
+    "authorRole": "Culture Editor",
+    "date": "2026-02-10",
+    "readTime": "7 min read",
+    "category": "Culture",
+    "coverImage": "/mandala-logo.png"
+  },
+  {
+    "id": "3",
+    "slug": "how-to-upload-your-first-bhajan",
+    "title": "How to Upload Your First Bhajan on Hari Kirtan",
+    "excerpt": "A step-by-step guide to sharing your favorite devotional songs with the Hari Kirtan community.",
+    "content": "Sharing bhajans on Hari Kirtan is easy and rewarding. Whether you've recorded a bhajan yourself or want to add lyrics of a traditional composition, this guide will walk you through the process.\n\nStep 1: Create Your Account\nVisit harikirtan.com and click on 'Sign Up'. You can register with your email address or phone number. The process takes less than a minute.\n\nStep 2: Navigate to Upload\nOnce logged in, click the 'Upload' button in the navigation bar. This will take you to our bhajan submission form.\n\nStep 3: Fill in the Details\nProvide the bhajan title in both English and Hindi. Select the deity the bhajan is dedicated to — whether it's Krishna, Shiva, Hanuman, Rama, Durga, or any other deity. Add the singer's name and composer if known.\n\nStep 4: Add Lyrics\nPaste or type the complete lyrics in Hindi. If you have the transliterated version (Hindi lyrics in English script), you can add that too. Our platform also supports Devanagari text input.\n\nStep 5: Add a YouTube Link (Optional)\nIf there's a YouTube video of the bhajan, add the link. This helps other devotees listen to the melody while reading the lyrics.\n\nStep 6: Submit for Review\nClick 'Submit'. Your bhajan will go to our moderation queue where our team reviews it for accuracy and completeness. This usually takes less than 24 hours.\n\nStep 7: Get Notified\nOnce your bhajan is approved, you'll receive an in-app notification. Your submission will then appear on the platform for all devotees to enjoy.\n\nTips for a Great Submission:\n- Double-check the lyrics for accuracy\n- Include the complete bhajan, not just a few verses\n- Provide correct singer and composer attribution\n- Choose the right deity category for better discoverability\n\nEvery bhajan you share helps preserve India's devotional music heritage. Thank you for being part of the Hari Kirtan community!",
+    "author": "Hari Kirtan Team",
+    "authorRole": "Product Guide",
+    "date": "2026-03-05",
+    "readTime": "4 min read",
+    "category": "App Updates",
+    "coverImage": "/mandala-logo.png"
+  }
+]
