@@ -14,13 +14,11 @@ import { useLanguage } from "@/hooks/useLanguage";
 interface BhajanCardProps {
   bhajan: Bhajan;
   onCardClick?: (bhajan: Bhajan) => void;
-  openOnFirstClick?: boolean;
 }
 
-export default function BhajanCard({ bhajan, onCardClick, openOnFirstClick = false }: BhajanCardProps) {
+export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
   const { t, language } = useLanguage();
 
   const getYouTubeEmbedUrl = (url: string) => {
@@ -35,29 +33,9 @@ export default function BhajanCard({ bhajan, onCardClick, openOnFirstClick = fal
   const canPlayHere = Boolean(embedUrl);
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if (openOnFirstClick && onCardClick) {
-      e.preventDefault();
-      onCardClick(bhajan);
-      return;
-    }
-
-    if (!isTitleExpanded) {
-      e.preventDefault();
-      setIsTitleExpanded(true);
-      return;
-    }
-
-    if (onCardClick) {
-      e.preventDefault();
-      onCardClick(bhajan);
-    }
-  };
-
-  const handleTitleToggle = (e: React.MouseEvent | React.KeyboardEvent) => {
-    if (isTitleExpanded) return;
+    if (!onCardClick) return;
     e.preventDefault();
-    e.stopPropagation();
-    setIsTitleExpanded(true);
+    onCardClick(bhajan);
   };
 
   return (
@@ -73,20 +51,7 @@ export default function BhajanCard({ bhajan, onCardClick, openOnFirstClick = fal
           <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
         </div>
         <h3
-          role="button"
-          tabIndex={0}
-          aria-expanded={isTitleExpanded}
-          onClick={handleTitleToggle}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleTitleToggle(e);
-            }
-          }}
-          className={`font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug ${
-            isTitleExpanded
-              ? "line-clamp-none"
-              : "line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
-          } cursor-pointer`}
+          className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
           title={bhajan.title}
         >
           {bhajan.title}

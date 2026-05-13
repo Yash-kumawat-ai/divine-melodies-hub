@@ -28,7 +28,7 @@ interface UserBhajan {
 }
 
 const Index = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const featured = getFeaturedBhajans();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,7 +63,7 @@ const Index = () => {
       <section className="relative overflow-hidden bg-gradient-warm py-20 md:py-28 px-4">
         <img
           src={dhyaanLogo}
-          alt="Divine Melodies Hub Logo"
+          alt="Hari Kirtan logo"
           className="absolute right-[-10%] top-[-20%] w-[500px] opacity-10 animate-float pointer-events-none select-none"
           width={500}
           height={500}
@@ -77,14 +77,16 @@ const Index = () => {
           >
             <span className="text-gradient-saffron">{t('bhajansSandhya')}</span>
           </motion.h1>
+          {language !== 'hi' && (
           <motion.p
             className="hindi-text text-2xl md:text-3xl text-foreground/80 mb-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            भजन संग्रह
+            हरि कीर्तन
           </motion.p>
+          )}
           <motion.p
             className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto"
             initial={{ opacity: 0 }}

@@ -9,7 +9,7 @@ interface SEOProps {
 }
 
 export function SEO({ title, description, image, url, type = 'website' }: SEOProps) {
-  const siteName = 'Divine Melodies Hub';
+  const siteName = 'Hari Kirtan';
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   return (

@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -55,9 +53,9 @@
     --cream: 38 60% 96%;
     --temple-shadow: 0 10px 40px -10px hsl(30 60% 30% / 0.2);
 
-    --font-display: 'Playfair Display', serif;
-    --font-hindi: 'Noto Sans Devanagari', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-display: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
+    --font-hindi: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
+    --font-body: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
   }
 
   .dark {
@@ -140,6 +138,11 @@
 }
 
 @layer utilities {
+  .faculty-glyphic-regular {
+    font-family: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+  }
   .text-gradient-saffron {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(var(--saffron)), hsl(var(--gold)));

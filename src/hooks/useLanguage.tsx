@@ -29,6 +29,7 @@ type TranslationKey =
   | 'findLyricsAndMeaning'
   | 'bhajansSandhya'
   | 'completeDevotionalMusic'
+  | 'footerTagline'
   | 'featuredBhajans'
   | 'popularBhajans'
   | 'communityBhajans'
@@ -134,8 +135,9 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     allBhajans: 'All Bhajans',
     browseOurCollection: 'Browse our collection of sacred songs, stotrams, and mantras',
     findLyricsAndMeaning: 'Find the lyrics and meaning for your daily devotion',
-    bhajansSandhya: 'Bhajan Sangrah',
-    completeDevotionalMusic: 'Your complete devotional music collection — lyrics, audio & more',
+    bhajansSandhya: 'Hari Kirtan',
+    completeDevotionalMusic: 'Your complete Hari Kirtan collection — lyrics, audio & more',
+    footerTagline: 'Hari Kirtan — your treasury of devotional music',
     featuredBhajans: 'Featured Bhajans',
     popularBhajans: 'लोकप्रिय भजन',
     communityBhajans: 'Community Bhajans',
@@ -239,8 +241,9 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     allBhajans: 'सभी भजन',
     browseOurCollection: 'पवित्र गीतों, स्तोत्रों और मंत्रों का हमारा संग्रह ब्राउज़ करें',
     findLyricsAndMeaning: 'अपनी दैनिक पूजा के लिए गीतों और अर्थ खोजें',
-    bhajansSandhya: 'भजन संग्रह',
-    completeDevotionalMusic: 'आपका पूर्ण भक्तिपूर्ण संगीत संग्रह — गीत, ऑडियो और अधिक',
+    bhajansSandhya: 'हरि कीर्तन',
+    completeDevotionalMusic: 'आपका पूर्ण हरि कीर्तन संग्रह — गीत, ऑडियो और अधिक',
+    footerTagline: 'हरि कीर्तन — आपका भक्ति संगीत का खजाना',
     featuredBhajans: 'विशेष भजन',
     popularBhajans: 'लोकप्रिय भजन',
     communityBhajans: 'समुदाय भजन',

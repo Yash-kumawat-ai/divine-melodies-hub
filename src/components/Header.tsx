@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAIModal } from "@/hooks/useAIModal";
 import { useTheme } from "@/hooks/useTheme";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,14 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/hooks/useLanguage";
 import { languageOptions } from "@/constants/languageOptions";
+import { AdminRoleBadge } from "@/components/notifications/AdminRoleBadge";
+import { UserNotificationBell } from "@/components/notifications/UserNotificationBell";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const { user, profile, isAdmin, signOut, updateProfile } = useAuth();
+  const { user, profile, isAdmin, isSuperAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { openAI } = useAIModal();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
@@ -59,48 +59,52 @@ export default function Header() {
     .slice(0, 2)
     .toUpperCase();
 
+  const staffRole =
+    profile?.role === 'moderator' || profile?.role === 'admin' || profile?.role === 'super_admin'
+      ? profile.role
+      : null;
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0 mr-4">
           <img 
             src={dhyaanLogo} 
-            alt="Divine Melodies Hub" 
-            className="w-10 h-10 object-contain"
+            alt="Hari Kirtan" 
+            className="w-8 h-8 md:w-10 md:h-10 object-contain"
             width={40}
             height={40}
           />
-          <span className="font-display text-lg md:text-xl font-bold text-foreground hidden sm:inline">
-            Divine Melodies Hub
+          <span className="font-display text-base md:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap">
+            Hari Kirtan
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-base font-medium">
+        <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
           <Link to="/recent-bhajans" className="text-foreground hover:text-primary transition-colors">{t('recent')}</Link>
           <Link to="/search" className="text-foreground hover:text-primary transition-colors">{t('search')}</Link>
           <Link
             to="/upload-bhajan"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
           >
-            <Upload className="w-4 h-4" />
+            <Upload className="w-3.5 h-3.5" />
             {t('upload')}
           </Link>
           <Link
             to="/kirtan-ai"
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:shadow-lg transition-all font-semibold touch-target"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 text-xs font-semibold text-white hover:shadow-lg transition-all"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5" />
             {t('kirtanAi')}
           </Link>
           {isAdmin && (
             <Link
               to="/admin/moderation"
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 text-xs font-medium text-orange-400 hover:bg-orange-500/20 transition-colors"
             >
-              <ShieldCheck className="w-4 h-4" />
-                {t('admin')}
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Admin
             </Link>
           )}
           <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
@@ -115,11 +119,7 @@ export default function Header() {
           >
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          {user && (
-            <Link to="/notifications" className="text-foreground hover:text-primary transition-colors text-sm">
-              {t('notifications')}
-            </Link>
-          )}
+          {user && <UserNotificationBell userId={user.id} />}
 
           <select
             value={language}
@@ -134,15 +134,21 @@ export default function Header() {
             ))}
           </select>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
-                <Avatar className="h-10 w-10 border border-border">
-                  <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-2">
+            {staffRole && <AdminRoleBadge role={staffRole} className="hidden sm:inline-flex" />}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+                  aria-label="Account menu"
+                >
+                  <Avatar className="h-10 w-10 border border-border">
+                    <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuLabel>
                 <p className="font-semibold">{displayName}</p>
@@ -164,10 +170,12 @@ export default function Header() {
                         <ShieldCheck className="mr-2 h-4 w-4" />
                         {t('adminModeration')}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/admin/accounts')}>
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        {t('adminAccounts')}
-                      </DropdownMenuItem>
+                      {isSuperAdmin && (
+                        <DropdownMenuItem onClick={() => navigate('/admin/accounts')}>
+                          <ShieldCheck className="mr-2 h-4 w-4" />
+                          {t('adminAccounts')}
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => navigate('/admin/audit')}>
                         <ShieldCheck className="mr-2 h-4 w-4" />
                         {t('auditLog')}
@@ -191,6 +199,7 @@ export default function Header() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
@@ -224,10 +233,19 @@ export default function Header() {
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
           <Link to="/recent-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('recent')}</Link>
           <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
+          <Link
+            to="/kirtan-ai"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center gap-2 py-3 text-lg font-medium text-white rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 -mx-1"
+          >
+            <Sparkles className="w-4 h-4 shrink-0" />
+            {t('kirtanAi')}
+          </Link>
           {user && (
-            <Link to="/notifications" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">
-              {t('notifications')}
-            </Link>
+            <div className="flex items-center gap-3 border-b border-border pb-3">
+              <UserNotificationBell userId={user.id} />
+              <span className="text-sm text-muted-foreground">{t('notifications')}</span>
+            </div>
           )}
           <Link to="/upload-bhajan" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-primary flex items-center gap-2">
             <Upload className="w-4 h-4" />
@@ -237,30 +255,10 @@ export default function Header() {
             <Link
               to="/admin/moderation"
               onClick={() => setMenuOpen(false)}
-              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
+              className="flex items-center gap-2 py-3 text-lg font-medium text-orange-400"
             >
               <ShieldCheck className="w-4 h-4" />
-              {t('adminModeration')}
-            </Link>
-          )}
-          {isAdmin && (
-            <Link
-              to="/admin/accounts"
-              onClick={() => setMenuOpen(false)}
-              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              {t('adminAccounts')}
-            </Link>
-          )}
-          {isAdmin && (
-            <Link
-              to="/admin/audit"
-              onClick={() => setMenuOpen(false)}
-              className="block py-3 text-lg font-medium text-primary flex items-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              {t('auditLog')}
+              Admin Panel
             </Link>
           )}
           <div className="pt-2">

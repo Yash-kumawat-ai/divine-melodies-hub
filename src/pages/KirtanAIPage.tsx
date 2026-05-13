@@ -573,7 +573,6 @@ export default function KirtanAIPage() {
                               <BhajanCard
                                 key={`${bhajan.slug}-${bhajan.id}`}
                                 bhajan={bhajan}
-                                openOnFirstClick
                                 onCardClick={(clickedBhajan) => {
                                   setSelectedBhajan(clickedBhajan);
                                   setIsDetailOpen(true);

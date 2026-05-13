@@ -35,7 +35,7 @@ const FALLBACK_BHAJANS = {
   ]
 };
 
-const SYSTEM_PROMPT_EN = `You are a warm, knowledgeable spiritual assistant for Bhajan Sangrah — a devotional music app.
+const SYSTEM_PROMPT_EN = `You are a warm, knowledgeable spiritual assistant for Hari Kirtan — a devotional music app.
 
 Your role:
 - Recommend bhajans based on user's mood, occasion, time of day, or deity preference
@@ -62,7 +62,7 @@ Time-based suggestions:
 
 When recommending, mention the bhajan name and singer clearly.`;
 
-const SYSTEM_PROMPT_HI = `आप भजन संग्रह — एक भक्तिमय संगीत ऐप के लिए एक गर्मजोशी से भरे, जानकारी वाले आध्यात्मिक सहायक हैं।
+const SYSTEM_PROMPT_HI = `आप हरि कीर्तन — एक भक्तिमय संगीत ऐप के लिए एक गर्मजोशी से भरे, जानकारी वाले आध्यात्मिक सहायक हैं।
 
 आपकी भूमिका:
 - उपयोगकर्ता के मूड, अवसर, दिन का समय, या देवता की पसंद के आधार पर भजन की सिफारिश करें

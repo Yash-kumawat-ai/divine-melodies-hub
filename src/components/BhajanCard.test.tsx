@@ -8,7 +8,7 @@ import type { Bhajan } from "@/data/bhajans";
 const testBhajan: Bhajan = {
   id: 1,
   slug: "test-bhajan",
-  title: "A Very Long Bhajan Headline That Should Expand Before Opening",
+  title: "A Very Long Bhajan Headline That Should Stay Truncated Until Hover",
   titleHindi: "Test Hindi Title",
   deityId: 1,
   lyricsHindi: "",
@@ -34,30 +34,13 @@ function renderCard() {
 }
 
 describe("BhajanCard", () => {
-  it("expands the headline on first click and opens the bhajan on second click", () => {
+  it("opens the bhajan on a single click", () => {
     renderCard();
 
     const card = screen.getByRole("link", { name: /test hindi title/i });
 
     fireEvent.click(card);
 
-    expect(screen.queryByText("Opened bhajan page")).not.toBeInTheDocument();
-    expect(screen.getByText(testBhajan.title)).toHaveClass("line-clamp-none");
-
-    fireEvent.click(card);
-
-    expect(screen.getByText("Opened bhajan page")).toBeInTheDocument();
-  });
-
-  it("opens on second click from the expanded headline itself", () => {
-    renderCard();
-
-    const title = screen.getByText(testBhajan.title);
-
-    fireEvent.click(title);
-    expect(screen.queryByText("Opened bhajan page")).not.toBeInTheDocument();
-
-    fireEvent.click(title);
     expect(screen.getByText("Opened bhajan page")).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabaseClient';
 
 export const queryUserUploads = async (options?: { orderBy?: string; limit?: number; includeUnapproved?: boolean }) => {
   const client = supabase as any;
@@ -80,7 +80,7 @@ export interface AdminQueueFilters {
 }
 
 export interface ReviewSubmissionInput {
-  id: number;
+  id: string | number;
   status: 'approved' | 'rejected' | 'changes_requested' | 'archived';
   reason?: string;
   adminNotes?: string;
@@ -92,7 +92,7 @@ export const getPendingSubmissions = async (filters?: AdminQueueFilters) => {
   const client = supabase as any;
   let query = client
     .from('user_uploads')
-    .select('id,user_id,title,title_hindi,singer_name,language,deity_id,status,created_at,youtube_url,admin_notes,rejection_reason,request_changes_notes')
+    .select('*')
     .in('status', ['pending', 'resubmitted'])
     .order('created_at', { ascending: false });
 
@@ -129,74 +129,153 @@ export const getPendingSubmissionsCount = async () => {
   return { count: count || 0, error };
 };
 
+export const getPendingUploadsCount = async () => {
+  const client = supabase as any;
+  const { count, error } = await client
+    .from('user_uploads')
+    .select('id', { count: 'exact', head: true })
+    .in('status', ['pending', 'resubmitted']);
+
+  return { count: count ?? 0, error };
+};
+
+export interface QueueStats {
+  pending: number;
+  approved: number;
+  rejected: number;
+  changesRequested: number;
+}
+
+export const getQueueStats = async (): Promise<{ data: QueueStats; error: any }> => {
+  const client = supabase as any;
+
+  const [pending, approved, rejected, changes] = await Promise.all([
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).in('status', ['pending', 'resubmitted']),
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).eq('status', 'changes_requested'),
+  ]);
+
+  const firstError = pending.error;
+  return {
+    data: {
+      pending: pending.count ?? 0,
+      approved: approved.count ?? 0,
+      rejected: rejected.count ?? 0,
+      changesRequested: changes.count ?? 0,
+    },
+    error: firstError,
+  };
+};
+
+export interface SubmitterProfile {
+  name: string;
+  email: string;
+  totalUploads: number;
+  approvedCount: number;
+  createdAt: string;
+}
+
+export const getSubmitterProfile = async (userId: string): Promise<{ data: SubmitterProfile | null; error: any }> => {
+  const client = supabase as any;
+
+  const [profileRes, totalRes, approvedRes] = await Promise.all([
+    client.from('user_profiles').select('name,email,created_at').eq('id', userId).maybeSingle(),
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+    client.from('user_uploads').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'approved'),
+  ]);
+
+  if (profileRes.error || !profileRes.data) {
+    return { data: null, error: profileRes.error };
+  }
+
+  return {
+    data: {
+      name: profileRes.data.name || 'Unknown',
+      email: profileRes.data.email || '',
+      totalUploads: totalRes.count ?? 0,
+      approvedCount: approvedRes.count ?? 0,
+      createdAt: profileRes.data.created_at,
+    },
+    error: null,
+  };
+};
+
+export interface ModerationNotificationRow {
+  id: number;
+  user_id: string;
+  bhajan_id: string;
+  event_type: string;
+  subject: string;
+  body: string;
+  read: boolean;
+  created_at: string;
+}
+
+export const getUnreadModerationNotificationsCount = async (userId: string) => {
+  const client = supabase as any;
+  const { count, error } = await client
+    .from('moderation_notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('read', false);
+
+  return { count: count ?? 0, error };
+};
+
+export const getRecentModerationNotifications = async (userId: string, limit = 12) => {
+  const client = supabase as any;
+  return client
+    .from('moderation_notifications')
+    .select('id, subject, body, event_type, read, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+};
+
+export const markMyModerationNotificationsRead = async () => {
+  const client = supabase as any;
+  const { error } = await client.rpc('mark_my_moderation_notifications_read');
+  return { error };
+};
+
 export const reviewSubmission = async (input: ReviewSubmissionInput, adminUserId: string) => {
   const client = supabase as any;
-  const now = new Date().toISOString();
-
-  const reviewPatch: Record<string, any> = {
-    status: input.status,
-    reviewed_at: now,
-    reviewed_by: adminUserId,
-    admin_notes: input.adminNotes || null,
-  };
-
-  if (input.status === 'approved') {
-    reviewPatch.approved_at = now;
-    reviewPatch.rejection_reason = null;
-    reviewPatch.request_changes_notes = null;
-    reviewPatch.archived_at = null;
-    reviewPatch.archived_by = null;
-  }
-
-  if (input.status === 'rejected') {
-    reviewPatch.rejection_reason = input.reason || null;
-  }
-
-  if (input.status === 'changes_requested') {
-    reviewPatch.request_changes_notes = input.reason || null;
-  }
-
-  if (input.status === 'archived') {
-    reviewPatch.archived_at = now;
-    reviewPatch.archived_by = adminUserId;
-  }
 
   const { data, error } = await client
     .from('user_uploads')
-    .update(reviewPatch)
+    .update({ status: input.status })
     .eq('id', input.id)
     .select('*')
     .single();
 
   if (!error) {
-    await client.from('admin_audit_logs').insert([
-      {
-        admin_user_id: adminUserId,
-        action: input.status,
-        entity_type: 'user_upload',
-        entity_id: input.id,
-        new_status: input.status,
-        reason: input.reason || input.adminNotes || null,
-        action_ip: input.actionIp || null,
-        action_user_agent: input.actionUserAgent || null,
-      },
-    ]);
+    try {
+      await client.from('admin_audit_logs').insert([
+        {
+          admin_user_id: adminUserId,
+          action: input.status,
+          entity_type: 'user_upload',
+          entity_id: input.id,
+          new_status: input.status,
+          reason: input.reason || input.adminNotes || null,
+          action_ip: input.actionIp || null,
+          action_user_agent: input.actionUserAgent || null,
+        },
+      ]);
+    } catch {
+      // audit log insert is non-critical
+    }
   }
 
   return { data, error };
 };
 
-export const restoreArchivedSubmission = async (id: number, adminUserId: string) => {
+export const restoreArchivedSubmission = async (id: string | number, _adminUserId: string) => {
   const client = supabase as any;
   const { data, error } = await client
     .from('user_uploads')
-    .update({
-      status: 'pending',
-      archived_at: null,
-      archived_by: null,
-      reviewed_by: adminUserId,
-      reviewed_at: new Date().toISOString(),
-    })
+    .update({ status: 'pending' })
     .eq('id', id)
     .select('*')
     .single();
@@ -210,7 +289,7 @@ export const getRecentApprovedBhajans = async (limit = 12) => {
     .from('user_uploads')
     .select('*')
     .eq('status', 'approved')
-    .order('approved_at', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(limit);
 };
 
@@ -236,7 +315,7 @@ export const listAdminProfiles = async () => {
   const client = supabase as any;
   return client
     .from('user_profiles')
-    .select('id,email,name,role,mfa_enabled,created_at')
+    .select('*')
     .order('created_at', { ascending: false });
 };
 
@@ -255,12 +334,16 @@ export const updateUserRole = async (
 
 export const updateOwnMfaPreference = async (userId: string, mfaEnabled: boolean) => {
   const client = supabase as any;
-  return client
-    .from('user_profiles')
-    .update({ mfa_enabled: mfaEnabled })
-    .eq('id', userId)
-    .select('*')
-    .single();
+  try {
+    return await client
+      .from('user_profiles')
+      .update({ mfa_enabled: mfaEnabled })
+      .eq('id', userId)
+      .select('*')
+      .single();
+  } catch {
+    return { data: null, error: { message: 'MFA preference column may not exist yet. Run migration 018.' } };
+  }
 };
 
 export default queryUserUploads;

@@ -14,9 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Playfair Display', 'serif'],
-        hindi: ['Noto Sans Devanagari', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        display: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
+        hindi: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
+        body: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
       },
       fontSize: {
         'base': '18px',
