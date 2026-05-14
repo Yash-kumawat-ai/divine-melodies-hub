@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { Play, Star } from "lucide-react";
+import { Loader2, Play, Star } from "lucide-react";
 import { Bhajan, getDeityById, bhajans as allBhajansData } from "@/data/bhajans";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
+import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
+import { toast } from "sonner";
 
 interface BhajanCardProps {
   bhajan: Bhajan;
@@ -13,7 +16,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const deity = getDeityById(bhajan.deityId);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [modalBhajan, setModalBhajan] = useState<Bhajan>(bhajan);
-  const { t, language } = useLanguage();
+  const [playBusy, setPlayBusy] = useState(false);
+  const { t } = useLanguage();
+  const { openPlayer } = useYouTubePlayer();
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,16 +34,45 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
     setModalBhajan(selected);
   };
 
+  const handlePlayClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (playBusy) return;
+    setPlayBusy(true);
+    try {
+      const playback = await resolveBhajanYouTubePlayback({
+        videoEmbedId: bhajan.videoEmbedId,
+        youtubeUrl: bhajan.youtubeUrl,
+        title: bhajan.title,
+        singerName: bhajan.singerName,
+      });
+
+      if (playback) {
+        openPlayer(playback);
+        return;
+      }
+
+      toast.error("Could not load the video. Please try again.");
+    } finally {
+      setPlayBusy(false);
+    }
+  };
+
   return (
     <>
       <div
         role="button"
         tabIndex={0}
         onClick={handleCardClick}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(e as any); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick(e as any);
+          }
+        }}
         className="group block rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
       >
-        <div className={`h-1.5 ${deity?.colorClass ?? 'bg-primary'}`} />
+        <div className={`h-1.5 ${deity?.colorClass ?? "bg-primary"}`} />
         <div className="p-5">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">{deity?.emoji}</span>
@@ -50,8 +84,12 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           >
             {bhajan.title}
           </h3>
-          <p className="hindi-text text-base text-muted-foreground mt-1 line-clamp-1" title={bhajan.titleHindi}>{bhajan.titleHindi}</p>
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
+          <p className="hindi-text text-base text-muted-foreground mt-1 line-clamp-1" title={bhajan.titleHindi}>
+            {bhajan.titleHindi}
+          </p>
+          <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>
+            by {bhajan.singerName}
+          </p>
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
@@ -63,11 +101,15 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
                 {bhajan.rating.toFixed(1)}
               </span>
             </div>
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+            <button
+              type="button"
+              onClick={handlePlayClick}
+              disabled={playBusy}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium group-hover:bg-primary group-hover:text-primary-foreground transition-colors disabled:opacity-60"
             >
-              <Play className="w-4 h-4" /> {t('play')}
-            </span>
+              {playBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}{" "}
+              {t("play")}
+            </button>
           </div>
         </div>
       </div>

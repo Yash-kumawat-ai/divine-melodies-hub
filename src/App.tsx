@@ -7,11 +7,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SuspenseFallback from "./components/SuspenseFallback";
-import AIAssistantModal from "./components/AIAssistantModal";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { AssistantContextProvider } from "./hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "./hooks/useAIModal";
 import { ThemeProvider } from "./hooks/useTheme";
+import { YouTubePlayerProvider } from "./hooks/useYouTubePlayer";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +33,7 @@ const SignupTabs = lazy(() => import("./components/Auth/SignupTabs"));
 const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AIAssistantModalHost = lazy(() => import("./components/AIAssistantModalHost"));
+const YouTubePlayerHost = lazy(() => import("./components/YouTubePlayerHost"));
 
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -82,6 +83,9 @@ function AppContent() {
           <AIAssistantModalHost />
         </Suspense>
       )}
+      <Suspense fallback={null}>
+        <YouTubePlayerHost />
+      </Suspense>
     </>
   );
 }
@@ -93,11 +97,13 @@ const App = () => (
         <LanguageProvider>
           <AssistantContextProvider>
             <AIModalProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <AppContent />
-              </TooltipProvider>
+              <YouTubePlayerProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <AppContent />
+                </TooltipProvider>
+              </YouTubePlayerProvider>
             </AIModalProvider>
           </AssistantContextProvider>
         </LanguageProvider>

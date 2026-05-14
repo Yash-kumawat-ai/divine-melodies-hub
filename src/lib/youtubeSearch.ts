@@ -89,5 +89,14 @@ export async function searchYouTubeVideos(query: string): Promise<YouTubeVideoRe
 }
 
 export function buildYouTubeEmbedUrl(videoId: string): string {
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+  const id = encodeURIComponent(videoId);
+  return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`;
+}
+
+/** Returns the 11-char video id for watch/embed URLs, or null for non-video URLs (e.g. search results). */
+export function extractYouTubeVideoId(url: string): string | null {
+  const trimmed = url?.trim();
+  if (!trimmed) return null;
+  const match = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
+  return match?.[1] ?? null;
 }

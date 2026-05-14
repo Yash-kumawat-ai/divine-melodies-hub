@@ -1,13 +1,15 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Play, Star, Share2 } from "lucide-react";
+import { ArrowLeft, Loader2, Play, Star, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { bhajans, getDeityById } from "@/data/bhajans";
 import { generateBhajanSlug } from "@/lib/slugUtils";
+import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
+import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface UserBhajan {
   id: string;
@@ -29,10 +31,11 @@ export default function BhajanPage() {
   const [userBhajan, setUserBhajan] = useState<UserBhajan | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [showTransliteration, setShowTransliteration] = useState(false);
+  const [playOpening, setPlayOpening] = useState(false);
+  const { openPlayer } = useYouTubePlayer();
 
   const staticBhajan = bhajans.find((b) => b.slug === slug);
 
-  // Fetch user bhajans to find matching slug
   useEffect(() => {
     const fetchUserBhajan = async () => {
       try {
@@ -43,7 +46,6 @@ export default function BhajanPage() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          // Find matching bhajan by slug
           const matched = data.find(
             (b: UserBhajan) => generateBhajanSlug(b.title) === slug
           );
@@ -56,7 +58,6 @@ export default function BhajanPage() {
       }
     };
 
-    // Only fetch if not found in static bhajans
     if (!staticBhajan) {
       fetchUserBhajan();
     } else {
@@ -86,19 +87,58 @@ export default function BhajanPage() {
     );
   }
 
-  const deity = staticBhajan 
-    ? getDeityById(staticBhajan.deityId)
-    : getDeityById((bhajan as UserBhajan).deity_id);
-  const userBhajanData = !staticBhajan ? (bhajan as UserBhajan) : null;
-  const lyricsText = staticBhajan ? bhajan.lyricsHindi : (userBhajanData?.lyrics_hindi || '');
-  const hasUploadedImage = Boolean(userBhajanData?.image_url);
+  const isStatic = Boolean(staticBhajan);
+  const userBhajanData = !isStatic ? (bhajan as UserBhajan) : null;
+  const deity = isStatic
+    ? getDeityById(staticBhajan!.deityId)
+    : getDeityById(userBhajanData?.deity_id || 0);
+
+  const display = {
+    title: bhajan.title,
+    titleHindi: isStatic ? staticBhajan!.titleHindi : (userBhajanData?.title_hindi || bhajan.title),
+    singerName: isStatic ? staticBhajan!.singerName : (userBhajanData?.singer_name || "Unknown"),
+    composerName: isStatic ? (staticBhajan!.composerName || "") : (userBhajanData?.composer_name || ""),
+    youtubeUrl: isStatic ? staticBhajan!.youtubeUrl : userBhajanData?.youtube_url,
+    lyricsHindi: isStatic ? staticBhajan!.lyricsHindi : (userBhajanData?.lyrics_hindi || ""),
+    lyricsTransliteration: isStatic ? staticBhajan!.lyricsTransliteration : "",
+    imageUrl: isStatic ? staticBhajan!.imageUrl : userBhajanData?.image_url,
+    playCount: isStatic ? staticBhajan!.playCount : 0,
+    rating: isStatic ? staticBhajan!.rating : 0,
+    tags: isStatic ? staticBhajan!.tags : [],
+  };
+
+  const lyricsText = display.lyricsHindi;
+  const hasUploadedImage = Boolean(display.imageUrl);
   const hasOnlyUrlInLyrics = /^https?:\/\//i.test((lyricsText || '').trim());
+  const canShowTransliteration = display.lyricsTransliteration.trim().length > 0;
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({ title: bhajan.title, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  const handlePlay = async () => {
+    if (playOpening) return;
+    setPlayOpening(true);
+    try {
+      const playback = await resolveBhajanYouTubePlayback({
+        videoEmbedId: staticBhajan?.videoEmbedId,
+        youtubeUrl: display.youtubeUrl,
+        title: display.title,
+        singerName: display.singerName,
+      });
+
+      if (playback) {
+        openPlayer(playback);
+        return;
+      }
+
+      toast.error("Could not load the video. Please try again.");
+    } finally {
+      setPlayOpening(false);
     }
   };
 
@@ -112,7 +152,6 @@ export default function BhajanPage() {
           </Link>
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            {/* Header */}
             <div className={`h-2 rounded-t-xl ${deity?.colorClass ?? 'bg-primary'}`} />
             <div className="bg-card rounded-b-xl shadow-temple p-6 md:p-10 mb-8">
               <div className="flex items-center gap-2 mb-3">
@@ -121,25 +160,33 @@ export default function BhajanPage() {
                   {deity?.name}
                 </Link>
               </div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">{bhajan.title}</h1>
-              <p className="hindi-text text-2xl text-muted-foreground mt-1">{staticBhajan ? bhajan.titleHindi : (bhajan as UserBhajan).title_hindi}</p>
-              <p className="text-muted-foreground mt-3">by {staticBhajan ? bhajan.singerName : (bhajan as UserBhajan).singer_name}</p>
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground break-words">{display.title}</h1>
+              <p className="hindi-text text-2xl text-muted-foreground mt-1 break-words">{display.titleHindi}</p>
+              <p className="text-muted-foreground mt-3 break-words">by {display.singerName}</p>
               <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
-                {staticBhajan && (
+                {display.playCount > 0 && (
                   <>
-                    <span className="flex items-center gap-1"><Play className="w-4 h-4" /> {(bhajan.playCount / 1000).toFixed(0)}K plays</span>
-                    <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-secondary text-secondary" /> {bhajan.rating.toFixed(1)}</span>
+                    <span className="flex items-center gap-1"><Play className="w-4 h-4" /> {(display.playCount / 1000).toFixed(0)}K plays</span>
+                    <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-secondary text-secondary" /> {display.rating.toFixed(1)}</span>
                   </>
                 )}
+                <button
+                  type="button"
+                  onClick={handlePlay}
+                  disabled={playOpening}
+                  className="flex items-center gap-1 hover:text-primary transition-colors touch-target disabled:opacity-60"
+                >
+                  {playOpening ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                  Play
+                </button>
                 <button onClick={handleShare} className="flex items-center gap-1 hover:text-primary transition-colors touch-target">
                   <Share2 className="w-4 h-4" /> Share
                 </button>
               </div>
 
-              {/* Tags */}
-              {staticBhajan && bhajan.tags && (
+              {display.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4">
-                  {bhajan.tags.map((tag) => (
+                  {display.tags.map((tag) => (
                     <span key={tag} className="px-3 py-1 rounded-full bg-muted text-sm text-muted-foreground capitalize">
                       {tag}
                     </span>
@@ -148,8 +195,7 @@ export default function BhajanPage() {
               )}
             </div>
 
-            {/* Lyrics Toggle */}
-            {staticBhajan && (
+            {canShowTransliteration && (
               <div className="flex gap-2 mb-6">
                 <button
                   onClick={() => setShowTransliteration(false)}
@@ -157,7 +203,7 @@ export default function BhajanPage() {
                     !showTransliteration ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
-                  हिन्दी Lyrics
+                  Hindi Lyrics
                 </button>
                 <button
                   onClick={() => setShowTransliteration(true)}
@@ -170,34 +216,31 @@ export default function BhajanPage() {
               </div>
             )}
 
-            {/* Lyrics Image */}
             {hasUploadedImage && (
               <div className="bg-card rounded-xl shadow-temple p-6 md:p-10 mb-6">
                 <p className="text-sm font-semibold text-muted-foreground mb-4">Lyrics Image</p>
                 <img
-                  src={userBhajanData?.image_url}
-                  alt={`Lyrics for ${bhajan.title}`}
+                  src={display.imageUrl}
+                  alt={`Lyrics for ${display.title}`}
                   className="w-full rounded-lg border border-border"
                   loading="lazy"
                 />
               </div>
             )}
 
-            {/* Lyrics */}
             <div className="bg-card rounded-xl shadow-temple p-6 md:p-10">
               {hasOnlyUrlInLyrics ? (
                 <p className="text-muted-foreground text-lg">
                   Lyrics text is not available for this upload yet.
                 </p>
               ) : (
-              <pre className={`whitespace-pre-wrap leading-relaxed text-xl ${
-                !showTransliteration && staticBhajan ? 'hindi-text text-foreground' : 'font-body text-foreground'
-              }`}>
-                {staticBhajan 
-                  ? (showTransliteration ? bhajan.lyricsTransliteration : bhajan.lyricsHindi)
-                  : (bhajan as UserBhajan).lyrics_hindi
-                }
-              </pre>
+                <pre className={`whitespace-pre-wrap leading-relaxed text-xl ${
+                  !showTransliteration ? 'hindi-text text-foreground' : 'font-body text-foreground'
+                }`}>
+                  {showTransliteration && canShowTransliteration
+                    ? display.lyricsTransliteration
+                    : display.lyricsHindi}
+                </pre>
               )}
             </div>
           </motion.div>

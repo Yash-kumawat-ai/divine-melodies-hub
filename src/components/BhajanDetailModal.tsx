@@ -9,6 +9,7 @@ import {
   Star,
   Play,
   X,
+  Loader2,
 } from 'lucide-react';
 import LyricsDisplay from './LyricsDisplay';
 import BhajanCard from './BhajanCard';
@@ -26,9 +27,11 @@ import {
   copyShareLink,
 } from '@/lib/shareUtils';
 import { getRelatedBhajans } from '@/lib/searchAlgorithm';
+import { resolveBhajanYouTubePlayback } from '@/lib/youtubeEmbedPopup';
 import { Bhajan, getDeityById } from '@/data/bhajans';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useYouTubePlayer } from '@/hooks/useYouTubePlayer';
 
 interface BhajanDetailModalProps {
   bhajan: Bhajan | null;
@@ -46,8 +49,10 @@ export default function BhajanDetailModal({
   onSelectBhajan,
 }: BhajanDetailModalProps) {
   const [copied, setCopied] = useState(false);
+  const [playOpening, setPlayOpening] = useState(false);
   const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
+  const { openPlayer } = useYouTubePlayer();
 
   if (!bhajan) return null;
 
@@ -72,7 +77,7 @@ export default function BhajanDetailModal({
             setCopied(true);
             toast({
               title: t('linkCopied'),
-              description: language === 'hi' ? 'भजन लिंक क्लिपबोर्ड पर कॉपी हो गया' : 'Bhajan link copied to clipboard',
+              description: 'Bhajan link copied to clipboard',
               duration: 2000,
             });
             setTimeout(() => setCopied(false), 2000);
@@ -83,8 +88,8 @@ export default function BhajanDetailModal({
     } catch (error) {
       console.error(`Failed to share on ${platform}:`, error);
       toast({
-        title: language === 'hi' ? 'साझा करना विफल' : 'Share failed',
-        description: language === 'hi' ? `${platform} पर साझा नहीं हो सका` : `Could not share on ${platform}`,
+        title: 'Share failed',
+        description: `Could not share on ${platform}`,
         variant: 'destructive',
       });
     }
@@ -96,15 +101,39 @@ export default function BhajanDetailModal({
     }
   };
 
+  const handleYouTubePlay = async () => {
+    setPlayOpening(true);
+    try {
+      const playback = await resolveBhajanYouTubePlayback({
+        videoEmbedId: bhajan.videoEmbedId,
+        youtubeUrl: bhajan.youtubeUrl,
+        title: bhajan.title,
+        singerName: bhajan.singerName,
+      });
+
+      if (playback) {
+        openPlayer(playback);
+        return;
+      }
+
+      toast({
+        title: 'Could not open player',
+        description: 'Could not load the video. Check your connection and try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setPlayOpening(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
         <DialogDescription className="sr-only">
-          {bhajan.titleHindi} {language === 'hi' ? '• गायक:' : 'by'} {bhajan.singerName}
+          {bhajan.titleHindi} - by {bhajan.singerName}
         </DialogDescription>
-        
-        {/* Header */}
+
         <div className={`${deity?.colorClass ?? 'bg-primary'} p-6 text-white`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -115,9 +144,9 @@ export default function BhajanDetailModal({
                   <p className="hindi-text text-xl opacity-90">{bhajan.titleHindi}</p>
                 </div>
               </div>
-              <p className="text-white/80 text-lg">{language === 'hi' ? 'गायक:' : 'by'} {bhajan.singerName}</p>
+              <p className="text-white/80 text-lg">by {bhajan.singerName}</p>
               {bhajan.composerName && (
-                <p className="text-white/70 text-sm mt-1">{language === 'hi' ? 'संगीतकार:' : 'Composer:'} {bhajan.composerName}</p>
+                <p className="text-white/70 text-sm mt-1">Composer: {bhajan.composerName}</p>
               )}
             </div>
             <DialogClose className="opacity-70 hover:opacity-100 transition-opacity">
@@ -135,11 +164,20 @@ export default function BhajanDetailModal({
               <span>{bhajan.rating.toFixed(1)} {t('rating')}</span>
             </div>
           </div>
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={handleYouTubePlay}
+              disabled={playOpening}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-colors disabled:opacity-60"
+            >
+              {playOpening ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              Play now
+            </button>
+          </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-8">
-          {/* Share Buttons */}
           <motion.div
             className="flex flex-wrap gap-2"
             initial={{ opacity: 0, y: -10 }}
@@ -180,7 +218,6 @@ export default function BhajanDetailModal({
             </button>
           </motion.div>
 
-          {/* Metadata Section */}
           <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-4"
             initial={{ opacity: 0 }}
@@ -197,7 +234,7 @@ export default function BhajanDetailModal({
             </div>
             {bhajan.composerName && (
               <div className="p-3 rounded-lg bg-muted/50">
-                <p className="text-xs font-semibold text-muted-foreground uppercase">{language === 'hi' ? 'संगीतकार' : 'Composer'}</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Composer</p>
                 <p className="text-sm font-medium text-foreground mt-1">{bhajan.composerName}</p>
               </div>
             )}
@@ -221,7 +258,6 @@ export default function BhajanDetailModal({
             </div>
           </motion.div>
 
-          {/* Lyrics Display */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -236,7 +272,6 @@ export default function BhajanDetailModal({
             />
           </motion.div>
 
-          {/* Related Bhajans */}
           {relatedBhajans.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}

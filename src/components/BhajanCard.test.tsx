@@ -1,8 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import BhajanCard from "./BhajanCard";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
 import type { Bhajan } from "@/data/bhajans";
 
 const testBhajan: Bhajan = {
@@ -23,24 +24,28 @@ const testBhajan: Bhajan = {
 function renderCard() {
   render(
     <LanguageProvider>
-      <MemoryRouter initialEntries={["/"]}>
-        <Routes>
-          <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
-          <Route path="/bhajan/:slug" element={<div>Opened bhajan page</div>} />
-        </Routes>
-      </MemoryRouter>
+      <YouTubePlayerProvider>
+        <MemoryRouter initialEntries={["/"]}>
+          <Routes>
+            <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
+          </Routes>
+        </MemoryRouter>
+      </YouTubePlayerProvider>
     </LanguageProvider>,
   );
 }
 
 describe("BhajanCard", () => {
-  it("opens the bhajan on a single click", () => {
+  it("opens the detail modal when the card is clicked", async () => {
     renderCard();
 
-    const card = screen.getByRole("link", { name: /test hindi title/i });
+    const heading = screen.getByRole("heading", { name: /A Very Long Bhajan Headline/i });
+    const card = heading.closest('div[tabindex="0"]');
+    expect(card).toBeTruthy();
+    fireEvent.click(card!);
 
-    fireEvent.click(card);
-
-    expect(screen.getByText("Opened bhajan page")).toBeInTheDocument();
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Play now|अब सुनें/i })).toBeInTheDocument();
   });
 });

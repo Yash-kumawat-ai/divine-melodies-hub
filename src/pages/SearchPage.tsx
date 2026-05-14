@@ -15,13 +15,8 @@ import { useDeities } from "@/hooks/useDeities";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLyricsFallback } from "@/hooks/useLyricsFallback";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
-import { buildYouTubeEmbedUrl, searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
+import { searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 
 interface UserBhajan {
   id: string;
@@ -48,7 +43,6 @@ export default function SearchPage() {
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState('');
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoResult | null>(null);
-  const [isYouTubePlayerOpen, setIsYouTubePlayerOpen] = useState(false);
   const [activeMode, setActiveMode] = useState<'bhajans' | 'youtube'>('bhajans');
   const [selectedDeity, setSelectedDeity] = useState(initialDeity);
   const [showAllDeities, setShowAllDeities] = useState(false);
@@ -65,6 +59,7 @@ export default function SearchPage() {
   
   // Assistant context management
   const { setContext: setAssistantContext } = useAssistantContext();
+  const { openPlayer } = useYouTubePlayer();
 
   // Define results BEFORE using it in useEffect dependency arrays
   const results = useMemo(() => {
@@ -559,7 +554,11 @@ export default function SearchPage() {
                           <button
                             onClick={() => {
                               setSelectedVideo(video);
-                              setIsYouTubePlayerOpen(true);
+                              openPlayer({
+                                id: video.id,
+                                title: video.title,
+                                channel: video.channel,
+                              });
                             }}
                             className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-full bg-primary text-primary-foreground"
                           >
@@ -616,7 +615,13 @@ export default function SearchPage() {
                     <p className="font-semibold text-foreground">{selectedVideo.title}</p>
                     <p className="text-sm text-muted-foreground">{selectedVideo.channel}</p>
                     <button
-                      onClick={() => setIsYouTubePlayerOpen(true)}
+                      onClick={() =>
+                        openPlayer({
+                          id: selectedVideo.id,
+                          title: selectedVideo.title,
+                          channel: selectedVideo.channel,
+                        })
+                      }
                       className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground"
                     >
                       <PlayCircle className="w-4 h-4" /> Play Selected Video
@@ -631,28 +636,6 @@ export default function SearchPage() {
             </div>
           )}
 
-          <Dialog open={isYouTubePlayerOpen} onOpenChange={setIsYouTubePlayerOpen}>
-            <DialogContent className="sm:max-w-3xl">
-              <DialogHeader>
-                <DialogTitle className="font-display text-xl">
-                  {selectedVideo?.title || 'YouTube Playback'}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
-                {selectedVideo ? (
-                  <iframe
-                    src={buildYouTubeEmbedUrl(selectedVideo.id)}
-                    title={`YouTube player for ${selectedVideo.title}`}
-                    className="h-full w-full"
-                    sandbox="allow-scripts allow-same-origin allow-presentation"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
-                ) : null}
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       </section>
 
