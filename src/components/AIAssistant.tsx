@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Loader2, Bot, User, Mic, Volume2 } from "lucide
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
+import { VoiceManager } from "@/lib/voiceUtils";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type Language = "en" | "hi";
@@ -174,9 +175,10 @@ export default function AIAssistant() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [micError, setMicError] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const voiceManagerRef = useRef<VoiceManager | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -186,57 +188,43 @@ export default function AIAssistant() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  // Initialize voice recognition
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.language = language === "en" ? "en-US" : "hi-IN";
-      
-      recognitionRef.current.onstart = () => {
-        setIsListening(true);
-      };
-      
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        setIsListening(false);
-      };
-      
-      recognitionRef.current.onerror = (event: any) => {
-        setIsListening(false);
-        console.error("Voice recognition error:", event.error);
-      };
-      
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
+    voiceManagerRef.current?.stopListening();
+    voiceManagerRef.current = new VoiceManager(language === "en" ? "en" : "hi");
+
+    return () => {
+      voiceManagerRef.current?.stopListening();
+    };
   }, [language]);
 
   const toggleVoiceInput = async () => {
-    if (!recognitionRef.current) return;
+    if (!voiceManagerRef.current) {
+      setMicError("Voice input is not supported in this browser.");
+      return;
+    }
     
     if (isListening) {
-      recognitionRef.current.stop();
+      voiceManagerRef.current.stopListening();
       setIsListening(false);
     } else {
-      try {
-        // Request microphone permission
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        recognitionRef.current.start();
-      } catch (error: any) {
-        console.error("Microphone access error:", error);
-        if (error.name === "NotAllowedError") {
-          alert("Microphone access denied. Please enable microphone access in your browser settings.");
-        } else if (error.name === "NotFoundError") {
-          alert("No microphone found. Please connect a microphone.");
-        } else {
-          alert("Failed to access microphone. Please try again.");
+      setMicError("");
+      voiceManagerRef.current.resetTranscript();
+      await voiceManagerRef.current.startListening(
+        (transcript, isFinal) => {
+          setInput(transcript);
+          if (isFinal) setIsListening(false);
+        },
+        (error) => {
+          setIsListening(false);
+          setMicError(error);
+        },
+        () => {
+          setIsListening(true);
+        },
+        () => {
+          setIsListening(false);
         }
-      }
+      );
     }
   };
 
@@ -436,6 +424,11 @@ export default function AIAssistant() {
                 <Send className="w-5 h-5" />
               </button>
             </div>
+            {micError && (
+              <div className="px-3 pb-3 text-sm text-destructive">
+                {micError}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

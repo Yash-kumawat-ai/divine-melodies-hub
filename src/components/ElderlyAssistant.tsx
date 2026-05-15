@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Volume2, Loader2, X, Send, Music, Lightbulb, Heart, Zap, Moon, Sun } from 'lucide-react';
+import { Mic, MicOff, Volume2, Loader2, X, Send, Music, Lightbulb, Heart, Zap, Moon, Sun } from 'lucide-react';
 import { Bhajan, getDeityById } from '@/data/bhajans';
 import BhajanCard from './BhajanCard';
 import {
@@ -99,7 +99,6 @@ export default function ElderlyAssistant({
       return;
     }
 
-    setIsListening(true);
     voiceManagerRef.current.resetTranscript();
 
     voiceManagerRef.current.startListening(
@@ -113,6 +112,9 @@ export default function ElderlyAssistant({
           variant: 'destructive',
         });
         setIsListening(false);
+      },
+      () => {
+        setIsListening(true);
       },
       () => {
         setIsListening(false);
@@ -143,6 +145,7 @@ export default function ElderlyAssistant({
       const aiResponse = await processElderlyRequest(
         message,
         allBhajans,
+        'भाई/बहन',
         allDeities && allDeities.length > 0 ? allDeities : undefined,
         messages
           .filter(m => m.intent !== 'search' && m.intent !== 'recommend')

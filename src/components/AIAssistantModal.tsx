@@ -105,7 +105,6 @@ export default function AIAssistantModal({
   const handleStartListening = () => {
     if (!voiceManagerRef.current) return;
 
-    setIsListening(true);
     voiceManagerRef.current.resetTranscript();
 
     // Correct usage: onTranscript (with isFinal), onError, onEnd
@@ -118,6 +117,10 @@ export default function AIAssistantModal({
       (error: string) => {
         setIsListening(false);
         console.error('Voice error in AIAssistantModal:', error);
+      },
+      // onStart
+      () => {
+        setIsListening(true);
       },
       // onEnd: When speech ends, submit message if not empty
       () => {
@@ -147,6 +150,7 @@ export default function AIAssistantModal({
       const aiResponse = await processElderlyRequest(
         message,
         allBhajans,
+        'भाई/बहन',
         allDeities && allDeities.length > 0 ? allDeities : undefined,
         messages
           .filter(m => m.intent === 'greeting')

@@ -451,13 +451,15 @@ export default function KirtanAIPage() {
 
   const startListening = () => {
     if (!voiceRef.current) return;
-    setIsListening(true);
     voiceRef.current.resetTranscript();
     voiceRef.current.startListening(
       (transcript) => setInput(transcript),
       (error) => {
         setIsListening(false);
         toast({ title: "Voice error", description: error, variant: "destructive" });
+      },
+      () => {
+        setIsListening(true);
       },
       () => {
         setIsListening(false);
