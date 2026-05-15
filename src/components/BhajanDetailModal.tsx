@@ -27,6 +27,7 @@ import {
   copyShareLink,
 } from '@/lib/shareUtils';
 import { getRelatedBhajans } from '@/lib/searchAlgorithm';
+import { formatBhajanDisplayTitle } from '@/lib/slugUtils';
 import { resolveBhajanYouTubePlayback } from '@/lib/youtubeEmbedPopup';
 import { Bhajan, getDeityById } from '@/data/bhajans';
 import { useToast } from '@/hooks/use-toast';
@@ -128,33 +129,35 @@ export default function BhajanDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-4xl w-[calc(100vw-1rem)] sm:w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 [&>button.absolute]:hidden">
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {bhajan.titleHindi} - by {bhajan.singerName}
         </DialogDescription>
 
-        <div className={`${deity?.colorClass ?? 'bg-primary'} p-6 text-white`}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-4xl">{deity?.emoji}</span>
-                <div>
-                  <h2 className="font-display text-3xl font-bold">{bhajan.title}</h2>
-                  <p className="hindi-text text-xl opacity-90">{bhajan.titleHindi}</p>
-                </div>
+        <div className={`${deity?.colorClass ?? 'bg-primary'} p-4 sm:p-6 text-white overflow-hidden`}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 gap-3">
+              <span className="text-3xl sm:text-4xl shrink-0 leading-none">{deity?.emoji}</span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words [overflow-wrap:anywhere]">
+                  {formatBhajanDisplayTitle(bhajan.title)}
+                </h2>
+                <p className="hindi-text text-base sm:text-xl opacity-90 mt-1 break-words [overflow-wrap:anywhere]">
+                  {formatBhajanDisplayTitle(bhajan.titleHindi)}
+                </p>
               </div>
-              <p className="text-white/80 text-lg">by {bhajan.singerName}</p>
-              {bhajan.composerName && (
-                <p className="text-white/70 text-sm mt-1">Composer: {bhajan.composerName}</p>
-              )}
             </div>
-            <DialogClose className="opacity-70 hover:opacity-100 transition-opacity">
+            <DialogClose className="shrink-0 rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity">
               <X className="w-6 h-6" />
             </DialogClose>
           </div>
+          <p className="text-white/80 text-base sm:text-lg mt-3 break-words">by {bhajan.singerName}</p>
+          {bhajan.composerName && (
+            <p className="text-white/70 text-sm mt-1 break-words">Composer: {bhajan.composerName}</p>
+          )}
 
-          <div className="flex items-center gap-6 mt-4 text-white/80 text-sm">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-4 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <Play className="w-4 h-4" />
               <span>{(bhajan.playCount / 1000).toFixed(0)}K {t('plays')}</span>
@@ -224,13 +227,13 @@ export default function BhajanDetailModal({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/50 min-w-0">
               <p className="text-xs font-semibold text-muted-foreground uppercase">{t('deity')}</p>
-              <p className="text-sm font-medium text-foreground mt-1">{deity?.name}</p>
+              <p className="text-sm font-medium text-foreground mt-1 break-words">{deity?.name}</p>
             </div>
-            <div className="p-3 rounded-lg bg-muted/50">
+            <div className="p-3 rounded-lg bg-muted/50 min-w-0">
               <p className="text-xs font-semibold text-muted-foreground uppercase">{t('singer')}</p>
-              <p className="text-sm font-medium text-foreground mt-1">{bhajan.singerName}</p>
+              <p className="text-sm font-medium text-foreground mt-1 break-words">{bhajan.singerName}</p>
             </div>
             {bhajan.composerName && (
               <div className="p-3 rounded-lg bg-muted/50">

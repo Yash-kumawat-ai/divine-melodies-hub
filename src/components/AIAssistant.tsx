@@ -233,7 +233,7 @@ export default function AIAssistant() {
     
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.language = language === "en" ? "en-US" : "hi-IN";
+    utterance.lang = language === "en" ? "en-US" : "hi-IN";
     utterance.rate = 0.9;
     
     utterance.onstart = () => setIsSpeaking(true);

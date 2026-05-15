@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { bhajans, getDeityById } from "@/data/bhajans";
-import { generateBhajanSlug } from "@/lib/slugUtils";
+import { generateBhajanSlug, formatBhajanDisplayTitle } from "@/lib/slugUtils";
 import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { supabase } from "@/integrations/supabase/client";
@@ -160,8 +160,8 @@ export default function BhajanPage() {
                   {deity?.name}
                 </Link>
               </div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground break-words">{display.title}</h1>
-              <p className="hindi-text text-2xl text-muted-foreground mt-1 break-words">{display.titleHindi}</p>
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground break-words [overflow-wrap:anywhere]">{formatBhajanDisplayTitle(display.title)}</h1>
+              <p className="hindi-text text-xl sm:text-2xl text-muted-foreground mt-1 break-words [overflow-wrap:anywhere]">{formatBhajanDisplayTitle(display.titleHindi)}</p>
               <p className="text-muted-foreground mt-3 break-words">by {display.singerName}</p>
               <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
                 {display.playCount > 0 && (

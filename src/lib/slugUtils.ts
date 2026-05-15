@@ -15,3 +15,11 @@ export function generateBhajanSlug(title: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
+
+/** Shorten YouTube-style titles for UI (e.g. "Name || CHANNEL" → "Name"). */
+export function formatBhajanDisplayTitle(title: string, maxLength = 120): string {
+  const primary = title.split(/\s*\|\|\s*/)[0]?.trim() || title.trim();
+  const normalized = primary.replace(/\s+/g, ' ');
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 1).trim()}…`;
+}

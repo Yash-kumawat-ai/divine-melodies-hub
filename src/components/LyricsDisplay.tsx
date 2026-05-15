@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Copy, Check, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
+import { formatBhajanDisplayTitle } from '@/lib/slugUtils';
 
 interface LyricsDisplayProps {
   titleHindi: string;
@@ -71,13 +72,13 @@ export default function LyricsDisplay({
   return (
     <div className="space-y-4">
       {/* Header with controls */}
-      <div className="flex items-center justify-between gap-4 pb-4 border-b border-border">
-        <div className="flex-1">
-          <h3 className="hindi-text text-lg font-semibold text-foreground">{titleHindi}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{language === 'hi' ? 'गायक:' : 'by'} {singerName}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+        <div className="min-w-0 flex-1">
+          <h3 className="hindi-text text-lg font-semibold text-foreground break-words [overflow-wrap:anywhere]">{formatBhajanDisplayTitle(titleHindi)}</h3>
+          <p className="text-sm text-muted-foreground mt-1 break-words">{language === 'hi' ? 'गायक:' : 'by'} {singerName}</p>
         </div>
-        
-        <div className="flex items-center gap-2">
+
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <button
             onClick={decreaseFontSize}
             className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border hover:bg-muted transition-colors"

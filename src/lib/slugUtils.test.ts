@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateBhajanSlug, generateDeitySlug } from "./slugUtils";
+import { formatBhajanDisplayTitle, generateBhajanSlug, generateDeitySlug } from "./slugUtils";
 
 describe("slugUtils", () => {
   it("generates consistent deity slugs", () => {
@@ -10,5 +10,11 @@ describe("slugUtils", () => {
   it("removes punctuation and collapses spaces for bhajan slugs", () => {
     expect(generateBhajanSlug("Om Jai Shiv Omkara!")).toBe("om-jai-shiv-omkara");
     expect(generateBhajanSlug("Hare   Krishna -- Mahamantra")).toBe("hare-krishna-mahamantra");
+  });
+
+  it("shortens YouTube-style titles for display", () => {
+    expect(
+      formatBhajanDisplayTitle("Mor Chadi Lehrai || BHAKTIDARSHANJAIPUR"),
+    ).toBe("Mor Chadi Lehrai");
   });
 });
