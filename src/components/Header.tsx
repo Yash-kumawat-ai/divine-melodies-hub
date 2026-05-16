@@ -1,6 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
-import { useRef, useState } from "react";
+import MobileBackButton from "@/components/MobileBackButton";
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { uploadToCloudinary } from "@/lib/cloudinary";
@@ -27,6 +29,23 @@ export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+  const { isBhajanModalOpen } = useBhajanModalOpen();
+  const showBack = !isHome && !isBhajanModalOpen;
+
+  useEffect(() => {
+    if (isBhajanModalOpen) setMenuOpen(false);
+  }, [isBhajanModalOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [menuOpen]);
 
   const handleLogout = async () => {
     await signOut();
@@ -66,18 +85,21 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex items-center gap-2 flex-shrink-0 mr-4">
-          <img 
-            src={dhyaanLogo} 
-            alt="Hari Kirtan" 
-            className="w-8 h-8 md:w-10 md:h-10 object-contain"
-            width={40}
-            height={40}
-          />
-          <span className="font-display text-base md:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap">
-            Hari Kirtan
-          </span>
-        </Link>
+        <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-4">
+          {showBack && <MobileBackButton onBack={() => setMenuOpen(false)} />}
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
+            <img
+              src={dhyaanLogo}
+              alt="Hari Kirtan"
+              className="w-8 h-8 md:w-10 md:h-10 object-contain shrink-0"
+              width={40}
+              height={40}
+            />
+            <span className="font-display text-base md:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
+              Hari Kirtan
+            </span>
+          </Link>
+        </div>
 
         <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
@@ -211,7 +233,14 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden border-t border-border bg-background px-4 py-3 space-y-2">
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-[55] bg-black/60 md:hidden"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className="relative z-[56] md:hidden border-t border-border bg-background px-4 py-3 space-y-2 max-h-[min(75dvh,calc(100dvh-5rem))] overflow-y-auto overscroll-contain">
           <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Menu</h3>
             <button
@@ -222,6 +251,7 @@ export default function Header() {
               <X className="w-5 h-5" />
             </button>
           </div>
+          <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
           <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
           <Link to="/blog" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('blog')}</Link>
           <Link to="/pricing" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('pricing')}</Link>
@@ -290,6 +320,7 @@ export default function Header() {
             </button>
           )}
         </div>
+        </>
       )}
     </header>
   );

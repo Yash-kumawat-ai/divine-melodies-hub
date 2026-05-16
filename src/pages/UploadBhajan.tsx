@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import DeitySelector from '@/components/Upload/DeitySelector';
 import AddDeity from '@/components/Upload/AddDeity';
@@ -46,8 +44,7 @@ export default function UploadBhajan() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <div>
         <div className="py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -69,7 +66,6 @@ export default function UploadBhajan() {
             <LoginForm />
           </motion.div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -114,10 +110,8 @@ export default function UploadBhajan() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <div className="flex-1 py-12 px-4">
+    <div>
+      <div className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           {/* Header */}
           <motion.div
@@ -213,8 +207,6 @@ export default function UploadBhajan() {
           </motion.div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }

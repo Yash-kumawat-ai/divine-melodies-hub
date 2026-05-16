@@ -1,7 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Users, FileText } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useModerationPendingCount } from '@/hooks/useModerationNotificationQueries';
 import { cn } from '@/lib/utils';
@@ -25,9 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         : 'Moderator';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
+    <>
       <div className="sticky top-16 md:top-20 z-40 border-b border-orange-900/30 bg-[#1a1006]/95 backdrop-blur-md">
         <div className="container mx-auto max-w-6xl px-4">
           <div className="flex items-center justify-between h-12">
@@ -70,11 +66,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </div>
 
-      <main className="flex-1 py-6 md:py-8 px-4">
+      <main className="py-6 md:py-8 px-4">
         <div className="container mx-auto max-w-6xl">{children}</div>
       </main>
-
-      <Footer />
-    </div>
+    </>
   );
 }

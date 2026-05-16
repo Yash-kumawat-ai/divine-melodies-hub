@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import BhajanCard from '@/components/BhajanCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +14,9 @@ import {
 import { Loader2 } from 'lucide-react';
 import { queryUserUploads } from '@/lib/supabaseQueries';
 import { generateBhajanSlug } from '@/lib/slugUtils';
+import { smartSearchBhajans } from '@/lib/searchAlgorithm';
 import { useLanguage } from '@/hooks/useLanguage';
+import VoiceSearchButton from '@/components/VoiceSearchButton';
 
 interface UserBhajan {
   id: string;
@@ -78,15 +78,19 @@ export const AllBhajans = () => {
   const filteredBhajans = useMemo(() => {
     let results = [...bhajans];
 
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      results = results.filter(
-        (b) =>
-          b.title.toLowerCase().includes(searchLower) ||
-          b.singer_name.toLowerCase().includes(searchLower) ||
-          b.title_hindi.includes(filters.search)
-      );
+    if (filters.search.trim()) {
+      const searchable = results.map((b) => ({
+        id: b.id,
+        title: b.title,
+        titleHindi: b.title_hindi,
+        singerName: b.singer_name,
+        lyricsHindi: b.lyrics_hindi,
+        lyricsTransliteration: '',
+        tags: b.mood_tags || [],
+      }));
+      const matched = smartSearchBhajans(filters.search, searchable);
+      const matchedIds = new Set(matched.map((item) => String(item.id)));
+      results = results.filter((b) => matchedIds.has(b.id));
     }
 
     // Language filter
@@ -183,9 +187,7 @@ export const AllBhajans = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <div>
       {/* Hero Section */}
       <section className="py-12 px-4 bg-gradient-warm">
         <div className="container mx-auto max-w-6xl">
@@ -208,15 +210,18 @@ export const AllBhajans = () => {
       <section className=" top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4 px-4">
         <div className="container mx-auto max-w-6xl space-y-4">
           {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={t('searchBhajansOrSingers')}
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <motion.div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder={t('searchBhajansOrSingers')}
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <VoiceSearchButton onResult={(transcript) => handleFilterChange('search', transcript)} />
+          </motion.div>
 
           {/* Filter Controls */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -330,8 +335,8 @@ export const AllBhajans = () => {
               className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
             >
               {filteredBhajans.map((bhajan) => (
+                <div key={bhajan.id} className="min-w-0">
                 <BhajanCard
-                  key={bhajan.id}
                   bhajan={{
                     id: parseInt(bhajan.id),
                     slug: generateBhajanSlug(bhajan.title),
@@ -349,13 +354,13 @@ export const AllBhajans = () => {
                     featured: false,
                   }}
                 />
+                </div>
               ))}
             </motion.div>
           )}
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };

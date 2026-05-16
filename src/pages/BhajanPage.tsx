@@ -1,8 +1,6 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Loader2, Play, Star, Share2 } from "lucide-react";
+import { Loader2, Play, Star, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { bhajans, getDeityById } from "@/data/bhajans";
 import { generateBhajanSlug, formatBhajanDisplayTitle } from "@/lib/slugUtils";
 import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
@@ -77,8 +75,7 @@ export default function BhajanPage() {
 
   if (!bhajan) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
+      <div>
         <div className="container mx-auto max-w-4xl px-4 py-20 text-center">
           <p className="text-2xl text-muted-foreground">Bhajan not found</p>
           <Link to="/" className="text-primary underline mt-4 inline-block">Go Home</Link>
@@ -143,14 +140,9 @@ export default function BhajanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div>
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-3xl">
-          <Link to={deity ? `/deity/${deity.slug}` : "/"} className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 touch-target">
-            <ArrowLeft className="w-5 h-5" /> Back
-          </Link>
-
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <div className={`h-2 rounded-t-xl ${deity?.colorClass ?? 'bg-primary'}`} />
             <div className="bg-card rounded-b-xl shadow-temple p-6 md:p-10 mb-8">
@@ -246,7 +238,6 @@ export default function BhajanPage() {
           </motion.div>
         </div>
       </section>
-      <Footer />
     </div>
   );
 }

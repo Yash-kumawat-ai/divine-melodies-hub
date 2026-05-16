@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserNotifications } from '@/lib/supabaseQueries';
 import { Loader2, Bell, CheckCircle2, XCircle, AlertTriangle, FileUp } from 'lucide-react';
@@ -55,7 +53,6 @@ export default function MyNotifications() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="py-10 px-4">
         <div className="container mx-auto max-w-4xl">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">My Notifications</h1>
@@ -107,7 +104,6 @@ export default function MyNotifications() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

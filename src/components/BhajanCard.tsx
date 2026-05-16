@@ -70,7 +70,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
             handleCardClick(e as any);
           }
         }}
-        className="group block rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+        className="group block min-w-0 rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
       >
         <div className={`h-1.5 ${deity?.colorClass ?? "bg-primary"}`} />
         <div className="p-5">
@@ -90,14 +90,14 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>
             by {bhajan.singerName}
           </p>
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">
               <span className="flex items-center gap-1">
-                <Play className="w-3.5 h-3.5" />
+                <Play className="w-3.5 h-3.5 shrink-0" />
                 {(bhajan.playCount / 1000).toFixed(0)}K
               </span>
               <span className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 fill-secondary text-secondary" />
+                <Star className="w-3.5 h-3.5 fill-secondary text-secondary shrink-0" />
                 {bhajan.rating.toFixed(1)}
               </span>
             </div>
@@ -105,9 +105,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
               type="button"
               onClick={handlePlayClick}
               disabled={playBusy}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium group-hover:bg-primary group-hover:text-primary-foreground transition-colors disabled:opacity-60"
+              className="inline-flex w-full sm:w-auto shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground disabled:opacity-60"
             >
-              {playBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}{" "}
+              {playBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 shrink-0" />}
               {t("play")}
             </button>
           </div>

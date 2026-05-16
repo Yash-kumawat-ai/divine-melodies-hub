@@ -1,8 +1,6 @@
 import { motion } from 'framer-motion';
 import { Heart, Shield, Users, HandHeart, Github, Twitter, Mail, Lightbulb, Rocket, Music, PartyPopper, MapPin, Linkedin, Instagram } from 'lucide-react';
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 import founderPhoto from '@/assets/founder-yash.png';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -42,7 +40,6 @@ export default function About() {
         title="About"
         description="Learn about Hari Kirtan — our mission to preserve India's devotional music heritage, our team, and our journey."
       />
-      <Header />
 
       {/* Mission */}
       <section className="py-16 md:py-24 px-4">
@@ -220,7 +217,6 @@ export default function About() {
         </div>
       </section>
 
-      <LayoutFooter />
     </div>
   );
 }

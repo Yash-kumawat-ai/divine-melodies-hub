@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import BhajanCard from '@/components/BhajanCard';
 import { Loader2 } from 'lucide-react';
 import { getRecentApprovedBhajans } from '@/lib/supabaseQueries';
@@ -38,7 +36,6 @@ export default function RecentBhajans() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <h1 className="font-display text-4xl font-bold text-foreground mb-3">Recently Added Bhajans</h1>
@@ -79,7 +76,6 @@ export default function RecentBhajans() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

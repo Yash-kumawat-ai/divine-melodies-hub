@@ -1,243 +1,309 @@
 /**
- * Advanced Search Utility
- * Provides intelligent search with fuzzy matching, lyric searching, and deduplication
+ * Search utility — YouTube-style: show results only when the query
+ * actually appears in title, singer, or (if already matched) lyrics.
  */
 
-// Levenshtein distance algorithm for fuzzy matching (finds similar words)
 function levenshteinDistance(str1: string, str2: string): number {
-  const track = Array(str2.length + 1).fill(null).map(() =>
-    Array(str1.length + 1).fill(null)
-  );
+  const track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
 
-  for (let i = 0; i <= str1.length; i += 1) {
-    track[0][i] = i;
-  }
-  for (let j = 0; j <= str2.length; j += 1) {
-    track[j][0] = j;
-  }
+  for (let i = 0; i <= str1.length; i += 1) track[0][i] = i;
+  for (let j = 0; j <= str2.length; j += 1) track[j][0] = j;
 
   for (let j = 1; j <= str2.length; j += 1) {
     for (let i = 1; i <= str1.length; i += 1) {
       const indicator = str1[i - 1] === str2[j - 1] ? 0 : 1;
-      track[j][i] = Math.min(
-        track[j][i - 1] + 1,
-        track[j - 1][i] + 1,
-        track[j - 1][i - 1] + indicator
-      );
+      track[j][i] = Math.min(track[j][i - 1] + 1, track[j - 1][i] + 1, track[j - 1][i - 1] + indicator);
     }
   }
 
   return track[str2.length][str1.length];
 }
 
-// Calculate similarity score between two strings (0-100)
 function calculateSimilarity(str1: string, str2: string): number {
   const maxLen = Math.max(str1.length, str2.length);
   if (maxLen === 0) return 100;
-  
   const distance = levenshteinDistance(str1.toLowerCase(), str2.toLowerCase());
-  const similarity = ((maxLen - distance) / maxLen) * 100;
-  return Math.max(0, similarity);
+  return Math.max(0, ((maxLen - distance) / maxLen) * 100);
 }
 
-// Extract words from text (works with both English and Hindi)
-function extractWords(text: string): string[] {
+function containsDevanagari(text: string): boolean {
+  return /[\u0900-\u097F]/.test(text);
+}
+
+function isLatinQuery(text: string): boolean {
+  return /^[a-z0-9\s'-]+$/i.test(text.trim());
+}
+
+/** Remove spaces/punctuation for "चुप चाप" ↔ "चुपचाप" style matching */
+export function normalizeSearchText(text: string): string {
+  return text.toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
+}
+
+export function extractWords(text: string): string[] {
   return text
     .toLowerCase()
-    .replace(/[^\w\s]/g, '')
+    .replace(/[^\w\s\u0900-\u097F]/g, ' ')
     .split(/\s+/)
-    .filter(word => word.length > 2); // Only words longer than 2 chars
+    .map((word) => word.trim())
+    .filter((word) => word.length >= 2);
 }
 
-// Common synonyms mapping for Hindi/devotional terms
-const synonymMap: { [key: string]: string[] } = {
-  'hare': ['hari', 'haraye', 'harey', 'hareesh'],
-  'krishna': ['kanha', 'kanhaiya', 'kishan', 'govind', 'gopal', 'hari'],
-  'rama': ['ram', 'ramachandra', 'raghupath', 'raghunath'],
-  'shiva': ['shiv', 'mahadev', 'bholenath', 'neelkant'],
-  'durga': ['devi', 'mata', 'maa', 'goddess', 'shakti'],
-  'hanuman': ['hanumanji', 'bajrangbali', 'vanar'],
-  'sakti': ['shakti', 'energy', 'power', 'devi'],
-  'pyar': ['prem', 'love', 'bhakti', 'devotion'],
-  'bhakti': ['devotion', 'prem', 'pyar', 'shraddha'],
-  'geet': ['song', 'bhajan', 'gana', 'sangeet'],
-  'sahara': ['shelter', 'support', 'asha', 'hope', 'aashray'],
+/** Tokens for DB ilike — no tiny fragments like "he" from "bethe" */
+export function getFlexibleSearchTokens(query: string): string[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const tokens = new Set<string>();
+  const add = (value: string) => {
+    if (value.length >= 3) tokens.add(value);
+  };
+
+  add(trimmed);
+  extractWords(trimmed).forEach(add);
+
+  const compact = normalizeSearchText(trimmed);
+  if (compact.length >= 3) tokens.add(compact);
+
+  const allowSplit = containsDevanagari(trimmed) || compact.length >= 8;
+  if (allowSplit && !/\s/.test(trimmed) && compact.length >= 6) {
+    const mid = Math.ceil(compact.length / 2);
+    add(compact.slice(0, mid));
+    add(compact.slice(mid));
+  }
+
+  return [...tokens];
+}
+
+function getBhajanSearchFields(bhajan: any): {
+  title: string;
+  titleHindi: string;
+  singer: string;
+  titleBlob: string;
+  titleCompact: string;
+  singerCompact: string;
+  transliteration: string;
+} {
+  const title = String(bhajan.title || '');
+  const titleHindi = String(bhajan.titleHindi || '');
+  const singer = String(bhajan.singerName || '');
+  const titleBlob = `${title} ${titleHindi} ${bhajan.lyricsTransliteration || ''}`.trim();
+  return {
+    title,
+    titleHindi,
+    singer,
+    titleBlob,
+    titleCompact: normalizeSearchText(`${title} ${titleHindi}`),
+    singerCompact: normalizeSearchText(singer),
+    transliteration: String(bhajan.lyricsTransliteration || ''),
+  };
+}
+
+function substringMatch(haystack: string, needle: string): boolean {
+  if (!needle || needle.length < 2) return false;
+  return haystack.toLowerCase().includes(needle.toLowerCase());
+}
+
+function compactMatch(haystack: string, needle: string): boolean {
+  if (!needle || needle.length < 3) return false;
+  return normalizeSearchText(haystack).includes(normalizeSearchText(needle));
+}
+
+function foldLatinVowels(text: string): string {
+  return text.toLowerCase().replace(/[aeiouy]/g, '');
+}
+
+function laxLatinWordMatch(queryWord: string, titleWord: string): boolean {
+  if (!isLatinQuery(queryWord) || !isLatinQuery(titleWord)) return false;
+  if (queryWord.length < 4 || titleWord.length < 4) return false;
+  const qFold = foldLatinVowels(queryWord);
+  const tFold = foldLatinVowels(titleWord);
+  if (qFold.length >= 3 && tFold.length >= 3) {
+    if (tFold.includes(qFold) || qFold.includes(tFold)) return true;
+    if (calculateSimilarity(qFold, tFold) >= 78) return true;
+  }
+  return fuzzyTitleWordMatch(queryWord, titleWord);
+}
+
+function fuzzyTitleWordMatch(queryWord: string, titleWord: string): boolean {
+  if (queryWord.length < 4 || titleWord.length < 4) return false;
+  const similarity = calculateSimilarity(queryWord, titleWord);
+  if (similarity < 82) return false;
+  const prefixLen = Math.min(3, queryWord.length, titleWord.length);
+  return (
+    queryWord.slice(0, prefixLen) === titleWord.slice(0, prefixLen) ||
+    titleWord.includes(queryWord) ||
+    queryWord.includes(titleWord)
+  );
+}
+
+const LATIN_HINDI_FRAGMENTS: Record<string, string> = {
+  bethe: 'बैठ',
+  baithe: 'बैठ',
+  baithhe: 'बैठ',
+  baith: 'बैठ',
+  chup: 'चुप',
+  chap: 'चाप',
+  chupchap: 'चुप',
 };
 
-// Check if two words are synonyms
-function areSynonyms(word1: string, word2: string): boolean {
-  const word1Lower = word1.toLowerCase();
-  const word2Lower = word2.toLowerCase();
-
-  if (word1Lower === word2Lower) return true;
-
-  // Check if they're in the synonym map
-  for (const [key, synonyms] of Object.entries(synonymMap)) {
-    if (word1Lower === key && synonyms.includes(word2Lower)) return true;
-    if (word2Lower === key && synonyms.includes(word1Lower)) return true;
+function latinQueryMatchesHindiTitle(query: string, titleHindi: string): boolean {
+  const q = query.toLowerCase().trim();
+  if (!isLatinQuery(q) || !titleHindi) return false;
+  const qCompact = normalizeSearchText(q);
+  for (const [latin, devFragment] of Object.entries(LATIN_HINDI_FRAGMENTS)) {
+    const latinCompact = normalizeSearchText(latin);
+    if (qCompact.includes(latinCompact) || latinCompact.includes(qCompact)) {
+      if (qCompact.length >= 3 && titleHindi.includes(devFragment)) return true;
+    }
   }
-
-  // If similarity is high enough, consider them synonyms
-  return calculateSimilarity(word1, word2) > 80;
+  return false;
 }
 
-// Score a bhajan based on search query relevance
+/**
+ * Hard relevance gate — must pass before a bhajan appears in results.
+ */
+export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
+  const trimmed = query.trim();
+  if (!trimmed || !bhajan) return false;
+
+  const fields = getBhajanSearchFields(bhajan);
+  const queryLower = trimmed.toLowerCase();
+  const queryCompact = normalizeSearchText(trimmed);
+
+  if (
+    substringMatch(fields.title, trimmed) ||
+    substringMatch(fields.titleHindi, trimmed) ||
+    substringMatch(fields.singer, trimmed) ||
+    substringMatch(fields.transliteration, trimmed) ||
+    latinQueryMatchesHindiTitle(trimmed, fields.titleHindi)
+  ) {
+    return true;
+  }
+
+  if (queryCompact.length >= 3) {
+    if (fields.titleCompact.includes(queryCompact) || fields.singerCompact.includes(queryCompact)) {
+      return true;
+    }
+  }
+
+  const queryWords = extractWords(trimmed).filter((w) => w.length >= 3);
+  const titleWords = extractWords(fields.titleBlob).filter((w) => w.length >= 3);
+
+  if (queryWords.length > 0) {
+    const allWordsMatch = queryWords.every((qWord) =>
+      titleWords.some(
+        (tWord) =>
+          tWord.includes(qWord) ||
+          qWord.includes(tWord) ||
+          compactMatch(tWord, qWord) ||
+          (isLatinQuery(qWord) && (laxLatinWordMatch(qWord, tWord) || fuzzyTitleWordMatch(qWord, tWord))),
+      ),
+    );
+    if (allWordsMatch) return true;
+  }
+
+  if (isLatinQuery(trimmed) && trimmed.length >= 4) {
+    if (titleWords.some((tWord) => laxLatinWordMatch(trimmed, tWord) || fuzzyTitleWordMatch(trimmed, tWord))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const synonymMap: Record<string, string[]> = {
+  hare: ['hari', 'haraye', 'harey', 'hareesh'],
+  krishna: ['kanha', 'kanhaiya', 'kishan', 'govind', 'gopal', 'hari'],
+  rama: ['ram', 'ramachandra', 'raghupath', 'raghunath'],
+  shiva: ['shiv', 'mahadev', 'bholenath', 'neelkant'],
+  hanuman: ['hanumanji', 'bajrangbali', 'vanar'],
+};
+
+function areSynonyms(word1: string, word2: string): boolean {
+  const a = word1.toLowerCase();
+  const b = word2.toLowerCase();
+  if (a === b) return true;
+  for (const [key, synonyms] of Object.entries(synonymMap)) {
+    if (a === key && synonyms.includes(b)) return true;
+    if (b === key && synonyms.includes(a)) return true;
+  }
+  return false;
+}
+
 function scoreBhajan(bhajan: any, query: string): number {
-  let score = 0;
-  let hasTitleMatch = false;
-  let hasSingerMatch = false;
-  const queryWords = extractWords(query);
-  const queryLower = query.toLowerCase();
+  if (!bhajanMatchesQuery(bhajan, query)) return 0;
 
-  // Exact title match - highest priority
-  if (bhajan.title.toLowerCase() === queryLower) {
-    score += 200;
-    hasTitleMatch = true;
-  }
-  // Title contains exact query
-  else if (bhajan.title.toLowerCase().includes(queryLower)) {
-    score += 100;
-    hasTitleMatch = true;
-  }
+  let score = 30;
+  const fields = getBhajanSearchFields(bhajan);
+  const queryLower = query.toLowerCase().trim();
+  const queryCompact = normalizeSearchText(query);
+  const queryWords = extractWords(query).filter((w) => w.length >= 3);
 
-  // Title Hindi match
-  if (bhajan.titleHindi.includes(query)) {
-    score += 80;
-    hasTitleMatch = true;
-  }
+  if (fields.title.toLowerCase() === queryLower) score += 200;
+  else if (substringMatch(fields.title, query)) score += 100;
 
-  // Singer name match
-  if (bhajan.singerName.toLowerCase().includes(queryLower)) {
-    score += 70;
-    hasSingerMatch = true;
-  }
+  if (substringMatch(fields.titleHindi, query)) score += 90;
+  if (substringMatch(fields.singer, query)) score += 75;
 
-  // Match individual words in title (fuzzy)
-  const titleWords = extractWords(bhajan.title);
+  if (queryCompact.length >= 3 && fields.titleCompact.includes(queryCompact)) score += 160;
+  if (queryCompact.length >= 3 && fields.singerCompact.includes(queryCompact)) score += 65;
+
   for (const qWord of queryWords) {
-    for (const tWord of titleWords) {
-      const similarity = calculateSimilarity(qWord, tWord);
-      if (similarity > 75) {
-        score += similarity * 0.6; // Weight word similarity
-        hasTitleMatch = true;
-      }
-      // Check for synonyms
-      if (areSynonyms(qWord, tWord)) {
-        score += 55;
-        hasTitleMatch = true;
-      }
-    }
+    if (substringMatch(fields.titleBlob, qWord)) score += 40;
+    if (areSynonyms(qWord, fields.title) || areSynonyms(qWord, fields.singer)) score += 35;
   }
 
-  // Only search in lyrics if there's some title/singer match
-  // This prevents irrelevant results
-  if (hasTitleMatch || hasSingerMatch) {
-    const lyricsWords = extractWords(bhajan.lyricsHindi + ' ' + bhajan.lyricsTransliteration);
-    let lyricsMatchCount = 0;
-    for (const qWord of queryWords) {
-      for (const lWord of lyricsWords) {
-        const similarity = calculateSimilarity(qWord, lWord);
-        if (similarity > 80) {
-          lyricsMatchCount++;
-          score += similarity * 0.2; // Weight lyrics matches less
-        }
-        if (areSynonyms(qWord, lWord)) {
-          lyricsMatchCount++;
-          score += 20;
-        }
-      }
-    }
-
-    // Bonus for multiple word matches in lyrics
-    if (lyricsMatchCount > 1) {
-      score += lyricsMatchCount * 5;
-    }
-  }
-
-  // Tags match
-  if (bhajan.tags.some(tag => 
-    queryWords.some(qWord => areSynonyms(qWord, tag))
-  )) {
-    score += 30;
+  const lyrics = `${bhajan.lyricsHindi || ''} ${fields.transliteration}`;
+  if (substringMatch(lyrics, query) || (queryCompact.length >= 4 && compactMatch(lyrics, query))) {
+    score += 25;
   }
 
   return score;
 }
 
-// Remove duplicate/similar bhajans from results
 function deduplicateResults(bhajans: any[]): any[] {
-  const seen: Set<number> = new Set();
+  const seen = new Set<number>();
   const result: any[] = [];
 
-  // Group bhajans by similarity
   for (let i = 0; i < bhajans.length; i++) {
     if (seen.has(bhajans[i].id)) continue;
-
     result.push(bhajans[i]);
     seen.add(bhajans[i].id);
 
-    // Mark similar bhajans as duplicates
     for (let j = i + 1; j < bhajans.length; j++) {
       if (seen.has(bhajans[j].id)) continue;
-
-      // If two bhajans have very similar titles or lyrics, consider them duplicates
       const titleSimilarity = calculateSimilarity(bhajans[i].title, bhajans[j].title);
       const lyricsSimilarity = calculateSimilarity(
-        bhajans[i].lyricsHindi.substring(0, 100),
-        bhajans[j].lyricsHindi.substring(0, 100)
+        String(bhajans[i].lyricsHindi || '').substring(0, 100),
+        String(bhajans[j].lyricsHindi || '').substring(0, 100),
       );
-
-      if (titleSimilarity > 85 || lyricsSimilarity > 90) {
-        seen.add(bhajans[j].id);
-      }
+      if (titleSimilarity > 85 || lyricsSimilarity > 90) seen.add(bhajans[j].id);
     }
   }
 
   return result;
 }
 
-// Main search function
 export function smartSearchBhajans(query: string, source: any[] = []): any[] {
   if (!query.trim()) return [];
 
-  // Score all bhajans
   const scoredBhajans = source
-    .map(bhajan => ({
+    .map((bhajan) => ({
       ...bhajan,
-      _searchScore: scoreBhajan(bhajan, query)
+      _searchScore: scoreBhajan(bhajan, query),
     }))
-    .filter(b => b._searchScore > 30) // Require minimum score threshold for relevance
-    .sort((a, b) => b._searchScore - a._searchScore); // Sort by relevance
+    .filter((b) => b._searchScore > 0)
+    .sort((a, b) => b._searchScore - a._searchScore);
 
-  // Remove duplicates and cleanup
-  const deduplicated = deduplicateResults(scoredBhajans);
-  
-  // Remove the score property before returning
-  return deduplicated.map(({ _searchScore, ...rest }) => rest);
+  return deduplicateResults(scoredBhajans).map(({ _searchScore, ...rest }) => rest);
 }
 
-/**
- * Get related/recommended bhajans based on the current bhajan
- * Prioritizes by: deity > singer > mood/tags > language > popularity
- */
-export function getRelatedBhajans(
-  currentBhajan: any,
-  allBhajans: any[],
-  limit: number = 6
-): any[] {
-  // Exclude the current bhajan
-  const candidates = allBhajans.filter(b => b.id !== currentBhajan.id);
+export function getRelatedBhajans(currentBhajan: any, allBhajans: any[], limit: number = 6): any[] {
+  const candidates = allBhajans.filter((b) => b.id !== currentBhajan.id);
 
-  // Score related bhajans
-  const scored = candidates.map(bhajan => {
+  const scored = candidates.map((bhajan) => {
     let score = 0;
-
-    // Same deity (highest priority) - 100 points
-    if (bhajan.deityId === currentBhajan.deityId) {
-      score += 100;
-    }
-
-    // Same singer (priority 2) - 80 points
+    if (bhajan.deityId === currentBhajan.deityId) score += 100;
     if (
       bhajan.singerName &&
       currentBhajan.singerName &&
@@ -245,33 +311,22 @@ export function getRelatedBhajans(
     ) {
       score += 80;
     }
-
-    // Similar mood/tags (priority 3) - up to 60 points
     if (bhajan.tags && currentBhajan.tags) {
-      const commonTags = bhajan.tags.filter(tag =>
-        currentBhajan.tags.some(cTag => calculateSimilarity(tag, cTag) > 70)
+      const commonTags = bhajan.tags.filter((tag: string) =>
+        currentBhajan.tags.some((cTag: string) => calculateSimilarity(tag, cTag) > 70),
       );
       score += Math.min(commonTags.length * 20, 60);
     }
-
-    // Same language (if available) - 30 points
     if (bhajan.language && currentBhajan.language && bhajan.language === currentBhajan.language) {
       score += 30;
     }
-
-    // By popularity (rating * play count) - fallback recommendation - up to 20 points
     if (bhajan.rating && currentBhajan.rating) {
-      const popularityScore = (bhajan.rating / 5) * 10; // Normalize to 10 points
-      score += Math.min(popularityScore, 20);
+      score += Math.min((bhajan.rating / 5) * 10, 20);
     }
-
-    // Small random factor to vary results (up to 5 points)
     score += Math.random() * 5;
-
     return { ...bhajan, _relationScore: score };
   });
 
-  // Sort by relation score and return top results
   return scored
     .sort((a, b) => b._relationScore - a._relationScore)
     .slice(0, limit)

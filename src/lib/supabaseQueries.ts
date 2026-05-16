@@ -61,24 +61,33 @@ export const getTrendingBhajans = (period: string) => {
 };
 
 export const searchUserBhajans = async (searchQuery: string, limit: number = 10) => {
+  const { getFlexibleSearchTokens } = await import('@/lib/searchAlgorithm');
   const client = supabase as any;
-  const searchTerm = searchQuery.toLowerCase().trim();
+  const tokens = getFlexibleSearchTokens(searchQuery).slice(0, 6);
+  const merged = new Map<string, unknown>();
 
-  const { data, error } = await client
-    .from('user_uploads')
-    .select('*')
-    .or(`status.eq.approved,status.is.null`)
-    .or(
-      `title.ilike.%${searchTerm}%,title_hindi.ilike.%${searchTerm}%,singer_name.ilike.%${searchTerm}%,lyrics_hindi.ilike.%${searchTerm}%`
-    )
-    .limit(limit);
+  for (const token of tokens) {
+    const searchTerm = token.toLowerCase().trim();
+    if (!searchTerm) continue;
 
-  if (error) {
-    console.error('Error searching bhajans:', error);
-    return [];
+    const { data, error } = await client
+      .from('user_uploads')
+      .select('*')
+      .or(`status.eq.approved,status.is.null`)
+      .or(
+        `title.ilike.%${searchTerm}%,title_hindi.ilike.%${searchTerm}%,singer_name.ilike.%${searchTerm}%,lyrics_hindi.ilike.%${searchTerm}%`,
+      )
+      .limit(limit);
+
+    if (error) {
+      console.error('Error searching bhajans:', error);
+      continue;
+    }
+
+    (data || []).forEach((row: { id: string }) => merged.set(String(row.id), row));
   }
 
-  return data || [];
+  return [...merged.values()].slice(0, limit);
 };
 
 export interface AdminQueueFilters {

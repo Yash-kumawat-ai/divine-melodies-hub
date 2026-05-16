@@ -1,3 +1,5 @@
+import { smartSearchBhajans } from '@/lib/searchAlgorithm';
+
 export interface Deity {
   id: number;
   slug: string;
@@ -144,13 +146,5 @@ export function getFeaturedBhajans(): Bhajan[] {
 }
 
 export function searchBhajans(query: string, source: Bhajan[] = bhajans): Bhajan[] {
-  const q = query.toLowerCase();
-  return source.filter(b =>
-    b.title.toLowerCase().includes(q) ||
-    b.titleHindi.includes(query) ||
-    b.singerName.toLowerCase().includes(q) ||
-    b.lyricsHindi.includes(query) ||
-    b.lyricsTransliteration.toLowerCase().includes(q) ||
-    b.tags.some(t => t.includes(q))
-  );
+  return smartSearchBhajans(query, source) as Bhajan[];
 }

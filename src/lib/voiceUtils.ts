@@ -57,8 +57,18 @@ async function hasAudioInputDevice(): Promise<boolean> {
   }
 }
 
+function getMediaErrorName(error: unknown): string {
+  if (error instanceof DOMException || error instanceof Error) {
+    return error.name;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  return (error as { name?: string })?.name ?? '';
+}
+
 function getMediaErrorMessage(error: unknown): string {
-  const name = (error as { name?: string })?.name || error;
+  const name = getMediaErrorName(error);
 
   if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
     return 'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.';
@@ -118,7 +128,7 @@ async function ensureMicrophoneAccess(): Promise<{ ok: true } | { ok: false; err
     stream.getTracks().forEach((track) => track.stop());
     return { ok: true };
   } catch (error) {
-    const name = (error as { name?: string })?.name;
+    const name = getMediaErrorName(error);
     if (
       (name === 'NotFoundError' || name === 'DevicesNotFoundError') &&
       !isMicrophoneBlockedByDocumentPolicy()
@@ -169,6 +179,21 @@ export class VoiceManager {
     this.recognition.maxAlternatives = 1;
   }
 
+  /** Stop an in-flight session so start() does not throw InvalidStateError. */
+  private resetRecognitionSession() {
+    if (!this.recognition) return;
+    try {
+      if (typeof this.recognition.abort === 'function') {
+        this.recognition.abort();
+      } else {
+        this.recognition.stop();
+      }
+    } catch {
+      // No active session — safe to ignore.
+    }
+    this.isListening = false;
+  }
+
   /**
    * Start listening for voice input
    */
@@ -188,57 +213,84 @@ export class VoiceManager {
     if (microphoneAccess.ok !== true) {
       this.isListening = false;
       onError?.(microphoneAccess.error);
-      onEnd?.();
+      onEnd?.(); // Mic denied before a session starts — safe to call directly.
       return;
     }
 
+    this.resetRecognitionSession();
     this.transcript = '';
     this.isListening = false;
 
-    // Listen for speech
-    (this.recognition as any).onresult = (event: SpeechRecognitionEvent) => {
+    let sessionEnded = false;
+    const endOnce = () => {
+      if (sessionEnded) return;
+      sessionEnded = true;
+      this.isListening = false;
+      onEnd?.();
+    };
+
+    this.recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interim = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
+        const result = event.results[i];
+        const transcript = result[0]?.transcript ?? '';
 
-        if (event.results[i].isFinal) {
+        if (result.isFinal) {
           this.transcript += transcript + ' ';
         } else {
           interim += transcript;
         }
       }
 
-      // Call callback with combined transcript and final flag
-      const combined = this.transcript + interim;
-      const isFinal = event.results[event.results.length - 1].isFinal;
+      const combined = (this.transcript + interim).trim();
+      const lastResult =
+        event.results.length > 0 ? event.results[event.results.length - 1] : null;
+      const isFinal = lastResult?.isFinal ?? false;
       onTranscript(combined, isFinal);
     };
 
-    (this.recognition as any).onerror = (event: any) => {
-      const errorMessage = this.getErrorMessage(event.error);
-      console.error('Voice error:', event.error, errorMessage);
+    this.recognition.onerror = (event: Event & { error?: string }) => {
+      const code = event.error ?? 'unknown';
       this.isListening = false;
+
+      if (code === 'aborted') {
+        endOnce();
+        return;
+      }
+
+      const errorMessage = this.getErrorMessage(code);
+      console.error('Voice error:', code, errorMessage);
       onError?.(errorMessage);
+      endOnce();
     };
 
-    (this.recognition as any).onstart = () => {
+    this.recognition.onstart = () => {
       this.isListening = true;
       onStart?.();
     };
 
-    (this.recognition as any).onend = () => {
-      console.log('Voice recognition ended');
-      this.isListening = false;
-      onEnd?.();
+    this.recognition.onend = () => {
+      endOnce();
     };
 
     try {
       this.recognition.start();
     } catch (err) {
+      const name = getMediaErrorName(err);
+      if (name === 'InvalidStateError') {
+        this.resetRecognitionSession();
+        try {
+          this.recognition.start();
+          return;
+        } catch (retryErr) {
+          console.error('Error restarting recognition:', retryErr);
+        }
+      }
       console.error('Error starting recognition:', err);
       this.isListening = false;
-      onError?.('Failed to start listening');
+      onError?.('Failed to start listening. Wait a moment and try again.');
+      endOnce();
     }
   }
 
@@ -246,24 +298,36 @@ export class VoiceManager {
    * Stop listening
    */
   public stopListening() {
-    if (this.recognition && this.isListening) {
-      this.recognition.stop();
-      this.isListening = false;
+    if (!this.recognition) return;
+    try {
+      if (this.isListening) {
+        this.recognition.stop();
+      } else if (typeof this.recognition.abort === 'function') {
+        this.recognition.abort();
+      }
+    } catch {
+      // ignore
     }
+    this.isListening = false;
   }
 
   /**
    * Get user-friendly error message
    */
   private getErrorMessage(error: string): string {
-    const messages: { [key: string]: string } = {
+    const messages: Record<string, string> = {
       'no-speech': 'कोई आवाज नहीं सुनी गई। कृपया फिर से कोशिश करें।',
-      'audio-capture': 'माइक्रोफोन से आवाज नहीं मिल रही। कृपया अपना इनपुट डिवाइस जांचें।',
-      'network': 'नेटवर्क से जुड़ने में समस्या।',
+      'no-match': 'समझ नहीं आया। कृपया साफ़ और धीरे बोलकर फिर कोशिश करें।',
+      'audio-capture':
+        'माइक्रोफोन से आवाज नहीं मिल रही। कृपया अपना इनपुट डिवाइस जांचें।',
+      network: 'नेटवर्क से जुड़ने में समस्या।',
       'service-not-allowed': 'वॉइस सेवा अभी उपलब्ध नहीं है।',
       'bad-grammar': 'समझने में समस्या हुई।',
-      'permission-denied': 'कृपया माइक्रोफोन की अनुमति दें।',
-      'not-allowed': 'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.',
+      'language-not-supported': 'यह भाषा इस ब्राउज़र में समर्थित नहीं है।',
+      'permission-denied':
+        'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.',
+      'not-allowed':
+        'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.',
     };
 
     return messages[error] || `त्रुटि: ${error}। फिर से कोशिश करें।`;
@@ -371,9 +435,12 @@ export function checkVoiceSupport(): {
   recognition: boolean;
   synthesis: boolean;
 } {
+  if (typeof window === 'undefined') {
+    return { recognition: false, synthesis: false };
+  }
   const SpeechRecognition = getSpeechRecognitionConstructor();
   return {
     recognition: !!SpeechRecognition,
-    synthesis: typeof window !== 'undefined' && !!window.speechSynthesis,
+    synthesis: !!window.speechSynthesis,
   };
 }

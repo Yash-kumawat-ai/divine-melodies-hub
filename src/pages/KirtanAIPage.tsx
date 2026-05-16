@@ -1,17 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BookOpen, Bot, Heart, Home, Menu, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
+import { BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import Header from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/use-toast";
 import { TextToSpeech, VoiceManager, checkVoiceSupport } from "../lib/voiceUtils";
 import BhajanCard from "../components/BhajanCard";
 import BhajanDetailModal from "../components/BhajanDetailModal";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "../data/bhajans";
-import { smartSearchBhajans } from "../lib/searchAlgorithm";
+import { bhajanMatchesQuery, smartSearchBhajans } from "../lib/searchAlgorithm";
 import { searchUserBhajans } from "../lib/supabaseQueries";
 import { generateBhajanSlug } from "../lib/slugUtils";
+import { useIsMobile } from "../hooks/use-mobile";
+import {
+  createChatSession,
+  deriveChatTitle,
+  loadChatSessions,
+  saveChatSessions,
+  type KirtanChatSession,
+} from "../lib/kirtanChatHistory";
 import {
   AddBhajanDraft,
   KirtanBhajan,
@@ -141,19 +148,10 @@ function getDeityNameForBhajan(bhajan: Bhajan): string {
 }
 
 function strictBhajanMatch(term: string, bhajan: Bhajan): boolean {
+  if (bhajanMatchesQuery(bhajan, term)) return true;
   const query = term.toLowerCase().trim();
   if (!query) return false;
-  const fields = [
-    bhajan.title,
-    bhajan.titleHindi,
-    bhajan.singerName,
-    getDeityNameForBhajan(bhajan),
-    (bhajan as any).language || "",
-    ...((bhajan as any).aliases || []),
-    ...(bhajan.tags || []),
-  ].map((field) => String(field).toLowerCase());
-
-  return fields.some((field) => field.includes(query));
+  return getDeityNameForBhajan(bhajan).toLowerCase().includes(query);
 }
 
 function dedupeBhajans(items: Bhajan[]): Bhajan[] {
@@ -169,13 +167,16 @@ function dedupeBhajans(items: Bhajan[]): Bhajan[] {
 export default function KirtanAIPage() {
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [library, setLibrary] = useState<KirtanBhajan[]>(OFFLINE_BHAJANS);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [chatSessions, setChatSessions] = useState<KirtanChatSession[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [flow, setFlow] = useState<Flow>({ type: "idle" });
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceSupport, setVoiceSupport] = useState({ recognition: true, synthesis: true });
   const [selectedBhajan, setSelectedBhajan] = useState<Bhajan | null>(null);
@@ -188,6 +189,13 @@ export default function KirtanAIPage() {
   useEffect(() => {
     setLibrary([...OFFLINE_BHAJANS, ...loadSavedBhajans()]);
     setFavorites(loadFavorites());
+    const stored = loadChatSessions();
+    const initial = stored[0] ?? createChatSession();
+    const sessions = stored.length ? stored : [initial];
+    setChatSessions(sessions);
+    setActiveSessionId(initial.id);
+    setMessages((initial.messages as Message[]) ?? []);
+    setSidebarOpen(window.innerWidth >= 768);
     const support = checkVoiceSupport();
     setVoiceSupport(support);
     if (support.recognition) voiceRef.current = new VoiceManager();
@@ -197,6 +205,43 @@ export default function KirtanAIPage() {
       ttsRef.current?.stop();
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeSessionId) return;
+    const title = deriveChatTitle(messages as KirtanChatSession['messages']);
+    setChatSessions((prev) => {
+      const next = prev.map((session) =>
+        session.id === activeSessionId
+          ? { ...session, messages: messages as KirtanChatSession['messages'], title, updatedAt: Date.now() }
+          : session,
+      );
+      saveChatSessions(next);
+      return next.sort((a, b) => b.updatedAt - a.updatedAt);
+    });
+  }, [messages, activeSessionId]);
+
+  const startNewChat = () => {
+    const session = createChatSession();
+    setChatSessions((prev) => {
+      const next = [session, ...prev];
+      saveChatSessions(next);
+      return next;
+    });
+    setActiveSessionId(session.id);
+    setMessages([]);
+    setFlow({ type: "idle" });
+    setInput("");
+    if (isMobile) setSidebarOpen(false);
+  };
+
+  const openChatSession = (sessionId: string) => {
+    const session = chatSessions.find((item) => item.id === sessionId);
+    if (!session) return;
+    setActiveSessionId(session.id);
+    setMessages((session.messages as Message[]) ?? []);
+    setFlow({ type: "idle" });
+    if (isMobile) setSidebarOpen(false);
+  };
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -278,8 +323,10 @@ export default function KirtanAIPage() {
         ? appBhajans.filter((bhajan) => strictBhajanMatch(term, bhajan))
         : smartSearchBhajans(term, appBhajans);
 
-      const combined = dedupeBhajans([...localCandidates, ...uploadedBhajans])
-        .filter((bhajan) => strictBhajanMatch(term, bhajan));
+      const combined = smartSearchBhajans(
+        term,
+        dedupeBhajans([...localCandidates, ...uploadedBhajans]),
+      );
 
       pushBot({
         text: combined.length
@@ -470,26 +517,62 @@ export default function KirtanAIPage() {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col">
-      <Header />
-      <div className="flex-1 flex overflow-hidden">
-        <motion.aside animate={{ width: sidebarOpen ? 270 : 0 }} className="bg-card border-r border-border overflow-hidden flex-shrink-0">
-          <div className="p-4 space-y-3">
-            <button onClick={() => setMessages([])} className="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground">New chat</button>
-            <div className="text-xs text-muted-foreground rounded-lg border border-border p-3">100% offline. No AI API calls. Added bhajans and favorites save in this browser.</div>
+    <motion.div className="flex flex-1 flex-col min-h-0 overflow-hidden bg-background">
+      <div className="relative flex flex-1 overflow-hidden min-h-0">
+        {isMobile && sidebarOpen && (
+          <button
+            type="button"
+            className="fixed top-16 md:top-20 left-0 right-0 bottom-0 z-40 bg-black/50 md:hidden"
+            aria-label="Close menu"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        <aside
+          className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed top-16 md:top-20 bottom-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col border-r border-border bg-card transition-transform duration-200 md:static md:top-auto md:bottom-auto md:z-auto md:w-72 md:translate-x-0 md:flex-shrink-0`}
+        >
+          <div className="flex items-center justify-between border-b border-border p-4">
+            <span className="text-sm font-semibold">Chats</span>
+            {isMobile && (
+              <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 hover:bg-accent" aria-label="Close sidebar">
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
-          <div className="px-4 py-3 border-t border-border space-y-2">
+          <div className="p-3">
+            <button type="button" onClick={startNewChat} className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-3 text-sm font-semibold hover:border-primary hover:text-primary">
+              <MessageSquarePlus className="h-4 w-4" />
+              New chat
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+            <p className="px-2 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">History</p>
+            {chatSessions.map((session) => (
+              <button
+                key={session.id}
+                type="button"
+                onClick={() => openChatSession(session.id)}
+                className={`mb-1 w-full rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${session.id === activeSessionId ? 'bg-primary/15 text-primary' : 'text-foreground hover:bg-accent'}`}
+              >
+                <span className="line-clamp-2 break-words">{session.title}</span>
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-border p-3 space-y-2">
+            <p className="text-xs text-muted-foreground rounded-lg border border-border p-3">100% offline. No AI API calls. Added bhajans and favorites save in this browser.</p>
             {NAVIGATION.map((nav) => (
-              <Link key={nav.path} to={nav.path} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-accent">
-                <nav.icon className="h-4 w-4" /> {nav.label}
+              <Link key={nav.path} to={nav.path} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-accent" onClick={() => isMobile && setSidebarOpen(false)}>
+                <nav.icon className="h-4 w-4 shrink-0" /> {nav.label}
               </Link>
             ))}
           </div>
-        </motion.aside>
+        </aside>
 
-        <main className="min-w-0 flex-1 flex flex-col">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-2">
-            <button onClick={() => setSidebarOpen((prev) => !prev)} className="rounded-lg p-2 hover:bg-accent" aria-label="Toggle sidebar">
+        <main className="min-w-0 flex-1 flex flex-col min-h-0">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-2 shrink-0">
+            <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-accent md:hidden" aria-label="Open sidebar">
+              <Menu className="h-5 w-5" />
+            </button>
+            <button onClick={() => setSidebarOpen((prev) => !prev)} className="hidden rounded-lg p-2 hover:bg-accent md:inline-flex" aria-label="Toggle sidebar">
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
             <Bot className="h-4 w-4 text-primary" />
@@ -502,8 +585,8 @@ export default function KirtanAIPage() {
                 <div className="min-h-[55vh] flex flex-col justify-center">
                   <div className="mb-8 text-center">
                     <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-2xl">🪷</div>
-                    <h1 className="text-3xl font-bold">Namaste, {displayName}</h1>
-                    <p className="mt-2 text-muted-foreground">Kya karna chahenge? Quick action choose karein ya bhajan ka exact naam type karein.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold break-words px-2">Namaste, {displayName}</h1>
+                    <p className="mt-2 text-muted-foreground text-sm sm:text-base px-2">Kya karna chahenge? Quick action choose karein ya bhajan ka exact naam type karein.</p>
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
                     {QUICK_ACTIONS.map((action) => (
@@ -645,6 +728,6 @@ export default function KirtanAIPage() {
         }}
         allBhajans={appBhajans}
       />
-    </div>
+    </motion.div>
   );
 }

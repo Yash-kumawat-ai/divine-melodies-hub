@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/hooks/useLanguage';
 import blogPosts from '@/data/blogPosts.json';
@@ -39,7 +37,6 @@ export default function Blog() {
         title="Blog"
         description="Read about devotional music, bhajan history, platform updates, and stories from the Hari Kirtan community."
       />
-      <Header />
 
       <section className="py-16 md:py-20 px-4">
         <div className="container mx-auto max-w-5xl">
@@ -121,7 +118,6 @@ export default function Blog() {
         </div>
       </section>
 
-      <LayoutFooter />
     </div>
   );
 }

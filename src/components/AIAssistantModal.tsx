@@ -14,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { mobileFullscreenDialog } from "@/lib/dialogStyles";
+import { cn } from "@/lib/utils";
 
 interface AIAssistantModalProps {
   allBhajans: Bhajan[];
@@ -194,7 +196,12 @@ export default function AIAssistantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-800">
+      <DialogContent
+        className={cn(
+          mobileFullscreenDialog,
+          "max-w-2xl max-h-[90vh] sm:max-h-[90vh] p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-800",
+        )}
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
           <div>

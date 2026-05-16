@@ -1,10 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { ArrowLeft, Calendar, Clock, User2, Share2, Copy, MessageCircle } from 'lucide-react';
+import { Calendar, Clock, User2, Share2, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 import { useLanguage } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
 import blogPosts from '@/data/blogPosts.json';
@@ -22,13 +20,9 @@ export default function BlogPost() {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background font-body">
-        <Header />
-        <div className="container mx-auto max-w-3xl py-20 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">{t('postNotFound')}</h1>
-          <Button onClick={() => navigate('/blog')} variant="outline">{t('backToBlog')}</Button>
-        </div>
-        <LayoutFooter />
+      <div className="container mx-auto max-w-3xl py-20 text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-4">{t('postNotFound')}</h1>
+        <Button onClick={() => navigate('/blog')} variant="outline">{t('backToBlog')}</Button>
       </div>
     );
   }
@@ -51,21 +45,16 @@ export default function BlogPost() {
   const paragraphs = post.content.split('\n\n');
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div>
       <SEO
         title={post.title}
         description={post.excerpt}
         image={post.coverImage}
         type="article"
       />
-      <Header />
 
       <article className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-3xl">
-          <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-brand-saffron hover:underline mb-6">
-            <ArrowLeft className="w-4 h-4" /> {t('backToBlog')}
-          </Link>
-
           <span className="text-xs font-medium text-brand-saffron">{post.category}</span>
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4">
             {post.title}
@@ -139,8 +128,6 @@ export default function BlogPost() {
           )}
         </div>
       </article>
-
-      <LayoutFooter />
     </div>
   );
 }

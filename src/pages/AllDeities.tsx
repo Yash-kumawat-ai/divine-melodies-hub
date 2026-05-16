@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { deities } from "@/data/bhajans";
 import { useDeities } from "@/hooks/useDeities";
 import { generateDeitySlug } from "@/lib/slugUtils";
@@ -15,24 +12,16 @@ export default function AllDeities() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 touch-target"
-          >
-            <ArrowLeft className="w-5 h-5" /> {t('back')}
-          </Link>
-
-          <div className="text-center mb-12">
+          <motion.div className="text-center mb-12">
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">
               {t('allDeities')}
             </h1>
             <p className="text-lg text-muted-foreground hindi-text">
               {t('allDeitiesSubtitle')}
             </p>
-          </div>
+          </motion.div>
 
           {loading ? (
             <div className="flex items-center justify-center py-16">
@@ -77,7 +66,6 @@ export default function AllDeities() {
           )}
         </div>
       </section>
-      <Footer />
     </div>
   );
 }

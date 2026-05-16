@@ -4,8 +4,6 @@ import dhyaanLogo from "@/assets/dhyaan-logo.png";
 import SearchBar from "@/components/SearchBar";
 import DeityGrid from "@/components/DeityGrid";
 import BhajanCard from "@/components/BhajanCard";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { getFeaturedBhajans } from "@/data/bhajans";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +55,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-warm py-20 md:py-28 px-4">
@@ -158,7 +155,6 @@ const Index = () => {
         </section>
       )}
 
-      <Footer />
     </div>
   );
 };

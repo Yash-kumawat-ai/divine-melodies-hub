@@ -1,12 +1,9 @@
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 
 export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background font-body">
       <SEO title="Terms of Service" description="Terms and conditions for using the Hari Kirtan platform." />
-      <Header />
       <article className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-3xl prose prose-neutral dark:prose-invert">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">Terms of Service</h1>
@@ -42,7 +39,6 @@ export default function TermsOfService() {
           </section>
         </div>
       </article>
-      <LayoutFooter />
     </div>
   );
 }

@@ -4,8 +4,6 @@ import { Check, X, ChevronDown, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
@@ -101,7 +99,6 @@ export default function Pricing() {
         title="Pricing"
         description="Choose the right plan for your devotional journey. Free, Devotee, or Seva — all plans include access to our bhajan collection."
       />
-      <Header />
 
       <section className="py-16 md:py-24 px-4">
         <div className="container mx-auto max-w-5xl">
@@ -233,7 +230,6 @@ export default function Pricing() {
         </div>
       </section>
 
-      <LayoutFooter />
     </div>
   );
 }

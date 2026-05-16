@@ -2,8 +2,6 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Search as SearchIcon, Music2, BookText, Loader2, Youtube, ExternalLink, PlayCircle, MessageSquare } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import FilterPanel from "@/components/FilterPanel";
@@ -212,7 +210,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       {/* Hero Section */}
       <section className="bg-gradient-warm py-12 px-4">
@@ -369,6 +366,7 @@ export default function SearchPage() {
                   {results.map((bhajan, index) => (
                     <motion.div
                       key={`${bhajan.source}-${bhajan.sourceKey}`}
+                      className="min-w-0"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + index * 0.05 }}
@@ -650,7 +648,6 @@ export default function SearchPage() {
         allBhajans={results}
       />
 
-      <Footer />
     </div>
   );
 }

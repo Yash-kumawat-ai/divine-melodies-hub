@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, BarChart3 } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import BhajanCard from '@/components/BhajanCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -119,7 +117,6 @@ export const TrendingPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       {/* Hero Section */}
       <section className="py-12 px-4 bg-gradient-warm">
@@ -170,7 +167,6 @@ export const TrendingPage = () => {
         </div>
       </section>
 
-      <Footer />
     </div>
   );
 };

@@ -7,17 +7,19 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SuspenseFallback from "./components/SuspenseFallback";
+import AppShell from "./components/layout/AppShell";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { AssistantContextProvider } from "./hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "./hooks/useAIModal";
 import { ThemeProvider } from "./hooks/useTheme";
 import { YouTubePlayerProvider } from "./hooks/useYouTubePlayer";
+import { BhajanModalOpenProvider } from "./hooks/useBhajanModalOpen";
+import Home from "./pages/Home";
+import AllBhajans from "./pages/AllBhajans";
 
 const queryClient = new QueryClient();
 
-const Home = lazy(() => import("./pages/Home"));
 const AllDeities = lazy(() => import("./pages/AllDeities"));
-const AllBhajans = lazy(() => import("./pages/AllBhajans"));
 const DeityPage = lazy(() => import("./pages/DeityPage"));
 const BhajanPage = lazy(() => import("./pages/BhajanPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
@@ -49,8 +51,29 @@ function AppContent() {
   return (
     <>
       <BrowserRouter>
-        <Suspense fallback={<SuspenseFallback />}>
-          <Routes>
+        <Routes>
+          <Route
+            path="/auth/login"
+            element={
+              <Suspense fallback={<SuspenseFallback />}>
+                <AuthShell mode="login">
+                  <LoginForm />
+                </AuthShell>
+              </Suspense>
+            }
+          />
+          <Route
+            path="/auth/signup"
+            element={
+              <Suspense fallback={<SuspenseFallback />}>
+                <AuthShell mode="signup">
+                  <SignupTabs />
+                </AuthShell>
+              </Suspense>
+            }
+          />
+
+          <Route element={<AppShell />}>
             <Route path="/" element={<Home />} />
             <Route path="/all-bhajans" element={<AllBhajans />} />
             <Route path="/recent-bhajans" element={<RecentBhajans />} />
@@ -65,17 +88,57 @@ function AppContent() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/cookies" element={<CookiePolicy />} />
-            <Route path="/kirtan-ai" element={<ProtectedRoute><KirtanAIPage /></ProtectedRoute>} />
-            <Route path="/admin/moderation" element={<ProtectedRoute requireAdmin><AdminModeration /></ProtectedRoute>} />
-            <Route path="/admin/accounts" element={<ProtectedRoute requireAdmin><AdminAccounts /></ProtectedRoute>} />
-            <Route path="/admin/audit" element={<ProtectedRoute requireAdmin><AdminAuditLog /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><MyNotifications /></ProtectedRoute>} />
-            <Route path="/upload-bhajan" element={<ProtectedRoute><UploadBhajan /></ProtectedRoute>} />
-            <Route path="/auth/login" element={<AuthShell mode="login"><LoginForm /></AuthShell>} />
-            <Route path="/auth/signup" element={<AuthShell mode="signup"><SignupTabs /></AuthShell>} />
+            <Route
+              path="/admin/moderation"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminModeration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/accounts"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminAccounts />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/audit"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminAuditLog />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <MyNotifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upload-bhajan"
+              element={
+                <ProtectedRoute>
+                  <UploadBhajan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kirtan-ai"
+              element={
+                <ProtectedRoute>
+                  <KirtanAIPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+          </Route>
+        </Routes>
       </BrowserRouter>
 
       {isOpen && (
@@ -98,11 +161,13 @@ const App = () => (
           <AssistantContextProvider>
             <AIModalProvider>
               <YouTubePlayerProvider>
+                <BhajanModalOpenProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
                   <AppContent />
                 </TooltipProvider>
+                </BhajanModalOpenProvider>
               </YouTubePlayerProvider>
             </AIModalProvider>
           </AssistantContextProvider>

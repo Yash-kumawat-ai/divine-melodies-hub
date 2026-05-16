@@ -1,8 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import BhajanCard from "@/components/BhajanCard";
 import { getDeityBySlug, getBhajansByDeity } from "@/data/bhajans";
 import { generateDeitySlug, generateBhajanSlug } from "@/lib/slugUtils";
@@ -107,12 +104,10 @@ export default function DeityPage() {
   if (!deity) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto max-w-4xl px-4 py-20 text-center">
           <p className="text-2xl text-muted-foreground">Deity not found</p>
           <Link to="/all-deities" className="text-primary underline mt-4 inline-block">See All Deities</Link>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -145,16 +140,9 @@ export default function DeityPage() {
     : mappedUserBhajans;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div>
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <Link 
-            to={staticDeity ? "/" : "/all-deities"} 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 touch-target"
-          >
-            <ArrowLeft className="w-5 h-5" /> Back
-          </Link>
           <div className="text-center mb-12">
             <span className="text-6xl block mb-4">{deity.emoji}</span>
             <h1 className="font-display text-4xl font-bold text-foreground">{deity.name}</h1>
@@ -178,7 +166,6 @@ export default function DeityPage() {
           )}
         </div>
       </section>
-      <Footer />
     </div>
   );
 }

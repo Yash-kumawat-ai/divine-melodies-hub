@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Upload, Search, Users, ShieldCheck, Music, Star, Headphones, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
-import Header from '@/components/Header';
-import LayoutFooter from '@/components/layout/Footer';
 import dhyaanLogo from '@/assets/dhyaan-logo.png';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
@@ -133,12 +131,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div>
       <SEO
         title="Hari Kirtan - Indian Bhajans & Devotional Songs"
         description="Discover, share, and preserve Hindu devotional music. Browse bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
-      <Header />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand-brown to-brand-dark py-20 md:py-32 px-4">
@@ -331,7 +328,6 @@ export default function Home() {
         </div>
       </section>
 
-      <LayoutFooter />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageCircle,
@@ -8,7 +8,7 @@ import {
   Music2,
   Star,
   Play,
-  X,
+  ArrowLeft,
   Loader2,
 } from 'lucide-react';
 import LyricsDisplay from './LyricsDisplay';
@@ -33,6 +33,9 @@ import { Bhajan, getDeityById } from '@/data/bhajans';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useYouTubePlayer } from '@/hooks/useYouTubePlayer';
+import { useBhajanModalOpen } from '@/hooks/useBhajanModalOpen';
+import { mobileFullscreenDialog } from '@/lib/dialogStyles';
+import { cn } from '@/lib/utils';
 
 interface BhajanDetailModalProps {
   bhajan: Bhajan | null;
@@ -51,9 +54,21 @@ export default function BhajanDetailModal({
 }: BhajanDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const [playOpening, setPlayOpening] = useState(false);
+  const scrollBodyRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
   const { openPlayer } = useYouTubePlayer();
+  const { setBhajanModalOpen } = useBhajanModalOpen();
+
+  useEffect(() => {
+    setBhajanModalOpen(isOpen);
+    return () => setBhajanModalOpen(false);
+  }, [isOpen, setBhajanModalOpen]);
+
+  useLayoutEffect(() => {
+    if (!isOpen || !bhajan) return;
+    scrollBodyRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [isOpen, bhajan?.id]);
 
   if (!bhajan) return null;
 
@@ -129,28 +144,52 @@ export default function BhajanDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[calc(100vw-1rem)] sm:w-full max-h-[90vh] overflow-y-auto overflow-x-hidden p-0 [&>button.absolute]:hidden">
+      <DialogContent
+        showClose={false}
+        className={cn(
+          mobileFullscreenDialog,
+          '!flex !flex-col !min-h-0 !overflow-hidden',
+          'max-w-4xl sm:max-w-4xl sm:w-[min(100vw-2rem,56rem)] p-0',
+        )}
+      >
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {bhajan.titleHindi} - by {bhajan.singerName}
         </DialogDescription>
 
+        <div
+          className={cn(
+            'relative z-10 flex shrink-0 items-center gap-3 px-3 py-2.5 pt-[max(0.5rem,env(safe-area-inset-top))] border-b border-white/25 shadow-md sm:px-4 sm:py-3',
+            deity?.colorClass ?? 'bg-primary',
+          )}
+        >
+          <DialogClose
+            type="button"
+            aria-label={t('back')}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/45 bg-white/12 text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/22 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 touch-target"
+          >
+            <ArrowLeft className="h-5 w-5" strokeWidth={2.25} />
+          </DialogClose>
+          <p className="min-w-0 flex-1 text-sm font-semibold leading-snug text-white drop-shadow-sm line-clamp-2 sm:text-base sm:line-clamp-2">
+            {formatBhajanDisplayTitle(bhajan.title)}
+          </p>
+        </div>
+
+        <div
+          ref={scrollBodyRef}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+        >
         <div className={`${deity?.colorClass ?? 'bg-primary'} p-4 sm:p-6 text-white overflow-hidden`}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 gap-3">
-              <span className="text-3xl sm:text-4xl shrink-0 leading-none">{deity?.emoji}</span>
-              <div className="min-w-0 flex-1">
-                <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words [overflow-wrap:anywhere]">
-                  {formatBhajanDisplayTitle(bhajan.title)}
-                </h2>
-                <p className="hindi-text text-base sm:text-xl opacity-90 mt-1 break-words [overflow-wrap:anywhere]">
-                  {formatBhajanDisplayTitle(bhajan.titleHindi)}
-                </p>
-              </div>
+          <div className="flex items-start gap-3">
+            <span className="text-3xl sm:text-4xl shrink-0 leading-none">{deity?.emoji}</span>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold leading-tight break-words [overflow-wrap:anywhere]">
+                {formatBhajanDisplayTitle(bhajan.title)}
+              </h2>
+              <p className="hindi-text text-base sm:text-xl opacity-90 mt-1 break-words [overflow-wrap:anywhere]">
+                {formatBhajanDisplayTitle(bhajan.titleHindi)}
+              </p>
             </div>
-            <DialogClose className="shrink-0 rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity">
-              <X className="w-6 h-6" />
-            </DialogClose>
           </div>
           <p className="text-white/80 text-base sm:text-lg mt-3 break-words">by {bhajan.singerName}</p>
           {bhajan.composerName && (
@@ -306,6 +345,7 @@ export default function BhajanDetailModal({
               </div>
             </motion.div>
           )}
+        </div>
         </div>
       </DialogContent>
     </Dialog>
