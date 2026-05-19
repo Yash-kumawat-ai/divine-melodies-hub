@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
+import { Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
 import MobileBackButton from "@/components/MobileBackButton";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { uploadToCloudinary } from "@/lib/cloudinary";
@@ -22,7 +22,6 @@ import { AdminRoleBadge } from "@/components/notifications/AdminRoleBadge";
 import { UserNotificationBell } from "@/components/notifications/UserNotificationBell";
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, isAdmin, isSuperAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -33,19 +32,6 @@ export default function Header() {
   const isHome = location.pathname === "/";
   const { isBhajanModalOpen } = useBhajanModalOpen();
   const showBack = !isHome && !isBhajanModalOpen;
-
-  useEffect(() => {
-    if (isBhajanModalOpen) setMenuOpen(false);
-  }, [isBhajanModalOpen]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [menuOpen]);
 
   const handleLogout = async () => {
     await signOut();
@@ -86,7 +72,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-4">
-          {showBack && <MobileBackButton onBack={() => setMenuOpen(false)} />}
+          {showBack && <MobileBackButton />}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <img
               src={dhyaanLogo}
@@ -223,105 +209,8 @@ export default function Header() {
           />
         </nav>
 
-        <button
-          className="md:hidden p-2 touch-target"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
       </div>
 
-      {menuOpen && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-[55] bg-black/60 md:hidden"
-            aria-label="Close menu"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div className="relative z-[56] md:hidden border-t border-border bg-background px-4 py-3 space-y-2 max-h-[min(75dvh,calc(100dvh-5rem))] overflow-y-auto overscroll-contain">
-          <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
-            <h3 className="text-sm font-semibold text-foreground">Menu</h3>
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="p-2 hover:bg-muted rounded-lg transition-colors touch-target"
-              aria-label="Close menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <Link to="/" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('home')}</Link>
-          <Link to="/all-bhajans" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('browse')}</Link>
-          <Link to="/blog" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('blog')}</Link>
-          <Link to="/pricing" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('pricing')}</Link>
-          <Link to="/about" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('about')}</Link>
-          <Link to="/search" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-foreground">{t('search')}</Link>
-          <Link
-            to="/kirtan-ai"
-            onClick={() => setMenuOpen(false)}
-            className="flex items-center gap-2 py-3 text-lg font-medium text-white rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 -mx-1"
-          >
-            <Sparkles className="w-4 h-4 shrink-0" />
-            {t('kirtanAi')}
-          </Link>
-          {user && (
-            <div className="flex items-center gap-3 border-b border-border pb-3">
-              <UserNotificationBell userId={user.id} />
-              <span className="text-sm text-muted-foreground">{t('notifications')}</span>
-            </div>
-          )}
-          <Link to="/upload-bhajan" onClick={() => setMenuOpen(false)} className="block py-3 text-lg font-medium text-primary flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            {t('upload')}
-          </Link>
-          <div className="pt-2">
-            <label className="block text-sm text-muted-foreground mb-1">{t('language')}</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as typeof language)}
-              className="w-full h-10 rounded-md border border-border bg-background px-3 text-sm"
-            >
-              {languageOptions.map((option) => (
-                <option key={option.code} value={option.code}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="w-full h-10 rounded-md border border-border bg-background px-3 text-left text-sm font-medium text-foreground flex items-center gap-2"
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            {theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
-          </button>
-          {!user && (
-            <button
-              onClick={() => {
-                navigate('/auth/login');
-                setMenuOpen(false);
-              }}
-              className="block py-3 text-lg font-medium text-primary w-full text-left"
-            >
-              {t('login')}
-            </button>
-          )}
-          {user && (
-            <button
-              onClick={() => {
-                handleLogout();
-                setMenuOpen(false);
-              }}
-              className="block py-3 text-lg font-medium text-destructive w-full text-left"
-            >
-              {t('logout')}
-            </button>
-          )}
-        </div>
-        </>
-      )}
     </header>
   );
 }

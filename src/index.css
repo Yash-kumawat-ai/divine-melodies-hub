@@ -159,4 +159,19 @@
   .touch-target {
     @apply min-h-[60px] min-w-[60px];
   }
+  @media (max-width: 767px) {
+    .mobile-bottom-nav {
+      display: flex !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      gap: 10px;
+      padding: 10px 12px;
+      scrollbar-width: none;
+    }
+    .mobile-bottom-nav::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
