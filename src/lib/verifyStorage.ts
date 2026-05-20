@@ -183,7 +183,7 @@ export async function verifyTables(): Promise<VerificationResult[]> {
   for (const table of requiredTables) {
     try {
       const { data, error } = await supabase
-        .from(table)
+        .from(table as 'user_profiles')
         .select('count')
         .limit(1);
 
@@ -273,7 +273,7 @@ export async function getDataCounts(): Promise<VerificationResult[]> {
   for (const table of tables) {
     try {
       const { count, error } = await supabase
-        .from(table)
+        .from(table as 'user_profiles')
         .select('id', { count: 'exact', head: true });
 
       if (error) {

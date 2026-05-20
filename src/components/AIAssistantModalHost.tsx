@@ -10,7 +10,11 @@ export default function AIAssistantModalHost() {
   return (
     <AIAssistantModal
       allBhajans={bhajans}
-      allDeities={deities || []}
+      allDeities={(deities || []).map((d) => ({
+        id: d.id ?? 0,
+        name: d.name,
+        nameHindi: d.nameHindi ?? d.name,
+      }))}
       isOpen={isOpen}
       onClose={closeAI}
       onBhajanSelect={() => {}}

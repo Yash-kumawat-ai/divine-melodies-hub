@@ -66,7 +66,7 @@ export default function DeityPage() {
             });
 
             if (matchedDeity) {
-              setCustomDeity(matchedDeity);
+              setCustomDeity(matchedDeity as CustomDeity);
               
               // Fetch user bhajans for this custom deity
               const { data: bhajansData } = await supabase

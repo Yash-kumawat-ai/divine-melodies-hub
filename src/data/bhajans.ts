@@ -9,6 +9,7 @@ export interface Deity {
   emoji: string;
   colorClass: string;
   bhajanCount: number;
+  imageUrl?: string;
 }
 
 export interface Bhajan {

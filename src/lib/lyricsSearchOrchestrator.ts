@@ -16,7 +16,7 @@ import {
   LyricsCacheEntry,
 } from '@/lib/supabaseQueries';
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
-import bhajans from '@/data/bhajans';
+import { bhajans } from '@/data/bhajans';
 
 export interface OrchestrationResult {
   lyrics: string;
@@ -106,15 +106,16 @@ async function searchCache(query: string): Promise<OrchestrationResult | null> {
  */
 async function searchFreeAPIs(query: string): Promise<OrchestrationResult | null> {
   try {
-    const result = await fetchGlobalLyricsWithSource(query);
+    const result = await fetchGlobalLyricsWithSource(query, '');
     
     if (result.lyrics) {
       // Attempt to cache the result
       await saveLyricsCache({
         query,
+        normalized_query: query.toLowerCase().trim(),
         title: query, // Use query as title since we don't have parsed info
         lyrics: result.lyrics,
-        source: result.source as any,
+        source: result.source as LyricsCacheEntry['source'],
         confidence: 0.8, // APIs are generally reliable but not perfect
       }).catch(() => {
         // Silent fail on cache save

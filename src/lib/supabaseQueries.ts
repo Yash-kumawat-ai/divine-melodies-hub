@@ -384,6 +384,7 @@ export interface LyricsCacheEntry {
   created_at: string;
   last_accessed: string;
   access_count: number;
+  ttl_seconds?: number;
   metadata?: Record<string, any>;
 }
 
@@ -411,9 +412,11 @@ export const getLyricsCacheByQuery = async (
 
   if (data) {
     // Update access tracking
-    await supabase.rpc("update_lyrics_cache_access", { cache_id: data.id }).catch(() => {
+    try {
+      await supabase.rpc("update_lyrics_cache_access", { cache_id: data.id as string });
+    } catch {
       // Silent fail - access tracking is not critical
-    });
+    }
   }
 
   return (data as LyricsCacheEntry) || null;

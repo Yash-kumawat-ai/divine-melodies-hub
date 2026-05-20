@@ -6,17 +6,20 @@ export interface Deity {
   id?: number;
   emoji: string;
   name: string;
+  nameHindi?: string;
   description?: string;
   imageUrl?: string;
   isCustom?: boolean;
 }
 
 export function useDeities() {
-  const [deities, setDeities] = useState<Deity[]>(presetDeities.map(d => ({
+  const [deities, setDeities] = useState<Deity[]>(presetDeities.map((d) => ({
     id: d.id,
     emoji: d.emoji,
     name: d.name,
+    nameHindi: d.nameHindi,
     description: d.description,
+    imageUrl: d.imageUrl,
   })));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

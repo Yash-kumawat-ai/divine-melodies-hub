@@ -44,10 +44,9 @@ export default function BhajanPage() {
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          const matched = data.find(
-            (b: UserBhajan) => generateBhajanSlug(b.title) === slug
-          );
-          setUserBhajan(matched || null);
+          const rows = data as UserBhajan[];
+          const matched = rows.find((b) => generateBhajanSlug(b.title) === slug);
+          setUserBhajan(matched ?? null);
         }
       } catch (err) {
         console.error('Error fetching user bhajan:', err);

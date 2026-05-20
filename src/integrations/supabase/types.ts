@@ -6,6 +6,13 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+type AppTable = {
+  Row: Record<string, any>
+  Insert: Record<string, any>
+  Update: Record<string, any>
+  Relationships: []
+}
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -14,13 +21,31 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      user_uploads: AppTable
+      user_profiles: AppTable
+      custom_deities: AppTable
+      moderation_notifications: AppTable
+      admin_audit_logs: AppTable
+      lyrics_cache: AppTable
+      newsletter_subscribers: AppTable
+      bhajan_ratings: AppTable
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_lyrics_cache_access: {
+        Args: { cache_id: string }
+        Returns: undefined
+      }
+      cleanup_expired_lyrics_cache: {
+        Args: Record<string, never>
+        Returns: number
+      }
+      [key: string]: {
+        Args: Record<string, any>
+        Returns: any
+      }
     }
     Enums: {
       [_ in never]: never

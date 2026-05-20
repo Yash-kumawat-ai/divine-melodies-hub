@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import BhajanCard from "./BhajanCard";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
+import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
 import type { Bhajan } from "@/data/bhajans";
 
 const testBhajan: Bhajan = {
@@ -25,11 +26,13 @@ function renderCard() {
   render(
     <LanguageProvider>
       <YouTubePlayerProvider>
-        <MemoryRouter initialEntries={["/"]}>
-          <Routes>
-            <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
-          </Routes>
-        </MemoryRouter>
+        <BhajanModalOpenProvider>
+          <MemoryRouter initialEntries={["/"]}>
+            <Routes>
+              <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
+            </Routes>
+          </MemoryRouter>
+        </BhajanModalOpenProvider>
       </YouTubePlayerProvider>
     </LanguageProvider>,
   );
