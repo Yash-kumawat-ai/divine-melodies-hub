@@ -12,15 +12,19 @@ export interface Deity {
   isCustom?: boolean;
 }
 
-export function useDeities() {
-  const [deities, setDeities] = useState<Deity[]>(presetDeities.map((d) => ({
+function mapPresetToDeity(d: (typeof presetDeities)[number]): Deity {
+  return {
     id: d.id,
     emoji: d.emoji,
     name: d.name,
     nameHindi: d.nameHindi,
     description: d.description,
     imageUrl: d.imageUrl,
-  })));
+  };
+}
+
+export function useDeities() {
+  const [deities, setDeities] = useState<Deity[]>(() => presetDeities.map(mapPresetToDeity));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,23 +38,16 @@ export function useDeities() {
 
         if (dbError) throw dbError;
 
-        if (data) {
-          const customDeities = data.map((d: any) => ({
-            id: d.id,
-            emoji: d.emoji,
-            name: d.name,
-            description: d.description,
-            imageUrl: d.image_url,
-            isCustom: true,
-          }));
+        const customDeities = (data ?? []).map((d: any) => ({
+          id: d.id,
+          emoji: d.emoji,
+          name: d.name,
+          description: d.description,
+          imageUrl: d.image_url,
+          isCustom: true,
+        }));
 
-          setDeities([...presetDeities.map(d => ({
-            id: d.id,
-            emoji: d.emoji,
-            name: d.name,
-            description: d.description,
-          })), ...customDeities]);
-        }
+        setDeities([...presetDeities.map(mapPresetToDeity), ...customDeities]);
       } catch (err: any) {
         console.error('Error fetching custom deities:', err);
         setError(err.message);

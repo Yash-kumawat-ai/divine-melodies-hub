@@ -144,7 +144,15 @@ export default function DeityPage() {
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
-            <span className="text-6xl block mb-4">{deity.emoji}</span>
+            {staticDeity?.imageUrl ? (
+              <img
+                src={staticDeity.imageUrl}
+                alt={deity.name}
+                className="mx-auto mb-4 block h-auto max-h-[min(22rem,65vh)] w-full max-w-[16rem] rounded-2xl object-cover object-center shadow-lg sm:max-w-[18rem]"
+              />
+            ) : (
+              <span className="text-6xl block mb-4">{deity.emoji}</span>
+            )}
             <h1 className="font-display text-4xl font-bold text-foreground">{deity.name}</h1>
             {staticDeity && (
               <p className="hindi-text text-2xl text-muted-foreground mt-1">{staticDeity.nameHindi}</p>

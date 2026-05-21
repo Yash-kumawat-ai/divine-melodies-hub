@@ -29,9 +29,21 @@ function getSpeechRecognitionConstructor() {
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 }
 
+function isPrivateLanHost(hostname: string): boolean {
+  const parts = hostname.split('.');
+  if (parts.length !== 4) return false;
+  const octets = parts.map((p) => Number.parseInt(p, 10));
+  if (octets.some((n) => Number.isNaN(n) || n < 0 || n > 255)) return false;
+  if (octets[0] === 10) return true;
+  if (octets[0] === 192 && octets[1] === 168) return true;
+  if (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) return true;
+  return false;
+}
+
 function isLocalSecureOrigin() {
   if (typeof window === 'undefined') return false;
-  return ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+  const host = window.location.hostname;
+  return ['localhost', '127.0.0.1', '[::1]'].includes(host) || isPrivateLanHost(host);
 }
 
 const MICROPHONE_POLICY_BLOCKED_MESSAGE =
@@ -98,7 +110,16 @@ async function ensureMicrophoneAccess(): Promise<{ ok: true } | { ok: false; err
   }
 
   if (!window.isSecureContext && !isLocalSecureOrigin()) {
-    return { ok: false, error: 'Microphone requires HTTPS or localhost. Open the site with HTTPS and try again.' };
+    return {
+      ok: false,
+      error:
+        'Microphone needs a secure connection. Use http://localhost:8080 on this PC, or https:// on your phone.',
+    };
+  }
+
+  // On http://192.168.x.x the mic preflight (getUserMedia) is blocked; speech recognition can still work.
+  if (!window.isSecureContext && isLocalSecureOrigin()) {
+    return { ok: true };
   }
 
   if (!navigator.mediaDevices?.getUserMedia) {
@@ -387,8 +408,9 @@ export class TextToSpeech {
       this.isSpeaking = false;
     };
 
-    utterance.onerror = (error: SpeechSynthesisErrorEvent) => {
-      console.error('Speech synthesis error:', error);
+    utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
+      if (event.error === 'interrupted' || event.error === 'canceled') return;
+      console.error('Speech synthesis error:', event);
       this.isSpeaking = false;
     };
 

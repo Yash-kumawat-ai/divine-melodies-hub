@@ -85,7 +85,6 @@ export default function Footer() {
             <h4 className="font-display text-sm font-bold text-brand-cream mb-4 uppercase tracking-wider">{t('community')}</h4>
             <ul className="space-y-2.5 text-sm">
               <li><Link to="/upload-bhajan" className="hover:text-brand-saffron transition-colors">{t('upload')}</Link></li>
-              <li><Link to="/blog" className="hover:text-brand-saffron transition-colors">{t('blog')}</Link></li>
               <li><Link to="/about" className="hover:text-brand-saffron transition-colors">{t('about')}</Link></li>
               <li><Link to="/pricing" className="hover:text-brand-saffron transition-colors">{t('pricing')}</Link></li>
             </ul>

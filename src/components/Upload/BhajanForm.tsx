@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { deities, bhajans, Bhajan as StaticBhajan } from '@/data/bhajans';
+import { cn } from '@/lib/utils';
 import { Loader2, Check, ChevronLeft, User, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface BhajanFormProps {
@@ -37,6 +38,11 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
   const [metadataError, setMetadataError] = useState('');
   const [duplicates, setDuplicates] = useState<DuplicateBhajan[]>([]);
   const [checkedDuplicates, setCheckedDuplicates] = useState(false);
+
+  useEffect(() => {
+    const d = deities.find((x) => String(x.id) === deityId);
+    if (d) setDeityName(d.name);
+  }, [deityId]);
 
   // Levenshtein distance for duplicate detection
   const levenshteinSimilarity = (str1: string, str2: string): number => {
@@ -422,9 +428,20 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <label className="block text-sm font-medium mb-2">Deity *</label>
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{initialDeityName}</span>
+            {(() => {
+              const locked = deities.find((d) => d.id === initialDeityId);
+              return locked?.imageUrl ? (
+                <img
+                  src={locked.imageUrl}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-xl object-cover object-center shadow-sm border border-border"
+                />
+              ) : (
+                <span className="text-4xl">{locked?.emoji ?? '✨'}</span>
+              );
+            })()}
             <div>
-              <p className="font-semibold">{deityName}</p>
+              <p className="font-semibold">{deityName || initialDeityName}</p>
               <p className="text-xs text-muted-foreground">Selected deity</p>
             </div>
           </div>
@@ -432,17 +449,41 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
       ) : (
         <div>
           <label className="block text-sm font-medium mb-2">Deity *</label>
-          <select
-            value={deityId}
-            onChange={(e) => setDeityId(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          >
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
             {deities.map((deity) => (
-              <option key={deity.id} value={deity.id}>
-                {deity.emoji} {deity.name}
-              </option>
+              <button
+                key={deity.id}
+                type="button"
+                onClick={() => setDeityId(String(deity.id))}
+                className={cn(
+                  'rounded-xl border bg-card overflow-hidden text-left shadow-sm transition-all hover:border-primary hover:shadow-md',
+                  deityId === String(deity.id)
+                    ? 'border-primary ring-2 ring-primary/30'
+                    : 'border-border'
+                )}
+              >
+                <div className="relative aspect-[4/5] max-h-[6.75rem] w-full bg-muted overflow-hidden sm:max-h-[7.75rem]">
+                  {deity.imageUrl ? (
+                    <img
+                      src={deity.imageUrl}
+                      alt=""
+                      className="h-full w-full object-cover object-center"
+                    />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-xl sm:text-2xl">
+                      {deity.emoji}
+                    </span>
+                  )}
+                </div>
+                <div className="px-1.5 py-2 text-center border-t border-border">
+                  <span className="text-[11px] sm:text-xs font-medium leading-tight line-clamp-2">
+                    {deity.name}
+                  </span>
+                </div>
+              </button>
             ))}
-          </select>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Tap a deity to assign this bhajan.</p>
         </div>
       )}
 

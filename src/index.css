@@ -174,4 +174,39 @@
       display: none;
     }
   }
+
+  .narad-fab-breathe {
+    animation: narad-fab-breathe 3s ease-in-out infinite;
+  }
+  .narad-fab-ring {
+    animation: narad-fab-ring 3s ease-in-out infinite;
+  }
+}
+
+@keyframes narad-fab-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 4px rgba(251, 191, 36, 0.22),
+      0 0 32px rgba(251, 191, 36, 0.38);
+  }
+  50% {
+    transform: scale(1.045);
+    box-shadow:
+      0 0 0 7px rgba(251, 191, 36, 0.3),
+      0 0 46px rgba(251, 191, 36, 0.55);
+  }
+}
+
+@keyframes narad-fab-ring {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
 }

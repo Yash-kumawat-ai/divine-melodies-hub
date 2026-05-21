@@ -33,15 +33,17 @@ export default function DeitySelector({ onDeitySelect, onAddNewDeity }: DeitySel
             className="group bg-card rounded-lg overflow-hidden border border-border hover:border-primary transition-all hover:shadow-lg"
           >
             {/* Deity Image */}
-            <div className="w-full h-44 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform overflow-hidden">
+            <div className="relative mx-auto aspect-[4/5] w-full max-h-[11rem] overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 sm:max-h-[12.5rem]">
               {deity.imageUrl ? (
-                <img 
-                  src={deity.imageUrl} 
+                <img
+                  src={deity.imageUrl}
                   alt={deity.name}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover object-center transition-transform group-hover:scale-105"
                 />
               ) : (
-                <span>{deity.emoji}</span>
+                <span className="flex h-full w-full items-center justify-center text-5xl transition-transform group-hover:scale-105">
+                  {deity.emoji}
+                </span>
               )}
             </div>
 

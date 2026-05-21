@@ -35,6 +35,7 @@ const SignupTabs = lazy(() => import("./components/Auth/SignupTabs"));
 const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AIAssistantModalHost = lazy(() => import("./components/AIAssistantModalHost"));
+const NaradFloatingWidget = lazy(() => import("./components/kirtan/NaradFloatingWidget"));
 const YouTubePlayerHost = lazy(() => import("./components/YouTubePlayerHost"));
 
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -139,6 +140,10 @@ function AppContent() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+
+        <Suspense fallback={null}>
+          <NaradFloatingWidget />
+        </Suspense>
       </BrowserRouter>
 
       {isOpen && (

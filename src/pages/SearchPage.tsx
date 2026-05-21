@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useLyricsFallback } from "@/hooks/useLyricsFallback";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
+import { useLanguage } from "@/hooks/useLanguage";
 import { searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 
 interface UserBhajan {
@@ -58,6 +59,7 @@ export default function SearchPage() {
   // Assistant context management
   const { setContext: setAssistantContext } = useAssistantContext();
   const { openPlayer } = useYouTubePlayer();
+  const { t } = useLanguage();
 
   // Define results BEFORE using it in useEffect dependency arrays
   const results = useMemo(() => {
@@ -227,7 +229,7 @@ export default function SearchPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            Browse our collection of sacred songs, stotrams, and mantras. Find the lyrics and meaning for your daily devotion.
+            {t('browseOurCollection')} {t('findLyricsAndMeaning')}
           </motion.p>
         </div>
       </section>

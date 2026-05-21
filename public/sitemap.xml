@@ -5,10 +5,6 @@
   <url><loc>https://harikirtan.com/recent-bhajans</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://harikirtan.com/search</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://harikirtan.com/pricing</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://harikirtan.com/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://harikirtan.com/blog/why-we-built-hari-kirtan</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://harikirtan.com/blog/history-of-bhajan-singing</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://harikirtan.com/blog/how-to-upload-your-first-bhajan</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://harikirtan.com/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://harikirtan.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://harikirtan.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>

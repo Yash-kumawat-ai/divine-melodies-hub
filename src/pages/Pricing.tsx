@@ -12,7 +12,7 @@ const faqsEn = [
   { q: 'How does billing work?', a: 'You can choose monthly or annual billing. Annual billing saves you 20%. Payments are processed securely through Razorpay.' },
   { q: 'Can I cancel anytime?', a: 'Yes, you can cancel your subscription at any time. Your premium features will remain active until the end of your current billing period.' },
   { q: 'What happens to my uploads if I downgrade?', a: 'All your uploaded bhajans remain on the platform permanently. Downgrading only affects future upload limits and premium features.' },
-  { q: 'Is the Free plan really free?', a: 'Absolutely. We believe devotion should never have a paywall. The Free plan gives you full access to browse and search bhajans, plus 3 uploads per month.' },
+  { q: 'Is the Free plan really free?', a: 'Absolutely. We believe devotion should never have a paywall. The Free plan gives you full access to explore and search bhajans, plus 3 uploads per month.' },
   { q: 'Do you offer refunds?', a: 'Yes, we offer a full refund within 7 days of purchase if you are not satisfied. Contact us at support@harikirtan.com.' },
   { q: 'Can I switch plans?', a: 'Yes, you can upgrade or downgrade at any time. When upgrading, you will be charged the prorated difference. When downgrading, the change takes effect at the next billing cycle.' },
 ];

@@ -109,7 +109,6 @@ type TranslationKey =
   | 'switchToDarkMode'
   | 'switchToLightMode'
   // Navbar / Header
-  | 'blog'
   | 'pricing'
   | 'about'
   // Home page
@@ -158,20 +157,6 @@ type TranslationKey =
   | 'exclusiveBhajans'
   | 'supportPlatform'
   | 'earlyAccess'
-  // Blog
-  | 'blogTitle'
-  | 'blogSubtitle'
-  | 'searchArticles'
-  | 'all'
-  | 'devotion'
-  | 'culture'
-  | 'appUpdates'
-  | 'stories'
-  | 'noArticlesFound'
-  | 'backToBlog'
-  | 'shareArticle'
-  | 'relatedArticles'
-  | 'postNotFound'
   // About page
   | 'ourMission'
   | 'ourValues'
@@ -210,7 +195,7 @@ type TranslationKey =
 const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, string>>> = {
   en: {
     home: 'Home',
-    browse: 'Browse',
+    browse: 'Explore',
     recent: 'Recent',
     trending: 'Trending',
     search: 'Search',
@@ -231,7 +216,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     changeGod: 'Change God',
     bhajansCount: 'Bhajans',
     allBhajans: 'All Bhajans',
-    browseOurCollection: 'Browse our collection of sacred songs, stotrams, and mantras',
+    browseOurCollection: 'Explore our collection of sacred songs, stotrams, and mantras',
     findLyricsAndMeaning: 'Find the lyrics and meaning for your daily devotion',
     bhajansSandhya: 'Hari Kirtan',
     completeDevotionalMusic: 'Your complete Hari Kirtan collection — lyrics, audio & more',
@@ -242,7 +227,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     sharedByOurCommunity: 'Shared by our community of devotees',
     allDeities: 'All Deities',
     exploreDeities: 'Explore the divine across traditions and stories',
-    browseByDeity: 'Browse by Deity',
+    browseByDeity: 'Explore by Deity',
     devotionalSongs: 'Find bhajans by deity',
     recentBhajans: 'Recent Bhajans',
     latestUploads: 'Latest uploads from our community',
@@ -291,7 +276,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     setProfilePhoto: 'Set profile photo',
     back: 'Back',
     new: 'New',
-    browseAllBhajans: 'Browse All Bhajans',
+    browseAllBhajans: 'Explore All Bhajans',
     allDeitiesSubtitle: 'View bhajans by all deities',
     searchBhajansOrSingers: 'Search bhajans or singers...',
     searchHint: 'Search bhajans, deities, or singers • Search in Hindi or English • Voice supported',
@@ -314,14 +299,13 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     switchToDarkMode: 'Switch to Dark Mode',
     switchToLightMode: 'Switch to Light Mode',
     // Navbar
-    blog: 'Blog',
     pricing: 'Pricing',
     about: 'About',
     // Home
     discoverThe: 'Discover the',
     divine: 'Divine',
-    heroSubtitle: 'The largest community-driven collection of Hindu devotional music. Browse, listen, and share bhajans with devotees worldwide.',
-    browseBhajans: 'Browse Bhajans',
+    heroSubtitle: 'The largest community-driven collection of Hindu devotional music. Explore, listen, and share bhajans with devotees worldwide.',
+    browseBhajans: 'Explore Bhajans',
     uploadYours: 'Upload Yours',
     bhajans: 'Bhajans',
     artists: 'Artists',
@@ -355,7 +339,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     perYear: '/year',
     billedAnnually: 'billed annually',
     faq: 'Frequently Asked Questions',
-    browseBhajansFeature: 'Browse bhajans',
+    browseBhajansFeature: 'Explore bhajans',
     uploadLimit3: 'Upload bhajans (3/month)',
     uploadUnlimited: 'Upload bhajans (Unlimited)',
     priorityReview: 'Priority review',
@@ -363,20 +347,6 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     exclusiveBhajans: 'Exclusive bhajans',
     supportPlatform: 'Support the platform',
     earlyAccess: 'Early access',
-    // Blog
-    blogTitle: 'Blog',
-    blogSubtitle: 'Stories, culture, and updates from the world of devotional music.',
-    searchArticles: 'Search articles...',
-    all: 'All',
-    devotion: 'Devotion',
-    culture: 'Culture',
-    appUpdates: 'App Updates',
-    stories: 'Stories',
-    noArticlesFound: 'No articles found.',
-    backToBlog: 'Back to Blog',
-    shareArticle: 'Share this article',
-    relatedArticles: 'Related Articles',
-    postNotFound: 'Post not found',
     // About
     ourMission: 'Our Mission',
     ourValues: 'Our Values',
@@ -414,7 +384,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
   },
   hi: {
     home: 'होम',
-    browse: 'भजन सूची',
+    browse: 'खोजी',
     recent: 'नवीन',
     trending: 'ट्रेंडिंग',
     search: 'खोज',
@@ -435,7 +405,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     changeGod: 'भगवान बदलें',
     bhajansCount: 'भजन',
     allBhajans: 'सभी भजन',
-    browseOurCollection: 'पवित्र गीतों, स्तोत्रों और मंत्रों का हमारा संग्रह ब्राउज़ करें',
+    browseOurCollection: 'पवित्र गीतों, स्तोत्रों और मंत्रों का हमारा संग्रह — खोजी करें',
     findLyricsAndMeaning: 'अपनी दैनिक पूजा के लिए गीतों और अर्थ खोजें',
     bhajansSandhya: 'हरि कीर्तन',
     completeDevotionalMusic: 'आपका पूर्ण हरि कीर्तन संग्रह — गीत, ऑडियो और अधिक',
@@ -445,8 +415,8 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     communityBhajans: 'समुदाय भजन',
     sharedByOurCommunity: 'समुदाय द्वारा साझा किए गए भजन',
     allDeities: 'सभी देवता',
-    exploreDeities: 'परंपराओं और कहानियों के साथ दिव्य का अन्वेषण करें',
-    browseByDeity: 'देवता के अनुसार ब्राउज़ करें',
+    exploreDeities: 'परंपराओं और कहानियों के साथ दिव्य की खोजी करें',
+    browseByDeity: 'देवता के अनुसार खोजी करें',
     devotionalSongs: 'देवता के अनुसार भजन खोजें',
     recentBhajans: 'हाल के भजन',
     latestUploads: 'हमारे समुदाय से नवीनतम अपलोड',
@@ -495,11 +465,11 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     setProfilePhoto: 'प्रोफाइल फोटो सेट करें',
     back: 'वापस',
     new: 'नया',
-    browseAllBhajans: 'सभी भजन देखें',
+    browseAllBhajans: 'सभी भजनों की खोजी',
     allDeitiesSubtitle: 'सभी देवताओं के भजन देखें',
     searchBhajansOrSingers: 'भजन या गायक खोजें...',
     searchHint: 'भजन, देवता, या गायक खोजें • हिंदी या अंग्रेजी में खोजें • वॉइस सपोर्ट उपलब्ध',
-    browseAllBhajansSubtitle: 'फ़िल्टर और खोज के साथ हमारा पूरा भक्तिमय संगीत संग्रह देखें',
+    browseAllBhajansSubtitle: 'फ़िल्टर और खोज के साथ हमारा पूरा भक्तिमय संगीत संग्रह — खोजी करें',
     allLanguages: 'सभी भाषाएं',
     allOccasions: 'सभी अवसर',
     allMoods: 'सभी भाव',
@@ -518,14 +488,13 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     switchToDarkMode: 'डार्क मोड चालू करें',
     switchToLightMode: 'लाइट मोड चालू करें',
     // Navbar
-    blog: 'ब्लॉग',
     pricing: 'मूल्य',
     about: 'हमारे बारे में',
     // Home
     discoverThe: 'खोजें',
     divine: 'दिव्य संगीत',
-    heroSubtitle: 'हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह। भजन खोजें, सुनें और भक्तों के साथ साझा करें।',
-    browseBhajans: 'भजन देखें',
+    heroSubtitle: 'हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह। खोजी करें, सुनें और भक्तों के साथ साझा करें।',
+    browseBhajans: 'भजन खोजी',
     uploadYours: 'अपना अपलोड करें',
     bhajans: 'भजन',
     artists: 'कलाकार',
@@ -559,7 +528,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     perYear: '/वर्ष',
     billedAnnually: 'वार्षिक बिलिंग',
     faq: 'अक्सर पूछे जाने वाले प्रश्न',
-    browseBhajansFeature: 'भजन ब्राउज़ करें',
+    browseBhajansFeature: 'भजन खोजी',
     uploadLimit3: 'भजन अपलोड (3/माह)',
     uploadUnlimited: 'भजन अपलोड (असीमित)',
     priorityReview: 'प्राथमिकता समीक्षा',
@@ -567,20 +536,6 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     exclusiveBhajans: 'विशेष भजन',
     supportPlatform: 'मंच का समर्थन करें',
     earlyAccess: 'शीघ्र पहुँच',
-    // Blog
-    blogTitle: 'ब्लॉग',
-    blogSubtitle: 'भक्ति संगीत की दुनिया से कहानियां, संस्कृति और अपडेट।',
-    searchArticles: 'लेख खोजें...',
-    all: 'सभी',
-    devotion: 'भक्ति',
-    culture: 'संस्कृति',
-    appUpdates: 'ऐप अपडेट',
-    stories: 'कहानियां',
-    noArticlesFound: 'कोई लेख नहीं मिला।',
-    backToBlog: 'ब्लॉग पर वापस',
-    shareArticle: 'यह लेख साझा करें',
-    relatedArticles: 'संबंधित लेख',
-    postNotFound: 'पोस्ट नहीं मिली',
     // About
     ourMission: 'हमारा उद्देश्य',
     ourValues: 'हमारे मूल्य',
@@ -601,7 +556,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     // Footer
     footerDescription: 'एक-एक भजन से भक्ति को संरक्षित करना। हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह।',
     emailForUpdates: 'अपडेट के लिए ईमेल',
-    explore: 'खोजें',
+    explore: 'खोजी',
     community: 'समुदाय',
     legal: 'कानूनी',
     privacyPolicy: 'गोपनीयता नीति',
@@ -617,44 +572,44 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     refreshPage: 'पेज रिफ्रेश करें',
   },
   gu: {
-    home: 'હોમ', browse: 'ભજન', trending: 'ટ્રેન્ડિંગ', search: 'શોધો',
+    home: 'હોમ', browse: 'અન્વેષણ', trending: 'ટ્રેન્ડિંગ', search: 'શોધો',
     upload: 'અપલોડ', login: 'લોગ ઇન', logout: 'લોગ આઉટ', profile: 'પ્રોફાઇલ',
     setPhoto: 'પ્રોફાઇલ ફોટો સેટ કરો', language: 'ભાષા', addBhajan: 'ભજન ઉમેરો',
     shareCommunity: 'તમારા પ્રિય ભજન સમાજ સાથે શેર કરો', god: 'ભગવાન',
     lyrics: 'ગીત', details: 'વિગતો', selectGodForBhajan: 'ભજન માટે ભગવાન પસંદ કરો',
     addAnotherGod: 'બીજા ભગવાન ઉમેરો', addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
     changeGod: 'ભગવાન બદલો', bhajansCount: 'ભજનો',
-    blog: 'બ્લોગ', pricing: 'કિંમત', about: 'અમારા વિશે',
+    pricing: 'કિંમત', about: 'અમારા વિશે',
   },
   mr: {
-    home: 'मुख्यपृष्ठ', browse: 'भजने', trending: 'ट्रेंडिंग', search: 'शोधा',
+    home: 'मुख्यपृष्ठ', browse: 'खोजी', trending: 'ट्रेंडिंग', search: 'शोधा',
     upload: 'अपलोड', login: 'लॉग इन', logout: 'लॉग आउट', profile: 'प्रोफाइल',
     setPhoto: 'प्रोफाइल फोटो सेट करा', language: 'भाषा', addBhajan: 'भजन जोडा',
     shareCommunity: 'तुमची आवडती भजने समुदायासोबत शेअर करा', god: 'देव',
     lyrics: 'गीत', details: 'तपशील', selectGodForBhajan: 'भजनासाठी देव निवडा',
     addAnotherGod: 'आणखी एक देव जोडा', addDeityHint: 'यादीत नसल्यास नवीन जोडा',
     changeGod: 'देव बदला', bhajansCount: 'भजने',
-    blog: 'ब्लॉग', pricing: 'किंमत', about: 'आमच्याबद्दल',
+    pricing: 'किंमत', about: 'आमच्याबद्दल',
   },
   bn: {
-    home: 'হোম', browse: 'ভজন', trending: 'ট্রেন্ডিং', search: 'খুঁজুন',
+    home: 'হোম', browse: 'অন্বেষণ', trending: 'ট্রেন্ডিং', search: 'খুঁজুন',
     upload: 'আপলোড', login: 'লগ ইন', logout: 'লগ আউট', profile: 'প্রোফাইল',
     setPhoto: 'প্রোফাইল ছবি সেট করুন', language: 'ভাষা', addBhajan: 'ভজন যোগ করুন',
     shareCommunity: 'আপনার প্রিয় ভজন কমিউনিটির সাথে শেয়ার করুন', god: 'ঈশ্বর',
     lyrics: 'গান', details: 'বিস্তারিত', selectGodForBhajan: 'ভজনের জন্য ঈশ্বর নির্বাচন করুন',
     addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন', addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
     changeGod: 'ঈশ্বর পরিবর্তন করুন', bhajansCount: 'ভজন',
-    blog: 'ব্লগ', pricing: 'মূল্য', about: 'আমাদের সম্পর্কে',
+    pricing: 'মূল্য', about: 'আমাদের সম্পর্কে',
   },
   ta: {
-    home: 'முகப்பு', browse: 'பஜன்கள்', trending: 'டிரெண்டிங்', search: 'தேடல்',
+    home: 'முகப்பு', browse: 'ஆராய்வு', trending: 'டிரெண்டிங்', search: 'தேடல்',
     upload: 'பதிவேற்று', login: 'உள்நுழை', logout: 'வெளியேறு', profile: 'சுயவிவரம்',
     setPhoto: 'சுயவிவரப் புகைப்படம் அமை', language: 'மொழி', addBhajan: 'பஜன் சேர்க்கவும்',
     shareCommunity: 'உங்கள் விருப்ப பஜன்களை சமூகத்துடன் பகிரவும்', god: 'கடவுள்',
     lyrics: 'வரிகள்', details: 'விவரங்கள்', selectGodForBhajan: 'பஜனுக்கு கடவுளை தேர்வு செய்யவும்',
     addAnotherGod: 'மற்றொரு கடவுளை சேர்', addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
     changeGod: 'கடவுளை மாற்று', bhajansCount: 'பஜன்கள்',
-    blog: 'வலைப்பதிவு', pricing: 'விலை', about: 'எங்களை பற்றி',
+    pricing: 'விலை', about: 'எங்களை பற்றி',
   },
 };
 

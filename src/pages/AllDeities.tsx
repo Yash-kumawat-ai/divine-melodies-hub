@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { deities } from "@/data/bhajans";
 import { useDeities } from "@/hooks/useDeities";
 import { generateDeitySlug } from "@/lib/slugUtils";
 import { Loader2 } from "lucide-react";
@@ -40,15 +39,15 @@ export default function AllDeities() {
                     to={`/deity/${generateDeitySlug(deity.name)}`}
                     className="group block rounded-xl bg-card p-6 shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center touch-target"
                   >
-                    <div className="text-5xl block mb-3 flex items-center justify-center h-40 overflow-hidden">
+                    <div className="relative mx-auto mb-3 aspect-[4/5] w-full max-h-[11rem] overflow-hidden rounded-xl bg-muted sm:max-h-[12.5rem]">
                       {deity.imageUrl ? (
-                        <img 
-                          src={deity.imageUrl} 
+                        <img
+                          src={deity.imageUrl}
                           alt={deity.name}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="h-full w-full object-cover object-center"
                         />
                       ) : (
-                        <span>{deity.emoji}</span>
+                        <span className="flex h-full w-full items-center justify-center text-5xl">{deity.emoji}</span>
                       )}
                     </div>
                     <h3 className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">

@@ -1,5 +1,14 @@
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
 
+import deityKrishna from '@/assets/deities/krishna.png';
+import deityShiva from '@/assets/deities/shiva.png';
+import deityHanuman from '@/assets/deities/hanuman.png';
+import deityRama from '@/assets/deities/rama.png';
+import deityDurga from '@/assets/deities/durga.png';
+import deityGanesh from '@/assets/deities/ganesh.png';
+import deitySaiBaba from '@/assets/deities/sai-baba.png';
+import deityLakshmi from '@/assets/deities/lakshmi.png';
+
 export interface Deity {
   id: number;
   slug: string;
@@ -32,14 +41,14 @@ export interface Bhajan {
 }
 
 export const deities: Deity[] = [
-  { id: 1, slug: 'krishna', name: 'Krishna', nameHindi: 'कृष्ण', description: 'Lord of compassion, tenderness, and love', emoji: '🪈', colorClass: 'bg-blue-500', bhajanCount: 45 },
-  { id: 2, slug: 'shiva', name: 'Shiva', nameHindi: 'शिव', description: 'The transformer and destroyer', emoji: '🔱', colorClass: 'bg-orange-600', bhajanCount: 38 },
-  { id: 3, slug: 'hanuman', name: 'Hanuman', nameHindi: 'हनुमान', description: 'Symbol of strength and devotion', emoji: '🙏', colorClass: 'bg-orange-500', bhajanCount: 32 },
-  { id: 4, slug: 'rama', name: 'Rama', nameHindi: 'राम', description: 'Ideal man and righteous king', emoji: '🏹', colorClass: 'bg-green-600', bhajanCount: 40 },
-  { id: 5, slug: 'durga', name: 'Durga', nameHindi: 'दुर्गा', description: 'Goddess of protection and strength', emoji: '🌺', colorClass: 'bg-red-600', bhajanCount: 28 },
-  { id: 6, slug: 'ganesh', name: 'Ganesh', nameHindi: 'गणेश', description: 'Remover of obstacles', emoji: '🐘', colorClass: 'bg-yellow-500', bhajanCount: 25 },
-  { id: 7, slug: 'sai-baba', name: 'Sai Baba', nameHindi: 'साईं बाबा', description: 'Saint of Shirdi', emoji: '✨', colorClass: 'bg-amber-400', bhajanCount: 20 },
-  { id: 8, slug: 'lakshmi', name: 'Lakshmi', nameHindi: 'लक्ष्मी', description: 'Goddess of wealth and prosperity', emoji: '🪷', colorClass: 'bg-pink-500', bhajanCount: 22 },
+  { id: 1, slug: 'krishna', name: 'Krishna', nameHindi: 'कृष्ण', description: 'Lord of compassion, tenderness, and love', emoji: '🪈', colorClass: 'bg-blue-500', bhajanCount: 45, imageUrl: deityKrishna },
+  { id: 2, slug: 'shiva', name: 'Shiva', nameHindi: 'शिव', description: 'The transformer and destroyer', emoji: '🔱', colorClass: 'bg-orange-600', bhajanCount: 38, imageUrl: deityShiva },
+  { id: 3, slug: 'hanuman', name: 'Hanuman', nameHindi: 'हनुमान', description: 'Symbol of strength and devotion', emoji: '🙏', colorClass: 'bg-orange-500', bhajanCount: 32, imageUrl: deityHanuman },
+  { id: 4, slug: 'rama', name: 'Rama', nameHindi: 'राम', description: 'Ideal man and righteous king', emoji: '🏹', colorClass: 'bg-green-600', bhajanCount: 40, imageUrl: deityRama },
+  { id: 5, slug: 'durga', name: 'Durga', nameHindi: 'दुर्गा', description: 'Goddess of protection and strength', emoji: '🌺', colorClass: 'bg-red-600', bhajanCount: 28, imageUrl: deityDurga },
+  { id: 6, slug: 'ganesh', name: 'Ganesh', nameHindi: 'गणेश', description: 'Remover of obstacles', emoji: '🐘', colorClass: 'bg-yellow-500', bhajanCount: 25, imageUrl: deityGanesh },
+  { id: 7, slug: 'sai-baba', name: 'Sai Baba', nameHindi: 'साईं बाबा', description: 'Saint of Shirdi', emoji: '✨', colorClass: 'bg-amber-400', bhajanCount: 20, imageUrl: deitySaiBaba },
+  { id: 8, slug: 'lakshmi', name: 'Lakshmi', nameHindi: 'लक्ष्मी', description: 'Goddess of wealth and prosperity', emoji: '🪷', colorClass: 'bg-pink-500', bhajanCount: 22, imageUrl: deityLakshmi },
   { id: 9, slug: 'khatu-shyam', name: 'Khatu Shyam', nameHindi: 'खाटू श्याम', description: 'The compassionate form of Barbarika revered as Shyam Baba', emoji: '🏇', colorClass: 'bg-rose-500', bhajanCount: 12 },
 ];
 

@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { to: "/", labelKey: "home" as const, match: (p: string) => p === "/" },
   { to: "/all-bhajans", labelKey: "browse" as const, match: (p: string) => p.startsWith("/all-bhajans") },
-  { to: "/blog", labelKey: "blog" as const, match: (p: string) => p.startsWith("/blog") },
   { to: "/pricing", labelKey: "pricing" as const, match: (p: string) => p === "/pricing" },
   { to: "/about", labelKey: "about" as const, match: (p: string) => p === "/about" },
   { to: "/search", labelKey: "search" as const, match: (p: string) => p.startsWith("/search") },

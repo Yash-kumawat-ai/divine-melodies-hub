@@ -1,10 +1,11 @@
 import { motion, useInView } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Upload, Search, Users, ShieldCheck, Music, Star, Headphones, ArrowRight } from 'lucide-react';
+import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import dhyaanLogo from '@/assets/dhyaan-logo.png';
+import exploreButtonArt from '@/assets/explore-button.png';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
@@ -134,7 +135,7 @@ export default function Home() {
     <div>
       <SEO
         title="Hari Kirtan - Indian Bhajans & Devotional Songs"
-        description="Discover, share, and preserve Hindu devotional music. Browse bhajans for Krishna, Shiva, Hanuman, Rama and more."
+        description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
       {/* Hero */}
@@ -181,9 +182,15 @@ export default function Home() {
             transition={{ delay: 0.35 }}
           >
             <Button asChild size="lg" className="bg-brand-saffron hover:bg-brand-saffron/90 text-white font-semibold px-8 h-12 text-base rounded-xl">
-              <Link to="/all-bhajans">
-                <Music className="w-5 h-5 mr-2" />
-                {t('browseBhajans')}
+              <Link to="/all-bhajans" className="inline-flex max-w-full flex-wrap items-center justify-center gap-2">
+                <img
+                  src={exploreButtonArt}
+                  alt=""
+                  className="h-7 w-auto max-w-[140px] object-contain object-left shrink-0"
+                  width={140}
+                  height={28}
+                />
+                <span>{t('browseBhajans')}</span>
               </Link>
             </Button>
             <Button

@@ -90,7 +90,6 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
-          <Link to="/blog" className="text-foreground hover:text-primary transition-colors">{t('blog')}</Link>
           <Link to="/pricing" className="text-foreground hover:text-primary transition-colors">{t('pricing')}</Link>
           <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
           <Link

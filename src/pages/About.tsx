@@ -6,7 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 
 const milestones = [
   { icon: Lightbulb, titleEn: 'The Idea', titleHi: 'विचार', date: 'Dec 2025', descEn: 'A vision to create a unified platform for devotional music.', descHi: 'भक्ति संगीत के लिए एक एकीकृत मंच बनाने का विचार।' },
-  { icon: Rocket, titleEn: 'Beta Launch', titleHi: 'बीटा लॉन्च', date: 'Feb 2026', descEn: 'First version live with search, browse, and upload features.', descHi: 'खोज, ब्राउज़ और अपलोड सुविधाओं के साथ पहला संस्करण लाइव।' },
+  { icon: Rocket, titleEn: 'Beta Launch', titleHi: 'बीटा लॉन्च', date: 'Feb 2026', descEn: 'First version live with search, explore, and upload features.', descHi: 'खोज, खोजी और अपलोड सुविधाओं के साथ पहला संस्करण लाइव।' },
   { icon: Music, titleEn: 'First 100 Bhajans', titleHi: 'पहले 100 भजन', date: 'Mar 2026', descEn: 'Community-contributed bhajans reach the first milestone.', descHi: 'समुदाय द्वारा साझा किए गए भजन पहले माइलस्टोन तक पहुँचे।' },
   { icon: PartyPopper, titleEn: 'Public Launch', titleHi: 'सार्वजनिक लॉन्च', date: 'May 2026', descEn: 'Full production release with admin moderation and premium plans.', descHi: 'एडमिन मॉडरेशन और प्रीमियम योजनाओं के साथ पूर्ण उत्पादन रिलीज़।' },
 ];
