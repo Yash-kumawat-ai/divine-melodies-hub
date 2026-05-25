@@ -6,13 +6,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, Lock, Loader2, Chrome } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { loginSchema, type LoginInput } from '@/schemas';
 
 export default function LoginForm() {
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [lastEmail, setLastEmail] = useState('');
+  const [canResendConfirmation, setCanResendConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle, resendEmailConfirmation } = useAuth();
   const navigate = useNavigate();
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
@@ -21,11 +23,17 @@ export default function LoginForm() {
 
   const onSubmit = async (data: LoginInput) => {
     setError('');
+    setNotice('');
+    setCanResendConfirmation(false);
+    setLastEmail(data.email);
     setLoading(true);
 
     const { error } = await signIn(data.email, data.password);
     if (error) {
       setError(toFriendlyError(error.message || 'Login failed'));
+      if (error.message?.toLowerCase().includes('email not confirmed')) {
+        setCanResendConfirmation(true);
+      }
     } else {
       navigate('/upload-bhajan');
     }
@@ -34,8 +42,16 @@ export default function LoginForm() {
 
   const toFriendlyError = (message: string) => {
     const normalized = message.toLowerCase();
+    if (
+      normalized.includes('error sending confirmation email') ||
+      normalized.includes('confirmation email') ||
+      normalized.includes('smtp') ||
+      normalized.includes('email provider')
+    ) {
+      return 'Verification email could not be sent. Please use Google login for now, or configure Supabase SMTP and try again.';
+    }
     if (normalized.includes('invalid login credentials')) {
-      return 'No account found for this email, or the password is incorrect. If signup failed earlier, create your account first.';
+      return 'No account found for this email, or the password is incorrect. Create an account first, or use Google if you signed up with Google.';
     }
     if (normalized.includes('email not confirmed')) {
       return 'Please verify your email first, then sign in.';
@@ -45,24 +61,34 @@ export default function LoginForm() {
 
   const handleGoogleLogin = async () => {
     setError('');
+    setNotice('');
+    setCanResendConfirmation(false);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/upload-bhajan`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
+      const { error } = await signInWithGoogle('/upload-bhajan');
       if (error) setError(error.message);
     } catch (err: unknown) {
       setError(toFriendlyError(err instanceof Error ? err.message : 'Google login failed'));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!lastEmail) return;
+
+    setError('');
+    setNotice('');
+    setLoading(true);
+    const { error } = await resendEmailConfirmation(lastEmail);
+
+    if (error) {
+      setError(toFriendlyError(error.message || 'Could not resend confirmation email'));
+    } else {
+      setNotice('Verification email sent. Please check your inbox and spam folder.');
+      setCanResendConfirmation(false);
+    }
+    setLoading(false);
   };
 
   return (
@@ -75,6 +101,22 @@ export default function LoginForm() {
       {error && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
+          {canResendConfirmation && (
+            <button
+              type="button"
+              onClick={handleResendConfirmation}
+              disabled={loading}
+              className="mt-2 block text-xs font-semibold text-orange-300 hover:text-orange-200 hover:underline"
+            >
+              Resend verification email
+            </button>
+          )}
+        </div>
+      )}
+
+      {notice && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+          {notice}
         </div>
       )}
 

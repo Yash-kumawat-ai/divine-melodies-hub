@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
-import { Compass, Home, Library, Plus, User } from "lucide-react";
+import { Compass, Flower2, Home, Library, Plus, User } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -14,6 +15,12 @@ type MobileTab = {
 
 const TABS: MobileTab[] = [
   { path: "/", label: "Home", icon: Home, match: (p) => p === "/" },
+  {
+    path: "/meditation",
+    label: "Dhyan",
+    icon: Flower2,
+    match: (p) => p.startsWith("/meditation"),
+  },
   {
     path: "/all-bhajans",
     label: "Explore",
@@ -45,10 +52,11 @@ const TABS: MobileTab[] = [
 export default function MobileTabBar() {
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-5 overflow-x-hidden border-t border-white/10 bg-[#0A0A0A]/85 px-1 pt-2 backdrop-blur-xl"
+      className="fixed bottom-0 left-0 right-0 z-50 grid grid-cols-6 overflow-x-hidden border-t border-white/10 bg-[#0A0A0A]/85 px-0.5 pt-2 backdrop-blur-xl"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
       aria-label="Main navigation"
     >
@@ -78,8 +86,8 @@ export default function MobileTabBar() {
             >
               <Icon className={cn("h-5 w-5", tab.accent && "h-6 w-6")} strokeWidth={active ? 2.5 : 2} />
             </span>
-            <span className={cn("text-[9px] font-medium leading-none", active && "text-[#FFB300]")}>
-              {tab.label}
+            <span className={cn("text-[8px] font-medium leading-none", active && "text-[#FFB300]")}>
+              {tab.path === "/meditation" ? t("meditation") : tab.label}
             </span>
           </Link>
         );

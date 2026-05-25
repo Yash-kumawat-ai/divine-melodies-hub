@@ -9,7 +9,7 @@ import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "@/data/bhajans";
 import { bhajanMatchesQuery, smartSearchBhajans } from "@/lib/searchAlgorithm";
-import { queryUserUploads, searchUserBhajans } from "@/lib/supabaseQueries";
+import { searchUserBhajans } from "@/lib/supabaseQueries";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -36,6 +36,8 @@ import {
   saveBhajans,
 } from "@/lib/offlineKirtan";
 import { cn } from "@/lib/utils";
+import DevotionActionCard from "@/components/devotion/DevotionActionCard";
+import { createNaradActionResult, parseNaradIntent, type NaradActionResult } from "@/lib/narad/naradIntents";
 
 type Role = "user" | "bot";
 type Flow =
@@ -55,10 +57,20 @@ interface Message {
   searchQuery?: string;
   hasMoreResults?: boolean;
   summary?: AddBhajanDraft;
+  action?: NaradActionResult;
 }
 
 const FAVORITES_KEY = "kirtan_ai_favorites";
-const QUICK_ACTIONS = ["Find a Bhajan", "➕ Add a Bhajan", "Suggest Bhajans by Mood", "Bhajans for Today's Occasion", "Aarti Collection", "❤️ My Favorites"];
+const QUICK_ACTIONS = [
+  "Find a Bhajan",
+  "Add a Bhajan",
+  "Start 108 Japa",
+  "Start Meditation",
+  "Offer Flower",
+  "Today's Devotion",
+  "Aarti Collection",
+  "My Favorites",
+];
 const DEITY_OPTIONS = ["Krishna", "Shiva", "Devi", "Ganesh", "Hanuman", "All"];
 const LANGUAGE_OPTIONS = ["Hindi", "Sanskrit", "Regional", "Any"];
 const ADD_DEITIES = ["Krishna", "Shiva", "Devi", "Ganesh", "Hanuman", "General"];
@@ -116,7 +128,7 @@ function extractChatSearchTerm(value: string): { term: string; isSearch: boolean
     .replace(/\s+(bhajan chahiye|ka bhajan)$/i, "")
     .trim();
 
-  const directName = text.length >= 3 && !/^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|❤️ my favorites|\+ add a bhajan)$/i.test(text);
+  const directName = text.length >= 3 && !/^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|my favorites|add a bhajan|start 108 japa|start meditation|offer flower|today's devotion)$/i.test(text);
   return { term: text, isSearch: directName, isDeityBrowse: false };
 }
 
@@ -171,24 +183,59 @@ function speakableBotText(text: string): string {
 
 export type NaradChipKind = "hanuman" | "morning" | "lyrics" | "festival" | "explain";
 
+export type NaradVoicePhase = "idle" | "listening" | "thinking" | "speaking" | "result" | "error";
+
 export interface KirtanAIChatCoreProps {
   /** full = Kirtan AI page layout; compact = floating Narad panel */
   variant?: "page" | "compact";
   className?: string;
   /** Only used when variant is compact */
   inputPlaceholder?: string;
+  /** full = chat UI; minimal = slim bar only; hidden = voice bridge (off-screen) */
+  compactDisplay?: "full" | "minimal" | "hidden";
+  onListeningChange?: (listening: boolean) => void;
+  onTranscriptPreview?: (text: string) => void;
+  onVoicePhaseChange?: (phase: NaradVoicePhase) => void;
+  onBotReplyText?: (text: string) => void;
+  onVoiceError?: (message: string) => void;
+  onNaradAction?: (action: NaradActionResult) => void;
+  /** Fired once voice engine is initialized (for gesture-safe listen). */
+  onCoreReady?: () => void;
+  voiceLang?: "hi" | "en";
+  ttsMuted?: boolean;
 }
 
 export type KirtanAIChatCoreHandle = {
   runNaradChip: (kind: NaradChipKind) => void;
   startNewChat: () => void;
+  startListening: () => void;
+  stopListening: () => void;
+  repeatLastSpeech: () => void;
+  submitQuery: (text: string) => void;
+  isVoiceSupported: () => boolean;
 };
 
 const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProps>(function KirtanAIChatCore(
-  { variant = "page", className, inputPlaceholder },
+  {
+    variant = "page",
+    className,
+    inputPlaceholder,
+    compactDisplay = "full",
+    onListeningChange,
+    onTranscriptPreview,
+    onVoicePhaseChange,
+    onBotReplyText,
+    onVoiceError,
+    onNaradAction,
+    onCoreReady,
+    voiceLang = "hi",
+    ttsMuted = false,
+  },
   ref,
 ) {
   const isCompact = variant === "compact";
+  const isHiddenBridge = isCompact && compactDisplay === "hidden";
+  const isMinimalBar = isCompact && compactDisplay === "minimal";
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -208,6 +255,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const voiceRef = useRef<VoiceManager | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
+  const lastSpokenRef = useRef("");
   const endRef = useRef<HTMLDivElement>(null);
   const displayName = profile?.name || user?.email?.split("@")[0] || "User";
 
@@ -223,24 +271,23 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     setSidebarOpen(!isCompact && window.innerWidth >= 768);
     const support = checkVoiceSupport();
     setVoiceSupport(support);
-    if (support.recognition) voiceRef.current = new VoiceManager();
+    if (support.recognition) voiceRef.current = new VoiceManager(voiceLang);
     if (support.synthesis) ttsRef.current = new TextToSpeech();
-
-    void (async () => {
-      try {
-        const { data, error } = await queryUserUploads({ orderBy: "created_at", limit: 400 });
-        if (error || !data) return;
-        setUploadedBhajans(dedupeBhajans((data as unknown[]).map(convertUploadToBhajan)));
-      } catch (error) {
-        console.error("Kirtan AI: preload uploads failed:", error);
-      }
-    })();
+    onCoreReady?.();
 
     return () => {
       voiceRef.current?.stopListening();
       ttsRef.current?.stop();
     };
   }, []);
+
+  useEffect(() => {
+    voiceRef.current?.setLanguage(voiceLang);
+  }, [voiceLang]);
+
+  useEffect(() => {
+    if (typing) onVoicePhaseChange?.("thinking");
+  }, [typing, onVoicePhaseChange]);
 
   useEffect(() => {
     if (!activeSessionId) return;
@@ -287,12 +334,22 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
 
   const pushBot = (message: Omit<Message, "id" | "role">, speak = true) => {
     setTyping(true);
+    onVoicePhaseChange?.("thinking");
     window.setTimeout(() => {
       setMessages((prev) => [...prev, { id: id(), role: "bot", ...message }]);
       setTyping(false);
-      if (speak && voiceSupport.synthesis && ttsRef.current && message.text) {
+      if (message.text) {
         const line = speakableBotText(message.text);
-        if (line) ttsRef.current.speak(line, "hi");
+        onBotReplyText?.(line || message.text);
+        if (speak && !ttsMuted && voiceSupport.synthesis && ttsRef.current && line) {
+          lastSpokenRef.current = line;
+          onVoicePhaseChange?.("speaking");
+          ttsRef.current.speak(line, voiceLang, {
+            onEnd: () => onVoicePhaseChange?.("result"),
+          });
+        } else {
+          onVoicePhaseChange?.("result");
+        }
       }
     }, isCompact ? 120 : 300);
   };
@@ -346,7 +403,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const results = exactSearchBhajans(query, library);
     pushBot({
       text: results.length ? "Exact match mil gaya." : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["➕ Add a Bhajan"],
+      options: results.length ? undefined : ["Add a Bhajan"],
       bhajans: results,
     });
   };
@@ -380,6 +437,9 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     try {
       const uploadRows = await searchUserBhajans(term, 20);
       const fromApi = uploadRows.map(convertUploadToBhajan);
+      if (fromApi.length) {
+        setUploadedBhajans((prev) => dedupeBhajans([...prev, ...fromApi]));
+      }
       const combined = smartSearchBhajans(term, dedupeBhajans([...searchPool, ...fromApi]));
       pushSearchResults(combined);
     } catch (error) {
@@ -404,7 +464,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const results = filterByDeityAndLanguage(library, flow.deity || "All", value as KirtanLanguage | "Regional" | "Any");
     pushBot({
       text: results.length ? "Filtered bhajans mil gaye. Card se details/play open kar sakte hain." : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["➕ Add a Bhajan"],
+      options: results.length ? undefined : ["Add a Bhajan"],
       bhajans: results.slice(0, 12),
     });
     setFlow({ type: "idle" });
@@ -414,7 +474,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const results = filterByMood(library, value as KirtanMood);
     pushBot({
       text: results.length ? `${value} ke liye curated bhajans:` : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["➕ Add a Bhajan"],
+      options: results.length ? undefined : ["Add a Bhajan"],
       bhajans: results.slice(0, 10),
     });
     setFlow({ type: "idle" });
@@ -476,7 +536,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
 
       const draft = flow.draft;
       if (!draft.name || !draft.deity || !draft.language) {
-        pushBot({ text: "Required details missing hain. Please Add Bhajan dobara start karein.", options: ["➕ Add a Bhajan"] });
+        pushBot({ text: "Required details missing hain. Please Add Bhajan dobara start karein.", options: ["Add a Bhajan"] });
         setFlow({ type: "idle" });
         return;
       }
@@ -510,6 +570,26 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     if (normalized === "yes, add it") return startAddFlow();
     if (normalized === "no thanks") return pushBot({ text: "Theek hai. Aap koi aur bhajan search kar sakte hain.", options: QUICK_ACTIONS });
     if (isGreeting(text)) return showQuickActions();
+
+    const naradIntent = parseNaradIntent(text);
+    const action = createNaradActionResult(naradIntent);
+    if (action) {
+      onNaradAction?.(action);
+      if (action.kind === "bhajan_search" && action.searchQuery) {
+        onBotReplyText?.(speakableBotText(action.spokenText));
+        return runExistingBhajanSearch(action.searchQuery);
+      }
+      if (action.intentType === "show_favorites") {
+        return showFavorites();
+      }
+      pushBot({
+        text: action.spokenText,
+        action,
+        options: action.kind === "daily_devotion" ? ["Morning Prayer", "Start 108 Japa"] : undefined,
+      });
+      return;
+    }
+
     if (normalized.includes("add")) return startAddFlow();
     const detected = extractChatSearchTerm(text);
     if (detected.isSearch && normalized !== "find a bhajan") return runExistingBhajanSearch(detected.term, detected.isDeityBrowse);
@@ -541,23 +621,65 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     handleAction(value);
   };
 
+  const stopListening = () => {
+    voiceRef.current?.stopListening();
+    setIsListening(false);
+    onListeningChange?.(false);
+  };
+
+  const ensureVoiceManager = () => {
+    const support = checkVoiceSupport();
+    if (!support.recognition) return false;
+    if (!voiceRef.current) {
+      voiceRef.current = new VoiceManager(voiceLang);
+    } else {
+      voiceRef.current.setLanguage(voiceLang);
+    }
+    return !!voiceRef.current;
+  };
+
   const startListening = () => {
-    if (!voiceRef.current) return;
+    if (!ensureVoiceManager()) {
+      const msg = "Speech Recognition is not supported in this browser. Use Type to ask Narad.";
+      onVoicePhaseChange?.("error");
+      onVoiceError?.(msg);
+      if (!isHiddenBridge) {
+        toast({ title: "Voice unavailable", description: msg, variant: "destructive" });
+      }
+      return;
+    }
     ttsRef.current?.stop();
-    voiceRef.current.resetTranscript();
-    voiceRef.current.startListening(
-      (transcript) => setInput(transcript),
+    voiceRef.current!.resetTranscript();
+    voiceRef.current!.startListening(
+      (transcript) => {
+        setInput(transcript);
+        onTranscriptPreview?.(transcript);
+      },
       (error) => {
         setIsListening(false);
-        toast({ title: "Voice error", description: error, variant: "destructive" });
+        onListeningChange?.(false);
+        onVoicePhaseChange?.("error");
+        onVoiceError?.(error);
+        if (!isHiddenBridge) {
+          toast({ title: "Voice error", description: error, variant: "destructive" });
+        }
       },
       () => {
         setIsListening(true);
+        onListeningChange?.(true);
+        onVoicePhaseChange?.("listening");
       },
       () => {
         setIsListening(false);
+        onListeningChange?.(false);
         const transcript = voiceRef.current?.getTranscript() || "";
-        if (transcript.trim()) handleAction(transcript);
+        if (transcript.trim()) {
+          onVoicePhaseChange?.("thinking");
+          handleAction(transcript);
+        } else {
+          onVoicePhaseChange?.("error");
+          onVoiceError?.("no-speech");
+        }
       },
     );
   };
@@ -601,6 +723,24 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
       }
     },
     startNewChat: () => handlersRef.current.startNewChat(),
+    startListening: () => startListening(),
+    stopListening: () => stopListening(),
+    repeatLastSpeech: () => {
+      const line = lastSpokenRef.current;
+      if (!line || !ttsRef.current || ttsMuted) return;
+      onVoicePhaseChange?.("speaking");
+      ttsRef.current.speak(line, voiceLang, {
+        onEnd: () => onVoicePhaseChange?.("result"),
+      });
+    },
+    submitQuery: (text: string) => {
+      const t = text.trim();
+      if (!t) return;
+      stopListening();
+      onVoicePhaseChange?.("thinking");
+      handleAction(t);
+    },
+    isVoiceSupported: () => checkVoiceSupport().recognition,
   }));
 
   return (
@@ -662,8 +802,13 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
         </aside>
         )}
 
-        <main className="min-w-0 flex flex-1 flex-col min-h-0">
-          {isCompact ? (
+        <main
+          className={cn(
+            "min-w-0 flex flex-1 flex-col min-h-0",
+            isHiddenBridge && "sr-only fixed -left-[9999px] h-px w-px overflow-hidden opacity-0",
+          )}
+        >
+          {isCompact && !isHiddenBridge && !isMinimalBar ? (
             <div className="flex shrink-0 items-center justify-end border-b border-border/60 bg-background/90 px-2 py-1 backdrop-blur-sm">
               <button
                 type="button"
@@ -675,7 +820,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                 New chat
               </button>
             </div>
-          ) : (
+          ) : !isCompact ? (
             <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2">
               <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-accent md:hidden" aria-label="Open sidebar">
                 <Menu className="h-5 w-5" />
@@ -686,11 +831,16 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
               <Bot className="h-4 w-4 text-primary" />
               <span className="text-sm font-semibold">Kirtan AI</span>
             </div>
-          )}
+          ) : null}
 
-          <div className={cn("min-h-0 flex-1 overflow-y-auto", isCompact ? "px-2 py-2" : "px-4 py-6 md:px-8")}>
+          <div
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto",
+              isCompact && !isMinimalBar ? "px-2 py-2" : isMinimalBar ? "hidden" : "px-4 py-6 md:px-8",
+            )}
+          >
             <div className={cn("space-y-5", !isCompact && "mx-auto max-w-4xl")}>
-              {messages.length === 0 && (
+              {messages.length === 0 && !isMinimalBar && (
                 <div className={cn("flex flex-col justify-center", isCompact ? "min-h-[120px]" : "min-h-[55vh]")}>
                   <div className={cn("text-center", isCompact ? "mb-4" : "mb-8")}>
                     <div
@@ -726,7 +876,8 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
               )}
 
               <AnimatePresence initial={false}>
-                {messages.map((message) => (
+                {!isMinimalBar &&
+                  messages.map((message) => (
                   <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                     {message.role === "bot" && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg">🪷</div>}
                     <div className={`max-w-[88%] rounded-2xl px-4 py-3 ${message.role === "user" ? "bg-primary text-primary-foreground rounded-br-md" : "bg-card border border-border rounded-bl-md"}`}>
@@ -739,6 +890,28 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                           <div><b>Language:</b> {message.summary.language}</div>
                           <div><b>Singer:</b> {message.summary.singer || "Optional empty"}</div>
                           <div><b>Link:</b> {message.summary.youtube_link || "Optional empty"}</div>
+                        </div>
+                      )}
+
+                      {message.action && (
+                        <div className="mt-4">
+                          <DevotionActionCard
+                            action={message.action}
+                            compact={isCompact}
+                            onPrimary={() => onNaradAction?.(message.action!)}
+                            onSecondary={() => {
+                              if (message.action?.kind === "offering") {
+                                onNaradAction?.({
+                                  ...message.action,
+                                  kind: "japa_start",
+                                  title: "108 Japa",
+                                  primaryLabel: "Start japa",
+                                });
+                                return;
+                              }
+                              startMoodFlow();
+                            }}
+                          />
                         </div>
                       )}
 
@@ -819,10 +992,10 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                       )}
                     </div>
                   </motion.div>
-                ))}
+                  ))}
               </AnimatePresence>
 
-              {typing && (
+              {typing && !isMinimalBar && (
                 <div className="flex gap-3">
                   <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-lg">🪷</div>
                   <div className="rounded-2xl rounded-bl-md border border-border bg-card px-4 py-3">
@@ -838,7 +1011,12 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
             </div>
           </div>
 
-          <div className={cn("shrink-0 border-t border-border", isCompact ? "p-2" : "p-4")}>
+          <div
+            className={cn(
+              "shrink-0 border-t border-border",
+              isCompact ? (isHiddenBridge ? "p-0" : "p-2") : "p-4",
+            )}
+          >
             <div className={cn("flex gap-2", !isCompact && "mx-auto max-w-4xl")}>
               <button
                 onClick={isListening ? () => {

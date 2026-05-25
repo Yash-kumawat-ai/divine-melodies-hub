@@ -3,6 +3,8 @@
  * Handles speech-to-text and text-to-speech for elderly users
  */
 
+import { NARAD_VOICE_ERRORS } from "@/lib/narad/naradVoiceStrings";
+
 export interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
   resultIndex: number;
@@ -190,10 +192,16 @@ export class VoiceManager {
     this.setupRecognition();
   }
 
+  public setLanguage(language: 'hi' | 'en') {
+    this.language = language;
+    if (this.recognition) {
+      this.recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+    }
+  }
+
   private setupRecognition() {
     if (!this.recognition) return;
 
-    // Set language to Hindi or English
     this.recognition.lang = this.language === 'hi' ? 'hi-IN' : 'en-IN';
     this.recognition.continuous = false;
     this.recognition.interimResults = true;
@@ -336,22 +344,17 @@ export class VoiceManager {
    * Get user-friendly error message
    */
   private getErrorMessage(error: string): string {
-    const messages: Record<string, string> = {
-      'no-speech': 'कोई आवाज नहीं सुनी गई। कृपया फिर से कोशिश करें।',
-      'no-match': 'समझ नहीं आया। कृपया साफ़ और धीरे बोलकर फिर कोशिश करें।',
-      'audio-capture':
-        'माइक्रोफोन से आवाज नहीं मिल रही। कृपया अपना इनपुट डिवाइस जांचें।',
-      network: 'नेटवर्क से जुड़ने में समस्या।',
-      'service-not-allowed': 'वॉइस सेवा अभी उपलब्ध नहीं है।',
-      'bad-grammar': 'समझने में समस्या हुई।',
-      'language-not-supported': 'यह भाषा इस ब्राउज़र में समर्थित नहीं है।',
-      'permission-denied':
-        'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.',
-      'not-allowed':
-        'Microphone permission is blocked. Click the lock icon in the address bar, allow microphone access, then try again.',
-    };
-
-    return messages[error] || `त्रुटि: ${error}। फिर से कोशिश करें।`;
+    const fallback = `\u0924\u094d\u0930\u0941\u091f\u093f: ${error}\u0964 \u092b\u093f\u0930 \u0938\u0947 \u0915\u094b\u0936\u093f\u0936 \u0915\u0930\u0947\u0902\u0964`;
+    return (
+      NARAD_VOICE_ERRORS[error] ??
+      ({
+        'service-not-allowed': '\u0935\u0949\u0907\u0938 \u0938\u0947\u0935\u093e \u0905\u092d\u0940 \u0909\u092a\u0932\u092c\u094d\u0927 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964',
+        'bad-grammar': '\u0938\u092e\u091d\u0928\u0947 \u092e\u0947\u0902 \u0938\u092e\u0938\u094d\u092f\u093e \u0939\u0941\u0908\u0964',
+        'language-not-supported':
+          '\u092f\u0939 \u092d\u093e\u0937\u093e \u0907\u0938 \u092c\u094d\u0930\u093e\u0909\u091c\u093c\u0930 \u092e\u0947\u0902 \u0938\u092e\u0930\u094d\u0925\u093f\u0924 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964',
+      } as Record<string, string>)[error] ??
+      fallback
+    );
   }
 
   /**
@@ -383,29 +386,30 @@ export class TextToSpeech {
   /**
    * Speak text in Hindi/English
    */
-  public speak(text: string, language: 'hi' | 'en' = 'hi') {
+  public speak(
+    text: string,
+    language: 'hi' | 'en' = 'hi',
+    hooks?: { onStart?: () => void; onEnd?: () => void },
+  ) {
     if (!this.synthesis || typeof window === 'undefined') return;
-    // Cancel any ongoing speech
     if (this.isSpeaking) {
       this.synthesis.cancel();
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-
-    // Set language
     utterance.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
-
-    // Elderly-friendly settings: slower, louder
-    utterance.rate = 0.8; // Slower speech
+    utterance.rate = 0.8;
     utterance.pitch = 1.0;
-    utterance.volume = 1.0; // Maximum volume
+    utterance.volume = 1.0;
 
     utterance.onstart = () => {
       this.isSpeaking = true;
+      hooks?.onStart?.();
     };
 
     utterance.onend = () => {
       this.isSpeaking = false;
+      hooks?.onEnd?.();
     };
 
     utterance.onerror = (event: SpeechSynthesisErrorEvent) => {

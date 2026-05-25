@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Mail, Lock, User, Loader2, Chrome, Phone } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { signupSchema, type SignupInput } from '@/schemas';
 
 export default function SignupForm() {
@@ -16,7 +15,7 @@ export default function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
-  const { signUp } = useAuth();
+  const { signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
   const { register, handleSubmit, formState: { errors }, getValues } = useForm<SignupInput>({
@@ -59,6 +58,18 @@ export default function SignupForm() {
 
   const toFriendlySignupError = (message: string): { message: string; isRateLimit: boolean } => {
     const normalized = message.toLowerCase();
+
+    if (
+      normalized.includes('error sending confirmation email') ||
+      normalized.includes('confirmation email') ||
+      normalized.includes('smtp') ||
+      normalized.includes('email provider')
+    ) {
+      return {
+        message: 'Email verification is not configured correctly yet. Please use Google signup for now, or configure Supabase SMTP and try again.',
+        isRateLimit: false,
+      };
+    }
 
     if (normalized.includes('rate limit') || normalized.includes('too many requests') || normalized.includes('email rate limit exceeded')) {
       const cooldownMs = 180_000;
@@ -109,16 +120,7 @@ export default function SignupForm() {
     setError('');
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/upload-bhajan`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
+      const { error } = await signInWithGoogle('/upload-bhajan');
       if (error) {
         const parsed = toFriendlySignupError(error.message);
         if (!parsed.isRateLimit) {

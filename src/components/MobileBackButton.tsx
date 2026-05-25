@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
@@ -33,13 +33,21 @@ export default function MobileBackButton({
       type="button"
       onClick={handleClick}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-primary bg-primary/20 px-2.5 py-2 text-sm font-bold text-primary shadow-md hover:bg-primary hover:text-primary-foreground transition-colors touch-target shrink-0 min-h-[44px] min-w-[44px] sm:px-3 sm:py-2.5",
+        "group inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center gap-1.5 rounded-full border border-primary/25 bg-background/85 px-2.5 py-2 text-sm font-semibold text-foreground shadow-[0_10px_28px_rgba(0,0,0,0.12)] backdrop-blur-md transition-all hover:-translate-x-0.5 hover:border-primary/45 hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55 active:scale-95 touch-target sm:px-3.5 sm:py-2.5",
         className,
       )}
       aria-label={t("back")}
+      title={t("back")}
     >
-      <ArrowLeft className="w-5 h-5 shrink-0" strokeWidth={2.5} />
-      {showLabel && <span className="hidden min-[400px]:inline">{t("back")}</span>}
+      <span className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+        <ChevronLeft className="h-4 w-4 sm:hidden" strokeWidth={2.7} />
+        <ArrowLeft className="hidden h-4 w-4 sm:block" strokeWidth={2.5} />
+      </span>
+      {showLabel && (
+        <span className="hidden max-w-[5.5rem] truncate leading-none min-[390px]:inline sm:max-w-[7rem]">
+          {t("back")}
+        </span>
+      )}
     </button>
   );
 }

@@ -95,30 +95,26 @@ export function useAuth() {
   const signUp = async (email: string, password: string, name: string, phone_number?: string) => {
     try {
       setError(null);
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/upload-bhajan')}`
+          : undefined;
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectTo,
+          data: {
+            name,
+            full_name: name,
+            phone_number: phone_number || null,
+          },
+        },
+      });
       
       if (error) {
         setError(error.message);
         return { data, error };
-      }
-
-      // Profile is created automatically by database trigger
-      // Update the name and phone_number since trigger couldn't get them from form
-      if (data.user) {
-        const client = supabase as any;
-        const profileUpdate: Record<string, any> = { name };
-        if (phone_number) {
-          profileUpdate.phone_number = phone_number;
-        }
-        
-        const { error: profileError } = await client.from('user_profiles')
-          .update(profileUpdate)
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.log('Profile update error:', profileError);
-          // Don't fail signup if update fails - profile was already created by trigger
-        }
       }
 
       return { data, error };
@@ -132,6 +128,50 @@ export function useAuth() {
     try {
       setError(null);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setError(error.message);
+      return { data, error };
+    } catch (err: any) {
+      setError(err.message);
+      return { data: null, error: err };
+    }
+  };
+
+  const resendEmailConfirmation = async (email: string) => {
+    try {
+      setError(null);
+      const redirectTo =
+        typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/upload-bhajan')}`
+          : undefined;
+      const { data, error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
+      if (error) setError(error.message);
+      return { data, error };
+    } catch (err: any) {
+      setError(err.message);
+      return { data: null, error: err };
+    }
+  };
+
+  const signInWithGoogle = async (next = '/upload-bhajan') => {
+    try {
+      setError(null);
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
       if (error) setError(error.message);
       return { data, error };
     } catch (err: any) {
@@ -221,6 +261,8 @@ export function useAuth() {
     error,
     signUp,
     signIn,
+    resendEmailConfirmation,
+    signInWithGoogle,
     signOut,
     fetchUserProfile,
     updateProfile,

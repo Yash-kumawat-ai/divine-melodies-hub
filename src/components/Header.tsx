@@ -1,5 +1,23 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Upload, LogOut, User, LogIn, Camera, Sparkles, ShieldCheck, Moon, Sun } from "lucide-react";
+import {
+  Bell,
+  Camera,
+  Clock3,
+  Flower2,
+  Info,
+  Landmark,
+  Languages,
+  LogIn,
+  LogOut,
+  Moon,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Sun,
+  Tags,
+  Upload,
+  User,
+} from "lucide-react";
 import MobileBackButton from "@/components/MobileBackButton";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { useRef, useState } from "react";
@@ -20,6 +38,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { languageOptions } from "@/constants/languageOptions";
 import { AdminRoleBadge } from "@/components/notifications/AdminRoleBadge";
 import { UserNotificationBell } from "@/components/notifications/UserNotificationBell";
+import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -68,6 +87,18 @@ export default function Header() {
     profile?.role === 'moderator' || profile?.role === 'admin' || profile?.role === 'super_admin'
       ? profile.role
       : null;
+
+  const accountPath = user ? "/notifications" : "/auth/login";
+  const accountLabel = user ? t("notifications") : t("profile");
+  const accountActive = location.pathname.startsWith("/notifications") || location.pathname.startsWith("/auth");
+  const mobileHeaderLinks = [
+    { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
+    { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
+    { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai"), featured: true },
+    { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
+    { to: accountPath, label: accountLabel, icon: user ? Bell : User, match: () => accountActive },
+  ];
+
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
@@ -87,9 +118,27 @@ export default function Header() {
           </Link>
         </div>
 
+        <div className="flex items-center gap-2 md:hidden">
+          {user && <UserNotificationBell userId={user.id} />}
+        </div>
+
         <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
+          <Link
+            to="/temple"
+            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+          >
+            <Landmark className="w-3.5 h-3.5" />
+            {t('temple')}
+          </Link>
+          <Link
+            to="/meditation"
+            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+          >
+            <Flower2 className="w-3.5 h-3.5" />
+            {t('meditation')}
+          </Link>
           <Link to="/pricing" className="text-foreground hover:text-primary transition-colors">{t('pricing')}</Link>
           <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
           <Link
@@ -209,6 +258,36 @@ export default function Header() {
         </nav>
 
       </div>
+
+      <nav
+        className="md:hidden border-t border-border/60 bg-background/90 px-4 py-2"
+        aria-label="Mobile feature shortcuts"
+      >
+        <div className="flex snap-x items-center gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {mobileHeaderLinks.map((item) => {
+            const Icon = item.icon;
+            const active = item.match(location.pathname);
+
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "inline-flex h-9 shrink-0 snap-start items-center gap-2 rounded-full border px-3 text-[11px] font-semibold transition-colors",
+                  active
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-border/80 bg-card/70 text-foreground",
+                  item.featured && "border-orange-300/70 bg-orange-500 text-white shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon className="h-4 w-4" strokeWidth={2.2} />
+                <span className="whitespace-nowrap">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
     </header>
   );

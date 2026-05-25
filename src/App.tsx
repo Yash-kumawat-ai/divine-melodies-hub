@@ -16,6 +16,10 @@ import { YouTubePlayerProvider } from "./hooks/useYouTubePlayer";
 import { BhajanModalOpenProvider } from "./hooks/useBhajanModalOpen";
 import Home from "./pages/Home";
 import AllBhajans from "./pages/AllBhajans";
+import LoginForm from "./components/Auth/LoginForm";
+import SignupTabs from "./components/Auth/SignupTabs";
+import AuthShell from "./components/Auth/AuthShell";
+import AuthCallback from "./components/Auth/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -24,15 +28,14 @@ const DeityPage = lazy(() => import("./pages/DeityPage"));
 const BhajanPage = lazy(() => import("./pages/BhajanPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const KirtanAIPage = lazy(() => import("./pages/KirtanAIPage"));
+const MeditationPage = lazy(() => import("./pages/MeditationPage"));
+const TemplePage = lazy(() => import("./pages/TemplePage"));
 const UploadBhajan = lazy(() => import("./pages/UploadBhajan"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const RecentBhajans = lazy(() => import("./pages/RecentBhajans"));
 const AdminAccounts = lazy(() => import("./pages/AdminAccounts"));
 const AdminAuditLog = lazy(() => import("./pages/AdminAuditLog"));
 const MyNotifications = lazy(() => import("./pages/MyNotifications"));
-const LoginForm = lazy(() => import("./components/Auth/LoginForm"));
-const SignupTabs = lazy(() => import("./components/Auth/SignupTabs"));
-const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AIAssistantModalHost = lazy(() => import("./components/AIAssistantModalHost"));
 const NaradFloatingWidget = lazy(() => import("./components/kirtan/NaradFloatingWidget"));
@@ -64,6 +67,10 @@ function AppContent() {
             }
           />
           <Route
+            path="/auth/callback"
+            element={<AuthCallback />}
+          />
+          <Route
             path="/auth/signup"
             element={
               <Suspense fallback={<SuspenseFallback />}>
@@ -82,6 +89,15 @@ function AppContent() {
             <Route path="/deity/:slug" element={<DeityPage />} />
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
+            <Route path="/meditation" element={<MeditationPage />} />
+            <Route
+              path="/temple"
+              element={
+                <Suspense fallback={<SuspenseFallback />}>
+                  <TemplePage />
+                </Suspense>
+              }
+            />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

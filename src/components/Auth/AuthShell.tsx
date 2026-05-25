@@ -23,7 +23,7 @@ const shellContent = {
 
 export default function AuthShell({ mode, children }: AuthShellProps) {
   const content = shellContent[mode];
-  const sacredBackground = `linear-gradient(145deg,rgba(12,21,49,0.62) 0%,rgba(15,23,42,0.52) 35%,rgba(217,119,6,0.4) 100%), url('/auth-sacred-bg.jpg'), url(${dhyaanLogo})`;
+  const sacredBackground = `linear-gradient(145deg,rgba(12,21,49,0.62) 0%,rgba(15,23,42,0.52) 35%,rgba(217,119,6,0.4) 100%), url('/auth-sacred-bg.jpg')`;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 px-4 py-6 sm:py-10">
@@ -35,8 +35,8 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
           className="relative flex flex-col justify-between overflow-hidden p-8 text-orange-50 sm:p-10 lg:p-12"
           style={{
             backgroundImage: sacredBackground,
-            backgroundSize: 'cover, cover, cover',
-            backgroundPosition: 'center, center, center',
+            backgroundSize: 'cover, cover',
+            backgroundPosition: 'center, center',
           }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.22),transparent_35%),radial-gradient(circle_at_85%_80%,rgba(120,53,15,0.38),transparent_50%)]" />

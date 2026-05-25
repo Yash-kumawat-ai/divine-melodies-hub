@@ -9,28 +9,30 @@ import { cn } from "@/lib/utils";
 export default function AppShell() {
   const { pathname } = useLocation();
   const isKirtanAi = pathname === "/kirtan-ai";
+  const isFullScreenApp = isKirtanAi;
 
   useEffect(() => {
-    if (!isKirtanAi) {
+    if (!isFullScreenApp) {
       window.scrollTo(0, 0);
     }
-  }, [pathname, isKirtanAi]);
+  }, [pathname, isFullScreenApp]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-body">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-background font-body">
+      {!isFullScreenApp && <Header />}
       <main
         className={cn(
-          "flex-1 min-h-0 pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pb-0",
-          isKirtanAi && "flex flex-col overflow-hidden",
+          "flex-1",
+          !isFullScreenApp && "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0",
+          isFullScreenApp && "flex min-h-0 flex-col overflow-hidden",
         )}
       >
         <Suspense fallback={<PageContentFallback />}>
           <Outlet />
         </Suspense>
       </main>
-      <MobileBottomNav />
-      {!isKirtanAi && (
+      {!isFullScreenApp && <MobileBottomNav />}
+      {!isFullScreenApp && (
         <div className="hidden md:block">
           <LayoutFooter />
         </div>

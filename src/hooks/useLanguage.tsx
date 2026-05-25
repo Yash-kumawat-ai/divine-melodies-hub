@@ -14,6 +14,8 @@ type TranslationKey =
   | 'profile'
   | 'setPhoto'
   | 'language'
+  | 'more'
+  | 'features'
   | 'addBhajan'
   | 'shareCommunity'
   | 'god'
@@ -97,6 +99,18 @@ type TranslationKey =
   | 'morning'
   | 'evening'
   | 'meditation'
+  | 'temple'
+  | 'templeTitle'
+  | 'templeSubtitle'
+  | 'templePresence'
+  | 'templeDays'
+  | 'templeFlower'
+  | 'templeBell'
+  | 'templeDiya'
+  | 'templeJapa'
+  | 'templeNaradHint'
+  | 'templeBhajans'
+  | 'templeNoDeity'
   | 'worship'
   | 'festival'
   | 'peaceful'
@@ -205,6 +219,8 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     profile: 'Profile',
     setPhoto: 'Set profile photo',
     language: 'Language',
+    more: 'More',
+    features: 'Features',
     addBhajan: 'Add Bhajan',
     shareCommunity: 'Share your favorite devotional songs with our community',
     god: 'God',
@@ -287,6 +303,18 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     morning: 'Morning',
     evening: 'Evening',
     meditation: 'Meditation',
+    temple: 'Temple',
+    templeTitle: 'Virtual Temple',
+    templeSubtitle: 'Darshan, offerings, and japa — at home',
+    templePresence: 'Your presence',
+    templeDays: 'days',
+    templeFlower: 'Flower',
+    templeBell: 'Bell',
+    templeDiya: 'Diya',
+    templeJapa: '108 Japa',
+    templeNaradHint: 'Or tap the ॐ button (bottom-right) and speak to Narad — play bhajan, start japa, offer flower.',
+    templeBhajans: 'Bhajans for this deity',
+    templeNoDeity: 'Deity images are loading. Browse all deities:',
     worship: 'Worship',
     festival: 'Festival',
     peaceful: 'Peaceful',
@@ -394,6 +422,8 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     profile: 'प्रोफाइल',
     setPhoto: 'प्रोफाइल फोटो सेट करें',
     language: 'भाषा',
+    more: 'और',
+    features: 'सुविधाएं',
     addBhajan: 'भजन जोड़ें',
     shareCommunity: 'अपने पसंदीदा भजन समुदाय के साथ साझा करें',
     god: 'भगवान',
@@ -476,6 +506,18 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     morning: 'प्रातः',
     evening: 'सायं',
     meditation: 'ध्यान',
+    temple: 'मंदिर',
+    templeTitle: 'वर्चुअल मंदिर',
+    templeSubtitle: 'दर्शन, चढ़ावा और जप — घर पर',
+    templePresence: 'आपकी उपस्थिति',
+    templeDays: 'दिन',
+    templeFlower: 'फूल',
+    templeBell: 'घंटी',
+    templeDiya: 'दीप',
+    templeJapa: '108 जप',
+    templeNaradHint: 'या नीचे दाएँ ॐ बटन दबाकर नारद से बोलें — भजन, जप, फूल।',
+    templeBhajans: 'इस देवता के भजन',
+    templeNoDeity: 'देवता लोड हो रही हैं। सभी देवता देखें:',
     worship: 'पूजा',
     festival: 'उत्सव',
     peaceful: 'शांत',
@@ -574,41 +616,49 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
   gu: {
     home: 'હોમ', browse: 'અન્વેષણ', trending: 'ટ્રેન્ડિંગ', search: 'શોધો',
     upload: 'અપલોડ', login: 'લોગ ઇન', logout: 'લોગ આઉટ', profile: 'પ્રોફાઇલ',
-    setPhoto: 'પ્રોફાઇલ ફોટો સેટ કરો', language: 'ભાષા', addBhajan: 'ભજન ઉમેરો',
+    setPhoto: 'પ્રોફાઇલ ફોટો સેટ કરો', language: 'ભાષા', more: 'વધુ', features: 'સુવિધાઓ', addBhajan: 'ભજન ઉમેરો', back: 'પાછા',
     shareCommunity: 'તમારા પ્રિય ભજન સમાજ સાથે શેર કરો', god: 'ભગવાન',
     lyrics: 'ગીત', details: 'વિગતો', selectGodForBhajan: 'ભજન માટે ભગવાન પસંદ કરો',
     addAnotherGod: 'બીજા ભગવાન ઉમેરો', addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
     changeGod: 'ભગવાન બદલો', bhajansCount: 'ભજનો',
+    recent: 'તાજેતરનાં', meditation: 'ધ્યાન', temple: 'મંદિર', kirtanAi: 'કીર્તન AI',
+    notifications: 'સૂચનાઓ', switchToDarkMode: 'ડાર્ક મોડ ચાલુ કરો', switchToLightMode: 'લાઇટ મોડ ચાલુ કરો',
     pricing: 'કિંમત', about: 'અમારા વિશે',
   },
   mr: {
     home: 'मुख्यपृष्ठ', browse: 'खोजी', trending: 'ट्रेंडिंग', search: 'शोधा',
     upload: 'अपलोड', login: 'लॉग इन', logout: 'लॉग आउट', profile: 'प्रोफाइल',
-    setPhoto: 'प्रोफाइल फोटो सेट करा', language: 'भाषा', addBhajan: 'भजन जोडा',
+    setPhoto: 'प्रोफाइल फोटो सेट करा', language: 'भाषा', more: 'अधिक', features: 'सुविधा', addBhajan: 'भजन जोडा', back: 'मागे',
     shareCommunity: 'तुमची आवडती भजने समुदायासोबत शेअर करा', god: 'देव',
     lyrics: 'गीत', details: 'तपशील', selectGodForBhajan: 'भजनासाठी देव निवडा',
     addAnotherGod: 'आणखी एक देव जोडा', addDeityHint: 'यादीत नसल्यास नवीन जोडा',
     changeGod: 'देव बदला', bhajansCount: 'भजने',
+    recent: 'अलीकडील', meditation: 'ध्यान', temple: 'मंदिर', kirtanAi: 'कीर्तन AI',
+    notifications: 'सूचना', switchToDarkMode: 'डार्क मोड चालू करा', switchToLightMode: 'लाइट मोड चालू करा',
     pricing: 'किंमत', about: 'आमच्याबद्दल',
   },
   bn: {
     home: 'হোম', browse: 'অন্বেষণ', trending: 'ট্রেন্ডিং', search: 'খুঁজুন',
     upload: 'আপলোড', login: 'লগ ইন', logout: 'লগ আউট', profile: 'প্রোফাইল',
-    setPhoto: 'প্রোফাইল ছবি সেট করুন', language: 'ভাষা', addBhajan: 'ভজন যোগ করুন',
+    setPhoto: 'প্রোফাইল ছবি সেট করুন', language: 'ভাষা', more: 'আরও', features: 'সুবিধা', addBhajan: 'ভজন যোগ করুন', back: 'ফিরে',
     shareCommunity: 'আপনার প্রিয় ভজন কমিউনিটির সাথে শেয়ার করুন', god: 'ঈশ্বর',
     lyrics: 'গান', details: 'বিস্তারিত', selectGodForBhajan: 'ভজনের জন্য ঈশ্বর নির্বাচন করুন',
     addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন', addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
     changeGod: 'ঈশ্বর পরিবর্তন করুন', bhajansCount: 'ভজন',
+    recent: 'সাম্প্রতিক', meditation: 'ধ্যান', temple: 'মন্দির', kirtanAi: 'কীর্তন AI',
+    notifications: 'বিজ্ঞপ্তি', switchToDarkMode: 'ডার্ক মোড চালু করুন', switchToLightMode: 'লাইট মোড চালু করুন',
     pricing: 'মূল্য', about: 'আমাদের সম্পর্কে',
   },
   ta: {
     home: 'முகப்பு', browse: 'ஆராய்வு', trending: 'டிரெண்டிங்', search: 'தேடல்',
     upload: 'பதிவேற்று', login: 'உள்நுழை', logout: 'வெளியேறு', profile: 'சுயவிவரம்',
-    setPhoto: 'சுயவிவரப் புகைப்படம் அமை', language: 'மொழி', addBhajan: 'பஜன் சேர்க்கவும்',
+    setPhoto: 'சுயவிவரப் புகைப்படம் அமை', language: 'மொழி', more: 'மேலும்', features: 'வசதிகள்', addBhajan: 'பஜன் சேர்க்கவும்', back: 'பின்',
     shareCommunity: 'உங்கள் விருப்ப பஜன்களை சமூகத்துடன் பகிரவும்', god: 'கடவுள்',
     lyrics: 'வரிகள்', details: 'விவரங்கள்', selectGodForBhajan: 'பஜனுக்கு கடவுளை தேர்வு செய்யவும்',
     addAnotherGod: 'மற்றொரு கடவுளை சேர்', addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
     changeGod: 'கடவுளை மாற்று', bhajansCount: 'பஜன்கள்',
+    recent: 'சமீபத்திய', meditation: 'தியானம்', temple: 'கோவில்', kirtanAi: 'கீர்த்தன் AI',
+    notifications: 'அறிவிப்புகள்', switchToDarkMode: 'டார்க் மோடு மாற்று', switchToLightMode: 'லைட் மோடு மாற்று',
     pricing: 'விலை', about: 'எங்களை பற்றி',
   },
 };

@@ -97,6 +97,31 @@ export function buildYouTubeEmbedUrl(videoId: string): string {
 export function extractYouTubeVideoId(url: string): string | null {
   const trimmed = url?.trim();
   if (!trimmed) return null;
-  const match = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
-  return match?.[1] ?? null;
+
+  const directId = trimmed.match(/^[a-zA-Z0-9_-]{11}$/);
+  if (directId) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
+    const host = parsed.hostname.replace(/^www\./, '');
+
+    if (host === 'youtu.be') {
+      return parsed.pathname.split('/').filter(Boolean)[0] ?? null;
+    }
+
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+      const watchId = parsed.searchParams.get('v');
+      if (watchId) return watchId;
+
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (['embed', 'shorts', 'live'].includes(parts[0])) {
+        return parts[1] ?? null;
+      }
+    }
+  } catch {
+    const match = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([^&\n?#/]+)/);
+    return match?.[1] ?? null;
+  }
+
+  return null;
 }

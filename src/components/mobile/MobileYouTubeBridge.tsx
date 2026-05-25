@@ -4,7 +4,6 @@ import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 
 const PLAYER_DIV_ID = "mobile-youtube-player-host";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type YtPlayer = any;
 
 export default function MobileYouTubeBridge() {
@@ -46,6 +45,7 @@ export default function MobileYouTubeBridge() {
         height: "0",
         width: "0",
         playerVars: {
+          autoplay: 1,
           playsinline: 1,
           controls: 0,
           modestbranding: 1,
@@ -58,6 +58,7 @@ export default function MobileYouTubeBridge() {
             attachBridge();
             if (video?.id) {
               playerRef.current?.loadVideoById?.(video.id);
+              playerRef.current?.playVideo?.();
               videoIdRef.current = video.id;
             }
           },
@@ -84,6 +85,7 @@ export default function MobileYouTubeBridge() {
     if (videoIdRef.current === video.id) return;
     videoIdRef.current = video.id;
     playerRef.current.loadVideoById(video.id);
+    playerRef.current.playVideo?.();
     updatePlayback({ isPlaying: true, currentTime: 0 });
   }, [video?.id, useMobileEmbed, updatePlayback]);
 

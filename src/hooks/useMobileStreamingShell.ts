@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const EXCLUDED_PREFIXES = ["/kirtan-ai", "/admin"];
+const EXCLUDED_PREFIXES = ["/kirtan-ai", "/meditation", "/admin"];
 
 export function useMobileStreamingShell(): boolean {
   const { pathname } = useLocation();

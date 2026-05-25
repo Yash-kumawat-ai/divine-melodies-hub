@@ -14,6 +14,9 @@
     "dev:nodemon": "nodemon --watch src --ext ts,tsx,js,jsx,json --exec \"vite\""
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
