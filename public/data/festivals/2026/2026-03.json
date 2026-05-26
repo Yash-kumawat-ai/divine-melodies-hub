@@ -1,0 +1,120 @@
+{
+  "year": 2026,
+  "month": "2026-03",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "holika-dahan-2026",
+      "date": "2026-03-02",
+      "name_en": "Holika Dahan",
+      "name_hi": "होलिका दहन",
+      "name_sa": "होलिकादहनम्",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Vishnu (Prahlad)",
+      "description_en": "Night before Holi. Holika bonfire is lit to celebrate victory of devotion over evil. Pradakshina (circumambulation) of the fire is performed.",
+      "description_hi": "होली की पूर्व संध्या पर होलिका दहन। बुराई पर भक्ति की विजय का प्रतीक। होलिका की परिक्रमा और पूजन।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "light holika bonfire",
+        "circumambulate fire",
+        "offer coconut and wheat",
+        "pray for protection"
+      ],
+      "color": "#f97316",
+      "tags": [
+        "holi",
+        "fire",
+        "vishnu",
+        "prahlad",
+        "evil-over-good"
+      ]
+    },
+    {
+      "id": "holi-2026",
+      "date": "2026-03-03",
+      "name_en": "Holi",
+      "name_hi": "होली",
+      "name_sa": "होलिकोत्सवः",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "west_bengal": "Dol Purnima",
+        "manipur": "Yaosang",
+        "goa": "Shigmo"
+      },
+      "deity": "Krishna, Radha",
+      "description_en": "Festival of colours. Celebrates the eternal love of Radha-Krishna and arrival of spring. Natural colours (gulal) are applied and sweets like gujiya are shared.",
+      "description_hi": "रंगों का त्यौहार। राधा-कृष्ण के प्रेम और बसंत के आगमन का उत्सव। प्राकृतिक गुलाल और गुझिया का आनंद।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "play with colours",
+        "offer gujiya",
+        "sing holi songs",
+        "community celebration"
+      ],
+      "color": "#ec4899",
+      "tags": [
+        "krishna",
+        "radha",
+        "spring",
+        "colours",
+        "joy"
+      ]
+    },
+    {
+      "id": "ram-navami-2026",
+      "date": "2026-03-28",
+      "name_en": "Ram Navami",
+      "name_hi": "राम नवमी",
+      "name_sa": "रामनवमी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Ram",
+      "description_en": "Birthday of Lord Ram, the 7th avatar of Vishnu. Ramcharitmanas and Ramayana recitations are held. Ram Navami falls on Shukla Navami of Chaitra month.",
+      "description_hi": "भगवान राम का जन्मदिवस। रामचरितमानस और रामायण का पाठ। चैत्र शुक्ल नवमी को मनाया जाता है।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Fast from sunrise to sunset. Fruits, milk, and sendha namak allowed.",
+        "rules_hi": "सूर्योदय से सूर्यास्त तक उपवास। फलाहार, दूध और सेंधा नमक की अनुमति।"
+      },
+      "rituals": [
+        "Ram puja at noon",
+        "Ramayana recitation",
+        "bhajan kirtan",
+        "Ram shobha yatra"
+      ],
+      "color": "#16a34a",
+      "tags": [
+        "ram",
+        "vishnu",
+        "avatar",
+        "fast",
+        "chaitra"
+      ]
+    }
+  ]
+}

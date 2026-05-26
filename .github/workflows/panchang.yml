@@ -1,0 +1,77 @@
+name: Daily Panchang Fetch
+
+on:
+  schedule:
+    - cron: '30 23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-panchang:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install vedastro
+        run: pip install vedastro
+
+      - name: Run Panchang fetch
+        run: |
+          set -o pipefail
+          python scripts/fetch_panchang.py 2>&1 | tee panchang-fetch.log
+
+      - name: Write Panchang failure health report
+        if: failure()
+        run: |
+          mkdir -p public/data
+          node <<'EOF'
+          const fs = require('fs');
+          const logPath = 'panchang-fetch.log';
+          const logTail = fs.existsSync(logPath)
+            ? fs.readFileSync(logPath, 'utf8').slice(-3500).trim()
+            : 'No panchang-fetch.log was created. The workflow likely failed before the fetch script started.';
+          const now = new Date();
+          const date = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Kolkata',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          }).format(now);
+          const health = {
+            date,
+            status: 'failed',
+            total_zones: 6,
+            successful_zones: 0,
+            failed_zones: [
+              {
+                zone: 'workflow',
+                city: 'GitHub Actions',
+                error: logTail,
+              },
+            ],
+            updated_at: now.toISOString(),
+            message: 'Panchang update workflow failed',
+          };
+          fs.writeFileSync('public/data/panchang-health.json', `${JSON.stringify(health, null, 2)}\n`);
+          EOF
+
+      - name: Commit and push updated JSON files
+        if: always()
+        run: |
+          git config user.email "panchang-bot@yourwebsite.com"
+          git config user.name "Panchang Bot"
+          git add public/data/panchang-*.json public/data/panchang-health.json
+          git diff --staged --quiet || git commit -m "Panchang update $(date +'%Y-%m-%d')"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

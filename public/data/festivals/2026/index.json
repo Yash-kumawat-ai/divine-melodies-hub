@@ -1,0 +1,531 @@
+{
+  "version": "1.0",
+  "year": 2026,
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "total_festivals": 27,
+  "months": [
+    {
+      "month": "2026-01",
+      "count": 2,
+      "major_count": 2
+    },
+    {
+      "month": "2026-02",
+      "count": 1,
+      "major_count": 1
+    },
+    {
+      "month": "2026-03",
+      "count": 3,
+      "major_count": 3
+    },
+    {
+      "month": "2026-04",
+      "count": 2,
+      "major_count": 2
+    },
+    {
+      "month": "2026-05",
+      "count": 2,
+      "major_count": 2
+    },
+    {
+      "month": "2026-06",
+      "count": 1,
+      "major_count": 1
+    },
+    {
+      "month": "2026-07",
+      "count": 2,
+      "major_count": 1
+    },
+    {
+      "month": "2026-08",
+      "count": 3,
+      "major_count": 3
+    },
+    {
+      "month": "2026-09",
+      "count": 2,
+      "major_count": 2
+    },
+    {
+      "month": "2026-10",
+      "count": 4,
+      "major_count": 4
+    },
+    {
+      "month": "2026-11",
+      "count": 3,
+      "major_count": 3
+    },
+    {
+      "month": "2026-12",
+      "count": 2,
+      "major_count": 0
+    }
+  ],
+  "festivals": [
+    {
+      "id": "makar-sankranti-2026",
+      "date": "2026-01-14",
+      "name_en": "Makar Sankranti",
+      "name_hi": "मकर संक्रांति",
+      "importance": "major",
+      "deity": "Surya",
+      "color": "#f59e0b",
+      "fasting_observed": false,
+      "tags": [
+        "solar",
+        "harvest",
+        "surya",
+        "donation"
+      ]
+    },
+    {
+      "id": "basant-panchami-2026",
+      "date": "2026-01-25",
+      "name_en": "Basant Panchami",
+      "name_hi": "बसंत पंचमी",
+      "importance": "major",
+      "deity": "Saraswati",
+      "color": "#eab308",
+      "fasting_observed": false,
+      "tags": [
+        "saraswati",
+        "education",
+        "spring",
+        "music"
+      ]
+    },
+    {
+      "id": "mahashivratri-2026",
+      "date": "2026-02-15",
+      "name_en": "Mahashivratri",
+      "name_hi": "महाशिवरात्रि",
+      "importance": "major",
+      "deity": "Shiva",
+      "color": "#f8fafc",
+      "fasting_observed": true,
+      "tags": [
+        "shiva",
+        "fast",
+        "jagran",
+        "moksha",
+        "major-fast"
+      ]
+    },
+    {
+      "id": "holika-dahan-2026",
+      "date": "2026-03-02",
+      "name_en": "Holika Dahan",
+      "name_hi": "होलिका दहन",
+      "importance": "major",
+      "deity": "Vishnu (Prahlad)",
+      "color": "#f97316",
+      "fasting_observed": false,
+      "tags": [
+        "holi",
+        "fire",
+        "vishnu",
+        "prahlad",
+        "evil-over-good"
+      ]
+    },
+    {
+      "id": "holi-2026",
+      "date": "2026-03-03",
+      "name_en": "Holi",
+      "name_hi": "होली",
+      "importance": "major",
+      "deity": "Krishna, Radha",
+      "color": "#ec4899",
+      "fasting_observed": false,
+      "tags": [
+        "krishna",
+        "radha",
+        "spring",
+        "colours",
+        "joy"
+      ]
+    },
+    {
+      "id": "ram-navami-2026",
+      "date": "2026-03-28",
+      "name_en": "Ram Navami",
+      "name_hi": "राम नवमी",
+      "importance": "major",
+      "deity": "Ram",
+      "color": "#16a34a",
+      "fasting_observed": true,
+      "tags": [
+        "ram",
+        "vishnu",
+        "avatar",
+        "fast",
+        "chaitra"
+      ]
+    },
+    {
+      "id": "hanuman-jayanti-2026",
+      "date": "2026-04-01",
+      "name_en": "Hanuman Jayanti",
+      "name_hi": "हनुमान जयंती",
+      "importance": "major",
+      "deity": "Hanuman",
+      "color": "#dc2626",
+      "fasting_observed": true,
+      "tags": [
+        "hanuman",
+        "bhakti",
+        "strength",
+        "protection"
+      ]
+    },
+    {
+      "id": "akshaya-tritiya-2026",
+      "date": "2026-04-21",
+      "name_en": "Akshaya Tritiya",
+      "name_hi": "अक्षय तृतीया",
+      "importance": "major",
+      "deity": "Vishnu, Lakshmi",
+      "color": "#d97706",
+      "fasting_observed": false,
+      "tags": [
+        "auspicious",
+        "vishnu",
+        "lakshmi",
+        "gold",
+        "business",
+        "wedding-muhurat"
+      ]
+    },
+    {
+      "id": "buddha-purnima-2026",
+      "date": "2026-05-11",
+      "name_en": "Buddha Purnima",
+      "name_hi": "बुद्ध पूर्णिमा",
+      "importance": "major",
+      "deity": "Gautam Buddha",
+      "color": "#f8fafc",
+      "fasting_observed": true,
+      "tags": [
+        "buddha",
+        "purnima",
+        "vaishakh",
+        "enlightenment"
+      ]
+    },
+    {
+      "id": "nirjala-ekadashi-2026",
+      "date": "2026-05-27",
+      "name_en": "Nirjala Ekadashi",
+      "name_hi": "निर्जला एकादशी",
+      "importance": "major",
+      "deity": "Vishnu",
+      "color": "#eab308",
+      "fasting_observed": true,
+      "tags": [
+        "ekadashi",
+        "vishnu",
+        "nirjala",
+        "fast",
+        "major-fast",
+        "jyeshtha"
+      ]
+    },
+    {
+      "id": "rath-yatra-2026",
+      "date": "2026-06-23",
+      "name_en": "Rath Yatra",
+      "name_hi": "रथ यात्रा",
+      "importance": "major",
+      "deity": "Jagannath (Vishnu)",
+      "color": "#f59e0b",
+      "fasting_observed": false,
+      "tags": [
+        "jagannath",
+        "vishnu",
+        "puri",
+        "chariot",
+        "yatra"
+      ]
+    },
+    {
+      "id": "guru-purnima-2026",
+      "date": "2026-07-11",
+      "name_en": "Guru Purnima",
+      "name_hi": "गुरु पूर्णिमा",
+      "importance": "major",
+      "deity": "Vyasa (Veda Vyasa)",
+      "color": "#eab308",
+      "fasting_observed": false,
+      "tags": [
+        "guru",
+        "vyasa",
+        "purnima",
+        "ashadh",
+        "spiritual"
+      ]
+    },
+    {
+      "id": "nag-panchami-2026",
+      "date": "2026-07-28",
+      "name_en": "Nag Panchami",
+      "name_hi": "नाग पंचमी",
+      "importance": "medium",
+      "deity": "Nag Devta (Serpent Gods)",
+      "color": "#16a34a",
+      "fasting_observed": true,
+      "tags": [
+        "nag",
+        "serpent",
+        "shiva",
+        "protection",
+        "shravan"
+      ]
+    },
+    {
+      "id": "raksha-bandhan-2026",
+      "date": "2026-08-09",
+      "name_en": "Raksha Bandhan",
+      "name_hi": "रक्षा बंधन",
+      "importance": "major",
+      "deity": "Vishnu, Yama",
+      "color": "#dc2626",
+      "fasting_observed": false,
+      "tags": [
+        "family",
+        "brother-sister",
+        "protection",
+        "purnima",
+        "shravan"
+      ]
+    },
+    {
+      "id": "krishna-janmashtami-2026",
+      "date": "2026-08-16",
+      "name_en": "Krishna Janmashtami",
+      "name_hi": "श्री कृष्ण जन्माष्टमी",
+      "importance": "major",
+      "deity": "Krishna",
+      "color": "#2563eb",
+      "fasting_observed": true,
+      "tags": [
+        "krishna",
+        "vishnu",
+        "avatar",
+        "fast",
+        "midnight",
+        "major-fast"
+      ]
+    },
+    {
+      "id": "ganesh-chaturthi-2026",
+      "date": "2026-08-24",
+      "name_en": "Ganesh Chaturthi",
+      "name_hi": "गणेश चतुर्थी",
+      "importance": "major",
+      "deity": "Ganesha",
+      "color": "#f97316",
+      "fasting_observed": true,
+      "tags": [
+        "ganesha",
+        "chaturthi",
+        "modak",
+        "maharashtra",
+        "major-festival",
+        "bhadra"
+      ]
+    },
+    {
+      "id": "navratri-sharad-2026-start",
+      "date": "2026-09-20",
+      "name_en": "Sharad Navratri Begins",
+      "name_hi": "शारदीय नवरात्रि प्रारम्भ",
+      "importance": "major",
+      "deity": "Durga (nine forms)",
+      "color": "#dc2626",
+      "fasting_observed": true,
+      "tags": [
+        "durga",
+        "navratri",
+        "nine-nights",
+        "fast",
+        "ashwin",
+        "major-fast"
+      ]
+    },
+    {
+      "id": "dussehra-2026",
+      "date": "2026-09-29",
+      "name_en": "Dussehra (Vijayadashami)",
+      "name_hi": "दशहरा (विजयदशमी)",
+      "importance": "major",
+      "deity": "Ram, Durga",
+      "color": "#f59e0b",
+      "fasting_observed": false,
+      "tags": [
+        "ram",
+        "durga",
+        "victory",
+        "evil-defeated",
+        "ashwin"
+      ]
+    },
+    {
+      "id": "karwa-chauth-2026",
+      "date": "2026-10-13",
+      "name_en": "Karwa Chauth",
+      "name_hi": "करवा चौथ",
+      "importance": "major",
+      "deity": "Shiva, Parvati, Kartikeya, Ganesha, Moon",
+      "color": "#dc2626",
+      "fasting_observed": true,
+      "tags": [
+        "married-women",
+        "husband",
+        "moon",
+        "nirjala",
+        "north-india"
+      ]
+    },
+    {
+      "id": "dhanteras-2026",
+      "date": "2026-10-28",
+      "name_en": "Dhanteras",
+      "name_hi": "धनतेरस",
+      "importance": "major",
+      "deity": "Dhanvantari, Lakshmi, Kuber, Yama",
+      "color": "#d97706",
+      "fasting_observed": false,
+      "tags": [
+        "diwali",
+        "dhanvantari",
+        "lakshmi",
+        "gold",
+        "wealth",
+        "kartik"
+      ]
+    },
+    {
+      "id": "diwali-2026",
+      "date": "2026-10-30",
+      "name_en": "Diwali (Deepavali)",
+      "name_hi": "दीपावली",
+      "importance": "major",
+      "deity": "Lakshmi, Ganesha, Kuber",
+      "color": "#d97706",
+      "fasting_observed": false,
+      "tags": [
+        "lakshmi",
+        "ganesha",
+        "ram",
+        "lights",
+        "prosperity",
+        "major-festival"
+      ]
+    },
+    {
+      "id": "govardhan-puja-2026",
+      "date": "2026-10-31",
+      "name_en": "Govardhan Puja (Annakut)",
+      "name_hi": "गोवर्धन पूजा (अन्नकूट)",
+      "importance": "major",
+      "deity": "Krishna, Govardhan Parvat",
+      "color": "#16a34a",
+      "fasting_observed": false,
+      "tags": [
+        "krishna",
+        "govardhan",
+        "annakut",
+        "diwali",
+        "cows"
+      ]
+    },
+    {
+      "id": "bhai-dooj-2026",
+      "date": "2026-11-01",
+      "name_en": "Bhai Dooj",
+      "name_hi": "भाई दूज",
+      "importance": "major",
+      "deity": "Yama, Yamuna",
+      "color": "#dc2626",
+      "fasting_observed": false,
+      "tags": [
+        "family",
+        "brother-sister",
+        "yama",
+        "diwali",
+        "kartik"
+      ]
+    },
+    {
+      "id": "dev-uthani-ekadashi-2026",
+      "date": "2026-11-10",
+      "name_en": "Dev Uthani Ekadashi (Tulsi Vivah)",
+      "name_hi": "देवउठनी एकादशी (तुलसी विवाह)",
+      "importance": "major",
+      "deity": "Vishnu, Tulsi",
+      "color": "#eab308",
+      "fasting_observed": true,
+      "tags": [
+        "vishnu",
+        "ekadashi",
+        "tulsi",
+        "wedding-season",
+        "kartik"
+      ]
+    },
+    {
+      "id": "maha-karthigai-2026",
+      "date": "2026-11-27",
+      "name_en": "Kartik Purnima (Dev Deepawali)",
+      "name_hi": "कार्तिक पूर्णिमा (देव दीपावली)",
+      "importance": "major",
+      "deity": "Shiva, Vishnu, Kartik",
+      "color": "#eab308",
+      "fasting_observed": true,
+      "tags": [
+        "purnima",
+        "kartik",
+        "varanasi",
+        "ganga",
+        "dev-deepawali",
+        "guru-nanak"
+      ]
+    },
+    {
+      "id": "gita-jayanti-2026",
+      "date": "2026-12-09",
+      "name_en": "Gita Jayanti",
+      "name_hi": "गीता जयंती",
+      "importance": "medium",
+      "deity": "Krishna",
+      "color": "#f59e0b",
+      "fasting_observed": false,
+      "tags": [
+        "krishna",
+        "gita",
+        "arjuna",
+        "kurukshetra",
+        "scripture"
+      ]
+    },
+    {
+      "id": "makar-sankranti-2027-eve",
+      "date": "2026-12-31",
+      "name_en": "New Year Eve",
+      "name_hi": "नव वर्ष संध्या",
+      "importance": "low",
+      "deity": "",
+      "color": "#2563eb",
+      "fasting_observed": false,
+      "tags": [
+        "new-year",
+        "gregorian"
+      ]
+    }
+  ]
+}

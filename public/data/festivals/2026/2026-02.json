@@ -1,0 +1,44 @@
+{
+  "year": 2026,
+  "month": "2026-02",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "mahashivratri-2026",
+      "date": "2026-02-15",
+      "name_en": "Mahashivratri",
+      "name_hi": "महाशिवरात्रि",
+      "name_sa": "महाशिवरात्रिः",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Shiva",
+      "description_en": "The great night of Shiva. Devotees fast all day and night, offer Bilva leaves, milk, and honey to the Shivling. Night-long jagran is observed.",
+      "description_hi": "भगवान शिव की महान रात्रि। दिनभर और रात्रिभर उपवास। शिवलिंग पर बेल पत्र, दूध, शहद अर्पण। रात्रि जागरण।",
+      "fasting": {
+        "observed": true,
+        "type": "nirjala or phalahar",
+        "rules_en": "Fast from sunrise to next day sunrise. Four prahar pujas during night. Bilva leaves mandatory.",
+        "rules_hi": "सूर्योदय से अगले दिन सूर्योदय तक उपवास। रात्रि में चार प्रहर पूजा। बेल पत्र अनिवार्य।"
+      },
+      "rituals": [
+        "Shivling abhishek",
+        "bilva patra offering",
+        "night jagran",
+        "four prahar puja"
+      ],
+      "color": "#f8fafc",
+      "tags": [
+        "shiva",
+        "fast",
+        "jagran",
+        "moksha",
+        "major-fast"
+      ]
+    }
+  ]
+}

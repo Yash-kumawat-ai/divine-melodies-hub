@@ -29,6 +29,7 @@ const BhajanPage = lazy(() => import("./pages/BhajanPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const KirtanAIPage = lazy(() => import("./pages/KirtanAIPage"));
 const MeditationPage = lazy(() => import("./pages/MeditationPage"));
+const PanchangPage = lazy(() => import("./pages/PanchangPage"));
 const TemplePage = lazy(() => import("./pages/TemplePage"));
 const UploadBhajan = lazy(() => import("./pages/UploadBhajan"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
@@ -90,6 +91,7 @@ function AppContent() {
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/meditation" element={<MeditationPage />} />
+            <Route path="/panchang" element={<PanchangPage />} />
             <Route
               path="/temple"
               element={

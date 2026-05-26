@@ -115,8 +115,8 @@ const NaradVoiceOverlay = forwardRef<HTMLDivElement, NaradVoiceOverlayProps>(fun
         "pointer-events-auto flex flex-col overflow-hidden border border-amber-200/20 shadow-[0_20px_60px_-12px_rgba(45,18,0,0.65)] backdrop-blur-xl",
         "bg-[linear-gradient(160deg,rgba(45,18,0,0.92)_0%,rgba(20,0,31,0.88)_45%,rgba(10,10,20,0.95)_100%)]",
         isMobile
-          ? "fixed inset-x-0 bottom-0 z-[100] max-h-[min(92dvh,640px)] rounded-t-3xl"
-          : "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-[88] w-[min(340px,calc(100vw-1.5rem))] rounded-3xl md:bottom-[max(1rem,env(safe-area-inset-bottom))]",
+          ? "fixed inset-x-0 bottom-0 z-[140] max-h-[min(92dvh,640px)] rounded-t-3xl"
+          : "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-[140] w-[min(340px,calc(100vw-1.5rem))] rounded-3xl md:bottom-[max(1rem,env(safe-area-inset-bottom))]",
       )}
     >
       <div className="flex items-center justify-between px-4 py-3">

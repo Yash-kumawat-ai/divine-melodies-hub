@@ -39,7 +39,7 @@ export default function SearchBar() {
           placeholder={t('searchBhajansOrSingersPlaceholder')}
           className="w-full pl-14 pr-16 py-5 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground touch-target"
         />
-        <div className="absolute right-4">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
           <VoiceSearchButton onResult={handleVoiceResult} />
         </div>
       </div>

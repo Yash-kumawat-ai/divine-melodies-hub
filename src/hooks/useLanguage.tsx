@@ -99,6 +99,7 @@ type TranslationKey =
   | 'morning'
   | 'evening'
   | 'meditation'
+  | 'panchang'
   | 'temple'
   | 'templeTitle'
   | 'templeSubtitle'
@@ -303,6 +304,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     morning: 'Morning',
     evening: 'Evening',
     meditation: 'Meditation',
+    panchang: 'Panchang',
     temple: 'Temple',
     templeTitle: 'Virtual Temple',
     templeSubtitle: 'Darshan, offerings, and japa — at home',
@@ -506,6 +508,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     morning: 'प्रातः',
     evening: 'सायं',
     meditation: 'ध्यान',
+    panchang: 'पंचांग',
     temple: 'मंदिर',
     templeTitle: 'वर्चुअल मंदिर',
     templeSubtitle: 'दर्शन, चढ़ावा और जप — घर पर',

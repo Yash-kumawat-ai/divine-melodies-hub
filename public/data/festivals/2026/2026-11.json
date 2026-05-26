@@ -1,0 +1,127 @@
+{
+  "year": 2026,
+  "month": "2026-11",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "bhai-dooj-2026",
+      "date": "2026-11-01",
+      "name_en": "Bhai Dooj",
+      "name_hi": "भाई दूज",
+      "name_sa": "यमद्वितीया",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "west_bengal": "Bhai Phonta",
+        "maharashtra": "Bhau Beej",
+        "nepal": "Bhai Tika"
+      },
+      "deity": "Yama, Yamuna",
+      "description_en": "Sisters apply tilak on their brother's forehead and pray for their longevity. Brothers give gifts and promise protection. Yamuna invited her brother Yama on this day.",
+      "description_hi": "बहनें भाई के माथे पर तिलक लगाती हैं और दीर्घायु की कामना करती हैं। भाई उपहार देकर रक्षा का वचन देता है।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "tilak ceremony",
+        "aarti of brother",
+        "exchange sweets",
+        "gifts"
+      ],
+      "color": "#dc2626",
+      "tags": [
+        "family",
+        "brother-sister",
+        "yama",
+        "diwali",
+        "kartik"
+      ]
+    },
+    {
+      "id": "dev-uthani-ekadashi-2026",
+      "date": "2026-11-10",
+      "name_en": "Dev Uthani Ekadashi (Tulsi Vivah)",
+      "name_hi": "देवउठनी एकादशी (तुलसी विवाह)",
+      "name_sa": "देवोत्थानैकादशी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "gujarat": "Dev Diwali"
+      },
+      "deity": "Vishnu, Tulsi",
+      "description_en": "Lord Vishnu wakes from his 4-month Chaturmas sleep. Wedding season opens. Tulsi Vivah (marriage of Tulsi plant with Shaligram) is performed. Most auspicious day for weddings to resume.",
+      "description_hi": "चार माह की चातुर्मास निद्रा के बाद भगवान विष्णु जागते हैं। विवाह का शुभ मुहूर्त प्रारम्भ। तुलसी-शालिग्राम विवाह।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Ekadashi fast. Fruits and milk allowed.",
+        "rules_hi": "एकादशी उपवास। फलाहार की अनुमति।"
+      },
+      "rituals": [
+        "Tulsi Vivah",
+        "Vishnu puja",
+        "wedding season opens",
+        "lighting diyas around Tulsi plant"
+      ],
+      "color": "#eab308",
+      "tags": [
+        "vishnu",
+        "ekadashi",
+        "tulsi",
+        "wedding-season",
+        "kartik"
+      ]
+    },
+    {
+      "id": "maha-karthigai-2026",
+      "date": "2026-11-27",
+      "name_en": "Kartik Purnima (Dev Deepawali)",
+      "name_hi": "कार्तिक पूर्णिमा (देव दीपावली)",
+      "name_sa": "कार्तिकपूर्णिमा",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "varanasi": "Dev Deepawali",
+        "south": "Karthigai Deepam",
+        "punjab": "Guru Nanak Jayanti"
+      },
+      "deity": "Shiva, Vishnu, Kartik",
+      "description_en": "Gods celebrate Diwali on this day. Thousands of diyas lit on Ganga ghats in Varanasi. Also Guru Nanak Dev Ji's birthday. Holy dip in Ganga gives immense merit.",
+      "description_hi": "इस दिन देवता दीपावली मनाते हैं। काशी में गंगा घाट पर लाखों दीये। गुरु नानक देव जी का जन्मदिवस। गंगा स्नान का असीम पुण्य।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Optional fast. Holy dip mandatory for maximum merit.",
+        "rules_hi": "वैकल्पिक उपवास। गंगा स्नान का विशेष महत्व।"
+      },
+      "rituals": [
+        "ganga snan",
+        "diya lighting at ghats",
+        "kartik puja",
+        "dev deepawali at Varanasi"
+      ],
+      "color": "#eab308",
+      "tags": [
+        "purnima",
+        "kartik",
+        "varanasi",
+        "ganga",
+        "dev-deepawali",
+        "guru-nanak"
+      ]
+    }
+  ]
+}

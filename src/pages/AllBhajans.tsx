@@ -1,17 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, X } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
 import { queryUserUploads } from '@/lib/supabaseQueries';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
@@ -34,27 +25,11 @@ interface UserBhajan {
   youtube_url?: string;
 }
 
-interface FilterState {
-  language: string;
-  occasion: string;
-  mood: string;
-  minRating: string;
-  sortBy: string;
-  search: string;
-}
-
 export const AllBhajans = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [bhajans, setBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<FilterState>({
-    language: 'All',
-    occasion: 'All',
-    mood: 'All',
-    minRating: '0',
-    sortBy: 'latest',
-    search: '',
-  });
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchBhajans();
@@ -74,11 +49,11 @@ export const AllBhajans = () => {
     }
   };
 
-  // Apply filters and search
+  // Apply search
   const filteredBhajans = useMemo(() => {
     let results = [...bhajans];
 
-    if (filters.search.trim()) {
+    if (search.trim()) {
       const searchable = results.map((b) => ({
         id: b.id,
         title: b.title,
@@ -88,103 +63,13 @@ export const AllBhajans = () => {
         lyricsTransliteration: '',
         tags: b.mood_tags || [],
       }));
-      const matched = smartSearchBhajans(filters.search, searchable);
+      const matched = smartSearchBhajans(search, searchable);
       const matchedIds = new Set(matched.map((item) => String(item.id)));
       results = results.filter((b) => matchedIds.has(b.id));
     }
 
-    // Language filter
-    if (filters.language !== 'All') {
-      results = results.filter((b) => b.language === filters.language);
-    }
-
-    // Occasion filter
-    if (filters.occasion !== 'All') {
-      results = results.filter((b) =>
-        b.occasion?.includes(filters.occasion)
-      );
-    }
-
-    // Mood filter
-    if (filters.mood !== 'All') {
-      results = results.filter((b) =>
-        b.mood_tags?.includes(filters.mood)
-      );
-    }
-
-    // Rating filter
-    const minRating = parseFloat(filters.minRating);
-    if (minRating > 0) {
-      results = results.filter((b) => b.average_rating >= minRating);
-    }
-
-    // Sort
-    switch (filters.sortBy) {
-      case 'most-played':
-        results.sort((a, b) => (b.play_count || 0) - (a.play_count || 0));
-        break;
-      case 'highest-rated':
-        results.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
-        break;
-      case 'latest':
-      default:
-        // Already sorted by creation date from fetch
-        break;
-    }
-
     return results;
-  }, [bhajans, filters]);
-
-  const handleFilterChange = (key: keyof FilterState, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      language: 'All',
-      occasion: 'All',
-      mood: 'All',
-      minRating: '0',
-      sortBy: 'latest',
-      search: '',
-    });
-  };
-
-  const isFiltered = Object.values(filters).some(
-    (f) => f !== 'All' && f !== '0' && f !== 'latest' && f !== ''
-  );
-
-  const languageOptions = [
-    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
-    { value: 'Hindi', label: language === 'hi' ? 'हिंदी' : 'Hindi' },
-    { value: 'Sanskrit', label: language === 'hi' ? 'संस्कृत' : 'Sanskrit' },
-    { value: 'English', label: language === 'hi' ? 'अंग्रेजी' : 'English' },
-    { value: 'Transliteration', label: language === 'hi' ? 'लिप्यंतरण' : 'Transliteration' },
-  ];
-
-  const occasionOptions = [
-    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
-    { value: 'Morning', label: t('morning') },
-    { value: 'Evening', label: t('evening') },
-    { value: 'Meditation', label: t('meditation') },
-    { value: 'Worship', label: t('worship') },
-    { value: 'Festival', label: t('festival') },
-  ];
-
-  const moodOptions = [
-    { value: 'All', label: language === 'hi' ? 'सभी' : 'All' },
-    { value: 'Peaceful', label: t('peaceful') },
-    { value: 'Energizing', label: t('energizing') },
-    { value: 'Devotional', label: t('devotional') },
-    { value: 'Celebratory', label: t('celebratory') },
-    { value: 'Meditative', label: t('meditative') },
-  ];
-
-  const sortOptions = [
-    { value: 'latest', label: t('latest') },
-    { value: 'most-played', label: t('mostPlayed') },
-    { value: 'highest-rated', label: t('highestRated') },
-  ];
+  }, [bhajans, search]);
 
   return (
     <div>
@@ -210,97 +95,18 @@ export const AllBhajans = () => {
       <section className=" top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4 px-4">
         <div className="container mx-auto max-w-6xl space-y-4">
           {/* Search Bar */}
-          <motion.div className="flex gap-2">
+          <motion.div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder={t('searchBhajansOrSingers')}
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-11 pl-10"
               />
             </div>
-            <VoiceSearchButton onResult={(transcript) => handleFilterChange('search', transcript)} />
+            <VoiceSearchButton onResult={(transcript) => setSearch(transcript)} />
           </motion.div>
-
-          {/* Filter Controls */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Select value={filters.language} onValueChange={(v) => handleFilterChange('language', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('allLanguages')} />
-              </SelectTrigger>
-              <SelectContent>
-                {languageOptions.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.occasion} onValueChange={(v) => handleFilterChange('occasion', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('allOccasions')} />
-              </SelectTrigger>
-              <SelectContent>
-                {occasionOptions.map((occ) => (
-                  <SelectItem key={occ.value} value={occ.value}>
-                    {occ.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.mood} onValueChange={(v) => handleFilterChange('mood', v)}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('allMoods')} />
-              </SelectTrigger>
-              <SelectContent>
-                {moodOptions.map((mood) => (
-                  <SelectItem key={mood.value} value={mood.value}>
-                    {mood.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.sortBy} onValueChange={(v) => handleFilterChange('sortBy', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.minRating} onValueChange={(v) => handleFilterChange('minRating', v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">{t('allRatings')}</SelectItem>
-                <SelectItem value="3">3+ {t('stars')}</SelectItem>
-                <SelectItem value="4">4+ {t('stars')}</SelectItem>
-                <SelectItem value="5">5 {t('stars')}</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {isFiltered && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilters}
-                className="gap-2"
-              >
-                <X className="w-4 h-4" />
-                {t('clearFilters')}
-              </Button>
-            )}
-          </div>
 
           {/* Results Count */}
           <div className="text-sm text-muted-foreground">
@@ -322,10 +128,10 @@ export const AllBhajans = () => {
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
-              <Filter className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2">{t('noBhajansFound')}</h3>
               <p className="text-muted-foreground">
-                {t('tryAdjustingFilters')}
+                {t('searchHint')}
               </p>
             </motion.div>
           ) : (

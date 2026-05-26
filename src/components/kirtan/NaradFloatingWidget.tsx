@@ -308,7 +308,7 @@ export default function NaradFloatingWidget() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-auto fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4"
+            className="pointer-events-auto fixed inset-0 z-[140] flex items-center justify-center bg-black/50 p-4"
             role="dialog"
             aria-labelledby="narad-title"
           >
@@ -345,7 +345,7 @@ export default function NaradFloatingWidget() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="pointer-events-auto fixed inset-0 z-[86] bg-[#1a0f0a]/35 backdrop-blur-[2px]"
+            className="pointer-events-auto fixed inset-0 z-[135] bg-[#1a0f0a]/35 backdrop-blur-[2px]"
             aria-label="Close Ask Narad"
             onClick={closeAll}
           />
@@ -384,7 +384,7 @@ export default function NaradFloatingWidget() {
             exit={isMobile ? { opacity: 0, y: "100%" } : { opacity: 0, scale: 0.96, y: 16 }}
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
             className={cn(
-              "pointer-events-auto fixed z-[100] overflow-hidden border border-amber-200/20 bg-[linear-gradient(160deg,rgba(45,18,0,0.94),rgba(20,0,31,0.92))] p-4 shadow-[0_20px_60px_-12px_rgba(45,18,0,0.65)] backdrop-blur-xl",
+              "pointer-events-auto fixed z-[140] overflow-hidden border border-amber-200/20 bg-[linear-gradient(160deg,rgba(45,18,0,0.94),rgba(20,0,31,0.92))] p-4 shadow-[0_20px_60px_-12px_rgba(45,18,0,0.65)] backdrop-blur-xl",
               isMobile
                 ? "inset-x-0 bottom-0 rounded-t-3xl"
                 : "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] w-[min(360px,calc(100vw-1.5rem))] rounded-3xl",
@@ -452,10 +452,10 @@ export default function NaradFloatingWidget() {
               "flex flex-col overflow-hidden",
               uiState === "chat"
                 ? cn(
-                    "pointer-events-auto z-[88]",
+                    "pointer-events-auto z-[140]",
                     "border border-[#eab308]/25 bg-[linear-gradient(145deg,hsl(43_92%_95%/0.98),hsl(25_76%_97%/0.92)_40%,hsl(350_52%_98%/0.96))] backdrop-blur-xl",
                     isMobile
-                      ? "fixed inset-0 z-[100] h-[100dvh] w-full max-h-none rounded-none shadow-none"
+                      ? "fixed inset-0 z-[140] h-[100dvh] w-full max-h-none rounded-none shadow-none"
                       : "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] mb-0 max-h-[min(80dvh,640px)] w-[min(360px,calc(100vw-1.25rem))] rounded-2xl shadow-[0_20px_50px_-12px_rgba(114,63,34,0.45)] md:bottom-[calc(1rem+env(safe-area-inset-bottom))] md:right-[max(1rem,env(safe-area-inset-right))]",
                   )
                 : "pointer-events-none fixed left-0 top-0 z-0 h-px w-px opacity-0",
@@ -565,7 +565,7 @@ export default function NaradFloatingWidget() {
 
       <div
         className={cn(
-          "pointer-events-none fixed z-[88] flex flex-col items-end",
+          "pointer-events-none fixed z-[140] flex flex-col items-end",
           "bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] md:bottom-[max(1rem,env(safe-area-inset-bottom))]",
         )}
       >

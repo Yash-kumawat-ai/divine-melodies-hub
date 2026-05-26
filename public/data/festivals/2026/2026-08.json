@@ -1,0 +1,131 @@
+{
+  "year": 2026,
+  "month": "2026-08",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "raksha-bandhan-2026",
+      "date": "2026-08-09",
+      "name_en": "Raksha Bandhan",
+      "name_hi": "रक्षा बंधन",
+      "name_sa": "रक्षाबन्धनम्",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "maharashtra": "Narali Purnima",
+        "west_bengal": "Jhulan Purnima"
+      },
+      "deity": "Vishnu, Yama",
+      "description_en": "Sisters tie a sacred thread (rakhi) on their brother's wrist. Brothers vow to protect their sisters. One of India's most beloved family festivals.",
+      "description_hi": "बहनें भाई की कलाई पर रक्षासूत्र बांधती हैं। भाई बहन की रक्षा का संकल्प लेता है। परिवार का सबसे प्रिय त्यौहार।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "tie rakhi",
+        "aarti of brother",
+        "exchange sweets",
+        "brother gives gifts"
+      ],
+      "color": "#dc2626",
+      "tags": [
+        "family",
+        "brother-sister",
+        "protection",
+        "purnima",
+        "shravan"
+      ]
+    },
+    {
+      "id": "krishna-janmashtami-2026",
+      "date": "2026-08-16",
+      "name_en": "Krishna Janmashtami",
+      "name_hi": "श्री कृष्ण जन्माष्टमी",
+      "name_sa": "श्रीकृष्णजन्माष्टमी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "maharashtra": "Dahi Handi",
+        "vrindavan": "Janmashtami",
+        "south": "Gokulashtami"
+      },
+      "deity": "Krishna",
+      "description_en": "Birthday of Lord Krishna, the 8th avatar of Vishnu. Fast is observed until midnight, when Krishna's birth is celebrated. Dahi Handi, Raasleela, and night-long kirtan are held.",
+      "description_hi": "भगवान श्रीकृष्ण का जन्मोत्सव। मध्यरात्रि तक उपवास। जन्म के बाद भोग और झूला। दही हांडी, रासलीला और रात्रि जागरण।",
+      "fasting": {
+        "observed": true,
+        "type": "nirjala or phalahar until midnight",
+        "rules_en": "Fast from sunrise until midnight. Break fast after Krishna's birth at 12 AM. Fruits and milk allowed in phalahar version.",
+        "rules_hi": "सूर्योदय से मध्यरात्रि तक उपवास। रात 12 बजे जन्म के बाद पारण। फलाहार संस्करण में फल-दूध की अनुमति।"
+      },
+      "rituals": [
+        "midnight abhishek",
+        "cradle ritual",
+        "Dahi Handi",
+        "bhajan kirtan all night",
+        "Bhagavad Gita reading"
+      ],
+      "color": "#2563eb",
+      "tags": [
+        "krishna",
+        "vishnu",
+        "avatar",
+        "fast",
+        "midnight",
+        "major-fast"
+      ]
+    },
+    {
+      "id": "ganesh-chaturthi-2026",
+      "date": "2026-08-24",
+      "name_en": "Ganesh Chaturthi",
+      "name_hi": "गणेश चतुर्थी",
+      "name_sa": "गणेशचतुर्थी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "maharashtra": "Ganeshotsav",
+        "telangana": "Vinayaka Chaturthi",
+        "goa": "Chavath"
+      },
+      "deity": "Ganesha",
+      "description_en": "Birthday of Lord Ganesha. A 10-day festival culminating in visarjan (immersion). Modak, durva grass, and red flowers are offered. The moon should not be seen on this night.",
+      "description_hi": "भगवान गणेश का जन्मोत्सव। 10 दिन का महोत्सव, अंत में विसर्जन। मोदक, दूर्वा और लाल फूल अर्पण। इस रात चंद्रमा देखना वर्जित।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Fast on Chaturthi. Fruits and milk allowed. No moon viewing at night.",
+        "rules_hi": "चतुर्थी को उपवास। फलाहार की अनुमति। रात को चंद्रदर्शन वर्जित।"
+      },
+      "rituals": [
+        "Ganesha sthapana",
+        "modak offering",
+        "durva offering",
+        "aarti twice daily",
+        "visarjan on day 1/5/7/10"
+      ],
+      "color": "#f97316",
+      "tags": [
+        "ganesha",
+        "chaturthi",
+        "modak",
+        "maharashtra",
+        "major-festival",
+        "bhadra"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { motion, useInView } from 'framer-motion';
-import { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark, Image as ImageIcon, Music2 } from 'lucide-react';
+import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import dhyaanLogo from '@/assets/dhyaan-logo.png';
@@ -16,12 +16,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
 import PanchangShortcut from '@/components/panchang/PanchangShortcut';
-import PanchangCard from '@/components/panchang/PanchangCard';
-import DailyMantra from '@/components/panchang/DailyMantra';
-import SpiritualHero from '@/components/panchang/SpiritualHero';
-import { todaysPanchang } from '@/data/panchang';
-
-const FestivalCalendar = lazy(() => import('@/components/panchang/FestivalCalendar'));
 
 interface UserBhajan {
   id: string;
@@ -228,45 +222,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Panchang + Festival Calendar */}
-      <section id="panchang-calendar" className="relative overflow-hidden bg-gradient-to-b from-background via-amber-50/35 to-background px-4 py-14 dark:via-amber-950/10 sm:py-18">
-        <div className="pointer-events-none absolute left-[-6rem] top-20 h-56 w-56 rounded-full bg-amber-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute right-[-8rem] bottom-10 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl" />
-        <div className="container relative mx-auto max-w-6xl">
-          <SpiritualHero />
-
-          <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="space-y-5">
-              <PanchangCard />
-              <DailyMantra />
-            </div>
-            <Suspense
-              fallback={
-                <div className="min-h-[420px] rounded-[1.75rem] border border-amber-300/25 bg-card/80 p-5">
-                  <div className="h-7 w-44 rounded-full bg-amber-500/10" />
-                  <div className="mt-6 grid grid-cols-7 gap-2">
-                    {Array.from({ length: 35 }).map((_, index) => (
-                      <div key={index} className="h-12 rounded-xl bg-muted/50" />
-                    ))}
-                  </div>
-                </div>
-              }
-            >
-              <FestivalCalendar />
-            </Suspense>
-          </div>
-
-          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              className="rounded-[1.5rem] border border-border bg-card p-5"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-300">
-                  <Music2 className="h-5 w-5" />
+      {/* Panchang entry */}
+      <section id="panchang-calendar" className="relative overflow-hidden bg-gradient-to-b from-background via-amber-50/45 to-background px-4 py-12 dark:via-amber-950/15 sm:py-16">
+        <div className="container relative mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="overflow-hidden rounded-[1.5rem] border border-amber-300/35 bg-card/90 shadow-[0_18px_70px_rgba(245,158,11,0.14)] backdrop-blur"
+          >
+            <div className="grid gap-0 md:grid-cols-[1fr_0.72fr]">
+              <div className="p-5 sm:p-7 lg:p-8">
+                <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-200">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {isHi ? 'आज का पंचांग' : 'Today Panchang'}
                 </span>
+                <h2 className="mt-4 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                  {isHi ? 'तिथि, नक्षत्र, राहु काल और पर्व एक अलग सुंदर पेज में देखें' : 'Open tithi, nakshatra, Rahu Kaal, and festivals in a dedicated page'}
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  {isHi
+                    ? 'पंचांग डेटा रोज सुबह कैश JSON से दिखता है। वेबसाइट पर आने वाले भक्त VedAstro API को सीधे कॉल नहीं करते।'
+                    : 'Panchang data is served from the daily cached JSON. Visitors never call the VedAstro API directly.'}
+                </p>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Button asChild size="lg" className="h-12 rounded-full bg-brand-saffron px-6 text-white shadow-lg shadow-amber-500/20 hover:bg-brand-saffron/90">
+                    <Link to="/panchang">
+                      <CalendarDays className="mr-2 h-5 w-5" />
+                      {isHi ? 'पंचांग खोलें' : 'Open Panchang'}
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-amber-300/40 px-6">
+                    <Link to="/all-bhajans">
+                      <Search className="mr-2 h-5 w-5" />
+                      {isHi ? 'भजन खोजें' : 'Find Bhajans'}
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="flex min-h-52 items-center justify-center border-t border-amber-300/20 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.22),transparent_62%)] p-5 md:border-l md:border-t-0">
+                <div className="text-center">
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-amber-300/40 bg-white/65 text-5xl font-bold text-amber-600 shadow-inner dark:bg-white/10 dark:text-amber-200">
+                    ॐ
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-foreground">
+                    {isHi ? 'मोबाइल टैब से भी तुरंत उपलब्ध' : 'Available from the mobile tab'}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {isHi ? 'डिफ़ॉल्ट क्षेत्र: जयपुर' : 'Default zone: Jaipur'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          {/*
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
                     {isHi ? 'भजन' : 'Bhajan'}
@@ -316,6 +325,7 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+          */}
         </div>
       </section>
 

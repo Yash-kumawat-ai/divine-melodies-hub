@@ -62,19 +62,19 @@ export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) 
   if (!isSupported) return null;
 
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center">
       <button
         type="button"
         onClick={startListening}
         disabled={isListening}
-        className={`p-3 rounded-xl transition-all touch-target ${
-          isListening 
-            ? "bg-destructive text-destructive-foreground animate-pulse" 
-            : "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+        className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-all touch-target sm:h-12 sm:w-12 ${
+          isListening
+            ? "bg-destructive text-destructive-foreground shadow-md animate-pulse"
+            : "bg-card/70 text-primary shadow-sm hover:bg-primary/10 hover:text-primary"
         }`}
         aria-label={isListening ? "Listening..." : "Voice search"}
       >
-        {isListening ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
+        {isListening ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
       </button>
 
       <AnimatePresence>

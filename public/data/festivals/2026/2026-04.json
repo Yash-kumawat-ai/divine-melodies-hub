@@ -1,0 +1,82 @@
+{
+  "year": 2026,
+  "month": "2026-04",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "hanuman-jayanti-2026",
+      "date": "2026-04-01",
+      "name_en": "Hanuman Jayanti",
+      "name_hi": "हनुमान जयंती",
+      "name_sa": "हनुमज्जयन्ती",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Hanuman",
+      "description_en": "Birthday of Lord Hanuman. Recitation of Hanuman Chalisa and Sundarkand. Sindoor and oil are offered. Tuesday and Saturday are especially auspicious for Hanuman.",
+      "description_hi": "श्री हनुमान जी का जन्मोत्सव। हनुमान चालीसा और सुंदरकांड का पाठ। सिंदूर और तेल का अभिषेक। विशेष जागरण।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Fast from sunrise to sunset or full day. Fruits and milk allowed.",
+        "rules_hi": "दिनभर उपवास। फलाहार और दूध की अनुमति।"
+      },
+      "rituals": [
+        "Hanuman Chalisa recitation",
+        "Sundarkand path",
+        "sindoor offering",
+        "oil lamp"
+      ],
+      "color": "#dc2626",
+      "tags": [
+        "hanuman",
+        "bhakti",
+        "strength",
+        "protection"
+      ]
+    },
+    {
+      "id": "akshaya-tritiya-2026",
+      "date": "2026-04-21",
+      "name_en": "Akshaya Tritiya",
+      "name_hi": "अक्षय तृतीया",
+      "name_sa": "अक्षयतृतीया",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "rajasthan": "Aakha Teej"
+      },
+      "deity": "Vishnu, Lakshmi",
+      "description_en": "One of the most auspicious days. Any good work begun on this day never diminishes. Ideal for starting new businesses, buying gold, and conducting weddings.",
+      "description_hi": "वर्ष के सर्वश्रेष्ठ मुहूर्तों में से एक। आज शुरू किया गया कार्य कभी क्षीण नहीं होता। सोना खरीदना, विवाह और नए व्यापार का शुभ आरंभ।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "buy gold",
+        "start new ventures",
+        "donate food and water",
+        "Vishnu puja"
+      ],
+      "color": "#d97706",
+      "tags": [
+        "auspicious",
+        "vishnu",
+        "lakshmi",
+        "gold",
+        "business",
+        "wedding-muhurat"
+      ]
+    }
+  ]
+}

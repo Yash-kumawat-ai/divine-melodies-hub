@@ -1,0 +1,168 @@
+{
+  "year": 2026,
+  "month": "2026-10",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "karwa-chauth-2026",
+      "date": "2026-10-13",
+      "name_en": "Karwa Chauth",
+      "name_hi": "करवा चौथ",
+      "name_sa": "करकचतुर्थी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "north_india",
+        "rajasthan",
+        "punjab",
+        "haryana",
+        "up",
+        "mp"
+      ],
+      "regional_names": {},
+      "deity": "Shiva, Parvati, Kartikeya, Ganesha, Moon",
+      "description_en": "Married women fast from sunrise to moonrise for their husband's long life. The fast is broken only after sighting the moon through a sieve and seeing the husband's face.",
+      "description_hi": "सुहागिन महिलाएं पति की दीर्घायु के लिए सूर्योदय से चंद्रोदय तक निर्जल उपवास। चलनी से चंद्रमा और पति का मुख देखकर पारण।",
+      "fasting": {
+        "observed": true,
+        "type": "nirjala until moonrise",
+        "rules_en": "Fast from sunrise. No water. Break fast only after sighting the moon through a sieve. Pati sees wife first through sieve, then she sees him.",
+        "rules_hi": "सूर्योदय से चंद्रोदय तक निर्जल उपवास। चलनी से चंद्र दर्शन के बाद पति से जल ग्रहण कर पारण।"
+      },
+      "rituals": [
+        "karwa puja in group",
+        "moon sighting through sieve",
+        "mehendi",
+        "traditional dress",
+        "sargi before sunrise"
+      ],
+      "color": "#dc2626",
+      "tags": [
+        "married-women",
+        "husband",
+        "moon",
+        "nirjala",
+        "north-india"
+      ]
+    },
+    {
+      "id": "dhanteras-2026",
+      "date": "2026-10-28",
+      "name_en": "Dhanteras",
+      "name_hi": "धनतेरस",
+      "name_sa": "धनत्रयोदशी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "south": "Dhanvantari Jayanti"
+      },
+      "deity": "Dhanvantari, Lakshmi, Kuber, Yama",
+      "description_en": "First day of Diwali festival. Birth of Dhanvantari, god of Ayurveda, and Goddess Lakshmi. Gold, silver, and new utensils are bought. Evening diya lit for Yama.",
+      "description_hi": "दीपावली पर्व का प्रथम दिवस। धन्वंतरि और माँ लक्ष्मी का प्रकाट्य। सोना-चांदी और नए बर्तन खरीदना शुभ। यम के निमित्त दीया जलाना।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "buy gold or silver",
+        "buy utensils",
+        "evening diya at south direction",
+        "Lakshmi puja"
+      ],
+      "color": "#d97706",
+      "tags": [
+        "diwali",
+        "dhanvantari",
+        "lakshmi",
+        "gold",
+        "wealth",
+        "kartik"
+      ]
+    },
+    {
+      "id": "diwali-2026",
+      "date": "2026-10-30",
+      "name_en": "Diwali (Deepavali)",
+      "name_hi": "दीपावली",
+      "name_sa": "दीपावली",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "south": "Deepavali",
+        "west_bengal": "Kali Puja"
+      },
+      "deity": "Lakshmi, Ganesha, Kuber",
+      "description_en": "Festival of Lights. Celebrates Lord Ram's return to Ayodhya. Houses are decorated with diyas and rangoli. Lakshmi-Ganesha puja is performed at night for wealth and prosperity.",
+      "description_hi": "प्रकाश का पर्व। भगवान राम का अयोध्या आगमन। घर दीयों और रंगोली से सजाया जाता है। रात्रि में लक्ष्मी-गणेश पूजन।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "light diyas and candles",
+        "rangoli",
+        "Lakshmi-Ganesha puja",
+        "fireworks",
+        "exchange sweets"
+      ],
+      "color": "#d97706",
+      "tags": [
+        "lakshmi",
+        "ganesha",
+        "ram",
+        "lights",
+        "prosperity",
+        "major-festival"
+      ]
+    },
+    {
+      "id": "govardhan-puja-2026",
+      "date": "2026-10-31",
+      "name_en": "Govardhan Puja (Annakut)",
+      "name_hi": "गोवर्धन पूजा (अन्नकूट)",
+      "name_sa": "गोवर्धनपूजा",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "gujarat": "Nutan Varsh (New Year)"
+      },
+      "deity": "Krishna, Govardhan Parvat",
+      "description_en": "Day after Diwali. Celebrates Krishna lifting Govardhan mountain. 56 food items (Chappan Bhog) are offered. Also Gujarat's new year.",
+      "description_hi": "दीपावली के अगले दिन। कृष्ण द्वारा गोवर्धन पर्वत उठाने का उत्सव। 56 भोग (छप्पन भोग) का अर्पण। गुजरात में नव वर्ष।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "Govardhan parvat puja",
+        "56 bhog offering",
+        "cow puja",
+        "parikrama"
+      ],
+      "color": "#16a34a",
+      "tags": [
+        "krishna",
+        "govardhan",
+        "annakut",
+        "diwali",
+        "cows"
+      ]
+    }
+  ]
+}

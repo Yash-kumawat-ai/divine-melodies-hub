@@ -1,0 +1,87 @@
+{
+  "year": 2026,
+  "month": "2026-01",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "makar-sankranti-2026",
+      "date": "2026-01-14",
+      "name_en": "Makar Sankranti",
+      "name_hi": "मकर संक्रांति",
+      "name_sa": "मकरसंक्रान्तिः",
+      "type": "solar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "gujarat": "Uttarayan",
+        "tamil_nadu": "Pongal",
+        "punjab": "Lohri",
+        "assam": "Bhogali Bihu",
+        "andhra": "Sankranti"
+      },
+      "deity": "Surya",
+      "description_en": "Marks the Sun's transition into Capricorn (Makar). The most auspicious day for donations and holy dips. Sesame seeds and jaggery are exchanged as prasad.",
+      "description_hi": "सूर्य का मकर राशि में प्रवेश। तिल-गुड़ का विशेष महत्व। गंगा स्नान और दान का पर्व।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "holy dip in river",
+        "donate sesame and jaggery",
+        "fly kites",
+        "worship Surya"
+      ],
+      "color": "#f59e0b",
+      "tags": [
+        "solar",
+        "harvest",
+        "surya",
+        "donation"
+      ]
+    },
+    {
+      "id": "basant-panchami-2026",
+      "date": "2026-01-25",
+      "name_en": "Basant Panchami",
+      "name_hi": "बसंत पंचमी",
+      "name_sa": "वसन्तपञ्चमी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "west_bengal": "Saraswati Puja",
+        "punjab": "Basant"
+      },
+      "deity": "Saraswati",
+      "description_en": "Birthday of Goddess Saraswati. Auspicious for starting education, music, and art. Yellow colour is worn as it symbolises the mustard fields of spring.",
+      "description_hi": "माँ सरस्वती का प्राकट्य दिवस। विद्या, संगीत और कला का आरंभ शुभ। पीले वस्त्र और पीले भोग का विशेष महत्व।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "Saraswati puja",
+        "start new learning",
+        "wear yellow",
+        "kite flying"
+      ],
+      "color": "#eab308",
+      "tags": [
+        "saraswati",
+        "education",
+        "spring",
+        "music"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "year": 2026,
+  "month": "2026-06",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "rath-yatra-2026",
+      "date": "2026-06-23",
+      "name_en": "Rath Yatra",
+      "name_hi": "रथ यात्रा",
+      "name_sa": "रथयात्रा",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "odisha",
+        "west_bengal",
+        "gujarat",
+        "all"
+      ],
+      "regional_names": {
+        "odisha": "Jagannath Rath Yatra",
+        "gujarat": "Jagannath Rath Yatra Ahmedabad"
+      },
+      "deity": "Jagannath (Vishnu)",
+      "description_en": "The chariot festival of Lord Jagannath of Puri. The massive wooden chariots of Jagannath, Balabhadra, and Subhadra are pulled by thousands. Pulling the chariot rope gives immense merit.",
+      "description_hi": "पुरी के जगन्नाथ भगवान की महायात्रा। जगन्नाथ, बलभद्र और सुभद्रा के विशाल रथों को लाखों भक्त खींचते हैं। रथ की रस्सी खींचने का अपार पुण्य।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "pull chariot rope",
+        "seek darshan of Jagannath",
+        "mahaprasad",
+        "chant Jai Jagannath"
+      ],
+      "color": "#f59e0b",
+      "tags": [
+        "jagannath",
+        "vishnu",
+        "puri",
+        "chariot",
+        "yatra"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "year": 2026,
+  "month": "2026-07",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "guru-purnima-2026",
+      "date": "2026-07-11",
+      "name_en": "Guru Purnima",
+      "name_hi": "गुरु पूर्णिमा",
+      "name_sa": "गुरुपूर्णिमा",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Vyasa (Veda Vyasa)",
+      "description_en": "Full moon dedicated to the Guru. Birthday of Veda Vyasa, compiler of Vedas and Mahabharata. Disciples offer respect and gratitude to their spiritual teacher.",
+      "description_hi": "गुरु को समर्पित पूर्णिमा। वेद व्यास का जन्मदिवस। शिष्य अपने गुरु का पूजन और सम्मान करते हैं।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "guru puja",
+        "seek guru's blessings",
+        "dakshina offering",
+        "read scriptures"
+      ],
+      "color": "#eab308",
+      "tags": [
+        "guru",
+        "vyasa",
+        "purnima",
+        "ashadh",
+        "spiritual"
+      ]
+    },
+    {
+      "id": "nag-panchami-2026",
+      "date": "2026-07-28",
+      "name_en": "Nag Panchami",
+      "name_hi": "नाग पंचमी",
+      "name_sa": "नागपञ्चमी",
+      "type": "lunar",
+      "importance": "medium",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Nag Devta (Serpent Gods)",
+      "description_en": "Festival of serpent worship. Milk is offered to snake idols. Protects the family from snake bites and brings prosperity. Digging earth is prohibited on this day.",
+      "description_hi": "नागों की पूजा का पर्व। नाग देवता को दूध अर्पण। परिवार को सर्पदंश से सुरक्षा और समृद्धि की कामना। इस दिन खुदाई वर्जित।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Optional fast. No digging on this day.",
+        "rules_hi": "वैकल्पिक उपवास। भूमि खुदाई वर्जित।"
+      },
+      "rituals": [
+        "milk offering to snakes",
+        "serpent idol puja",
+        "draw snake with turmeric",
+        "no ploughing"
+      ],
+      "color": "#16a34a",
+      "tags": [
+        "nag",
+        "serpent",
+        "shiva",
+        "protection",
+        "shravan"
+      ]
+    }
+  ]
+}

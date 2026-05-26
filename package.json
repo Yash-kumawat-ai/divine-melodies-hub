@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "festival:build": "node scripts/buildFestivalData.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev:nodemon": "nodemon --watch src --ext ts,tsx,js,jsx,json --exec \"vite\""

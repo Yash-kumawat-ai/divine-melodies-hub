@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
   Bell,
+  CalendarDays,
   Clock3,
   Compass,
   Flower2,
@@ -26,7 +27,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
-type NavKey = "home" | "browse" | "upload" | "temple" | "more";
+type NavKey = "home" | "browse" | "upload" | "panchang" | "more";
 
 type PrimaryNavItem = {
   path?: string;
@@ -43,6 +44,7 @@ type FeatureItem = {
     | "search"
     | "recent"
     | "meditation"
+    | "temple"
     | "kirtanAi"
     | "pricing"
     | "about"
@@ -71,10 +73,10 @@ const PRIMARY_NAV: PrimaryNavItem[] = [
     accent: true,
   },
   {
-    path: "/temple",
-    labelKey: "temple",
-    icon: Landmark,
-    match: (pathname) => pathname.startsWith("/temple"),
+    path: "/panchang",
+    labelKey: "panchang",
+    icon: CalendarDays,
+    match: (pathname) => pathname.startsWith("/panchang"),
   },
   { labelKey: "more", icon: Grid3X3, match: () => false, menu: true },
 ];
@@ -92,6 +94,12 @@ const FEATURE_ITEMS: FeatureItem[] = [
     labelKey: "meditation",
     icon: Flower2,
     match: (pathname) => pathname.startsWith("/meditation"),
+  },
+  {
+    path: "/temple",
+    labelKey: "temple",
+    icon: Landmark,
+    match: (pathname) => pathname.startsWith("/temple"),
   },
   {
     path: "/kirtan-ai",

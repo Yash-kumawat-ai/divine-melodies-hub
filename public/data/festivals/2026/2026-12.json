@@ -1,0 +1,72 @@
+{
+  "year": 2026,
+  "month": "2026-12",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "gita-jayanti-2026",
+      "date": "2026-12-09",
+      "name_en": "Gita Jayanti",
+      "name_hi": "गीता जयंती",
+      "name_sa": "गीताजयन्ती",
+      "type": "lunar",
+      "importance": "medium",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Krishna",
+      "description_en": "Anniversary of Lord Krishna's Bhagavad Gita recitation to Arjuna on the Kurukshetra battlefield. Gita recitation and Gita processions are held worldwide.",
+      "description_hi": "कुरुक्षेत्र युद्धभूमि पर भगवान कृष्ण द्वारा अर्जुन को गीता का उपदेश देने का दिवस। विश्वभर में गीता पाठ और शोभायात्राएं।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "Gita recitation",
+        "Gita procession",
+        "visit Kurukshetra",
+        "study Bhagavad Gita"
+      ],
+      "color": "#f59e0b",
+      "tags": [
+        "krishna",
+        "gita",
+        "arjuna",
+        "kurukshetra",
+        "scripture"
+      ]
+    },
+    {
+      "id": "makar-sankranti-2027-eve",
+      "date": "2026-12-31",
+      "name_en": "New Year Eve",
+      "name_hi": "नव वर्ष संध्या",
+      "name_sa": "",
+      "type": "gregorian",
+      "importance": "low",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "",
+      "description_en": "Gregorian New Year's Eve. Many temples hold special prayers.",
+      "description_hi": "ग्रेगोरियन नव वर्ष की पूर्व संध्या।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [],
+      "color": "#2563eb",
+      "tags": [
+        "new-year",
+        "gregorian"
+      ]
+    }
+  ]
+}

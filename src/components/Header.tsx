@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
+  CalendarDays,
   Camera,
   Clock3,
   Flower2,
@@ -92,9 +93,10 @@ export default function Header() {
   const accountLabel = user ? t("notifications") : t("profile");
   const accountActive = location.pathname.startsWith("/notifications") || location.pathname.startsWith("/auth");
   const mobileHeaderLinks = [
+    { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang"), featured: true },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
-    { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai"), featured: true },
+    { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
     { to: accountPath, label: accountLabel, icon: user ? Bell : User, match: () => accountActive },
   ];
@@ -102,17 +104,17 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
-        <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-4">
+        <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && <MobileBackButton />}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <img
               src={dhyaanLogo}
               alt="Hari Kirtan"
-              className="w-8 h-8 md:w-10 md:h-10 object-contain shrink-0"
+              className="w-8 h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 object-contain shrink-0"
               width={40}
               height={40}
             />
-            <span className="font-display text-base md:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
+            <span className="font-display text-base md:text-base lg:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
               Hari Kirtan
             </span>
           </Link>
@@ -122,9 +124,16 @@ export default function Header() {
           {user && <UserNotificationBell userId={user.id} />}
         </div>
 
-        <nav className="hidden md:flex items-center gap-3 lg:gap-5 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-2 lg:gap-4 text-sm md:text-[13px] lg:text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
+          <Link
+            to="/panchang"
+            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            {t('panchang')}
+          </Link>
           <Link
             to="/temple"
             className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
@@ -143,25 +152,25 @@ export default function Header() {
           <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
           <Link
             to="/upload-bhajan"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors md:px-2.5 md:py-1 lg:px-3 lg:py-1.5"
           >
             <Upload className="w-3.5 h-3.5" />
             {t('upload')}
           </Link>
           <Link
             to="/kirtan-ai"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 text-xs font-semibold text-white hover:shadow-lg transition-all"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-xs font-semibold text-white hover:shadow-lg transition-all md:h-7 md:px-2.5 lg:h-8 lg:px-3"
           >
             <Sparkles className="w-3.5 h-3.5" />
             {t('kirtanAi')}
           </Link>
-          <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-2">
+          <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors md:p-1.5 lg:p-2">
             <Search className="w-5 h-5" />
           </Link>
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors"
+            className="inline-flex items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors md:h-8 md:w-8 lg:h-9 lg:w-9"
             aria-label={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
             title={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
           >
@@ -172,7 +181,7 @@ export default function Header() {
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as typeof language)}
-            className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+            className="rounded-md border border-border bg-background text-sm md:h-8 md:px-1.5 lg:h-9 lg:px-2"
             aria-label={t('language')}
           >
             {languageOptions.map((option) => (
@@ -191,7 +200,7 @@ export default function Header() {
                   className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
                   aria-label="Account menu"
                 >
-                  <Avatar className="h-10 w-10 border border-border">
+                  <Avatar className="border border-border md:h-9 md:w-9 lg:h-10 lg:w-10">
                     <AvatarImage src={profile?.avatar_url} alt={displayName} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>

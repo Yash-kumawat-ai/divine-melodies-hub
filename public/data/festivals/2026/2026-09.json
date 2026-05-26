@@ -1,0 +1,86 @@
+{
+  "year": 2026,
+  "month": "2026-09",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "navratri-sharad-2026-start",
+      "date": "2026-09-20",
+      "name_en": "Sharad Navratri Begins",
+      "name_hi": "शारदीय नवरात्रि प्रारम्भ",
+      "name_sa": "शारदीयनवरात्रम्",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {},
+      "deity": "Durga (nine forms)",
+      "description_en": "Nine nights dedicated to nine forms of Goddess Durga. Ghatasthapana on Day 1. Fasting for all 9 days. Concludes on Navami before Dussehra.",
+      "description_hi": "माँ दुर्गा के नौ रूपों की नौ रात्रियां। प्रथम दिन घटस्थापना। नौ दिन का उपवास। नवमी को हवन-पूजन और दशमी को दशहरा।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar for 9 days",
+        "rules_en": "Fast for all 9 days. Phalahar allowed. Sendha namak only. No onion, garlic, meat. Kanya puja on Ashtami or Navami.",
+        "rules_hi": "नौ दिन फलाहार। सेंधा नमक। प्याज-लहसुन-मांस वर्जित। अष्टमी/नवमी को कन्या पूजन।"
+      },
+      "rituals": [
+        "Ghatasthapana",
+        "daily Durga puja",
+        "akhanda jyoti",
+        "dandiya/garba",
+        "kanya puja on ashtami"
+      ],
+      "color": "#dc2626",
+      "tags": [
+        "durga",
+        "navratri",
+        "nine-nights",
+        "fast",
+        "ashwin",
+        "major-fast"
+      ]
+    },
+    {
+      "id": "dussehra-2026",
+      "date": "2026-09-29",
+      "name_en": "Dussehra (Vijayadashami)",
+      "name_hi": "दशहरा (विजयदशमी)",
+      "name_sa": "विजयदशमी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "mysore": "Mysuru Dasara",
+        "west_bengal": "Dashami (Durga Visarjan)",
+        "himachal": "Kullu Dussehra"
+      },
+      "deity": "Ram, Durga",
+      "description_en": "Victory of good over evil. Lord Ram defeated Ravana on this day. Effigies of Ravana, Kumbhakarna, and Meghanada are burned. Also marks Durga's departure.",
+      "description_hi": "बुराई पर अच्छाई की विजय। भगवान राम ने आज रावण का वध किया था। रावण, कुंभकर्ण और मेघनाद के पुतले जलाए जाते हैं। दुर्गा विसर्जन भी।",
+      "fasting": {
+        "observed": false,
+        "type": null,
+        "rules_en": "",
+        "rules_hi": ""
+      },
+      "rituals": [
+        "Raavan effigy burning",
+        "Ramlila viewing",
+        "Shami tree worship",
+        "weapons puja (Ayudha Puja)"
+      ],
+      "color": "#f59e0b",
+      "tags": [
+        "ram",
+        "durga",
+        "victory",
+        "evil-defeated",
+        "ashwin"
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Shield, Users, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useModerationPendingCount } from '@/hooks/useModerationNotificationQueries';
 import { cn } from '@/lib/utils';
+import PanchangHealthAlert from './PanchangHealthAlert';
 
 const adminTabs = [
   { path: '/admin/moderation', label: 'Moderation', icon: Shield },
@@ -67,7 +68,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       <main className="py-6 md:py-8 px-4">
-        <div className="container mx-auto max-w-6xl">{children}</div>
+        <div className="container mx-auto max-w-6xl">
+          <PanchangHealthAlert />
+          {children}
+        </div>
       </main>
     </>
   );

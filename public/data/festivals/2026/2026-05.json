@@ -1,0 +1,85 @@
+{
+  "year": 2026,
+  "month": "2026-05",
+  "source": "manually curated",
+  "updated": "2026-05-26",
+  "festivals": [
+    {
+      "id": "buddha-purnima-2026",
+      "date": "2026-05-11",
+      "name_en": "Buddha Purnima",
+      "name_hi": "बुद्ध पूर्णिमा",
+      "name_sa": "बुद्धपूर्णिमा",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "sri_lanka": "Vesak"
+      },
+      "deity": "Gautam Buddha",
+      "description_en": "Birth, enlightenment, and Mahaparinirvana of Gautam Buddha all occurred on this full moon day. Also observed as Vaisakh Purnima with holy dips.",
+      "description_hi": "गौतम बुद्ध का जन्म, ज्ञान प्राप्ति और महापरिनिर्वाण — तीनों इसी पूर्णिमा को हुए। वैशाख पूर्णिमा स्नान का भी विशेष महत्व।",
+      "fasting": {
+        "observed": true,
+        "type": "phalahar",
+        "rules_en": "Optional fast. Fruits and milk allowed.",
+        "rules_hi": "वैकल्पिक उपवास। फलाहार और दूध की अनुमति।"
+      },
+      "rituals": [
+        "visit Buddhist temples",
+        "holy dip",
+        "meditation",
+        "donate food"
+      ],
+      "color": "#f8fafc",
+      "tags": [
+        "buddha",
+        "purnima",
+        "vaishakh",
+        "enlightenment"
+      ]
+    },
+    {
+      "id": "nirjala-ekadashi-2026",
+      "date": "2026-05-27",
+      "name_en": "Nirjala Ekadashi",
+      "name_hi": "निर्जला एकादशी",
+      "name_sa": "निर्जलैकादशी",
+      "type": "lunar",
+      "importance": "major",
+      "regions": [
+        "all"
+      ],
+      "regional_names": {
+        "north": "Bhimseni Ekadashi",
+        "south": "Pandava Nirjala Ekadashi"
+      },
+      "deity": "Vishnu",
+      "description_en": "The most rigorous of all Ekadashis. Observed without even water (nirjala). Equivalent to fasting on all 24 Ekadashis of the year. Donating water and food is highly meritorious.",
+      "description_hi": "सभी एकादशियों में सबसे कठिन। जल भी वर्जित। यह एकादशी करने से पूरे वर्ष की 24 एकादशियों का फल मिलता है। जल और अन्न दान का विशेष महत्व।",
+      "fasting": {
+        "observed": true,
+        "type": "nirjala (no water)",
+        "rules_en": "No food, no water from sunrise to next day sunrise. Tulsi water allowed only at puja time. Break fast on Dwadashi morning.",
+        "rules_hi": "सूर्योदय से अगले दिन सूर्योदय तक जल भी नहीं। द्वादशी को पारण।"
+      },
+      "rituals": [
+        "nirjala fast",
+        "Vishnu puja with tulsi",
+        "donate water and food",
+        "read Vishnu Sahasranama"
+      ],
+      "color": "#eab308",
+      "tags": [
+        "ekadashi",
+        "vishnu",
+        "nirjala",
+        "fast",
+        "major-fast",
+        "jyeshtha"
+      ]
+    }
+  ]
+}
