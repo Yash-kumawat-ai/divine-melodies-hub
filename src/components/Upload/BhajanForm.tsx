@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
   const { user, profile } = useAuth();
   const [title, setTitle] = useState('');
   const [titleHindi, setTitleHindi] = useState('');
-  const [deityId, setDeityId] = useState(initialDeityId?.toString() || '1');
+  const [deityId, setDeityId] = useState(initialDeityId ? String(initialDeityId) : '');
   const [deityName, setDeityName] = useState(initialDeityName || '');
   const [singerName, setSingerName] = useState('');
   const [composerName, setComposerName] = useState('');
@@ -40,9 +40,22 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
   const [checkedDuplicates, setCheckedDuplicates] = useState(false);
 
   useEffect(() => {
+    if (initialDeityId) {
+      setDeityId(String(initialDeityId));
+    }
+  }, [initialDeityId]);
+
+  useEffect(() => {
+    if (initialDeityName) {
+      setDeityName(initialDeityName);
+      return;
+    }
+
     const d = deities.find((x) => String(x.id) === deityId);
-    if (d) setDeityName(d.name);
-  }, [deityId]);
+    if (d) {
+      setDeityName(d.name);
+    }
+  }, [deityId, initialDeityName]);
 
   // Levenshtein distance for duplicate detection
   const levenshteinSimilarity = (str1: string, str2: string): number => {
@@ -171,6 +184,11 @@ export default function BhajanForm({ lyrics, imageUrl, onSuccess, onBack, deityI
 
     if (!title.trim() || !titleHindi.trim() || !singerName.trim()) {
       setError('Please fill in all required fields');
+      return;
+    }
+
+    if (!deityId) {
+      setError('Please select a deity');
       return;
     }
 
