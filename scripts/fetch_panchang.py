@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +22,9 @@ DATA_DIR = Path("public/data")
 HEALTH_PATH = DATA_DIR / "panchang-health.json"
 IST = ZoneInfo("Asia/Kolkata")
 API_DELAY_SECONDS = 13
-RAHU_ORDER = {0: 2, 1: 7, 2: 4, 3: 5, 4: 6, 5: 3, 6: 8}
+ZONE_MAX_RETRIES = 3
+ZONE_RETRY_BACKOFF_SECONDS = 8
+RAHU_ORDER = {0: 2, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3, 6: 8}
 VARA_BY_WEEKDAY = {
     0: "Somvaar",
     1: "Mangalvaar",
@@ -52,6 +55,8 @@ TITHI_NAME_NUMBERS = {
     "dwadashi": 12,
     "dvadasi": 12,
     "trayodashi": 13,
+    "triodasi": 13,
+    "triyodasi": 13,
     "chaturdashi": 14,
     "purnima": 15,
     "poornima": 15,
@@ -80,6 +85,13 @@ def parse_time(value):
         raise ValueError(f"Unable to parse time: {text}")
     hour = int(match.group(1))
     minute = int(match.group(2))
+    suffix_match = re.search(r"\b(AM|PM)\b", text, re.IGNORECASE)
+    if suffix_match:
+        suffix = suffix_match.group(1).upper()
+        if suffix == "PM" and hour != 12:
+            hour += 12
+        elif suffix == "AM" and hour == 12:
+            hour = 0
     return hour, minute
 
 
@@ -175,7 +187,7 @@ def fetch_zone(zone, now):
 
     tithi = calculate_with_fallback(["LunarDay"], today)
     nakshatra = calculate_with_fallback(["MoonConstellation"], today)
-    yoga = calculate_with_fallback(["Yoga"], today)
+    yoga = calculate_with_fallback(["Yoga", "NithyaYoga"], today)
     karana = calculate_with_fallback(["Karana"], today)
     sunrise = calculate_with_fallback(["SunRise", "SunriseTime"], today)
     sunset = calculate_with_fallback(["SunSet", "SunsetTime"], today)
@@ -213,22 +225,38 @@ def main():
     failed_zones = []
 
     for index, zone in enumerate(ZONES, start=1):
-        try:
-            data = fetch_zone(zone, now)
-            output_path = DATA_DIR / f"panchang-{zone['name']}.json"
-            output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            success_count += 1
-            print(f"OK {zone['city']} done ({index}/6)")
-        except Exception as error:
-            error_message = str(error)
+        zone_error = None
+        for attempt in range(1, ZONE_MAX_RETRIES + 1):
+            try:
+                data = fetch_zone(zone, now)
+                output_path = DATA_DIR / f"panchang-{zone['name']}.json"
+                output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                success_count += 1
+                print(f"OK {zone['city']} done ({index}/{len(ZONES)})")
+                zone_error = None
+                break
+            except Exception as error:
+                zone_error = str(error)
+                if attempt < ZONE_MAX_RETRIES:
+                    wait_seconds = ZONE_RETRY_BACKOFF_SECONDS * attempt
+                    print(
+                        f"RETRY {zone['city']} attempt {attempt}/{ZONE_MAX_RETRIES} failed: {zone_error}. "
+                        f"Retrying in {wait_seconds}s..."
+                    )
+                    time.sleep(wait_seconds)
+                else:
+                    print(
+                        f"FAILED {zone['city']} after {ZONE_MAX_RETRIES} attempts: {zone_error}"
+                    )
+
+        if zone_error is not None:
             failed_zones.append(
                 {
                     "zone": zone["name"],
                     "city": zone["city"],
-                    "error": error_message,
+                    "error": zone_error,
                 }
             )
-            print(f"FAILED {zone['city']} failed: {error_message}")
             continue
 
     health = {
@@ -245,7 +273,14 @@ def main():
         ),
     }
     HEALTH_PATH.write_text(json.dumps(health, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Panchang updated for {now.strftime('%Y-%m-%d')} - {success_count}/6 zones successful")
+    print(
+        f"Panchang updated for {now.strftime('%Y-%m-%d')} - "
+        f"{success_count}/{len(ZONES)} zones successful"
+    )
+
+    if success_count != len(ZONES):
+        # Return non-zero so GitHub Actions flags the run and writes a failure health report.
+        sys.exit(1)
 
 
 if __name__ == "__main__":

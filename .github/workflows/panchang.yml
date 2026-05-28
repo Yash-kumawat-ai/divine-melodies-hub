@@ -2,7 +2,10 @@ name: Daily Panchang Fetch
 
 on:
   schedule:
+    # 23:30 UTC = 05:00 IST (daily, next calendar day in India)
     - cron: '30 23 * * *'
+    # Backup run: 23:50 UTC = 05:20 IST
+    - cron: '50 23 * * *'
   workflow_dispatch:
 
 permissions:
@@ -11,6 +14,10 @@ permissions:
 jobs:
   fetch-panchang:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: daily-panchang-fetch
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repo
@@ -23,7 +30,9 @@ jobs:
           cache: 'pip'
 
       - name: Install vedastro
-        run: pip install vedastro
+        run: |
+          python -m pip install --upgrade pip
+          pip install vedastro
 
       - name: Run Panchang fetch
         run: |
