@@ -10,6 +10,6 @@
       "error": "No panchang-fetch.log was created. The workflow likely failed before the fetch script started."
     }
   ],
-  "updated_at": "2026-05-29T01:30:25.738Z",
+  "updated_at": "2026-05-29T01:35:03.931Z",
   "message": "Panchang update workflow failed"
 }
