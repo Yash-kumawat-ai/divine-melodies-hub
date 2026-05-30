@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
-  Bell,
   CalendarDays,
   Clock3,
   Compass,
@@ -12,6 +11,8 @@ import {
   Info,
   Landmark,
   Languages,
+  LogIn,
+  LogOut,
   Moon,
   Plus,
   Search,
@@ -21,6 +22,7 @@ import {
   User,
 } from "lucide-react";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { languageOptions } from "@/constants/languageOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -113,13 +115,27 @@ const FEATURE_ITEMS: FeatureItem[] = [
 
 export default function MobileBottomNav() {
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [featuresOpen, setFeaturesOpen] = useState(false);
 
-  const accountPath = user ? "/notifications" : "/auth/login";
-  const accountActive = pathname.startsWith("/auth") || pathname.startsWith("/notifications");
+  const accountPath = user ? "/account" : "/auth/login";
+  const accountActive = pathname.startsWith("/auth") || pathname.startsWith("/account");
+  const displayName = profile?.name || user?.email?.split("@")[0] || t("guestDevotee");
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLogout = async () => {
+    await signOut();
+    setFeaturesOpen(false);
+    navigate("/");
+  };
 
   return (
     <>
@@ -195,6 +211,52 @@ export default function MobileBottomNav() {
             <SheetTitle className="text-base">{t("features")}</SheetTitle>
           </SheetHeader>
 
+          <div className="mb-4 rounded-2xl border border-primary/15 bg-gradient-to-br from-amber-50 via-background to-orange-50 p-3 shadow-sm dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-12 w-12 border border-primary/25 bg-background">
+                <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-foreground">{user ? displayName : t("devoteeProfile")}</p>
+                <p className="truncate text-xs text-muted-foreground">{user?.email || t("manageDevotion")}</p>
+                <p className="mt-1 text-[11px] font-medium text-primary">{user ? t("signedInDevotee") : t("guestDevotee")}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <SheetClose asChild>
+                <Link
+                  to={accountPath}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 text-xs font-semibold text-foreground shadow-sm transition-colors active:scale-[0.98]"
+                >
+                  {user ? <User className="h-4 w-4 text-primary" /> : <LogIn className="h-4 w-4 text-primary" />}
+                  <span className="truncate">{user ? t("myAccount") : t("login")}</span>
+                </Link>
+              </SheetClose>
+              {user ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border/80 bg-background/80 px-3 text-xs font-semibold text-foreground shadow-sm transition-colors active:scale-[0.98]"
+                >
+                  <LogOut className="h-4 w-4 text-primary" />
+                  <span className="truncate">{t("logout")}</span>
+                </button>
+              ) : (
+                <SheetClose asChild>
+                  <Link
+                    to="/auth/signup"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary/25 bg-primary/10 px-3 text-xs font-semibold text-primary shadow-sm transition-colors active:scale-[0.98]"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="truncate">{t("profile")}</span>
+                  </Link>
+                </SheetClose>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2.5">
             {FEATURE_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -233,9 +295,9 @@ export default function MobileBottomNav() {
                 aria-current={accountActive ? "page" : undefined}
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-background text-primary shadow-inner">
-                  {user ? <Bell className="h-5 w-5" strokeWidth={2.25} /> : <User className="h-5 w-5" strokeWidth={2.25} />}
+                  {user ? <User className="h-5 w-5" strokeWidth={2.25} /> : <User className="h-5 w-5" strokeWidth={2.25} />}
                 </span>
-                <span className="max-w-full truncate">{user ? t("notifications") : t("profile")}</span>
+                <span className="max-w-full truncate">{user ? t("myAccount") : t("profile")}</span>
               </Link>
             </SheetClose>
           </div>

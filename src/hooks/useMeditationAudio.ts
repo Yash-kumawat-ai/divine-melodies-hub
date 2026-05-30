@@ -14,6 +14,7 @@ const MANTRA_FREQ: Record<MantraId, number> = {
   hare_krishna: 220,
   jai_shree_ram: 207,
   om_namo_narayanaya: 233,
+  radhe_radhe: 220,
 };
 
 /**

@@ -3,6 +3,12 @@
  * actually appears in title, singer, or (if already matched) lyrics.
  */
 
+import {
+  expandSearchQueryVariants,
+  latinQueryMatchesHindiTitle,
+  normalizeHinglishLatin,
+} from '@/lib/hinglishTransliterate';
+
 function levenshteinDistance(str1: string, str2: string): number {
   const track = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
 
@@ -54,15 +60,17 @@ export function getFlexibleSearchTokens(query: string): string[] {
   if (!trimmed) return [];
 
   const tokens = new Set<string>();
+  const hasDevanagari = containsDevanagari(trimmed);
+  const minTokenLength = hasDevanagari ? 2 : 3;
   const add = (value: string) => {
-    if (value.length >= 3) tokens.add(value);
+    if (value.length >= minTokenLength) tokens.add(value);
   };
 
   add(trimmed);
   extractWords(trimmed).forEach(add);
 
   const compact = normalizeSearchText(trimmed);
-  if (compact.length >= 3) tokens.add(compact);
+  if (compact.length >= minTokenLength) tokens.add(compact);
 
   const allowSplit = containsDevanagari(trimmed) || compact.length >= 8;
   if (allowSplit && !/\s/.test(trimmed) && compact.length >= 6) {
@@ -136,27 +144,13 @@ function fuzzyTitleWordMatch(queryWord: string, titleWord: string): boolean {
   );
 }
 
-const LATIN_HINDI_FRAGMENTS: Record<string, string> = {
-  bethe: 'बैठ',
-  baithe: 'बैठ',
-  baithhe: 'बैठ',
-  baith: 'बैठ',
-  chup: 'चुप',
-  chap: 'चाप',
-  chupchap: 'चुप',
-};
-
-function latinQueryMatchesHindiTitle(query: string, titleHindi: string): boolean {
-  const q = query.toLowerCase().trim();
-  if (!isLatinQuery(q) || !titleHindi) return false;
-  const qCompact = normalizeSearchText(q);
-  for (const [latin, devFragment] of Object.entries(LATIN_HINDI_FRAGMENTS)) {
-    const latinCompact = normalizeSearchText(latin);
-    if (qCompact.includes(latinCompact) || latinCompact.includes(qCompact)) {
-      if (qCompact.length >= 3 && titleHindi.includes(devFragment)) return true;
-    }
-  }
-  return false;
+function queryMatchesWithVariants(
+  matcher: (bhajan: any, query: string) => boolean,
+  bhajan: any,
+  query: string,
+): boolean {
+  const variants = expandSearchQueryVariants(query);
+  return variants.some((variant) => matcher(bhajan, variant));
 }
 
 /**
@@ -293,6 +287,195 @@ export function smartSearchBhajans(query: string, source: any[] = []): any[] {
       _searchScore: scoreBhajan(bhajan, query),
     }))
     .filter((b) => b._searchScore > 0)
+    .sort((a, b) => b._searchScore - a._searchScore);
+
+  return deduplicateResults(scoredBhajans).map(({ _searchScore, ...rest }) => rest);
+}
+
+/** Narad AI: title-first search with strict match first, fuzzy only when needed. */
+const NARAD_MIN_SCORE = 60;
+
+function getNaradTitleFields(bhajan: any) {
+  const title = String(bhajan.title || '');
+  const titleHindi = String(bhajan.titleHindi || '');
+  const transliteration = String(bhajan.lyricsTransliteration || '');
+  const titleBlob = `${title} ${titleHindi} ${transliteration}`.trim();
+  return {
+    title,
+    titleHindi,
+    transliteration,
+    titleBlob,
+    titleCompact: normalizeSearchText(`${title} ${titleHindi} ${transliteration}`),
+    titleWords: extractWords(titleBlob),
+  };
+}
+
+function bhajanStrictTitleMatchSingle(bhajan: any, query: string): boolean {
+  const trimmed = query.trim();
+  if (!trimmed || !bhajan) return false;
+
+  const fields = getNaradTitleFields(bhajan);
+  const queryCompact = normalizeSearchText(trimmed);
+
+  if (
+    substringMatch(fields.title, trimmed) ||
+    substringMatch(fields.titleHindi, trimmed) ||
+    substringMatch(fields.transliteration, trimmed) ||
+    latinQueryMatchesHindiTitle(trimmed, fields.titleHindi)
+  ) {
+    return true;
+  }
+
+  if (queryCompact.length >= 2 && fields.titleCompact.includes(queryCompact)) {
+    return true;
+  }
+
+  const queryWords = extractWords(trimmed);
+  if (queryWords.length > 1) {
+    const minWordLen = containsDevanagari(trimmed) ? 2 : 3;
+    const significant = queryWords.filter((w) => w.length >= minWordLen);
+    if (
+      significant.length > 0 &&
+      significant.every((qWord) =>
+        fields.titleWords.some(
+          (tWord) => tWord.includes(qWord) || qWord.includes(tWord) || compactMatch(tWord, qWord),
+        ),
+      )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function bhajanStrictTitleMatch(bhajan: any, query: string): boolean {
+  if (bhajanStrictTitleMatchSingle(bhajan, query)) return true;
+  return queryMatchesWithVariants(bhajanStrictTitleMatchSingle, bhajan, query);
+}
+
+function bhajanFuzzyTitleMatch(bhajan: any, query: string): boolean {
+  const trimmed = query.trim();
+  if (!trimmed || !bhajan) return false;
+
+  const fields = getNaradTitleFields(bhajan);
+
+  if (isLatinQuery(trimmed) && latinQueryMatchesHindiTitle(trimmed, fields.titleHindi)) {
+    return true;
+  }
+
+  const normalizedLatin = normalizeHinglishLatin(trimmed);
+  const queryWords = extractWords(normalizedLatin).filter((w) => w.length >= 3);
+  const titleWords = fields.titleWords.filter((w) => w.length >= 3);
+
+  if (queryWords.length > 1) {
+    const allWordsMatch = queryWords.every((qWord) =>
+      titleWords.some(
+        (tWord) =>
+          tWord.includes(qWord) ||
+          qWord.includes(tWord) ||
+          compactMatch(tWord, qWord) ||
+          substringMatch(fields.transliteration, qWord) ||
+          substringMatch(fields.title, qWord),
+      ),
+    );
+    if (allWordsMatch) return true;
+    return false;
+  }
+
+  if (queryWords.length > 0) {
+    const allWordsMatch = queryWords.every((qWord) =>
+      titleWords.some(
+        (tWord) =>
+          tWord.includes(qWord) ||
+          qWord.includes(tWord) ||
+          compactMatch(tWord, qWord) ||
+          (isLatinQuery(qWord) && (laxLatinWordMatch(qWord, tWord) || fuzzyTitleWordMatch(qWord, tWord))),
+      ),
+    );
+    if (allWordsMatch) return true;
+  }
+
+  if (isLatinQuery(trimmed) && trimmed.length >= 4) {
+    if (titleWords.some((tWord) => laxLatinWordMatch(trimmed, tWord) || fuzzyTitleWordMatch(trimmed, tWord))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function scoreNaradBhajan(bhajan: any, query: string, strictOnly: boolean): number {
+  const matches = strictOnly ? bhajanStrictTitleMatch(bhajan, query) : bhajanFuzzyTitleMatch(bhajan, query);
+  if (!matches) return 0;
+
+  let score = 40;
+  const fields = getNaradTitleFields(bhajan);
+  const queryLower = query.toLowerCase().trim();
+  const queryCompact = normalizeSearchText(query);
+  const queryWords = extractWords(query).filter((w) => w.length >= 2);
+
+  if (fields.titleHindi.toLowerCase() === queryLower || fields.title.toLowerCase() === queryLower) {
+    score += 200;
+  } else if (substringMatch(fields.titleHindi, query)) {
+    score += 120;
+  } else if (substringMatch(fields.title, query)) {
+    score += 100;
+  }
+
+  if (queryCompact.length >= 2 && fields.titleCompact.includes(queryCompact)) {
+    score += 80;
+  }
+
+  if (latinQueryMatchesHindiTitle(query, fields.titleHindi)) {
+    score += 150;
+  }
+
+  for (const variant of expandSearchQueryVariants(query)) {
+    if (variant !== query && substringMatch(fields.titleHindi, variant)) score += 90;
+    if (variant !== query && fields.titleCompact.includes(normalizeSearchText(variant))) score += 70;
+  }
+
+  for (const qWord of queryWords) {
+    if (fields.titleWords.some((tWord) => tWord.includes(qWord) || qWord.includes(tWord))) {
+      score += 25;
+    }
+    if (areSynonyms(qWord, fields.title)) score += 20;
+  }
+
+  return score;
+}
+
+function allowNaradFuzzyFallback(query: string): boolean {
+  const trimmed = query.trim();
+  if (!trimmed) return false;
+  if (containsDevanagari(trimmed)) return trimmed.length >= 3;
+  return trimmed.length >= 4;
+}
+
+/**
+ * Narad AI search: strict title match first; fuzzy title match only if needed and allowed.
+ * Results below NARAD_MIN_SCORE are dropped.
+ */
+export function naradSearchBhajans(query: string, source: any[] = []): any[] {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const strictMatches = source.filter((bhajan) => bhajanStrictTitleMatch(bhajan, trimmed));
+  let candidates = strictMatches;
+
+  if (candidates.length === 0 && allowNaradFuzzyFallback(trimmed)) {
+    candidates = source.filter((bhajan) => bhajanFuzzyTitleMatch(bhajan, trimmed));
+  }
+
+  const usedStrictOnly = strictMatches.length > 0;
+
+  const scoredBhajans = candidates
+    .map((bhajan) => ({
+      ...bhajan,
+      _searchScore: scoreNaradBhajan(bhajan, trimmed, usedStrictOnly || strictMatches.includes(bhajan)),
+    }))
+    .filter((b) => b._searchScore >= NARAD_MIN_SCORE)
     .sort((a, b) => b._searchScore - a._searchScore);
 
   return deduplicateResults(scoredBhajans).map(({ _searchScore, ...rest }) => rest);

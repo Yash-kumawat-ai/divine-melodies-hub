@@ -24,8 +24,26 @@ export default function AuthCallback() {
 
       try {
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
+          if (data.user) {
+            const client = supabase as any;
+            const meta = data.user.user_metadata ?? {};
+            const name =
+              meta.name ||
+              meta.full_name ||
+              data.user.email?.split('@')[0] ||
+              'Devotee';
+            await client.from('user_profiles').upsert(
+              {
+                id: data.user.id,
+                email: data.user.email || `${data.user.id}@user.local`,
+                name,
+                phone_number: meta.phone_number || null,
+              },
+              { onConflict: 'id' },
+            );
+          }
           navigate(next, { replace: true });
           return;
         }

@@ -212,6 +212,43 @@ export default defineConfig(({ mode }) => ({
             res.end(JSON.stringify({ error: "Unexpected proxy error." }));
           }
         });
+
+        server.middlewares.use("/api/panchang", async (req, res) => {
+          const pathname = (req.url || "").split("?")[0];
+          const zoneName = pathname.replace(/^\/+/, "").split("/")[0];
+          if (!zoneName) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ error: "Zone required" }));
+            return;
+          }
+
+          try {
+            const { buildPanchangForZone } = await import("./src/lib/panchang/fetchZone");
+            const { ZONES } = await import("./src/utils/panchangZone");
+            const zone = ZONES.find((item) => item.name === zoneName);
+            if (!zone) {
+              res.statusCode = 404;
+              res.setHeader("Content-Type", "application/json");
+              res.end(JSON.stringify({ error: `Unknown zone: ${zoneName}` }));
+              return;
+            }
+
+            const data = await buildPanchangForZone(zone);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.setHeader("Cache-Control", "no-store");
+            res.end(JSON.stringify(data));
+          } catch (error) {
+            res.statusCode = 502;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                error: error instanceof Error ? error.message : "Panchang calculation failed",
+              }),
+            );
+          }
+        });
       },
     },
     mode === "development" && componentTagger(),

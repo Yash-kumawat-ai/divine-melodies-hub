@@ -272,7 +272,7 @@ export default function NaradFloatingWidget() {
     }
   }, [activeAction, closeAll, navigate]);
 
-  if (pathname === "/kirtan-ai") {
+  if (pathname === "/kirtan-ai" || pathname.startsWith("/auth")) {
     return null;
   }
 

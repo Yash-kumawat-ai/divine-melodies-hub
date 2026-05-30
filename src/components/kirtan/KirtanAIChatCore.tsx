@@ -8,7 +8,7 @@ import { TextToSpeech, VoiceManager, checkVoiceSupport } from "@/lib/voiceUtils"
 import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "@/data/bhajans";
-import { bhajanMatchesQuery, smartSearchBhajans } from "@/lib/searchAlgorithm";
+import { bhajanMatchesQuery, naradSearchBhajans } from "@/lib/searchAlgorithm";
 import { searchUserBhajans } from "@/lib/supabaseQueries";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,7 +27,6 @@ import {
   KirtanMood,
   OFFLINE_BHAJANS,
   createBhajanFromDraft,
-  exactSearchBhajans,
   filterByDeityAndLanguage,
   filterByMood,
   getOccasionSuggestions,
@@ -37,7 +36,12 @@ import {
 } from "@/lib/offlineKirtan";
 import { cn } from "@/lib/utils";
 import DevotionActionCard from "@/components/devotion/DevotionActionCard";
-import { createNaradActionResult, parseNaradIntent, type NaradActionResult } from "@/lib/narad/naradIntents";
+import {
+  createNaradActionResult,
+  looksLikeDirectSongQuery,
+  parseNaradIntent,
+  type NaradActionResult,
+} from "@/lib/narad/naradIntents";
 
 type Role = "user" | "bot";
 type Flow =
@@ -114,6 +118,10 @@ function stripFillerWords(value: string): string {
     .trim();
 }
 
+function containsDevanagari(value: string): boolean {
+  return /[\u0900-\u097F]/.test(value);
+}
+
 function extractChatSearchTerm(value: string): { term: string; isSearch: boolean; isDeityBrowse: boolean } {
   let text = stripFillerWords(value);
   const lower = text.toLowerCase();
@@ -128,7 +136,11 @@ function extractChatSearchTerm(value: string): { term: string; isSearch: boolean
     .replace(/\s+(bhajan chahiye|ka bhajan)$/i, "")
     .trim();
 
-  const directName = text.length >= 3 && !/^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|my favorites|add a bhajan|start 108 japa|start meditation|offer flower|today's devotion)$/i.test(text);
+  const isShortcutCommand =
+    /^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|my favorites|add a bhajan|start 108 japa|start meditation|offer flower|today's devotion)$/i.test(
+      text,
+    );
+  const directName = !isShortcutCommand && (containsDevanagari(text) ? text.length >= 2 : text.length >= 3);
   return { term: text, isSearch: directName, isDeityBrowse: false };
 }
 
@@ -399,15 +411,6 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     });
   };
 
-  const runExactSearch = (query: string) => {
-    const results = exactSearchBhajans(query, library);
-    pushBot({
-      text: results.length ? "Exact match mil gaya." : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["Add a Bhajan"],
-      bhajans: results,
-    });
-  };
-
   const runExistingBhajanSearch = async (query: string, isDeityBrowse = false) => {
     const term = query.trim();
     if (!term) return;
@@ -415,13 +418,13 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const searchPool = dedupeBhajans([...appBhajans, ...uploadedBhajans]);
     const localMatches = isDeityBrowse
       ? searchPool.filter((bhajan) => strictBhajanMatch(term, bhajan))
-      : smartSearchBhajans(term, searchPool);
+      : naradSearchBhajans(term, searchPool);
 
     const pushSearchResults = (combined: Bhajan[]) => {
       pushBot({
         text: combined.length
           ? `Yeh results mile "${term}" ke liye. Card par click karke details popup open karein.`
-          : `कोई भजन नहीं मिला '${term}' के लिए। क्या आप इसे add करना चाहते हैं?`,
+          : `कोई भजन नहीं मिला '${term}' के लिए। पूरा नाम Hindi ya English me likh kar phir try karein, ya add karein।`,
         options: combined.length ? undefined : ["Yes, Add It", "No Thanks"],
         appBhajans: combined.slice(0, 6),
         searchQuery: term,
@@ -440,7 +443,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
       if (fromApi.length) {
         setUploadedBhajans((prev) => dedupeBhajans([...prev, ...fromApi]));
       }
-      const combined = smartSearchBhajans(term, dedupeBhajans([...searchPool, ...fromApi]));
+      const combined = naradSearchBhajans(term, dedupeBhajans([...searchPool, ...fromApi]));
       pushSearchResults(combined);
     } catch (error) {
       console.error("Kirtan AI search failed:", error);
@@ -598,7 +601,15 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     if (normalized.includes("occasion") || normalized.includes("today")) return startOccasionFlow();
     if (normalized.includes("aarti")) return showAartiCollection();
     if (normalized.includes("favorite")) return showFavorites();
-    runExactSearch(text);
+
+    if (looksLikeDirectSongQuery(text)) {
+      return runExistingBhajanSearch(text);
+    }
+
+    pushBot({
+      text: "Main bhajan search me madad kar sakta hoon. Kripya bhajan ka naam Hindi ya English me likhein.",
+      options: QUICK_ACTIONS,
+    });
   };
 
   const toggleFavorite = (bhajan: KirtanBhajan) => {
@@ -1069,6 +1080,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
           setSelectedBhajan(null);
         }}
         allBhajans={appBhajans}
+        elevatedLayer={isCompact}
       />
     </motion.div>
   );

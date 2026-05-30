@@ -107,12 +107,30 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      return new Response(JSON.stringify({ error: `Unsupported file type: ${file.type}` }), {
+    let fileType = (file.type || '').toLowerCase();
+    if (fileType === 'image/jpg') fileType = 'image/jpeg';
+    if (!ALLOWED_TYPES.includes(fileType)) {
+      const ext = (file.name || '').split('.').pop()?.toLowerCase() ?? '';
+      const byExt: Record<string, string> = {
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        webp: 'image/webp',
+      };
+      if (byExt[ext]) fileType = byExt[ext];
+    }
+
+    if (!ALLOWED_TYPES.includes(fileType)) {
+      return new Response(JSON.stringify({ error: `Unsupported file type: ${file.type || fileType || 'unknown'}` }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const uploadFile =
+      fileType !== file.type
+        ? new File([await file.arrayBuffer()], file.name || 'upload.jpg', { type: fileType })
+        : file;
 
     if (file.size > MAX_BYTES) {
       return new Response(JSON.stringify({ error: 'File exceeds 5MB limit' }), {
@@ -150,7 +168,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const safeBase = sanitizeBaseFilename(file.name || 'upload');
+    const safeBase = sanitizeBaseFilename(uploadFile.name || 'upload');
     const publicId = `${Date.now()}_${safeBase}`;
     const folder = resolveUploadFolder(uploadTypeRaw, user.id);
 
@@ -167,7 +185,7 @@ Deno.serve(async (req: Request) => {
     const signature = await buildCloudinarySignature(signatureParams, apiSecret);
 
     const cloudinaryForm = new FormData();
-    cloudinaryForm.append('file', file);
+    cloudinaryForm.append('file', uploadFile);
     cloudinaryForm.append('api_key', apiKey);
     cloudinaryForm.append('timestamp', timestamp);
     cloudinaryForm.append('signature', signature);

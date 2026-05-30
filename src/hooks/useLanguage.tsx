@@ -10,8 +10,15 @@ type TranslationKey =
   | 'search'
   | 'upload'
   | 'login'
+  | 'signUp'
   | 'logout'
   | 'profile'
+  | 'accountMenu'
+  | 'devoteeProfile'
+  | 'signedInDevotee'
+  | 'guestDevotee'
+  | 'manageDevotion'
+  | 'uploading'
   | 'setPhoto'
   | 'language'
   | 'more'
@@ -205,7 +212,38 @@ type TranslationKey =
   | 'loading'
   | 'somethingWentWrong'
   | 'goHome'
-  | 'refreshPage';
+  | 'refreshPage'
+  | 'myProfile'
+  | 'editProfile'
+  | 'likedBhajans'
+  | 'ourSevaPlan'
+  | 'helpSupport'
+  | 'currentPlan'
+  | 'viewPlans'
+  | 'noLikedBhajans'
+  | 'signInToLike'
+  | 'sevaPlanBlurb'
+  | 'openAccount'
+  | 'saveProfile'
+  | 'phoneNumber'
+  | 'emailReadOnly'
+  | 'profileUpdated'
+  | 'supportTitle'
+  | 'supportIntro'
+  | 'contactSupport'
+  | 'myAccount'
+  | 'freePlan'
+  | 'likeBhajan'
+  | 'unlikeBhajan'
+  | 'profileSection'
+  | 'accountSettings'
+  | 'displayName'
+  | 'accountDetails'
+  | 'changePhoto'
+  | 'cancelEdit'
+  | 'quickLinks'
+  | 'notSet'
+  | 'languagePreference';
 
 const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, string>>> = {
   en: {
@@ -216,8 +254,15 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     search: 'Search',
     upload: 'Upload',
     login: 'Log in',
+    signUp: 'Sign up',
     logout: 'Log out',
     profile: 'Profile',
+    accountMenu: 'Account menu',
+    devoteeProfile: 'Devotee Profile',
+    signedInDevotee: 'Signed in devotee',
+    guestDevotee: 'Guest devotee',
+    manageDevotion: 'Manage your devotional journey',
+    uploading: 'Uploading...',
     setPhoto: 'Set profile photo',
     language: 'Language',
     more: 'More',
@@ -411,8 +456,45 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     somethingWentWrong: 'Something went wrong',
     goHome: 'Go Home',
     refreshPage: 'Refresh Page',
+    myProfile: 'My Profile',
+    editProfile: 'Edit profile',
+    likedBhajans: 'Liked Bhajans',
+    ourSevaPlan: 'Our Seva Plan',
+    helpSupport: 'Help & Support',
+    currentPlan: 'Current plan',
+    viewPlans: 'View plans',
+    noLikedBhajans: 'No liked bhajans yet. Tap the heart on any bhajan to save it here.',
+    signInToLike: 'Sign in to save your favourite bhajans.',
+    sevaPlanBlurb: 'Support the platform and unlock more uploads, badges, and early features.',
+    openAccount: 'Open account',
+    saveProfile: 'Save profile',
+    phoneNumber: 'Phone number',
+    emailReadOnly: 'Email (cannot be changed here)',
+    profileUpdated: 'Profile updated',
+    supportTitle: 'Help & Support',
+    supportIntro: 'We are here for your devotional journey on Hari Kirtan.',
+    contactSupport: 'Email support',
+    myAccount: 'My account',
+    freePlan: 'Free',
+    likeBhajan: 'Like bhajan',
+    unlikeBhajan: 'Unlike bhajan',
+    profileSection: 'My profile',
+    accountSettings: 'Account',
+    displayName: 'Display name',
+    accountDetails: 'Account details',
+    changePhoto: 'Change photo',
+    cancelEdit: 'Cancel',
+    quickLinks: 'Quick links',
+    notSet: 'Not added',
+    languagePreference: 'App language',
   },
   hi: {
+    accountMenu: 'खाता मेनू',
+    devoteeProfile: 'भक्त प्रोफाइल',
+    signedInDevotee: 'लॉग इन भक्त',
+    guestDevotee: 'अतिथि भक्त',
+    manageDevotion: 'अपनी भक्ति यात्रा संभालें',
+    uploading: 'अपलोड हो रहा है...',
     home: 'होम',
     browse: 'खोजी',
     recent: 'नवीन',
@@ -420,6 +502,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     search: 'खोज',
     upload: 'अपलोड',
     login: 'लॉग इन',
+    signUp: 'खाता बनाएं',
     logout: 'लॉग आउट',
     profile: 'प्रोफाइल',
     setPhoto: 'प्रोफाइल फोटो सेट करें',
@@ -615,6 +698,37 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     somethingWentWrong: 'कुछ गलत हो गया',
     goHome: 'होम जाएं',
     refreshPage: 'पेज रिफ्रेश करें',
+    myProfile: 'मेरा प्रोफाइल',
+    editProfile: 'प्रोफाइल संपादित करें',
+    likedBhajans: 'पसंदीदा भजन',
+    ourSevaPlan: 'हमारी सेवा योजना',
+    helpSupport: 'सहायता',
+    currentPlan: 'वर्तमान योजना',
+    viewPlans: 'योजनाएं देखें',
+    noLikedBhajans: 'अभी कोई पसंदीदा भजन नहीं। किसी भी भजन पर दिल दबाकर यहाँ सहेजें।',
+    signInToLike: 'पसंदीदा भजन सहेजने के लिए लॉग इन करें।',
+    sevaPlanBlurb: 'प्लेटफॉर्म का समर्थन करें और अधिक अपलोड व सुविधाएं पाएं।',
+    openAccount: 'खाता खोलें',
+    saveProfile: 'प्रोफाइल सहेजें',
+    phoneNumber: 'फ़ोन नंबर',
+    emailReadOnly: 'ईमेल (यहाँ बदला नहीं जा सकता)',
+    profileUpdated: 'प्रोफाइल अपडेट हो गई',
+    supportTitle: 'सहायता',
+    supportIntro: 'हरि कीर्तन पर आपकी भक्ति यात्रा के लिए हम यहाँ हैं।',
+    contactSupport: 'ईमेल सहायता',
+    myAccount: 'मेरा खाता',
+    freePlan: 'मुफ्त',
+    likeBhajan: 'भजन पसंद करें',
+    unlikeBhajan: 'पसंद हटाएं',
+    profileSection: 'मेरा प्रोफाइल',
+    accountSettings: 'खाता',
+    displayName: 'नाम',
+    accountDetails: 'खाता विवरण',
+    changePhoto: 'फोटो बदलें',
+    cancelEdit: 'रद्द करें',
+    quickLinks: 'शीघ्र लिंक',
+    notSet: 'जोड़ा नहीं',
+    languagePreference: 'ऐप भाषा',
   },
   gu: {
     home: 'હોમ', browse: 'અન્વેષણ', trending: 'ટ્રેન્ડિંગ', search: 'શોધો',

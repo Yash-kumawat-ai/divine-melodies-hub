@@ -6,7 +6,7 @@ export type VisualMode = "full_mandala" | "minimal" | "dim" | "breath_ring";
 export type AudioMode = "synth" | "silent";
 export type AmbienceId = "tanpura" | "bell" | "rain" | "river" | "flute" | "silence";
 
-export type MantraId = "om_namah_shivaya" | "hare_krishna" | "jai_shree_ram" | "om_namo_narayanaya";
+export type MantraId = "om_namah_shivaya" | "hare_krishna" | "jai_shree_ram" | "om_namo_narayanaya" | "radhe_radhe";
 
 export type MeditationPractice = {
   id: string;
@@ -49,6 +49,9 @@ export type MeditationSessionLog = {
   moodAfter?: string;
   journalText?: string;
   sankalp?: string;
+  japaCount?: number;
+  japaTarget?: 108 | 54 | 27;
+  mantraId?: MantraId;
 };
 
 export type MeditationPreferences = {
@@ -121,6 +124,21 @@ export const MANTRA_PRACTICES: MeditationPractice[] = [
     difficulty: "gentle",
     goalTags: ["bhakti", "joy"],
     deityJourney: "Krishna",
+  },
+  {
+    id: "mantra_radhe",
+    type: "mantra",
+    title: "Radhe Radhe",
+    subtitle: "Radha-Krishna bhakti - naam japa",
+    chant: CHANT.radheRadhe,
+    mantraId: "radhe_radhe",
+    defaultDurationMinutes: 11,
+    durationOptions: [5, 11, 21, "open"],
+    audioMode: "synth",
+    visualMode: "full_mandala",
+    difficulty: "beginner",
+    goalTags: ["bhakti", "joy"],
+    deityJourney: "Radhe Radhe",
   },
   {
     id: "mantra_ram",

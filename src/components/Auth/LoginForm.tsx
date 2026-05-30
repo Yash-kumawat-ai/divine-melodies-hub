@@ -34,9 +34,11 @@ export default function LoginForm() {
       if (error.message?.toLowerCase().includes('email not confirmed')) {
         setCanResendConfirmation(true);
       }
-    } else {
-      navigate('/upload-bhajan');
+      setLoading(false);
+      return;
     }
+
+    navigate('/upload-bhajan', { replace: true });
     setLoading(false);
   };
 

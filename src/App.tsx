@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SuspenseFallback from "./components/SuspenseFallback";
 import AppShell from "./components/layout/AppShell";
+import { AuthProvider } from "./hooks/useAuth";
 import { LanguageProvider } from "./hooks/useLanguage";
 import { AssistantContextProvider } from "./hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "./hooks/useAIModal";
@@ -49,6 +50,9 @@ const About = lazy(() => import("./pages/About"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
+const AccountPage = lazy(() => import("./pages/account/AccountPage"));
+const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
+const SupportPage = lazy(() => import("./pages/account/SupportPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -60,11 +64,9 @@ function AppContent() {
           <Route
             path="/auth/login"
             element={
-              <Suspense fallback={<SuspenseFallback />}>
-                <AuthShell mode="login">
-                  <LoginForm />
-                </AuthShell>
-              </Suspense>
+              <AuthShell mode="login">
+                <LoginForm />
+              </AuthShell>
             }
           />
           <Route
@@ -74,11 +76,9 @@ function AppContent() {
           <Route
             path="/auth/signup"
             element={
-              <Suspense fallback={<SuspenseFallback />}>
-                <AuthShell mode="signup">
-                  <SignupTabs />
-                </AuthShell>
-              </Suspense>
+              <AuthShell mode="signup">
+                <SignupTabs />
+              </AuthShell>
             }
           />
 
@@ -140,6 +140,23 @@ function AppContent() {
               }
             />
             <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account/liked"
+              element={
+                <ProtectedRoute>
+                  <LikedBhajansPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/account/support" element={<SupportPage />} />
+            <Route
               path="/upload-bhajan"
               element={
                 <ProtectedRoute>
@@ -180,6 +197,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <AuthProvider>
         <LanguageProvider>
           <AssistantContextProvider>
             <AIModalProvider>
@@ -195,6 +213,7 @@ const App = () => (
             </AIModalProvider>
           </AssistantContextProvider>
         </LanguageProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Loader2, Play, Star } from "lucide-react";
+import { Heart, Loader2, Play, Star } from "lucide-react";
 import { Bhajan, getDeityById, bhajans as allBhajansData } from "@/data/bhajans";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useLikedBhajans } from "@/hooks/useLikedBhajans";
+import { useAuth } from "@/hooks/useAuth";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
-import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
+import { resolveBhajanYouTubePlayback, openYouTubeSearchFallback } from "@/lib/youtubeEmbedPopup";
 import { toast } from "sonner";
 
 interface BhajanCardProps {
@@ -18,7 +20,14 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const [modalBhajan, setModalBhajan] = useState<Bhajan>(bhajan);
   const [playBusy, setPlayBusy] = useState(false);
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { isLiked, toggleLike } = useLikedBhajans();
   const { openPlayer } = useYouTubePlayer();
+  const liked = isLiked(bhajan.id);
+  const hindiTitle = (bhajan.titleHindi || "").trim();
+  const englishTitle = (bhajan.title || "").trim();
+  const primaryTitle = hindiTitle || englishTitle;
+  const secondaryTitle = hindiTitle && englishTitle && hindiTitle !== englishTitle ? englishTitle : "";
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +41,16 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
 
   const handleSelectRelated = (selected: Bhajan) => {
     setModalBhajan(selected);
+  };
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast.error(t("signInToLike"));
+      return;
+    }
+    toggleLike(bhajan.id);
   };
 
   const handlePlayClick = async (e: React.MouseEvent) => {
@@ -52,7 +71,15 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
         return;
       }
 
-      toast.error("Could not load the video. Please try again.");
+      openYouTubeSearchFallback({
+        videoEmbedId: bhajan.videoEmbedId,
+        youtubeUrl: bhajan.youtubeUrl,
+        title: bhajan.title,
+        singerName: bhajan.singerName,
+      });
+      toast.message(t("play") + " — YouTube", {
+        description: "Could not load the in-app player. Opened YouTube instead.",
+      });
     } finally {
       setPlayBusy(false);
     }
@@ -73,20 +100,32 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
         className="group block min-w-0 rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
       >
         <div className={`h-1.5 ${deity?.colorClass ?? "bg-primary"}`} />
-        <div className="p-5">
+        <div className="p-5 relative">
+          <button
+            type="button"
+            onClick={handleLikeClick}
+            className="absolute right-4 top-4 z-10 rounded-full border border-border/60 bg-background/90 p-2 shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
+            aria-label={liked ? t("unlikeBhajan") : t("likeBhajan")}
+          >
+            <Heart
+              className={`h-4 w-4 ${liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+            />
+          </button>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">{deity?.emoji}</span>
             <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
           </div>
           <h3
             className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
-            title={bhajan.title}
+            title={primaryTitle}
           >
-            {bhajan.title}
+            {primaryTitle}
           </h3>
-          <p className="hindi-text text-base text-muted-foreground mt-1 line-clamp-1" title={bhajan.titleHindi}>
-            {bhajan.titleHindi}
-          </p>
+          {secondaryTitle ? (
+            <p className="text-base text-muted-foreground mt-1 line-clamp-1" title={secondaryTitle}>
+              {secondaryTitle}
+            </p>
+          ) : null}
           <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>
             by {bhajan.singerName}
           </p>

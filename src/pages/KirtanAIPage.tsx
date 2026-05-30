@@ -8,10 +8,11 @@ import { TextToSpeech, VoiceManager, checkVoiceSupport } from "../lib/voiceUtils
 import BhajanCard from "../components/BhajanCard";
 import BhajanDetailModal from "../components/BhajanDetailModal";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "../data/bhajans";
-import { bhajanMatchesQuery, smartSearchBhajans } from "../lib/searchAlgorithm";
+import { bhajanMatchesQuery, naradSearchBhajans } from "../lib/searchAlgorithm";
 import { searchUserBhajans } from "../lib/supabaseQueries";
 import { generateBhajanSlug } from "../lib/slugUtils";
 import { useIsMobile } from "../hooks/use-mobile";
+import { looksLikeDirectSongQuery } from "../lib/narad/naradIntents";
 import {
   createChatSession,
   deriveChatTitle,
@@ -27,7 +28,6 @@ import {
   KirtanMood,
   OFFLINE_BHAJANS,
   createBhajanFromDraft,
-  exactSearchBhajans,
   filterByDeityAndLanguage,
   filterByMood,
   getOccasionSuggestions,
@@ -169,6 +169,7 @@ export default function KirtanAIPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [library, setLibrary] = useState<KirtanBhajan[]>(OFFLINE_BHAJANS);
+  const [uploadedBhajans, setUploadedBhajans] = useState<Bhajan[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [chatSessions, setChatSessions] = useState<KirtanChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string>("");
@@ -302,41 +303,40 @@ export default function KirtanAIPage() {
     });
   };
 
-  const runExactSearch = (query: string) => {
-    const results = exactSearchBhajans(query, library);
-    pushBot({
-      text: results.length ? "Exact match mil gaya." : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["➕ Add a Bhajan"],
-      bhajans: results,
-    });
-  };
-
   const runExistingBhajanSearch = async (query: string, isDeityBrowse = false) => {
     const term = query.trim();
     if (!term) return;
 
-    try {
-      const uploadRows = await searchUserBhajans(term, 20);
-      const uploadedBhajans = uploadRows.map(convertUploadToBhajan);
+    const searchPool = dedupeBhajans([...appBhajans, ...uploadedBhajans]);
+    const localMatches = isDeityBrowse
+      ? searchPool.filter((bhajan) => strictBhajanMatch(term, bhajan))
+      : naradSearchBhajans(term, searchPool);
 
-      const localCandidates = isDeityBrowse
-        ? appBhajans.filter((bhajan) => strictBhajanMatch(term, bhajan))
-        : smartSearchBhajans(term, appBhajans);
-
-      const combined = smartSearchBhajans(
-        term,
-        dedupeBhajans([...localCandidates, ...uploadedBhajans]),
-      );
-
+    const pushSearchResults = (combined: Bhajan[]) => {
       pushBot({
         text: combined.length
           ? `Yeh results mile "${term}" ke liye. Card par click karke details popup open karein.`
-          : `कोई भजन नहीं मिला '${term}' के लिए। क्या आप इसे add करना चाहते हैं?`,
+          : `कोई भजन नहीं मिला '${term}' के लिए। पूरा नाम Hindi ya English me likh kar phir try karein, ya add karein।`,
         options: combined.length ? undefined : ["Yes, Add It", "No Thanks"],
         appBhajans: combined.slice(0, 6),
         searchQuery: term,
         hasMoreResults: combined.length > 6,
       });
+    };
+
+    if (localMatches.length > 0) {
+      pushSearchResults(localMatches);
+      return;
+    }
+
+    try {
+      const uploadRows = await searchUserBhajans(term, 20);
+      const fromApi = uploadRows.map(convertUploadToBhajan);
+      if (fromApi.length) {
+        setUploadedBhajans((prev) => dedupeBhajans([...prev, ...fromApi]));
+      }
+      const combined = naradSearchBhajans(term, dedupeBhajans([...searchPool, ...fromApi]));
+      pushSearchResults(combined);
     } catch (error) {
       console.error("Kirtan AI search failed:", error);
       pushBot({
@@ -473,7 +473,13 @@ export default function KirtanAIPage() {
     if (normalized.includes("occasion") || normalized.includes("today")) return startOccasionFlow();
     if (normalized.includes("aarti")) return showAartiCollection();
     if (normalized.includes("favorite")) return showFavorites();
-    runExactSearch(text);
+    if (looksLikeDirectSongQuery(text)) {
+      return runExistingBhajanSearch(text);
+    }
+    pushBot({
+      text: "Main bhajan search me madad kar sakta hoon. Kripya bhajan ka naam Hindi ya English me likhein.",
+      options: QUICK_ACTIONS,
+    });
   };
 
   const toggleFavorite = (bhajan: KirtanBhajan) => {

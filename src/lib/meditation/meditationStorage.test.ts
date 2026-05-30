@@ -38,4 +38,21 @@ describe("meditationStorage", () => {
     expect(stats.totalMindfulMinutes).toBe(10);
     expect(stats.sessionCount).toBe(1);
   });
+
+  it("keeps older logs compatible when japa fields are absent", () => {
+    appendSessionLog(
+      createSessionLog({
+        practiceId: "breath_box",
+        practiceType: "breath",
+        startedAt: new Date().toISOString(),
+        completedAt: new Date().toISOString(),
+        durationSeconds: 300,
+        completed: true,
+      }),
+    );
+
+    const [log] = loadSessionLogs();
+    expect(log.japaCount).toBeUndefined();
+    expect(computeStats([log]).totalMindfulMinutes).toBe(5);
+  });
 });
