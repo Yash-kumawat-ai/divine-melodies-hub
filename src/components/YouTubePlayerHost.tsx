@@ -19,8 +19,10 @@ export default function YouTubePlayerHost() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && closePlayer()}>
       <DialogContent
         showClose={false}
+        overlayClassName="z-[160]"
         className={cn(
           mobileFullscreenDialog,
+          "!z-[161]",
           "!flex !flex-col !min-h-0 !gap-0 !overflow-hidden border-white/10 bg-[#0A0A0A] p-0 text-white sm:max-w-4xl",
         )}
       >
@@ -89,7 +91,7 @@ export default function YouTubePlayerHost() {
                 className="h-full w-full"
                 sandbox="allow-scripts allow-same-origin allow-presentation"
                 referrerPolicy="strict-origin-when-cross-origin"
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                 allowFullScreen
               />
             ) : null}

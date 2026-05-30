@@ -19,34 +19,9 @@ import { loadFestivalIndex } from '@/services/festivalService';
 import { useLanguage } from '@/hooks/useLanguage';
 import { cn } from '@/lib/utils';
 import type { FestivalSummary } from '@/types/festival';
+import { loadPanchang } from '@/lib/panchang/loadPanchang';
+import { todayInIndia, type PanchangData } from '@/lib/panchang/types';
 import { getZoneFromBrowser, saveZoneOverride, ZONES, type PanchangZone } from '@/utils/panchangZone';
-
-interface PanchangData {
-  date: string;
-  zone: string;
-  city: string;
-  tithi: string;
-  tithi_number: number;
-  nakshatra: string;
-  yoga: string;
-  karana: string;
-  paksha: string;
-  sunrise: string;
-  sunset: string;
-  rahu_kaal: string;
-  brahma_muhurat: string;
-  vara: string;
-  updated_at: string;
-}
-
-function todayInIndia() {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
 
 function formatDate(date: string, language: 'en' | 'hi') {
   return new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', {
@@ -56,26 +31,6 @@ function formatDate(date: string, language: 'en' | 'hi') {
     year: 'numeric',
     timeZone: 'Asia/Kolkata',
   }).format(new Date(`${date}T00:00:00+05:30`));
-}
-
-function isPanchangData(value: unknown): value is PanchangData {
-  if (!value || typeof value !== 'object') return false;
-  const data = value as Record<string, unknown>;
-  return (
-    typeof data.date === 'string' &&
-    typeof data.zone === 'string' &&
-    typeof data.city === 'string' &&
-    typeof data.tithi === 'string' &&
-    typeof data.nakshatra === 'string' &&
-    typeof data.yoga === 'string' &&
-    typeof data.karana === 'string' &&
-    typeof data.paksha === 'string' &&
-    typeof data.sunrise === 'string' &&
-    typeof data.sunset === 'string' &&
-    typeof data.rahu_kaal === 'string' &&
-    typeof data.brahma_muhurat === 'string' &&
-    typeof data.vara === 'string'
-  );
 }
 
 function FestivalMiniCard({ festival, language }: { festival: FestivalSummary; language: 'en' | 'hi' }) {
@@ -140,15 +95,8 @@ export default function PanchangPage() {
       setError(null);
 
       try {
-        const response = await fetch(`/data/panchang-${zone.name}.json?v=${Date.now()}`, {
-          cache: 'no-store',
-          signal: controller.signal,
-        });
-
-        if (!response.ok) throw new Error('Panchang cache unavailable.');
-        const json: unknown = await response.json();
-        if (!isPanchangData(json)) throw new Error('Invalid Panchang cache.');
-        setPanchang(json);
+        const result = await loadPanchang(zone.name, controller.signal);
+        setPanchang(result.data);
       } catch (err) {
         if (!controller.signal.aborted) {
           setError(err instanceof Error ? err.message : 'Unable to load Panchang.');

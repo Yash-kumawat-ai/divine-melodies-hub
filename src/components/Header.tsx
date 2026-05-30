@@ -24,9 +24,9 @@ import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { formatUploadError, uploadToCloudinary } from "@/lib/cloudinary";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import dhyaanLogo from "@/assets/dhyaan-logo.png";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,9 +39,11 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { languageOptions } from "@/constants/languageOptions";
 import { AdminRoleBadge } from "@/components/notifications/AdminRoleBadge";
 import { UserNotificationBell } from "@/components/notifications/UserNotificationBell";
+import ProfileHubSheet from "@/components/account/ProfileHubSheet";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
+  const [profileHubOpen, setProfileHubOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, isAdmin, isSuperAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -65,15 +67,25 @@ export default function Header() {
     try {
       setIsUploadingAvatar(true);
       const avatarUrl = await uploadToCloudinary(file, 'avatar');
-      await updateProfile({ avatar_url: avatarUrl });
+      const { error } = await updateProfile({ avatar_url: avatarUrl });
+      if (error) {
+        throw new Error(formatUploadError(error, 'Could not save profile photo'));
+      }
+      toast.success('Profile photo updated');
     } catch (err) {
       console.error('Avatar upload failed:', err);
+      toast.error(formatUploadError(err, 'Profile photo upload failed'));
     } finally {
       setIsUploadingAvatar(false);
       if (event.target) {
         event.target.value = '';
       }
     }
+  };
+
+  const openAvatarPicker = (event: Event) => {
+    event.preventDefault();
+    fileInputRef.current?.click();
   };
 
   const displayName = profile?.name || user?.email?.split('@')[0] || 'User';
@@ -89,16 +101,12 @@ export default function Header() {
       ? profile.role
       : null;
 
-  const accountPath = user ? "/notifications" : "/auth/login";
-  const accountLabel = user ? t("notifications") : t("profile");
-  const accountActive = location.pathname.startsWith("/notifications") || location.pathname.startsWith("/auth");
   const mobileHeaderLinks = [
     { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang"), featured: true },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
     { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
-    { to: accountPath, label: accountLabel, icon: user ? Bell : User, match: () => accountActive },
   ];
 
   return (
@@ -108,7 +116,7 @@ export default function Header() {
           {showBack && <MobileBackButton />}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <img
-              src={dhyaanLogo}
+              src="/brand-logo.webp"
               alt="Hari Kirtan"
               className="w-8 h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 object-contain shrink-0"
               width={40}
@@ -122,6 +130,58 @@ export default function Header() {
 
         <div className="flex items-center gap-2 md:hidden">
           {user && <UserNotificationBell userId={user.id} />}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="relative flex h-10 min-w-10 items-center justify-center gap-0.5 rounded-full border border-primary/20 bg-card/80 px-2 shadow-sm transition-colors active:scale-95"
+                aria-label={t('language')}
+              >
+                <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
+                <span className="text-[10px] font-bold uppercase leading-none text-primary">
+                  {language}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 rounded-xl">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                {t('language')}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {languageOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.code}
+                  onClick={() => setLanguage(option.code)}
+                  className={cn(
+                    'cursor-pointer font-medium',
+                    language === option.code && 'bg-primary/10 text-primary',
+                  )}
+                >
+                  <Languages className="mr-2 h-4 w-4 opacity-70" />
+                  {option.label}
+                  {language === option.code ? (
+                    <span className="ml-auto text-xs text-primary">✓</span>
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            onClick={() => setProfileHubOpen(true)}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95"
+            aria-label={t('accountMenu')}
+          >
+            {user ? (
+              <Avatar className="h-9 w-9 border border-primary/25">
+                <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <User className="h-5 w-5 text-primary" strokeWidth={2.25} />
+            )}
+          </button>
+          <ProfileHubSheet open={profileHubOpen} onOpenChange={setProfileHubOpen} />
         </div>
 
         <nav className="hidden md:flex md:w-full md:flex-wrap md:justify-start lg:flex-1 lg:justify-end items-center gap-2 md:gap-x-3 md:gap-y-2 lg:gap-4 text-sm md:text-[13px] lg:text-sm font-medium">
@@ -197,29 +257,39 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="relative rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
-                  aria-label="Account menu"
+                  className="relative rounded-full p-0.5 transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+                  aria-label={t('accountMenu')}
                 >
-                  <Avatar className="border border-border md:h-9 md:w-9 lg:h-10 lg:w-10">
+                  <Avatar className="border border-primary/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm md:h-9 md:w-9 lg:h-10 lg:w-10">
                     <AvatarImage src={profile?.avatar_url} alt={displayName} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>
-                <p className="font-semibold">{displayName}</p>
-                <p className="text-xs text-muted-foreground">{user?.email || t('profile')}</p>
+            <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">
+              <DropdownMenuLabel className="bg-gradient-to-br from-amber-50 via-background to-orange-50 p-4 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12 border border-primary/25">
+                    <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email || t('guestDevotee')}</p>
+                    <p className="mt-1 text-[11px] font-medium text-primary">{user ? t('signedInDevotee') : t('guestDevotee')}</p>
+                  </div>
+                </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
                 <>
-                  <DropdownMenuItem
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploadingAvatar}
-                  >
+                  <DropdownMenuItem onClick={() => navigate('/account')}>
+                    <User className="mr-2 h-4 w-4" />
+                    {t('openAccount')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={openAvatarPicker} disabled={isUploadingAvatar}>
                     <Camera className="mr-2 h-4 w-4" />
-                    {isUploadingAvatar ? 'Uploading...' : t('setPhoto')}
+                    {isUploadingAvatar ? t('uploading') : t('setPhoto')}
                   </DropdownMenuItem>
                   {isAdmin && (
                     <>
@@ -249,24 +319,28 @@ export default function Header() {
                   </DropdownMenuItem>
                 </>
               ) : (
-                <DropdownMenuItem onClick={() => navigate('/auth/login')}>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {t('login')}
+                <DropdownMenuItem asChild>
+                  <Link to="/auth/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    {t('login')}
+                  </Link>
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarFileChange}
-          />
         </nav>
 
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        onChange={handleAvatarFileChange}
+      />
 
       <nav
         className="md:hidden border-t border-border/60 bg-background/90 px-4 py-2"

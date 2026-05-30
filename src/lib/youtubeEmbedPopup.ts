@@ -64,3 +64,21 @@ export async function resolveBhajanYouTubePlayback(
     channel: first.channel || b.singerName || undefined,
   };
 }
+
+/** When in-app embed/search fails, open YouTube in a new tab so playback still works (e.g. Narad on mobile). */
+export function openYouTubeSearchFallback(b: BhajanYouTubeFields): void {
+  const rawUrl = b.youtubeUrl?.trim();
+  if (rawUrl) {
+    const url = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  const q = `${b.title} ${b.singerName} bhajan`.trim();
+  if (q.length < 2) return;
+  window.open(
+    `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
+    '_blank',
+    'noopener,noreferrer',
+  );
+}

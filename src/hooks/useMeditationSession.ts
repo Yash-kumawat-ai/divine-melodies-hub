@@ -91,6 +91,7 @@ export function useMeditationSession(practice: MeditationPractice) {
 
   const incrementJapa = useCallback(() => {
     setJapaCount((c) => {
+      if (c >= prefs.japaTarget) return c;
       const next = c + 1;
       if (next >= prefs.japaTarget) {
         setLiveMessage(`${prefs.japaTarget} japa complete`);
@@ -126,6 +127,9 @@ export function useMeditationSession(practice: MeditationPractice) {
           moodAfter: payload.moodAfter,
           journalText: payload.journalText,
           sankalp: sankalp || undefined,
+          japaCount: practice.type === "mantra" ? japaCount : undefined,
+          japaTarget: practice.type === "mantra" ? prefs.japaTarget : undefined,
+          mantraId: practice.mantraId,
         }),
       );
 
@@ -136,7 +140,7 @@ export function useMeditationSession(practice: MeditationPractice) {
         resetTimerForDuration(t, t.config.durationSeconds, t.config.warmupSeconds),
       );
     },
-    [practice, sankalp, timer.elapsedSeconds],
+    [japaCount, practice, prefs.japaTarget, sankalp, timer.elapsedSeconds],
   );
 
   useEffect(() => {

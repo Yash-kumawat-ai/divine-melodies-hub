@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { deities } from "@/data/bhajans";
 import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useBhajanCounts } from "@/hooks/useBhajanCounts";
 
 export default function DeityGrid() {
   const { t } = useLanguage();
+  const { getDeityCount } = useBhajanCounts();
   const displayDeities = deities.slice(0, 4); // Show only first 4 deities
   
   return (
@@ -35,6 +37,10 @@ export default function DeityGrid() {
                       src={deity.imageUrl}
                       alt={deity.name}
                       className="h-full w-full object-cover object-center"
+                      width={240}
+                      height={300}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <span className="flex h-full w-full items-center justify-center text-5xl">{deity.emoji}</span>
@@ -44,7 +50,7 @@ export default function DeityGrid() {
                   {deity.name}
                 </h3>
                 <p className="hindi-text text-lg text-muted-foreground mt-1">{deity.nameHindi}</p>
-                <p className="text-sm text-muted-foreground mt-2">{deity.bhajanCount} {t('bhajansCount')}</p>
+                <p className="text-sm text-muted-foreground mt-2">{getDeityCount(deity.id)} {t('bhajansCount')}</p>
               </Link>
             </motion.div>
           ))}

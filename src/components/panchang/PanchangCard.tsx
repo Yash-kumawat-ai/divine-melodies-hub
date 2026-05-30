@@ -1,35 +1,10 @@
 import { motion } from 'framer-motion';
 import { CalendarDays, Clock, Moon, Sparkles, Sun, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { loadPanchang } from '@/lib/panchang/loadPanchang';
+import { todayInIndia, type PanchangData } from '@/lib/panchang/types';
 import { getZoneFromBrowser, saveZoneOverride, ZONES, type PanchangZone } from '@/utils/panchangZone';
 import { cn } from '@/lib/utils';
-
-interface PanchangData {
-  date: string;
-  zone: string;
-  city: string;
-  tithi: string;
-  tithi_number: number;
-  nakshatra: string;
-  yoga: string;
-  karana: string;
-  paksha: string;
-  sunrise: string;
-  sunset: string;
-  rahu_kaal: string;
-  brahma_muhurat: string;
-  vara: string;
-  updated_at: string;
-}
-
-function todayInIndia() {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
-}
 
 function formatDisplayDate(date: string) {
   return new Intl.DateTimeFormat('en-IN', {
@@ -39,26 +14,6 @@ function formatDisplayDate(date: string) {
     year: 'numeric',
     timeZone: 'Asia/Kolkata',
   }).format(new Date(`${date}T00:00:00+05:30`));
-}
-
-function isPanchangData(value: unknown): value is PanchangData {
-  if (!value || typeof value !== 'object') return false;
-  const data = value as Record<string, unknown>;
-  return (
-    typeof data.date === 'string' &&
-    typeof data.zone === 'string' &&
-    typeof data.city === 'string' &&
-    typeof data.tithi === 'string' &&
-    typeof data.nakshatra === 'string' &&
-    typeof data.yoga === 'string' &&
-    typeof data.karana === 'string' &&
-    typeof data.paksha === 'string' &&
-    typeof data.sunrise === 'string' &&
-    typeof data.sunset === 'string' &&
-    typeof data.rahu_kaal === 'string' &&
-    typeof data.brahma_muhurat === 'string' &&
-    typeof data.vara === 'string'
-  );
 }
 
 function displayValue(value: string) {
@@ -111,21 +66,8 @@ export default function PanchangCard() {
       setError(null);
 
       try {
-        const response = await fetch(`/data/panchang-${zone.name}.json?v=${Date.now()}`, {
-          cache: 'no-store',
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Panchang cache unavailable for ${zone.city}.`);
-        }
-
-        const json: unknown = await response.json();
-        if (!isPanchangData(json)) {
-          throw new Error(`Invalid Panchang cache for ${zone.city}.`);
-        }
-
-        setPanchang(json);
+        const result = await loadPanchang(zone.name, controller.signal);
+        setPanchang(result.data);
       } catch (err) {
         if (!controller.signal.aborted) {
           setError(err instanceof Error ? err.message : 'Unable to load Panchang.');

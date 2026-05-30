@@ -28,7 +28,7 @@ import {
 } from '@/lib/shareUtils';
 import { getRelatedBhajans } from '@/lib/searchAlgorithm';
 import { formatBhajanDisplayTitle } from '@/lib/slugUtils';
-import { resolveBhajanYouTubePlayback } from '@/lib/youtubeEmbedPopup';
+import { resolveBhajanYouTubePlayback, openYouTubeSearchFallback } from '@/lib/youtubeEmbedPopup';
 import { Bhajan, getDeityById } from '@/data/bhajans';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -43,6 +43,8 @@ interface BhajanDetailModalProps {
   onClose: () => void;
   allBhajans?: Bhajan[];
   onSelectBhajan?: (bhajan: Bhajan) => void;
+  /** Raise above Narad floating panel (z-140) */
+  elevatedLayer?: boolean;
 }
 
 export default function BhajanDetailModal({
@@ -51,6 +53,7 @@ export default function BhajanDetailModal({
   onClose,
   allBhajans = [],
   onSelectBhajan,
+  elevatedLayer = false,
 }: BhajanDetailModalProps) {
   const [copied, setCopied] = useState(false);
   const [playOpening, setPlayOpening] = useState(false);
@@ -132,10 +135,15 @@ export default function BhajanDetailModal({
         return;
       }
 
+      openYouTubeSearchFallback({
+        videoEmbedId: bhajan.videoEmbedId,
+        youtubeUrl: bhajan.youtubeUrl,
+        title: bhajan.title,
+        singerName: bhajan.singerName,
+      });
       toast({
-        title: 'Could not open player',
-        description: 'Could not load the video. Check your connection and try again.',
-        variant: 'destructive',
+        title: 'Opening YouTube',
+        description: 'In-app player unavailable. Search opened in a new tab.',
       });
     } finally {
       setPlayOpening(false);
@@ -143,13 +151,15 @@ export default function BhajanDetailModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showClose={false}
+        overlayClassName={elevatedLayer ? 'z-[150]' : undefined}
         className={cn(
           mobileFullscreenDialog,
           '!flex !flex-col !min-h-0 !overflow-hidden',
           'max-w-4xl sm:max-w-4xl sm:w-[min(100vw-2rem,56rem)] p-0',
+          elevatedLayer && 'z-[151]',
         )}
       >
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>

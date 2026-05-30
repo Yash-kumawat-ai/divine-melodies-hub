@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import dhyaanLogo from "@/assets/dhyaan-logo.png";
 import SearchBar from "@/components/SearchBar";
 import DeityGrid from "@/components/DeityGrid";
 import BhajanCard from "@/components/BhajanCard";
@@ -58,14 +57,6 @@ const Index = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-warm py-20 md:py-28 px-4">
-        <img
-          src={dhyaanLogo}
-          alt="Hari Kirtan logo"
-          className="absolute right-[-10%] top-[-20%] w-[500px] opacity-10 animate-float pointer-events-none select-none"
-          width={500}
-          height={500}
-          aria-hidden="true"
-        />
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <motion.h1
             className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3"

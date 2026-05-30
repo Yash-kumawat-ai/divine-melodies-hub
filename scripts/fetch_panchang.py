@@ -22,9 +22,15 @@ DATA_DIR = Path("public/data")
 HEALTH_PATH = DATA_DIR / "panchang-health.json"
 IST = ZoneInfo("Asia/Kolkata")
 API_DELAY_SECONDS = 13
+<<<<<<< HEAD
 ZONE_MAX_RETRIES = 3
 ZONE_RETRY_BACKOFF_SECONDS = 8
 RAHU_ORDER = {0: 2, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3, 6: 8}
+=======
+ZONE_FETCH_RETRIES = 3
+ZONE_RETRY_BACKOFF_SECONDS = 20
+RAHU_ORDER = {0: 2, 1: 7, 2: 4, 3: 5, 4: 6, 5: 3, 6: 8}
+>>>>>>> feature/yash
 VARA_BY_WEEKDAY = {
     0: "Somvaar",
     1: "Mangalvaar",
@@ -173,6 +179,43 @@ def calculate_with_fallback(method_names, *args):
     raise last_error or AttributeError(f"Missing VedAstro methods: {method_names}")
 
 
+def read_zone_file_date(zone_name):
+    output_path = DATA_DIR / f"panchang-{zone_name}.json"
+    if not output_path.exists():
+        return None
+    try:
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        date = payload.get("date")
+        return date if isinstance(date, str) and date else None
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def zones_needing_update(today_str):
+    pending = []
+    for zone in ZONES:
+        if read_zone_file_date(zone["name"]) != today_str:
+            pending.append(zone)
+    return pending
+
+
+def fetch_zone_with_retries(zone, now):
+    last_error = None
+    for attempt in range(1, ZONE_FETCH_RETRIES + 1):
+        try:
+            return fetch_zone(zone, now)
+        except Exception as error:
+            last_error = error
+            if attempt < ZONE_FETCH_RETRIES:
+                wait_seconds = ZONE_RETRY_BACKOFF_SECONDS * attempt
+                print(
+                    f"RETRY {zone['city']} attempt {attempt}/{ZONE_FETCH_RETRIES} "
+                    f"in {wait_seconds}s: {error}"
+                )
+                time.sleep(wait_seconds)
+    raise last_error
+
+
 def fetch_zone(zone, now):
     location = GeoLocation(f"{zone['city']}, India", zone["lng"], zone["lat"])
     today = Time(
@@ -216,10 +259,10 @@ def fetch_zone(zone, now):
     }
 
 
-def main():
-    Calculate.SetAPIKey("FreeAPIUser")
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+def count_zones_for_today(today_str):
+    return sum(1 for zone in ZONES if read_zone_file_date(zone["name"]) == today_str)
 
+<<<<<<< HEAD
     now = datetime.now(IST)
     success_count = 0
     failed_zones = []
@@ -258,7 +301,11 @@ def main():
                 }
             )
             continue
+=======
+>>>>>>> feature/yash
 
+def write_health(now, failed_zones):
+    success_count = count_zones_for_today(now.strftime("%Y-%m-%d"))
     health = {
         "date": now.strftime("%Y-%m-%d"),
         "status": "ok" if success_count == len(ZONES) else "warning" if success_count > 0 else "failed",
@@ -273,6 +320,7 @@ def main():
         ),
     }
     HEALTH_PATH.write_text(json.dumps(health, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+<<<<<<< HEAD
     print(
         f"Panchang updated for {now.strftime('%Y-%m-%d')} - "
         f"{success_count}/{len(ZONES)} zones successful"
@@ -281,6 +329,54 @@ def main():
     if success_count != len(ZONES):
         # Return non-zero so GitHub Actions flags the run and writes a failure health report.
         sys.exit(1)
+=======
+    return success_count
+
+
+def main():
+    Calculate.SetAPIKey("FreeAPIUser")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    now = datetime.now(IST)
+    today_str = now.strftime("%Y-%m-%d")
+    pending_zones = zones_needing_update(today_str)
+
+    if not pending_zones:
+        write_health(now, [])
+        print(f"SKIP Panchang already up to date for {today_str} (all {len(ZONES)} zones).")
+        return
+
+    print(
+        f"RUN Panchang fetch for {today_str}: "
+        f"{len(pending_zones)} zone(s) need update ({', '.join(zone['city'] for zone in pending_zones)})"
+    )
+
+    failed_zones = []
+
+    for index, zone in enumerate(pending_zones, start=1):
+        try:
+            data = fetch_zone_with_retries(zone, now)
+            output_path = DATA_DIR / f"panchang-{zone['name']}.json"
+            output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(f"OK {zone['city']} done ({index}/{len(pending_zones)})")
+        except Exception as error:
+            error_message = str(error)
+            failed_zones.append(
+                {
+                    "zone": zone["name"],
+                    "city": zone["city"],
+                    "error": error_message,
+                }
+            )
+            print(f"FAILED {zone['city']} failed after {ZONE_FETCH_RETRIES} attempts: {error_message}")
+            continue
+
+    success_count = write_health(now, failed_zones)
+    print(f"Panchang updated for {today_str} - {success_count}/{len(ZONES)} zones successful")
+
+    if success_count < len(ZONES):
+        raise SystemExit(1)
+>>>>>>> feature/yash
 
 
 if __name__ == "__main__":

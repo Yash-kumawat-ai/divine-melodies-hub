@@ -5,6 +5,8 @@ import MeditationControls from "@/components/meditation/MeditationControls";
 import { MeditationTopBar } from "@/components/meditation/MeditationControls";
 import BreathCoach from "@/components/meditation/BreathCoach";
 import SessionCompleteOverlay from "@/components/meditation/SessionCompleteOverlay";
+import { useLanguage } from "@/hooks/useLanguage";
+import { getMeditationCopy } from "@/lib/meditation/meditationLocale";
 import type { MeditationPractice } from "@/lib/meditation/meditationTypes";
 import { MANTRA_PRACTICES } from "@/lib/meditation/meditationTypes";
 import { useMeditationSession } from "@/hooks/useMeditationSession";
@@ -17,6 +19,8 @@ type MeditationSessionProps = {
 };
 
 export default function MeditationSession({ practice, onExit, onPracticeChange }: MeditationSessionProps) {
+  const { language } = useLanguage();
+  const copy = getMeditationCopy(language);
   const [showUi, setShowUi] = useState(true);
   const [showSankalp, setShowSankalp] = useState(true);
   const session = useMeditationSession(practice);
@@ -35,12 +39,17 @@ export default function MeditationSession({ practice, onExit, onPracticeChange }
         prefs.highContrast && "contrast-more",
       )}
       style={{
-        background: "radial-gradient(circle at center, #2d1200 0%, #090011 45%, #000000 100%)",
+        background:
+          "radial-gradient(circle at 50% 35%, rgba(245,158,11,0.22) 0%, rgba(15,23,42,0.06) 34%, transparent 58%), radial-gradient(circle at 15% 15%, rgba(244,63,94,0.12), transparent 30%), radial-gradient(circle at 86% 18%, rgba(20,184,166,0.11), transparent 28%), linear-gradient(180deg, #13070b 0%, #07030a 58%, #020106 100%)",
         filter: practice.visualMode === "dim" ? "brightness(0.55)" : undefined,
       }}
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(251,191,36,0.08),transparent_50%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(251,191,36,0.10),transparent_52%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-amber-200/55 to-transparent"
         aria-hidden
       />
 
@@ -52,26 +61,26 @@ export default function MeditationSession({ practice, onExit, onPracticeChange }
 
       {showSankalp && session.phase === "idle" && !session.showComplete && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="pointer-events-auto absolute left-4 right-4 top-[max(4rem,env(safe-area-inset-top))] z-20 mx-auto max-w-md"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="pointer-events-auto absolute left-4 right-4 top-[max(4.25rem,env(safe-area-inset-top))] z-20 mx-auto max-w-md"
         >
-          <div className="rounded-2xl border border-amber-400/20 bg-black/50 p-4 backdrop-blur-md">
-            <p className="text-xs uppercase tracking-widest text-amber-200/50">Sankalp · intention</p>
+          <div className="overflow-hidden rounded-3xl border border-amber-200/18 bg-black/45 p-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <p className="text-xs uppercase tracking-widest text-amber-200/55">{copy.session.sankalp}</p>
             <input
               type="text"
               value={session.sankalp}
               onChange={(e) => session.setSankalp(e.target.value)}
-              placeholder="Optional intention for this session..."
-              className="mt-2 w-full border-0 bg-transparent text-sm text-amber-50 placeholder:text-white/30 focus:outline-none"
+              placeholder={copy.session.sankalpPlaceholder}
+              className="mt-2 w-full border-0 bg-transparent text-sm text-amber-50 placeholder:text-white/32 focus:outline-none"
               aria-label="Session intention"
             />
             <button
               type="button"
               onClick={() => setShowSankalp(false)}
-              className="mt-2 text-xs text-amber-300/80"
+              className="mt-3 rounded-full border border-amber-200/15 px-3 py-1.5 text-xs text-amber-200/85"
             >
-              Skip
+              {copy.session.skip}
             </button>
           </div>
         </motion.div>
@@ -80,7 +89,7 @@ export default function MeditationSession({ practice, onExit, onPracticeChange }
       <div
         className={cn(
           "relative flex flex-1 items-center justify-center px-2",
-          showUi ? "pt-14 pb-[min(38vh,280px)]" : "py-8",
+          showUi ? "pt-16 pb-[min(42vh,330px)]" : "py-8",
         )}
         onClick={() => setShowUi(true)}
         role="presentation"

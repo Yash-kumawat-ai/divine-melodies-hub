@@ -2,10 +2,19 @@ name: Daily Panchang Fetch
 
 on:
   schedule:
+<<<<<<< HEAD
     # 23:30 UTC = 05:00 IST (daily, next calendar day in India)
     - cron: '30 23 * * *'
     # Backup run: 23:50 UTC = 05:20 IST
     - cron: '50 23 * * *'
+=======
+    # 23:30 UTC = 05:00 IST — primary daily fetch
+    - cron: '30 23 * * *'
+    # 00:30 UTC = 06:00 IST — retry +1 hour if 5 AM failed
+    - cron: '30 0 * * *'
+    # 01:30 UTC = 07:00 IST — retry +2 hours if earlier runs failed
+    - cron: '30 1 * * *'
+>>>>>>> feature/yash
   workflow_dispatch:
 
 permissions:
@@ -75,7 +84,7 @@ jobs:
           EOF
 
       - name: Commit and push updated JSON files
-        if: always()
+        if: success()
         run: |
           git config user.email "panchang-bot@yourwebsite.com"
           git config user.name "Panchang Bot"
@@ -84,3 +93,12 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger Vercel redeploy
+        if: success()
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          fi

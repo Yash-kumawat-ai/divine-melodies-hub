@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BhajanCard from "@/components/BhajanCard";
 import { getDeityBySlug, getBhajansByDeity } from "@/data/bhajans";
 import { generateDeitySlug, generateBhajanSlug } from "@/lib/slugUtils";
@@ -37,59 +37,66 @@ export default function DeityPage() {
   const staticDeity = getDeityBySlug(slug || "");
   const staticBhajanList = staticDeity ? getBhajansByDeity(staticDeity.id) : [];
 
-  // Fetch custom deity and user bhajans if not found in static
-  useEffect(() => {
-    const fetchCustomDeityAndBhajans = async () => {
-      try {
-        if (staticDeity) {
-          // Fetch user bhajans for this deity
+  const fetchCustomDeityAndBhajans = useCallback(async () => {
+    try {
+      if (staticDeity) {
+        const { data: bhajansData } = await supabase
+          .from('user_uploads')
+          .select('*')
+          .eq('status', 'approved')
+          .eq('deity_id', staticDeity.id);
+
+        setUserBhajans((bhajansData ?? []) as UserBhajan[]);
+        return;
+      }
+
+      const { data: allCustomDeities, error } = await supabase
+        .from('custom_deities')
+        .select('*');
+
+      if (!error && allCustomDeities && allCustomDeities.length > 0) {
+        const matchedDeity = allCustomDeities.find(d => {
+          const deitySlug = generateDeitySlug(d.name);
+          return deitySlug === slug;
+        });
+
+        if (matchedDeity) {
+          setCustomDeity(matchedDeity as CustomDeity);
+
           const { data: bhajansData } = await supabase
             .from('user_uploads')
             .select('*')
             .eq('status', 'approved')
-            .eq('deity_id', staticDeity.id);
+            .eq('deity_id', matchedDeity.id);
 
-          if (bhajansData) {
-            setUserBhajans(bhajansData as UserBhajan[]);
-          }
-        } else {
-          // Try to fetch custom deities and find by slug match
-          const { data: allCustomDeities, error } = await supabase
-            .from('custom_deities')
-            .select('*');
-
-          if (!error && allCustomDeities && allCustomDeities.length > 0) {
-            // Generate slug from deity name the same way as in AllDeities
-            const matchedDeity = allCustomDeities.find(d => {
-              const deitySlug = generateDeitySlug(d.name);
-              return deitySlug === slug;
-            });
-
-            if (matchedDeity) {
-              setCustomDeity(matchedDeity as CustomDeity);
-              
-              // Fetch user bhajans for this custom deity
-              const { data: bhajansData } = await supabase
-                .from('user_uploads')
-                .select('*')
-                .eq('status', 'approved')
-                .eq('deity_id', matchedDeity.id);
-
-              if (bhajansData) {
-                setUserBhajans(bhajansData as UserBhajan[]);
-              }
-            }
-          }
+          setUserBhajans((bhajansData ?? []) as UserBhajan[]);
         }
-      } catch (err) {
-        console.error('Error fetching deity data:', err);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchCustomDeityAndBhajans();
+    } catch (err) {
+      console.error('Error fetching deity data:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [slug, staticDeity]);
+
+  useEffect(() => {
+    void fetchCustomDeityAndBhajans();
+
+    const channel = (supabase as any)
+      .channel(`deity-bhajans-${slug || 'unknown'}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_uploads' },
+        () => {
+          void fetchCustomDeityAndBhajans();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void (supabase as any).removeChannel(channel);
+    };
+  }, [fetchCustomDeityAndBhajans, slug]);
 
   const deity = staticDeity || customDeity;
 

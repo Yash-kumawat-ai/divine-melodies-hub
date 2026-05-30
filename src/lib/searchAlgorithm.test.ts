@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bhajanMatchesQuery,
   getFlexibleSearchTokens,
+  naradSearchBhajans,
   normalizeSearchText,
   smartSearchBhajans,
 } from './searchAlgorithm';
@@ -15,6 +16,16 @@ const chupChapBhajan = {
   lyricsHindi: 'चुप चाप बैठे',
   lyricsTransliteration: '',
   tags: ['devotional'],
+};
+
+const gharPadharoBhajan = {
+  id: 10,
+  title: 'Ghar Mein Padharo Gajanan Ji',
+  titleHindi: 'घर में पधारो गजानंद जी मेरे घर में पधारो',
+  singerName: 'Nova Spiritual India',
+  lyricsHindi: '',
+  lyricsTransliteration: 'Ghar Mein Padharo Gajanan Ji',
+  tags: [],
 };
 
 const unrelatedBhajans = [
@@ -78,5 +89,36 @@ describe('searchAlgorithm', () => {
   it('matches baithe/bethe style titles', () => {
     expect(bhajanMatchesQuery(unrelatedBhajans[2], 'baithe')).toBe(true);
     expect(bhajanMatchesQuery(unrelatedBhajans[2], 'bethe')).toBe(true);
+  });
+
+  it('narad search finds Hindi title matches like the search bar', () => {
+    const results = naradSearchBhajans('चुपचाप', [chupChapBhajan, ...unrelatedBhajans]);
+    expect(results.some((b) => b.id === 1)).toBe(true);
+    expect(results.some((b) => b.id === 2)).toBe(false);
+  });
+
+  it('narad search rejects vague 3-letter Latin queries without title match', () => {
+    const results = naradSearchBhajans('Ghr', unrelatedBhajans);
+    expect(results).toHaveLength(0);
+  });
+
+  it('narad search does not return unrelated bhajans for "sawaree"', () => {
+    const results = naradSearchBhajans('sawaree', [chupChapBhajan, ...unrelatedBhajans]);
+    expect(results).toHaveLength(0);
+  });
+
+  it('narad search finds Hindi title from Hinglish "Ghr me padharo"', () => {
+    const shyamBhajan = {
+      id: 11,
+      title: 'Dekhu Jidhar Udhar',
+      titleHindi: 'देखूं जिधर उधर ही मेरे श्याम का नजारा',
+      singerName: 'Traditional',
+      lyricsHindi: '',
+      lyricsTransliteration: '',
+      tags: [],
+    };
+    const results = naradSearchBhajans('Ghr me padharo', [gharPadharoBhajan, shyamBhajan, ...unrelatedBhajans]);
+    expect(results.some((b) => b.id === 10)).toBe(true);
+    expect(results.some((b) => b.id === 11)).toBe(false);
   });
 });

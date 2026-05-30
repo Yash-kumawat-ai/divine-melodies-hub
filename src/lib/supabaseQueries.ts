@@ -63,10 +63,12 @@ export const getTrendingBhajans = (period: string) => {
 export const searchUserBhajans = async (searchQuery: string, limit: number = 10) => {
   const { getFlexibleSearchTokens } = await import('@/lib/searchAlgorithm');
   const client = supabase as any;
-  const tokens = getFlexibleSearchTokens(searchQuery).slice(0, 6);
+  const trimmedQuery = searchQuery.trim();
+  const tokens = getFlexibleSearchTokens(trimmedQuery).slice(0, 6);
+  const effectiveTokens = tokens.length > 0 && trimmedQuery ? tokens : trimmedQuery ? [trimmedQuery] : [];
   const merged = new Map<string, unknown>();
 
-  for (const token of tokens) {
+  for (const token of effectiveTokens) {
     const searchTerm = token.toLowerCase().trim();
     if (!searchTerm) continue;
 

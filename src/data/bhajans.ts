@@ -1,13 +1,13 @@
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
 
-import deityKrishna from '@/assets/deities/krishna.png';
-import deityShiva from '@/assets/deities/shiva.png';
-import deityHanuman from '@/assets/deities/hanuman.png';
-import deityRama from '@/assets/deities/rama.png';
-import deityDurga from '@/assets/deities/durga.png';
-import deityGanesh from '@/assets/deities/ganesh.png';
-import deitySaiBaba from '@/assets/deities/sai-baba.png';
-import deityLakshmi from '@/assets/deities/lakshmi.png';
+import deityKrishna from '@/assets/deities/krishna.webp';
+import deityShiva from '@/assets/deities/shiva.webp';
+import deityHanuman from '@/assets/deities/hanuman.webp';
+import deityRama from '@/assets/deities/rama.webp';
+import deityDurga from '@/assets/deities/durga.webp';
+import deityGanesh from '@/assets/deities/ganesh.webp';
+import deitySaiBaba from '@/assets/deities/sai-baba.webp';
+import deityLakshmi from '@/assets/deities/lakshmi.webp';
 
 export interface Deity {
   id: number;

@@ -98,6 +98,15 @@ function extractBhajanQuery(rawText: string): string {
     .trim();
 }
 
+export function looksLikeDirectSongQuery(rawText: string): boolean {
+  const text = rawText.trim();
+  if (!text || text.length < 2 || text.length > 80) return false;
+  if (/[?]/.test(text)) return false;
+  if (/^(hi|hello|hey|namaste|help)$/i.test(text)) return false;
+  if (/^(kya|kaise|kyun|why|how|what)\b/i.test(text)) return false;
+  return true;
+}
+
 export function parseNaradIntent(rawText: string): NaradIntent {
   const text = normalize(rawText);
   const deityHit = findDeity(rawText);
@@ -147,6 +156,14 @@ export function parseNaradIntent(rawText: string): NaradIntent {
     return {
       type: "search_bhajan",
       confidence: 0.72,
+      rawText,
+      entities: { ...entities, bhajanName: extractBhajanQuery(rawText) || text },
+    };
+  }
+  if (looksLikeDirectSongQuery(rawText)) {
+    return {
+      type: "search_bhajan",
+      confidence: 0.71,
       rawText,
       entities: { ...entities, bhajanName: extractBhajanQuery(rawText) || text },
     };

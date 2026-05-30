@@ -4,10 +4,12 @@ import { useDeities } from "@/hooks/useDeities";
 import { generateDeitySlug } from "@/lib/slugUtils";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useBhajanCounts } from "@/hooks/useBhajanCounts";
 
 export default function AllDeities() {
   const { deities: allDeities, loading } = useDeities();
   const { t } = useLanguage();
+  const { getDeityCount } = useBhajanCounts();
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,6 +59,11 @@ export default function AllDeities() {
                       <span className="inline-block text-xs px-2 py-1 bg-primary/20 text-primary rounded-full mt-2">
                         {t('new')}
                       </span>
+                    )}
+                    {typeof deity.id === 'number' && (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {getDeityCount(deity.id)} {t('bhajansCount')}
+                      </p>
                     )}
                   </Link>
                 </motion.div>

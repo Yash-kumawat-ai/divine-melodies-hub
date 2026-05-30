@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/hooks/useLanguage";
+import { getMeditationCopy } from "@/lib/meditation/meditationLocale";
 import { OM } from "@/lib/meditation/unicode";
 import type { MeditationStats } from "@/lib/meditation/meditationStorage";
 
@@ -8,9 +10,9 @@ type SessionCompleteOverlayProps = {
   onDone: (payload: { moodAfter?: string; journalText?: string }) => void;
 };
 
-const MOODS = ["Peaceful", "Grateful", "Energized", "Calm", "Devotional"];
-
 export default function SessionCompleteOverlay({ stats, onDone }: SessionCompleteOverlayProps) {
+  const { language } = useLanguage();
+  const copy = getMeditationCopy(language).complete;
   const [mood, setMood] = useState<string | undefined>();
   const [journal, setJournal] = useState("");
 
@@ -27,16 +29,18 @@ export default function SessionCompleteOverlay({ stats, onDone }: SessionComplet
           {OM}
         </p>
         <h2 id="complete-title" className="mt-2 font-display text-xl text-amber-50">
-          Session Complete
+          {copy.title}
         </h2>
-        <p className="mt-1 text-sm text-amber-200/70">Hari Om · Shanti</p>
+        <p className="mt-1 text-sm text-amber-200/70">{copy.shanti}</p>
         <p className="mt-4 text-xs text-amber-200/50">
-          {stats.totalMindfulMinutes} mindful min · {stats.streakDays} day streak
+          {stats.totalMindfulMinutes} {copy.minutesSuffix} - {stats.streakDays} {copy.streakSuffix}
         </p>
 
-        <p className="mt-4 text-[10px] uppercase tracking-widest text-amber-200/40">How do you feel?</p>
+        <p className="mt-4 text-[10px] uppercase tracking-widest text-amber-200/40">
+          {copy.moodQuestion}
+        </p>
         <div className="mt-2 flex flex-wrap justify-center gap-2">
-          {MOODS.map((m) => (
+          {copy.moods.map((m) => (
             <button
               key={m}
               type="button"
@@ -53,14 +57,14 @@ export default function SessionCompleteOverlay({ stats, onDone }: SessionComplet
         </div>
 
         <label className="mt-4 block text-left text-[10px] uppercase tracking-widest text-amber-200/40">
-          Reflection (optional)
+          {copy.reflection}
         </label>
         <textarea
           value={journal}
           onChange={(e) => setJournal(e.target.value)}
           rows={2}
           className="mt-1 w-full rounded-xl border border-amber-200/15 bg-black/40 px-3 py-2 text-sm text-amber-50 placeholder:text-white/30"
-          placeholder="A quiet thought from your practice..."
+          placeholder={copy.reflectionPlaceholder}
         />
 
         <button
@@ -68,7 +72,7 @@ export default function SessionCompleteOverlay({ stats, onDone }: SessionComplet
           onClick={() => onDone({ moodAfter: mood, journalText: journal || undefined })}
           className="mt-5 w-full rounded-full bg-gradient-to-r from-amber-600 to-orange-600 py-3 text-sm font-semibold text-amber-50"
         >
-          Close
+          {copy.close}
         </button>
       </div>
     </motion.div>

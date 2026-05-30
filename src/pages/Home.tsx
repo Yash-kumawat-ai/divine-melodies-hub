@@ -4,8 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
-import dhyaanLogo from '@/assets/dhyaan-logo.png';
-import exploreButtonArt from '@/assets/explore-button.png';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
@@ -14,6 +12,7 @@ import { generateBhajanSlug } from '@/lib/slugUtils';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { toast } from 'sonner';
 import PanchangShortcut from '@/components/panchang/PanchangShortcut';
 
@@ -68,6 +67,7 @@ export default function Home() {
   const { t, language } = useLanguage();
   const isHi = language === 'hi';
   const { user } = useAuth();
+  const { totalCount: totalBhajanCount } = useBhajanCounts();
   const navigate = useNavigate();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,17 +89,14 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [uploadsRes, _] = await Promise.all([
-          (supabase as any).from('user_uploads').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-          (supabase as any).from('user_profiles').select('id', { count: 'exact', head: true }),
-        ]);
+        const { count } = await (supabase as any).from('user_profiles').select('id', { count: 'exact', head: true });
         setStats({
-          bhajans: (uploadsRes.count ?? 0) + staticBhajans.length,
-          artists: Math.max(50, _.count ?? 0),
-          listeners: Math.max(1000, (_.count ?? 0) * 10),
+          bhajans: totalBhajanCount,
+          artists: Math.max(50, count ?? 0),
+          listeners: Math.max(1000, (count ?? 0) * 10),
         });
       } catch {
-        setStats({ bhajans: staticBhajans.length, artists: 50, listeners: 1000 });
+        setStats({ bhajans: totalBhajanCount || staticBhajans.length, artists: 50, listeners: 1000 });
       }
     };
 
@@ -122,7 +119,7 @@ export default function Home() {
 
     fetchData();
     fetchBhajans();
-  }, []);
+  }, [totalBhajanCount]);
 
   const handleUploadClick = () => {
     if (!user) {
@@ -144,15 +141,6 @@ export default function Home() {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand-brown to-brand-dark py-20 md:py-32 px-4">
-        <img
-          src={dhyaanLogo}
-          alt=""
-          aria-hidden="true"
-          className="absolute right-[-10%] top-[-20%] w-[500px] opacity-[0.06] animate-float pointer-events-none select-none"
-          width={500}
-          height={500}
-          loading="lazy"
-        />
         <div className="container mx-auto max-w-4xl text-center relative z-10">
           <motion.h1
             className="font-display text-4xl md:text-6xl font-bold text-brand-cream mb-4"
@@ -186,16 +174,7 @@ export default function Home() {
             transition={{ delay: 0.35 }}
           >
             <Button asChild size="lg" className="bg-brand-saffron hover:bg-brand-saffron/90 text-white font-semibold px-8 h-12 text-base rounded-xl">
-              <Link to="/all-bhajans" className="inline-flex max-w-full flex-wrap items-center justify-center gap-2">
-                <img
-                  src={exploreButtonArt}
-                  alt=""
-                  className="h-7 w-auto max-w-[140px] object-contain object-left shrink-0"
-                  width={140}
-                  height={28}
-                />
-                <span>{t('browseBhajans')}</span>
-              </Link>
+              <Link to="/all-bhajans">{t('browseBhajans')}</Link>
             </Button>
             <Button
               size="lg"
