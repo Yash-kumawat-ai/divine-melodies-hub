@@ -1,9 +1,15 @@
 {
-  "date": "2026-05-28",
-  "status": "ok",
+  "date": "2026-05-30",
+  "status": "failed",
   "total_zones": 6,
-  "successful_zones": 6,
-  "failed_zones": [],
-  "updated_at": "2026-05-28T13:12:39+05:30",
-  "message": "All 6 Panchang zones updated successfully"
+  "successful_zones": 0,
+  "failed_zones": [
+    {
+      "zone": "workflow",
+      "city": "GitHub Actions",
+      "error": "No panchang-fetch.log was created. The workflow likely failed before the fetch script started."
+    }
+  ],
+  "updated_at": "2026-05-30T01:31:05.615Z",
+  "message": "Panchang update workflow failed"
 }
