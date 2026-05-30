@@ -1,5 +1,5 @@
 {
-  "date": "2026-05-29",
+  "date": "2026-05-30",
   "status": "failed",
   "total_zones": 6,
   "successful_zones": 0,
@@ -10,6 +10,6 @@
       "error": "No panchang-fetch.log was created. The workflow likely failed before the fetch script started."
     }
   ],
-  "updated_at": "2026-05-29T01:35:03.931Z",
+  "updated_at": "2026-05-30T01:25:06.106Z",
   "message": "Panchang update workflow failed"
 }
