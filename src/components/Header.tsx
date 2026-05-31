@@ -360,7 +360,7 @@ export default function Header() {
                   active
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border/80 bg-card/70 text-foreground",
-                  item.featured && "border-orange-300/70 bg-orange-500 text-white shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
+                  item.featured && "border-orange-300/70 shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
                 )}
                 aria-current={active ? "page" : undefined}
               >

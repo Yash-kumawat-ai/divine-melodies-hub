@@ -67,6 +67,9 @@ export default function PanchangCard() {
 
       try {
         const result = await loadPanchang(zone.name, controller.signal);
+        if (!result?.data) {
+          throw new Error('Panchang response unavailable.');
+        }
         setPanchang(result.data);
       } catch (err) {
         if (!controller.signal.aborted) {

@@ -90,12 +90,15 @@ export default function PanchangPage() {
     if (!zone) return;
     const controller = new AbortController();
 
-    async function loadPanchang() {
+    async function fetchPanchang() {
       setIsLoading(true);
       setError(null);
 
       try {
         const result = await loadPanchang(zone.name, controller.signal);
+        if (!result?.data) {
+          throw new Error('Panchang response unavailable.');
+        }
         setPanchang(result.data);
       } catch (err) {
         if (!controller.signal.aborted) {
@@ -106,7 +109,7 @@ export default function PanchangPage() {
       }
     }
 
-    void loadPanchang();
+    void fetchPanchang();
     return () => controller.abort();
   }, [zone]);
 
