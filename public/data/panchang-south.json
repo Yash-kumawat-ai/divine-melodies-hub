@@ -1,17 +1,17 @@
 {
-  "date": "2026-05-28",
+  "date": "2026-05-31",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Triodasi",
-  "tithi_number": 13,
-  "nakshatra": "Swathi - 1",
-  "yoga": "Variyan",
-  "karana": "Kaulava",
+  "tithi": "Poornima",
+  "tithi_number": 15,
+  "nakshatra": "Anuradha - 4",
+  "yoga": "Siddha",
+  "karana": "Bava",
   "paksha": "Shukla",
   "sunrise": "05:56 AM",
-  "sunset": "06:37 PM",
-  "rahu_kaal": "01:52 PM - 03:27 PM",
+  "sunset": "06:38 PM",
+  "rahu_kaal": "05:03 PM - 06:38 PM",
   "brahma_muhurat": "04:20 AM - 05:08 AM",
-  "vara": "Guruvaar",
-  "updated_at": "2026-05-28T13:12:39+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-05-31T13:20:29+05:30"
 }
