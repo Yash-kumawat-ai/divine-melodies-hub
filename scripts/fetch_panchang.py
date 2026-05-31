@@ -22,15 +22,9 @@ DATA_DIR = Path("public/data")
 HEALTH_PATH = DATA_DIR / "panchang-health.json"
 IST = ZoneInfo("Asia/Kolkata")
 API_DELAY_SECONDS = 13
-<<<<<<< HEAD
-ZONE_MAX_RETRIES = 3
-ZONE_RETRY_BACKOFF_SECONDS = 8
-RAHU_ORDER = {0: 2, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3, 6: 8}
-=======
 ZONE_FETCH_RETRIES = 3
 ZONE_RETRY_BACKOFF_SECONDS = 20
 RAHU_ORDER = {0: 2, 1: 7, 2: 4, 3: 5, 4: 6, 5: 3, 6: 8}
->>>>>>> feature/yash
 VARA_BY_WEEKDAY = {
     0: "Somvaar",
     1: "Mangalvaar",
@@ -262,48 +256,6 @@ def fetch_zone(zone, now):
 def count_zones_for_today(today_str):
     return sum(1 for zone in ZONES if read_zone_file_date(zone["name"]) == today_str)
 
-<<<<<<< HEAD
-    now = datetime.now(IST)
-    success_count = 0
-    failed_zones = []
-
-    for index, zone in enumerate(ZONES, start=1):
-        zone_error = None
-        for attempt in range(1, ZONE_MAX_RETRIES + 1):
-            try:
-                data = fetch_zone(zone, now)
-                output_path = DATA_DIR / f"panchang-{zone['name']}.json"
-                output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-                success_count += 1
-                print(f"OK {zone['city']} done ({index}/{len(ZONES)})")
-                zone_error = None
-                break
-            except Exception as error:
-                zone_error = str(error)
-                if attempt < ZONE_MAX_RETRIES:
-                    wait_seconds = ZONE_RETRY_BACKOFF_SECONDS * attempt
-                    print(
-                        f"RETRY {zone['city']} attempt {attempt}/{ZONE_MAX_RETRIES} failed: {zone_error}. "
-                        f"Retrying in {wait_seconds}s..."
-                    )
-                    time.sleep(wait_seconds)
-                else:
-                    print(
-                        f"FAILED {zone['city']} after {ZONE_MAX_RETRIES} attempts: {zone_error}"
-                    )
-
-        if zone_error is not None:
-            failed_zones.append(
-                {
-                    "zone": zone["name"],
-                    "city": zone["city"],
-                    "error": zone_error,
-                }
-            )
-            continue
-=======
->>>>>>> feature/yash
-
 def write_health(now, failed_zones):
     success_count = count_zones_for_today(now.strftime("%Y-%m-%d"))
     health = {
@@ -320,16 +272,6 @@ def write_health(now, failed_zones):
         ),
     }
     HEALTH_PATH.write_text(json.dumps(health, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-<<<<<<< HEAD
-    print(
-        f"Panchang updated for {now.strftime('%Y-%m-%d')} - "
-        f"{success_count}/{len(ZONES)} zones successful"
-    )
-
-    if success_count != len(ZONES):
-        # Return non-zero so GitHub Actions flags the run and writes a failure health report.
-        sys.exit(1)
-=======
     return success_count
 
 
@@ -376,7 +318,6 @@ def main():
 
     if success_count < len(ZONES):
         raise SystemExit(1)
->>>>>>> feature/yash
 
 
 if __name__ == "__main__":
