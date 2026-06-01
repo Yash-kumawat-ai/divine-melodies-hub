@@ -111,7 +111,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
+      <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-auto md:py-2 lg:h-20 lg:py-0 md:flex-col md:items-stretch md:justify-start md:gap-y-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && <MobileBackButton />}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
@@ -184,7 +184,7 @@ export default function Header() {
           <ProfileHubSheet open={profileHubOpen} onOpenChange={setProfileHubOpen} />
         </div>
 
-        <nav className="hidden md:flex items-center gap-2 lg:gap-4 text-sm md:text-[13px] lg:text-sm font-medium">
+        <nav className="hidden md:flex md:w-full md:flex-wrap md:justify-start lg:flex-1 lg:justify-end items-center gap-2 md:gap-x-3 md:gap-y-2 lg:gap-4 text-sm md:text-[13px] lg:text-sm font-medium">
           <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
           <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
           <Link
@@ -360,7 +360,7 @@ export default function Header() {
                   active
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border/80 bg-card/70 text-foreground",
-                  item.featured && "border-orange-300/70 bg-orange-500 text-white shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
+                  item.featured && "border-orange-300/70 shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
                 )}
                 aria-current={active ? "page" : undefined}
               >

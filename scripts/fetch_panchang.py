@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -54,6 +55,8 @@ TITHI_NAME_NUMBERS = {
     "dwadashi": 12,
     "dvadasi": 12,
     "trayodashi": 13,
+    "triodasi": 13,
+    "triyodasi": 13,
     "chaturdashi": 14,
     "purnima": 15,
     "poornima": 15,
@@ -82,6 +85,13 @@ def parse_time(value):
         raise ValueError(f"Unable to parse time: {text}")
     hour = int(match.group(1))
     minute = int(match.group(2))
+    suffix_match = re.search(r"\b(AM|PM)\b", text, re.IGNORECASE)
+    if suffix_match:
+        suffix = suffix_match.group(1).upper()
+        if suffix == "PM" and hour != 12:
+            hour += 12
+        elif suffix == "AM" and hour == 12:
+            hour = 0
     return hour, minute
 
 
@@ -214,7 +224,7 @@ def fetch_zone(zone, now):
 
     tithi = calculate_with_fallback(["LunarDay"], today)
     nakshatra = calculate_with_fallback(["MoonConstellation"], today)
-    yoga = calculate_with_fallback(["Yoga"], today)
+    yoga = calculate_with_fallback(["Yoga", "NithyaYoga"], today)
     karana = calculate_with_fallback(["Karana"], today)
     sunrise = calculate_with_fallback(["SunRise", "SunriseTime"], today)
     sunset = calculate_with_fallback(["SunSet", "SunsetTime"], today)
@@ -245,7 +255,6 @@ def fetch_zone(zone, now):
 
 def count_zones_for_today(today_str):
     return sum(1 for zone in ZONES if read_zone_file_date(zone["name"]) == today_str)
-
 
 def write_health(now, failed_zones):
     success_count = count_zones_for_today(now.strftime("%Y-%m-%d"))
