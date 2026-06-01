@@ -1,7 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark, CalendarDays } from 'lucide-react';
+import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import SearchBar from '@/components/SearchBar';
@@ -14,7 +14,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { toast } from 'sonner';
-import PanchangShortcut from '@/components/panchang/PanchangShortcut';
 
 interface UserBhajan {
   id: string;
@@ -137,8 +136,6 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      <PanchangShortcut />
-
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand-brown to-brand-dark py-20 md:py-32 px-4">
         <div className="container mx-auto max-w-4xl text-center relative z-10">
@@ -201,113 +198,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Panchang entry */}
-      <section id="panchang-calendar" className="relative overflow-hidden bg-gradient-to-b from-background via-amber-50/45 to-background px-4 py-12 dark:via-amber-950/15 sm:py-16">
-        <div className="container relative mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            className="overflow-hidden rounded-[1.5rem] border border-amber-300/35 bg-card/90 shadow-[0_18px_70px_rgba(245,158,11,0.14)] backdrop-blur"
-          >
-            <div className="grid gap-0 md:grid-cols-[1fr_0.72fr]">
-              <div className="p-5 sm:p-7 lg:p-8">
-                <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-200">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  {isHi ? 'आज का पंचांग' : 'Today Panchang'}
-                </span>
-                <h2 className="mt-4 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
-                  {isHi ? 'तिथि, नक्षत्र, राहु काल और पर्व एक अलग सुंदर पेज में देखें' : 'Open tithi, nakshatra, Rahu Kaal, and festivals in a dedicated page'}
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  {isHi
-                    ? 'पंचांग डेटा रोज सुबह कैश JSON से दिखता है। वेबसाइट पर आने वाले भक्त VedAstro API को सीधे कॉल नहीं करते।'
-                    : 'Panchang data is served from the daily cached JSON. Visitors never call the VedAstro API directly.'}
-                </p>
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <Button asChild size="lg" className="h-12 rounded-full bg-brand-saffron px-6 text-white shadow-lg shadow-amber-500/20 hover:bg-brand-saffron/90">
-                    <Link to="/panchang">
-                      <CalendarDays className="mr-2 h-5 w-5" />
-                      {isHi ? 'पंचांग खोलें' : 'Open Panchang'}
-                    </Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline" className="h-12 rounded-full border-amber-300/40 px-6">
-                    <Link to="/all-bhajans">
-                      <Search className="mr-2 h-5 w-5" />
-                      {isHi ? 'भजन खोजें' : 'Find Bhajans'}
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-              <div className="flex min-h-52 items-center justify-center border-t border-amber-300/20 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.22),transparent_62%)] p-5 md:border-l md:border-t-0">
-                <div className="text-center">
-                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-amber-300/40 bg-white/65 text-5xl font-bold text-amber-600 shadow-inner dark:bg-white/10 dark:text-amber-200">
-                    ॐ
-                  </div>
-                  <p className="mt-4 text-sm font-semibold text-foreground">
-                    {isHi ? 'मोबाइल टैब से भी तुरंत उपलब्ध' : 'Available from the mobile tab'}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {isHi ? 'डिफ़ॉल्ट क्षेत्र: जयपुर' : 'Default zone: Jaipur'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          {/*
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                    {isHi ? 'भजन' : 'Bhajan'}
-                  </p>
-                  <h3 className="font-display text-xl font-bold text-foreground">
-                    {isHi ? 'आज के पर्व के भजन' : 'Bhajans for today'}
-                  </h3>
-                </div>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {isHi
-                  ? 'जल्द ही पंचांग के अनुसार भजन और आरती सुझाव यहाँ दिखेंगे।'
-                  : 'Festival-aware bhajan and aarti recommendations will appear here soon.'}
-              </p>
-              <Button asChild className="mt-4 rounded-full bg-brand-saffron text-white hover:bg-brand-saffron/90">
-                <Link to="/all-bhajans">{isHi ? 'भजन देखें' : 'Explore bhajans'}</Link>
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              className="relative overflow-hidden rounded-[1.5rem] border border-amber-300/25 bg-[linear-gradient(145deg,rgba(245,158,11,0.16),rgba(255,255,255,0.7))] p-5 dark:bg-[linear-gradient(145deg,rgba(245,158,11,0.12),rgba(26,16,6,0.85))]"
-            >
-              <div className="absolute right-4 top-4 text-5xl text-amber-500/10">ॐ</div>
-              <div className="relative flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/65 text-amber-700 dark:bg-white/10 dark:text-amber-200">
-                  <ImageIcon className="h-5 w-5" />
-                </span>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
-                    {todaysPanchang.darshan.title[isHi ? 'hi' : 'en']}
-                  </p>
-                  <h3 className="font-display text-xl font-bold text-foreground">
-                    {isHi ? 'शांत दर्शन स्थान' : 'Sacred darshan space'}
-                  </h3>
-                </div>
-              </div>
-              <div className="relative mt-4 flex min-h-40 items-center justify-center rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-100/70 via-orange-50 to-white text-center dark:from-amber-950/35 dark:via-orange-950/25 dark:to-black/20">
-                <div>
-                  <p className="font-display text-4xl text-amber-600/70 dark:text-amber-200/70">दीप</p>
-                  <p className="mt-2 max-w-xs px-4 text-sm text-muted-foreground">
-                    {todaysPanchang.darshan.subtitle[isHi ? 'hi' : 'en']}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-          */}
-        </div>
-      </section>
-
       {/* Stats Bar */}
       <section className="py-10 px-4 bg-card border-y border-border">
         <div className="container mx-auto max-w-3xl grid grid-cols-3 gap-6">
@@ -330,6 +220,11 @@ export default function Home() {
             <p className="text-center text-muted-foreground text-lg mb-10">
               {t('sharedByOurCommunity')}
             </p>
+            <div className="mb-10 flex justify-center">
+              <Button asChild variant="outline" className="rounded-full px-6">
+                <Link to="/all-bhajans">{isHi ? 'और देखें' : 'View more'}</Link>
+              </Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userBhajans.map((bhajan) => {
                 const convertedBhajan = {
