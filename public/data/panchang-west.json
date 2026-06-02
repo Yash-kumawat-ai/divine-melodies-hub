@@ -1,17 +1,17 @@
 {
-  "date": "2026-05-31",
+  "date": "2026-06-02",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Poornima",
-  "tithi_number": 15,
-  "nakshatra": "Anuradha - 4",
-  "yoga": "Siddha",
-  "karana": "Bava",
-  "paksha": "Shukla",
+  "tithi": "Vidiya",
+  "tithi_number": 0,
+  "nakshatra": "Moola - 3",
+  "yoga": "Subha",
+  "karana": "Garija",
+  "paksha": "Krishna",
   "sunrise": "06:04 AM",
   "sunset": "07:08 PM",
-  "rahu_kaal": "05:30 PM - 07:08 PM",
+  "rahu_kaal": "03:52 PM - 05:30 PM",
   "brahma_muhurat": "04:28 AM - 05:16 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-05-31T13:20:29+05:30"
+  "vara": "Mangalvaar",
+  "updated_at": "2026-06-02T23:10:59+05:30"
 }
