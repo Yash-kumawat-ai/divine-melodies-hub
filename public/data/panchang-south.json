@@ -1,17 +1,17 @@
 {
-  "date": "2026-05-31",
+  "date": "2026-06-04",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Poornima",
-  "tithi_number": 15,
-  "nakshatra": "Anuradha - 4",
-  "yoga": "Siddha",
-  "karana": "Bava",
-  "paksha": "Shukla",
+  "tithi": "Chavithi",
+  "tithi_number": 0,
+  "nakshatra": "Uttarashada - 2",
+  "yoga": "Brahma",
+  "karana": "Balava",
+  "paksha": "Krishna",
   "sunrise": "05:56 AM",
-  "sunset": "06:38 PM",
-  "rahu_kaal": "05:03 PM - 06:38 PM",
+  "sunset": "06:39 PM",
+  "rahu_kaal": "12:18 PM - 01:53 PM",
   "brahma_muhurat": "04:20 AM - 05:08 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-05-31T13:20:29+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-06-04T07:35:04+05:30"
 }
