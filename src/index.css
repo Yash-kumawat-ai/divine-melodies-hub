@@ -93,6 +93,23 @@
     --cream: 24 20% 14%;
     --temple-shadow: 0 12px 40px -12px hsl(0 0% 0% / 0.55);
   }
+
+  .panchang-temple {
+    --background: 24 24% 7%;
+    --foreground: 35 40% 92%;
+    --card: 24 20% 12%;
+    --card-foreground: 35 40% 92%;
+    --popover: 24 24% 7%;
+    --popover-foreground: 35 40% 92%;
+    --muted: 24 15% 18%;
+    --muted-foreground: 32 18% 70%;
+    --accent: 32 90% 55%;
+    --accent-foreground: 0 0% 100%;
+    --border: 28 25% 24%;
+    --input: 28 25% 24%;
+    --ring: 32 90% 55%;
+    color: hsl(var(--foreground));
+  }
 }
 
 @layer base {
@@ -256,6 +273,20 @@
     font-size: 0.68rem;
     font-weight: 700;
     line-height: 1.25;
+  }
+
+  .panchang-temple-bg {
+    background-image: radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 34%),
+      radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.2), transparent 42%),
+      linear-gradient(180deg, #140b05 0%, #0b0603 45%, #1a0f08 100%);
+  }
+
+  .temple-panel {
+    @apply rounded-[1.75rem] border border-amber-300/20 bg-card/90 shadow-[0_26px_80px_-50px_rgba(245,158,11,0.75)] backdrop-blur-md;
+  }
+
+  .temple-panel-soft {
+    @apply rounded-[1.5rem] border border-amber-300/20 bg-background/60;
   }
 
   .festival-calendar .festival-vrat {

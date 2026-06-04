@@ -42,7 +42,7 @@ export function UserNotificationBell({ userId }: UserNotificationBellProps) {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+    <DropdownMenu modal={false} open={open} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           type="button"

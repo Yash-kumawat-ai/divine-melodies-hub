@@ -6,9 +6,32 @@ export type PanchangLoadResult = {
   source: 'static' | 'live' | 'static-fallback';
 };
 
+const CACHE_PREFIX = 'panchang_cache_';
+
+function readSessionCache(zoneName: string): PanchangLoadResult | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(`${CACHE_PREFIX}${zoneName}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PanchangLoadResult;
+    if (parsed.data?.date === todayInIndia()) return parsed;
+  } catch {
+    // ignore malformed cache
+  }
+  return null;
+}
+
+function writeSessionCache(zoneName: string, result: PanchangLoadResult): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.setItem(`${CACHE_PREFIX}${zoneName}`, JSON.stringify(result));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 async function fetchStatic(zoneName: string, signal?: AbortSignal): Promise<PanchangData | null> {
-  const response = await fetch(`/data/panchang-${zoneName}.json?v=${Date.now()}`, {
-    cache: 'no-store',
+  const response = await fetch(`/data/panchang-${zoneName}.json?v=${todayInIndia()}`, {
     signal,
   });
   if (!response.ok) return null;
@@ -37,18 +60,28 @@ async function fetchLive(zoneName: string, signal?: AbortSignal): Promise<Pancha
  */
 export async function loadPanchang(zoneName: string, signal?: AbortSignal): Promise<PanchangLoadResult> {
   const today = todayInIndia();
+  
+  const sessionCached = readSessionCache(zoneName);
+  if (sessionCached) return sessionCached;
+
   const cached = await fetchStatic(zoneName, signal);
 
   if (cached?.date === today) {
-    return { data: cached, stale: false, source: 'static' };
+    const result: PanchangLoadResult = { data: cached, stale: false, source: 'static' };
+    writeSessionCache(zoneName, result);
+    return result;
   }
 
   try {
     const live = await fetchLive(zoneName, signal);
-    return { data: live, stale: false, source: 'live' };
+    const result: PanchangLoadResult = { data: live, stale: false, source: 'live' };
+    writeSessionCache(zoneName, result);
+    return result;
   } catch (error) {
     if (cached) {
-      return { data: cached, stale: true, source: 'static-fallback' };
+      const result: PanchangLoadResult = { data: cached, stale: true, source: 'static-fallback' };
+      writeSessionCache(zoneName, result);
+      return result;
     }
     throw error instanceof Error ? error : new Error('Unable to load Panchang.');
   }

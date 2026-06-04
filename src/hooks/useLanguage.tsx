@@ -798,6 +798,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('app_language', language);
     document.documentElement.lang = language;
     document.documentElement.classList.toggle('lang-hi', language === 'hi');
+    // Safety net: clear any stuck body scroll/pointer locks left by modals
+    // (e.g. native <select> inside Radix Sheet on mobile can leave body
+    // with pointer-events:none / overflow:hidden, freezing the page).
+    if (typeof document !== 'undefined') {
+      const inlineOverflow = document.body.style.overflow;
+      if (inlineOverflow === 'hidden') {
+        document.body.style.overflow = '';
+      }
+      const inlinePointerEvents = document.body.style.pointerEvents;
+      if (inlinePointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
+    }
   }, [language]);
 
   const value = useMemo(

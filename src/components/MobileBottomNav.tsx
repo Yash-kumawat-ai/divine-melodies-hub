@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -27,6 +27,7 @@ import { languageOptions } from "@/constants/languageOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
+import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { cn } from "@/lib/utils";
 
 type NavKey = "home" | "browse" | "upload" | "panchang" | "more";
@@ -137,6 +138,25 @@ export default function MobileBottomNav() {
     navigate("/");
   };
 
+  useEffect(() => {
+    if (!featuresOpen) {
+      clearRadixBodyLocks();
+    }
+  }, [featuresOpen]);
+
+  const handleFeaturesOpenChange = (open: boolean) => {
+    setFeaturesOpen(open);
+    if (!open) {
+      clearRadixBodyLocks();
+    }
+  };
+
+  const handleLanguageChange = (nextLanguage: typeof language) => {
+    setLanguage(nextLanguage);
+    setFeaturesOpen(false);
+    clearRadixBodyLocks();
+  };
+
   return (
     <>
       <nav
@@ -202,10 +222,10 @@ export default function MobileBottomNav() {
         })}
       </nav>
 
-      <Sheet open={featuresOpen} onOpenChange={setFeaturesOpen}>
+      <Sheet modal={false} open={featuresOpen} onOpenChange={handleFeaturesOpenChange}>
         <SheetContent
           side="bottom"
-          className="mx-auto max-h-[82vh] w-full max-w-[32rem] rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-24px_70px_hsl(20_30%_10%/0.25)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0d0b08]/95"
+          className="mx-auto max-h-[82dvh] w-full max-w-[32rem] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-24px_70px_hsl(20_30%_10%/0.25)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0d0b08]/95"
         >
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="text-base">{t("features")}</SheetTitle>
@@ -303,22 +323,35 @@ export default function MobileBottomNav() {
           </div>
 
           <div className="mt-4 grid grid-cols-[1fr_auto] gap-2.5">
-            <label className="flex min-w-0 items-center gap-3 rounded-2xl border border-border/80 bg-card/75 px-3 py-3">
-              <Languages className="h-5 w-5 shrink-0 text-primary" strokeWidth={2.2} />
-              <span className="sr-only">{t("language")}</span>
-              <select
-                value={language}
-                onChange={(event) => setLanguage(event.target.value as typeof language)}
-                className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-foreground outline-none"
-                aria-label={t("language")}
-              >
-                {languageOptions.map((option) => (
-                  <option key={option.code} value={option.code}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="min-w-0 rounded-2xl border border-border/80 bg-card/75 px-3 py-3">
+              <div className="mb-2 flex items-center gap-2">
+                <Languages className="h-5 w-5 shrink-0 text-primary" strokeWidth={2.2} />
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("language")}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label={t("language")}>
+                {languageOptions.map((option) => {
+                  const selected = option.code === language;
+
+                  return (
+                    <button
+                      key={option.code}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => handleLanguageChange(option.code)}
+                      className={cn(
+                        "min-h-9 rounded-xl border px-2 text-xs font-semibold transition-colors active:scale-[0.98]",
+                        selected
+                          ? "border-primary/45 bg-primary/15 text-primary"
+                          : "border-border/70 bg-background/65 text-foreground hover:border-primary/30 hover:bg-primary/10",
+                      )}
+                    >
+                      <span className="block truncate">{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <button
               type="button"

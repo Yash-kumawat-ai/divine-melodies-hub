@@ -33,6 +33,11 @@ export default function AppShell() {
       </main>
       {!isFullScreenApp && <MobileBottomNav />}
       {!isFullScreenApp && (
+        <div className="block pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:hidden">
+          <LayoutFooter />
+        </div>
+      )}
+      {!isFullScreenApp && (
         <div className="hidden md:block">
           <LayoutFooter />
         </div>

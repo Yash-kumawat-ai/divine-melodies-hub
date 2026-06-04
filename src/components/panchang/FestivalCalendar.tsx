@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { CalendarDays, ChevronLeft, ChevronRight, Flame, Moon, Sparkles } from 'lucide-react';
+import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Flame, Moon, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,13 @@ import { loadFestivalMonth, getFestivalsForDate, getCurrentFestivalMonth } from 
 import type { FestivalData, FestivalMonthData } from '@/types/festival';
 import { useLanguage } from '@/hooks/useLanguage';
 import { cn } from '@/lib/utils';
+import {
+  findReminder,
+  loadFestivalReminders,
+  removeFestivalReminder,
+  upsertFestivalReminder,
+  type FestivalReminder,
+} from '@/lib/panchang/festivalReminders';
 
 type CalendarDay = {
   date: string;
@@ -86,10 +93,14 @@ function FestivalDetailContent({
   date,
   festivals,
   language,
+  reminders,
+  onToggleReminder,
 }: {
   date: string | null;
   festivals: FestivalData[];
   language: 'en' | 'hi';
+  reminders: FestivalReminder[];
+  onToggleReminder: (festival: FestivalData) => void;
 }) {
   if (!date) return null;
 
@@ -108,7 +119,7 @@ function FestivalDetailContent({
           <article key={festival.id} className="rounded-xl border border-amber-300/30 bg-background/82 p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <span className="mt-1 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: festival.color }} />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h4 className="font-display text-lg font-bold leading-snug text-foreground">
                   {language === 'hi' ? festival.name_hi : festival.name_en}
                 </h4>
@@ -116,6 +127,25 @@ function FestivalDetailContent({
                   {festival.deity} · {festival.importance}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => onToggleReminder(festival)}
+                className={cn(
+                  'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition',
+                  findReminder(reminders, 'festival', festival.date, festival.id)
+                    ? 'border-amber-400 bg-amber-500/15 text-amber-800 dark:text-amber-100'
+                    : 'border-border bg-background text-muted-foreground hover:border-amber-400 hover:text-amber-700',
+                )}
+              >
+                <BellRing className="h-3.5 w-3.5" />
+                {findReminder(reminders, 'festival', festival.date, festival.id)
+                  ? language === 'hi'
+                    ? 'मार्क किया'
+                    : 'Marked'
+                  : language === 'hi'
+                    ? 'रिमाइंड'
+                    : 'Remind'}
+              </button>
             </div>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -162,6 +192,7 @@ export default function FestivalCalendar() {
   const [monthData, setMonthData] = useState<FestivalMonthData | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedFestivals, setSelectedFestivals] = useState<FestivalData[]>([]);
+  const [reminders, setReminders] = useState<FestivalReminder[]>(() => loadFestivalReminders());
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,6 +223,12 @@ export default function FestivalCalendar() {
     };
   }, [visibleMonth]);
 
+  useEffect(() => {
+    const syncReminders = () => setReminders(loadFestivalReminders());
+    window.addEventListener('hari-kirtan:festival-reminders', syncReminders);
+    return () => window.removeEventListener('hari-kirtan:festival-reminders', syncReminders);
+  }, []);
+
   const days = useMemo(() => buildCalendarDays(visibleMonth, monthData), [visibleMonth, monthData]);
   const weekDays = lang === 'hi' ? ['सो', 'मं', 'बु', 'गु', 'शु', 'श', 'र'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const today = getCurrentFestivalMonth() === visibleMonth ? todayInIndia() : '';
@@ -201,6 +238,15 @@ export default function FestivalCalendar() {
     setSelectedDate(day.date);
     setSelectedFestivals(day.festivals);
     setSheetOpen(true);
+  }
+
+  function toggleFestivalReminder(festival: FestivalData) {
+    const existing = findReminder(reminders, 'festival', festival.date, festival.id);
+    if (existing) {
+      setReminders(removeFestivalReminder(existing.id));
+      return;
+    }
+    setReminders(upsertFestivalReminder(festival, { leadDays: 1 }));
   }
 
   return (
@@ -287,7 +333,13 @@ export default function FestivalCalendar() {
       {isLoading && <p className="mt-3 text-sm text-muted-foreground">{lang === 'hi' ? 'पर्व लोड हो रहे हैं...' : 'Loading festivals...'}</p>}
 
       <div className="mt-5 hidden md:block">
-        <FestivalDetailContent date={selectedDate} festivals={selectedFestivals} language={lang} />
+        <FestivalDetailContent
+          date={selectedDate}
+          festivals={selectedFestivals}
+          language={lang}
+          reminders={reminders}
+          onToggleReminder={toggleFestivalReminder}
+        />
       </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -297,7 +349,13 @@ export default function FestivalCalendar() {
             <SheetDescription>{selectedDate ? formatDate(selectedDate, lang) : ''}</SheetDescription>
           </SheetHeader>
           <div className="mt-4">
-            <FestivalDetailContent date={selectedDate} festivals={selectedFestivals} language={lang} />
+            <FestivalDetailContent
+              date={selectedDate}
+              festivals={selectedFestivals}
+              language={lang}
+              reminders={reminders}
+              onToggleReminder={toggleFestivalReminder}
+            />
           </div>
         </SheetContent>
       </Sheet>

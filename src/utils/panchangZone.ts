@@ -11,6 +11,17 @@ export type PanchangZone = (typeof ZONES)[number];
 
 const DEFAULT_ZONE_NAME = 'northwest';
 const ZONE_OVERRIDE_KEY = 'panchang_zone_override';
+const ZONE_SESSION_KEY = 'panchang_zone_cached';
+
+function getSessionZoneName(): string | null {
+  if (typeof window === 'undefined') return null;
+  return window.sessionStorage.getItem(ZONE_SESSION_KEY);
+}
+
+function setSessionZoneName(name: string): void {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(ZONE_SESSION_KEY, name);
+}
 
 function findZone(zoneName: string | null): PanchangZone | null {
   return ZONES.find((zone) => zone.name === zoneName) ?? null;
@@ -43,24 +54,37 @@ export function clearZoneOverride(): void {
 
 export async function getZoneFromBrowser(): Promise<PanchangZone> {
   const override = findZone(getZoneOverride());
-  if (override) return override;
+  if (override) {
+    setSessionZoneName(override.name);
+    return override;
+  }
+
+  const cached = findZone(getSessionZoneName());
+  if (cached) return cached;
 
   const defaultZone = findZone(DEFAULT_ZONE_NAME) ?? ZONES[0];
 
   if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    setSessionZoneName(defaultZone.name);
     return defaultZone;
   }
 
   return new Promise((resolve) => {
-    const timeout = window.setTimeout(() => resolve(defaultZone), 5000);
+    const timeout = window.setTimeout(() => {
+      setSessionZoneName(defaultZone.name);
+      resolve(defaultZone);
+    }, 5000);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         window.clearTimeout(timeout);
-        resolve(getNearestZone(position.coords.latitude, position.coords.longitude));
+        const nearest = getNearestZone(position.coords.latitude, position.coords.longitude);
+        setSessionZoneName(nearest.name);
+        resolve(nearest);
       },
       () => {
         window.clearTimeout(timeout);
+        setSessionZoneName(defaultZone.name);
         resolve(defaultZone);
       },
       {

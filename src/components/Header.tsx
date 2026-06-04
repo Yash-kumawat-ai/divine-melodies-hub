@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import MobileBackButton from "@/components/MobileBackButton";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { formatUploadError, uploadToCloudinary } from "@/lib/cloudinary";
@@ -40,10 +40,12 @@ import { languageOptions } from "@/constants/languageOptions";
 import { AdminRoleBadge } from "@/components/notifications/AdminRoleBadge";
 import { UserNotificationBell } from "@/components/notifications/UserNotificationBell";
 import ProfileHubSheet from "@/components/account/ProfileHubSheet";
+import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { cn } from "@/lib/utils";
 
 export default function Header() {
   const [profileHubOpen, setProfileHubOpen] = useState(false);
+  const [mobileLanguageOpen, setMobileLanguageOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, isAdmin, isSuperAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -54,6 +56,25 @@ export default function Header() {
   const isHome = location.pathname === "/";
   const { isBhajanModalOpen } = useBhajanModalOpen();
   const showBack = !isHome && !isBhajanModalOpen;
+
+  useEffect(() => {
+    if (!mobileLanguageOpen) {
+      clearRadixBodyLocks();
+    }
+  }, [mobileLanguageOpen]);
+
+  const handleMobileLanguageOpenChange = (open: boolean) => {
+    setMobileLanguageOpen(open);
+    if (!open) {
+      clearRadixBodyLocks();
+    }
+  };
+
+  const handleLanguageChange = (nextLanguage: typeof language) => {
+    setLanguage(nextLanguage);
+    setMobileLanguageOpen(false);
+    clearRadixBodyLocks();
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -130,7 +151,7 @@ export default function Header() {
 
         <div className="flex items-center gap-2 md:hidden">
           {user && <UserNotificationBell userId={user.id} />}
-          <DropdownMenu>
+          <DropdownMenu modal={false} open={mobileLanguageOpen} onOpenChange={handleMobileLanguageOpenChange}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
@@ -151,7 +172,9 @@ export default function Header() {
               {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.code}
-                  onClick={() => setLanguage(option.code)}
+                  onClick={() => {
+                    handleLanguageChange(option.code);
+                  }}
                   className={cn(
                     'cursor-pointer font-medium',
                     language === option.code && 'bg-primary/10 text-primary',
@@ -240,7 +263,9 @@ export default function Header() {
 
           <select
             value={language}
-            onChange={(e) => setLanguage(e.target.value as typeof language)}
+            onChange={(e) => {
+              handleLanguageChange(e.target.value as typeof language);
+            }}
             className="rounded-md border border-border bg-background text-sm md:h-8 md:px-1.5 lg:h-9 lg:px-2"
             aria-label={t('language')}
           >
@@ -253,7 +278,7 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             {staffRole && <AdminRoleBadge role={staffRole} className="hidden sm:inline-flex" />}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
