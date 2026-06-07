@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-06",
+  "date": "2026-06-07",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Sashti",
-  "tithi_number": 6,
-  "nakshatra": "Dhanishta - 1",
-  "yoga": "Vaidhriti",
-  "karana": "Garija",
+  "tithi": "Saptami",
+  "tithi_number": 7,
+  "nakshatra": "Satabhisha - 1",
+  "yoga": "Vishkambha",
+  "karana": "Visti",
   "paksha": "Shukla",
   "sunrise": "05:35 AM",
   "sunset": "06:49 PM",
-  "rahu_kaal": "08:54 AM - 10:33 AM",
+  "rahu_kaal": "05:10 PM - 06:49 PM",
   "brahma_muhurat": "03:59 AM - 04:47 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-06-06T06:57:54+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-06-07T07:06:45+05:30"
 }

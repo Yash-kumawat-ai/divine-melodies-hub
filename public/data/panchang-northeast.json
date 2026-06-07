@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-06",
+  "date": "2026-06-07",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Sashti",
-  "tithi_number": 6,
-  "nakshatra": "Dhanishta - 1",
-  "yoga": "Vaidhriti",
-  "karana": "Garija",
+  "tithi": "Saptami",
+  "tithi_number": 7,
+  "nakshatra": "Satabhisha - 1",
+  "yoga": "Vishkambha",
+  "karana": "Visti",
   "paksha": "Shukla",
   "sunrise": "04:55 AM",
   "sunset": "06:15 PM",
-  "rahu_kaal": "08:15 AM - 09:55 AM",
+  "rahu_kaal": "04:35 PM - 06:15 PM",
   "brahma_muhurat": "03:19 AM - 04:07 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-06-06T06:57:54+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-06-07T07:06:45+05:30"
 }
