@@ -1,4 +1,4 @@
-const RAHU_ORDER: Record<number, number> = { 0: 2, 1: 7, 2: 4, 3: 5, 4: 6, 5: 3, 6: 8 };
+const RAHU_ORDER: Record<number, number> = { 0: 2, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3, 6: 8 };
 
 const VARA_BY_WEEKDAY = [
   'Somvaar',
@@ -56,13 +56,21 @@ export function cleanText(value: unknown): string {
 }
 
 function parseTime(value: string): { hour: number; minute: number } {
-  const match = value.match(/(\d{1,2}):(\d{2})/);
+  const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
   if (!match) throw new Error(`Unable to parse time: ${value}`);
-  return { hour: Number.parseInt(match[1], 10), minute: Number.parseInt(match[2], 10) };
+  
+  let hour = Number.parseInt(match[1], 10);
+  const minute = Number.parseInt(match[2], 10);
+  const ampm = match[3]?.toUpperCase();
+
+  if (ampm === 'PM' && hour < 12) hour += 12;
+  if (ampm === 'AM' && hour === 12) hour = 0;
+  
+  return { hour, minute };
 }
 
 function minutesToTime(totalMinutes: number): string {
-  const normalized = Math.round(totalMinutes) % (24 * 60);
+  const normalized = ((Math.round(totalMinutes) % (24 * 60)) + (24 * 60)) % (24 * 60);
   const hour24 = Math.floor(normalized / 60);
   const minute = normalized % 60;
   const suffix = hour24 < 12 ? 'AM' : 'PM';
@@ -71,8 +79,29 @@ function minutesToTime(totalMinutes: number): string {
 }
 
 export function formatTime(value: string): string {
-  const { hour, minute } = parseTime(value);
-  return minutesToTime(hour * 60 + minute);
+  // Handle ranges with various separators (-, to, to)
+  const rangeSeparator = value.includes('-') ? '-' : value.toLowerCase().includes(' to ') ? ' to ' : null;
+  
+  if (rangeSeparator) {
+    return value
+      .split(rangeSeparator)
+      .map((p) => {
+        try {
+          return formatTime(p.trim());
+        } catch {
+          return p.trim();
+        }
+      })
+      .join(' - ');
+  }
+
+  try {
+    const { hour, minute } = parseTime(value);
+    return minutesToTime(hour * 60 + minute);
+  } catch {
+    // If parsing fails, return the original cleaned text
+    return value.trim();
+  }
 }
 
 export function calculateRahuKaal(sunriseStr: string, sunsetStr: string, weekday: number): string {
@@ -152,6 +181,6 @@ export function nowInIndia(): { date: string; weekday: number; stdTime: string }
   return {
     date: `${year}-${month}-${day}`,
     weekday: weekdayMap[get('weekday')] ?? 0,
-    stdTime: `12:00 ${day}/${month}/${year} +05:30`,
+    stdTime: `05:00 ${day}/${month}/${year} +05:30`,
   };
 }

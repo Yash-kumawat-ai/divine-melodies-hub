@@ -1,4 +1,4 @@
-import { BookOpen, Clock3, Flame, Flower2, Moon, Play, Sparkles, Timer, Wind } from "lucide-react";
+import { BookOpen, Clock3, Flame, Flower2, Moon, Play, Sparkles, Timer, Wind, ArrowRight } from "lucide-react";
 import { deities } from "@/data/bhajans";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getMeditationCopy, getMeditationPracticeTitle } from "@/lib/meditation/meditationLocale";
@@ -11,6 +11,65 @@ import {
 } from "@/lib/meditation/meditationTypes";
 import { computeStats, loadPreferences, loadSessionLogs } from "@/lib/meditation/meditationStorage";
 import { cn } from "@/lib/utils";
+import meditationBg from "@/pages/meditation.webp";
+import { useEffect, useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const QUOTES = [
+  { hi: "मौन में उतरें। चेतना को स्पर्श करें।", en: "Step into silence. Touch the consciousness." },
+  { hi: "ध्यान नहीं, स्वयं से मिलन।", en: "Not just meditation, a meeting with self." },
+  { hi: "जहाँ श्वास शांत होती है, वहाँ आत्मा बोलती है।", en: "Where breath calms, the soul speaks." },
+  { hi: "भीतर की शांति, बाहर का प्रकाश।", en: "Inner peace, outer light." },
+  { hi: "मन से परे। चेतना के करीब।", en: "Beyond the mind. Closer to consciousness." },
+];
+
+function TypewriterQuote({ quotes, language }: { quotes: typeof QUOTES, language: string }) {
+  const [index, setIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(100);
+
+  const fullText = language === 'hi' ? quotes[index].hi : quotes[index].en;
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    const handleTyping = () => {
+      if (!isDeleting) {
+        if (displayText.length < fullText.length) {
+          setDisplayText(fullText.substring(0, displayText.length + 1));
+          setTypingSpeed(100);
+        } else {
+          // Pause before "erasing" all at once
+          timer = setTimeout(() => {
+            setIsDeleting(true);
+          }, 2500);
+          return;
+        }
+      } else {
+        // Instant erase and move to next
+        setDisplayText("");
+        setIsDeleting(false);
+        setIndex((prev) => (prev + 1) % quotes.length);
+        setTypingSpeed(500); // Small pause before next quote starts typing
+      }
+
+      timer = setTimeout(handleTyping, typingSpeed);
+    };
+
+    timer = setTimeout(handleTyping, typingSpeed);
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, index, fullText, typingSpeed, quotes.length]);
+
+  return (
+    <div className="flex flex-col items-start min-h-[80px] sm:min-h-[110px]">
+      <h1 className="font-display text-xl font-bold leading-tight text-white drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)] sm:text-2xl md:text-3xl lg:text-4xl text-left transition-all duration-300">
+        {displayText}
+        <span className="ml-1 inline-block w-[3px] h-[0.8em] bg-amber-400 animate-pulse align-middle" />
+      </h1>
+    </div>
+  );
+}
 
 const ENTRY: { type: PracticeType; label: string; desc: string; icon: typeof Flower2; color: string }[] = [
   { type: "mantra", label: "mantra", desc: "mantra", icon: Flower2, color: "from-amber-500/30 to-orange-600/10" },
@@ -45,90 +104,179 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
   const prefs = loadPreferences();
   const lastPractice = prefs.lastPracticeId ? getPracticeById(prefs.lastPracticeId) : null;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a0f08] via-[#0c0608] to-[#050306] px-4 pb-28 pt-4 text-amber-50 md:pb-12 md:pt-8">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.18),transparent),radial-gradient(circle_at_90%_20%,rgba(244,63,94,0.08),transparent_40%)]" />
+  const particles = useMemo(() => Array.from({ length: 20 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 3 + 2,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * 10,
+  })), []);
 
-      <div className="mx-auto max-w-5xl space-y-5 md:space-y-7">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306] px-4 pb-28 pt-4 text-amber-50 md:pb-12 md:pt-8">
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.12),transparent),radial-gradient(circle_at_90%_20%,rgba(244,63,94,0.05),transparent_40%)]" />
+
+      <div className="mx-auto max-w-5xl space-y-6 sm:space-y-8">
         {/* Hero */}
-        <section className="overflow-hidden rounded-3xl border border-amber-200/20 bg-gradient-to-br from-amber-950/40 via-black/50 to-black/60 shadow-xl shadow-black/40 backdrop-blur-md">
-          <div className="border-b border-amber-200/10 px-5 py-4 md:px-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-100/90">
-              <Flower2 className="h-3.5 w-3.5 text-amber-300" />
-              {copy.home.badge}
-            </div>
-            <h1 className="mt-3 font-display text-3xl font-bold leading-tight text-amber-50 sm:text-4xl md:text-5xl">
-              {copy.home.title}
-            </h1>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-amber-100/75 md:text-base">
-              {copy.home.subtitle}
-            </p>
+        <section className="relative min-h-[700px] sm:min-h-[800px] lg:min-h-[900px] overflow-hidden rounded-[2.5rem] border border-white/10 shadow-2xl shadow-black/60 group flex flex-col">
+          {/* Background with Parallax effect */}
+          <motion.div 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
+            className="absolute inset-0 z-0 overflow-hidden"
+          >
+            <img
+              src={meditationBg}
+              alt=""
+              className="h-[125%] w-full object-cover object-[75%_top] md:object-[center_top] -translate-y-[20%] transition-transform duration-700 group-hover:scale-105"
+            />
+          </motion.div>
+          
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/70 via-black/20 to-transparent z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 z-[1]" />
+
+          {/* Floating Particles */}
+          <div className="absolute inset-0 pointer-events-none z-[2] overflow-hidden">
+            {particles.map((p) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: "100%" }}
+                animate={{ 
+                  opacity: [0, 0.4, 0],
+                  y: ["100%", "0%"],
+                  x: [`${p.x}%`, `${p.x + (Math.random() * 10 - 5)}%`]
+                }}
+                transition={{ 
+                  duration: p.duration, 
+                  repeat: Infinity, 
+                  delay: p.delay,
+                  ease: "linear"
+                }}
+                className="absolute w-1 h-1 bg-amber-400/40 rounded-full blur-[1px]"
+                style={{ left: `${p.x}%`, bottom: 0 }}
+              />
+            ))}
           </div>
 
-          <div className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center md:gap-8 md:p-8">
-            <div className="order-2 space-y-4 md:order-1">
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: copy.home.minutes, value: stats.totalMindfulMinutes, icon: Clock3 },
-                  { label: copy.home.streak, value: stats.streakDays, icon: Flame },
-                  { label: copy.home.sessions, value: stats.sessionCount, icon: Timer },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.label}
-                      className="flex flex-col items-center rounded-2xl border border-amber-200/15 bg-black/30 px-2 py-3"
-                    >
-                      <Icon className="mb-1 h-4 w-4 text-amber-400/80" aria-hidden />
-                      <p className="font-mono text-2xl font-semibold tabular-nums text-amber-50">{item.value}</p>
-                      <p className="mt-0.5 text-center text-[10px] font-medium uppercase tracking-wide text-amber-200/50">
-                        {item.label}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={lastPractice ? onQuickStart : () => onSelectPractice(getPracticeById("mantra_shiva")!)}
-                  className="flex min-h-[3.25rem] flex-1 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3 text-left font-semibold text-[#2a1208] shadow-lg shadow-orange-950/40 transition active:scale-[0.99]"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-black/15">
-                    <Play className="h-5 w-5 fill-current" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    {lastPractice ? (
-                      <>
-                        <span className="block text-sm leading-tight">{copy.home.continueSuffix}</span>
-                        <span className="block truncate text-xs font-medium opacity-90">
-                          {getMeditationPracticeTitle(lastPractice, language)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="block text-sm">{copy.home.beginJapa}</span>
-                    )}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectPractice(QUICK_PRACTICE)}
-                  className="min-h-[3.25rem] rounded-2xl border border-amber-200/25 bg-amber-500/10 px-5 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20 active:scale-[0.99] sm:shrink-0"
-                >
-                  {copy.home.quickPause}
-                </button>
+          <div className="relative z-10 flex-1 flex flex-col p-7 md:p-12 lg:p-16">
+            {/* Top Section */}
+            <div className="flex flex-col items-start max-w-4xl">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 flex w-full items-center justify-center gap-4 text-amber-500/60"
+              >
+                <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-current" />
+                <div className="flex items-center gap-3 text-amber-400/90">
+                  <span className="text-lg font-bold">||</span>
+                  <span className="font-display text-xl font-bold tracking-[0.15em]">{language === 'hi' ? 'जय श्री राम' : 'Jai Shri Ram'}</span>
+                  <span className="text-lg font-bold">||</span>
+                </div>
+                <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-current" />
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-amber-200/90 backdrop-blur-xl"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                {copy.home.badge}
+              </motion.div>
+              
+              <div className="mt-4 sm:mt-6">
+                <TypewriterQuote quotes={QUOTES} language={language} />
               </div>
             </div>
 
-            <div className="order-1 flex justify-center md:order-2">
-              <div className="relative flex aspect-square w-[11rem] items-center justify-center sm:w-[12.5rem] md:w-[14rem]">
-                <div className="absolute inset-0 rounded-full border border-amber-300/15" />
-                <div className="absolute inset-3 rounded-full border border-amber-200/10" />
-                <div className="absolute inset-6 rounded-full bg-[radial-gradient(circle,rgba(251,191,36,0.2),transparent_65%)]" />
-                <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-amber-200/30 bg-gradient-to-br from-amber-950/80 to-black/60 font-display text-6xl text-amber-100 shadow-inner shadow-amber-950/50 sm:h-32 sm:w-32 sm:text-7xl">
-                  {OM}
-                </div>
+            {/* Bottom Section - Pushed to the absolute bottom */}
+            <div className="mt-auto flex flex-col gap-6">
+              <div className="flex flex-col items-start gap-4">
+                {/* Continue Card (Glassmorphism) */}
+                <AnimatePresence mode="wait">
+                  {lastPractice && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={onQuickStart}
+                      className="group/card relative flex w-full max-w-md items-center gap-5 overflow-hidden rounded-3xl border border-white/20 bg-white/[0.03] p-5 backdrop-blur-2xl transition-all hover:bg-white/[0.06] hover:border-white/30"
+                    >
+                      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-600/20 border border-amber-500/30">
+                        <Play className="h-7 w-7 fill-amber-500 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                        {/* Breathing Glow behind icon */}
+                        <motion.div 
+                          animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0.6, 0.3] }}
+                          transition={{ duration: 4, repeat: Infinity }}
+                          className="absolute inset-0 rounded-2xl bg-amber-500/20 blur-xl"
+                        />
+                      </div>
+                      
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/60 mb-1">
+                          {language === 'hi' ? 'पिछला ध्यान' : 'Previous Session'}
+                        </p>
+                        <h3 className="text-lg font-bold text-white truncate">
+                          {getMeditationPracticeTitle(lastPractice, language)}
+                        </h3>
+                        <div className="mt-2 flex items-center gap-3">
+                           <div className="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: "65%" }}
+                                className="h-full bg-gradient-to-r from-orange-500 to-amber-400"
+                              />
+                           </div>
+                           <span className="text-[10px] font-bold text-white/40 tabular-nums uppercase tracking-tighter">
+                              {language === 'hi' ? 'जारी रखें' : 'Continue'}
+                           </span>
+                           <ArrowRight className="h-3.5 w-3.5 text-amber-400 group-hover/card:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+
+                {!lastPractice && (
+                  <button
+                    type="button"
+                    onClick={() => onSelectPractice(getPracticeById("mantra_shiva")!)}
+                    className="flex min-h-[3.75rem] items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 px-8 py-3 text-lg font-bold text-[#1a0f08] shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition hover:scale-[1.03] active:scale-[0.97]"
+                  >
+                    <Play className="h-6 w-6 fill-current" />
+                    <span>{copy.home.beginJapa}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Stats Grid - Moved inside Hero to be below buttons */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                {[
+                  { label: copy.home.minutes, value: stats.totalMindfulMinutes, icon: Clock3, color: "text-blue-400" },
+                  { label: copy.home.streak, value: stats.streakDays, icon: Flame, color: "text-orange-500" },
+                  { label: copy.home.sessions, value: stats.sessionCount, icon: Timer, color: "text-emerald-400" },
+                ].map((item, idx) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * idx }}
+                    className="relative overflow-hidden flex flex-col sm:flex-row items-center justify-between p-3 sm:p-5 rounded-2xl sm:rounded-[2rem] border border-white/10 bg-black/20 backdrop-blur-2xl transition-all hover:bg-black/30 group/stat"
+                  >
+                    <div className="flex flex-col items-center sm:items-start">
+                      <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.2em] text-amber-200/40 mb-1 group-hover/stat:text-amber-200/60 transition-colors truncate w-full text-center sm:text-left">
+                        {item.label}
+                      </p>
+                      <p className="text-xl sm:text-3xl font-display font-bold text-white tracking-tight">
+                        {item.value}
+                      </p>
+                    </div>
+                    <div className={cn("hidden sm:flex p-3 rounded-xl bg-white/[0.03] border border-white/5 transition-transform group-hover/stat:scale-110", item.color)}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>

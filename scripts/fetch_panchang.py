@@ -213,7 +213,7 @@ def fetch_zone_with_retries(zone, now):
 def fetch_zone(zone, now):
     location = GeoLocation(f"{zone['city']}, India", zone["lng"], zone["lat"])
     today = Time(
-        hour=12,
+        hour=5,
         minute=0,
         day=now.day,
         month=now.month,

@@ -65,6 +65,15 @@ function dayKey(iso: string): string {
 }
 
 export function computeStats(logs: MeditationSessionLog[]): MeditationStats {
+  if (logs.length === 0) {
+    return {
+      totalMindfulMinutes: 0,
+      streakDays: 0,
+      sessionCount: 0,
+      lastSessionAt: null,
+    };
+  }
+
   const completed = logs.filter((l) => l.completed);
   const totalMindfulMinutes = Math.round(
     completed.reduce((sum, l) => sum + l.durationSeconds, 0) / 60,

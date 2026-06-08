@@ -1,0 +1,480 @@
+u are working on the Hari Kirtan devotional web app (Vite + React + TypeScript + Tailwind + Supabase).
+
+The current `panchangTemple.ts` has a STATIC list of Shubh/Ashubh Karya that never changes day to day. Replace it with a fully dynamic engine that recomputes instantly based on today's Tithi, Vara, Nakshatra, and special time windows. The UI should feel snappy — no loading states, no API calls, pure TypeScript computation.
+
+---
+
+## ARCHITECTURE OVERVIEW
+
+Create ONE new file: `src/utils/shubhKaryaEngine.ts`
+This file contains ALL master data + the compute function.
+Zero API calls. Zero async. Pure synchronous TypeScript.
+The component that currently reads static Karya lists should call this engine instead.
+
+---
+
+## STEP 1 — MASTER DATA: TITHI_RULES
+
+```typescript
+// Tithi jati (class) system — 5 types:
+// नंदा (1,6,11,16,21,26): उत्सव, नई शुरुआत
+// भद्रा (2,7,12,17,22,27): व्यापार, स्थायी कार्य  
+// जया (3,8,13,18,23,28): विजय, संघर्ष
+// रिक्ता (4,9,14,19,24,29): मांगलिक वर्जित
+// पूर्णा (5,10,15,20,25,30): सम्पूर्णता, सर्वोत्तम
+
+const TITHI_RULES: Record<number, {
+  shubh: string[];
+  ashubh: string[];
+  note: string;
+  jati: 'नंदा' | 'भद्रा' | 'जया' | 'रिक्ता' | 'पूर्णा';
+  deity: string;
+}> = {
+  1:  { jati: 'नंदा',  deity: 'अग्नि / ब्रह्मा',
+        shubh:  ['नए व्यापार का शुभारंभ', 'वाहन खरीदना', 'गृह प्रवेश', 'नई नौकरी शुरू करना'],
+        ashubh: ['विवाह', 'लंबी यात्रा', 'दवा शुरू करना'],
+        note: 'प्रतिपदा — नई शुरुआत शुभ, चंद्र बल मध्यम' },
+  2:  { jati: 'भद्रा', deity: 'विधाता / ब्रह्मा',
+        shubh:  ['विवाह', 'सगाई', 'यात्रा', 'नए कपड़े पहनना', 'आभूषण खरीदना', 'धन संबंधी निर्णय'],
+        ashubh: ['शल्य चिकित्सा', 'कर्ज लेना'],
+        note: 'द्वितीया — सौम्य और स्थिर, विवाह के लिए श्रेष्ठ' },
+  3:  { jati: 'जया',   deity: 'गौरी / विष्णु',
+        shubh:  ['वस्त्र और आभूषण खरीदना', 'संगीत सीखना', 'कला कार्य', 'यात्रा'],
+        ashubh: ['भूमि क्रय', 'निर्माण कार्य'],
+        note: 'तृतीया — गौरी तिथि, सौंदर्य और सृजन के लिए उत्तम' },
+  4:  { jati: 'रिक्ता', deity: 'गणेश / यमराज',
+        shubh:  ['शस्त्र खरीदना', 'वाहन मरम्मत', 'साहसिक कार्य', 'संकट मोचन गणेश पूजा'],
+        ashubh: ['विवाह', 'मुंडन', 'गृह प्रवेश', 'नई पढ़ाई शुरू', 'नई शुरुआत'],
+        note: 'चतुर्थी — विनायक/रिक्ता तिथि, मांगलिक कार्य वर्जित' },
+  5:  { jati: 'पूर्णा', deity: 'नाग देवता / सरस्वती',
+        shubh:  ['विद्यारंभ', 'औषधि सेवन', 'चिकित्सा शुरू', 'पूजा-पाठ'],
+        ashubh: ['दक्षिण दिशा यात्रा', 'कर्ज लेना'],
+        note: 'पंचमी — पूर्णा तिथि, विद्या और स्वास्थ्य के लिए शुभ' },
+  6:  { jati: 'नंदा',  deity: 'कार्तिकेय / शिव',
+        shubh:  ['प्रतियोगिता', 'नया व्यापार', 'सेना भर्ती', 'कार्तिकेय पूजा', 'साहसिक कार्य'],
+        ashubh: ['विवाह', 'गृह प्रवेश'],
+        note: 'षष्ठी — कुमार तिथि, तेजस्वी कार्यों के लिए' },
+  7:  { jati: 'भद्रा', deity: 'सूर्य देव',
+        shubh:  ['वाहन खरीदना', 'यात्रा', 'घोड़े / वाहन संबंधी कार्य', 'सूर्य उपासना'],
+        ashubh: ['दवा शुरू करना', 'गर्भाधान'],
+        note: 'सप्तमी — सूर्य तिथि, यात्रा और वाहन के लिए उत्तम' },
+  8:  { jati: 'जया',   deity: 'दुर्गा / शिव',
+        shubh:  ['शस्त्र संधान', 'साहसिक कार्य', 'दुर्गा पूजा', 'नवरात्रि विधि'],
+        ashubh: ['विवाह', 'नामकरण', 'नई पढ़ाई', 'गृह प्रवेश'],
+        note: 'अष्टमी — रिक्ता समान, मांगलिक कार्य वर्जित' },
+  9:  { jati: 'रिक्ता', deity: 'दुर्गा / सर्प',
+        shubh:  ['शक्ति पूजा', 'नवरात्रि विधि', 'साहसिक कार्य', 'शत्रु पर विजय हेतु'],
+        ashubh: ['विवाह', 'गृह प्रवेश', 'विद्यारंभ'],
+        note: 'नवमी — रिक्ता तिथि, शक्ति उपासना श्रेष्ठ' },
+  10: { jati: 'पूर्णा', deity: 'यमराज / धर्मराज',
+        shubh:  ['विवाह', 'गृह प्रवेश', 'व्यापार शुरू', 'यात्रा', 'भूमि क्रय'],
+        ashubh: ['शल्य चिकित्सा'],
+        note: 'दशमी — पूर्ण शुभ तिथि, विजया दशमी की ऊर्जा' },
+  11: { jati: 'नंदा',  deity: 'विष्णु',
+        shubh:  ['व्रत', 'पूजा-पाठ', 'दान', 'तीर्थ यात्रा', 'ध्यान-साधना'],
+        ashubh: ['बाल कटाना', 'मांसाहार', 'विवाह', 'नया व्यापार', 'चावल खाना'],
+        note: 'एकादशी — विष्णु तिथि, भक्ति और उपवास के लिए सर्वश्रेष्ठ' },
+  12: { jati: 'भद्रा', deity: 'विष्णु / सूर्य',
+        shubh:  ['दान', 'विवाह', 'गृह प्रवेश', 'व्यापार शुरू', 'यात्रा', 'एकादशी व्रत पारण'],
+        ashubh: ['शल्य चिकित्सा'],
+        note: 'द्वादशी — अत्यंत शुभ, एकादशी के बाद की ऊर्जा' },
+  13: { jati: 'जया',   deity: 'कामदेव / शिव',
+        shubh:  ['आभूषण खरीदना', 'वस्त्र क्रय', 'मनोरंजन', 'संगीत', 'प्रेम संबंधी कार्य'],
+        ashubh: ['यात्रा', 'कर्ज लेना', 'नई परियोजना'],
+        note: 'त्रयोदशी — कामदेव तिथि, प्रदोष व्रत' },
+  14: { jati: 'रिक्ता', deity: 'शिव / काली',
+        shubh:  ['शिव पूजा', 'काली पूजा', 'तंत्र साधना', 'दीपदान (नरक चतुर्दशी)'],
+        ashubh: ['विवाह', 'गृह प्रवेश', 'नई शुरुआत', 'मुंडन', 'यात्रा'],
+        note: 'चतुर्दशी — रिक्ता, शुभ कार्य पूर्णतः वर्जित' },
+  15: { jati: 'पूर्णा', deity: 'चंद्रमा / सत्यनारायण',
+        shubh:  ['व्रत', 'दान', 'पूजा', 'तीर्थ स्नान', 'सत्यनारायण कथा', 'विवाह', 'गृह प्रवेश'],
+        ashubh: ['कर्ज लेना'],
+        note: 'पूर्णिमा — सर्वश्रेष्ठ तिथि, चंद्रमा पूर्ण बल पर' },
+  16: { jati: 'नंदा',  deity: 'अग्नि',
+        shubh:  ['नई शुरुआत', 'व्यापार'],
+        ashubh: ['यात्रा', 'विवाह'],
+        note: 'कृष्ण प्रतिपदा — ऊर्जा मंद पड़ रही है' },
+  17: { jati: 'भद्रा', deity: 'विधाता',
+        shubh:  ['विवाह', 'यात्रा', 'आभूषण खरीदना'],
+        ashubh: ['शल्य चिकित्सा'],
+        note: 'कृष्ण द्वितीया' },
+  18: { jati: 'जया',   deity: 'गौरी',
+        shubh:  ['कला', 'संगीत', 'वस्त्र क्रय'],
+        ashubh: ['भूमि क्रय'],
+        note: 'कृष्ण तृतीया' },
+  19: { jati: 'रिक्ता', deity: 'गणेश',
+        shubh:  ['साहसिक कार्य', 'गणेश पूजा'],
+        ashubh: ['विवाह', 'मुंडन', 'गृह प्रवेश', 'नई शुरुआत'],
+        note: 'कृष्ण चतुर्थी — वर्जित तिथि' },
+  20: { jati: 'पूर्णा', deity: 'नाग देवता',
+        shubh:  ['विद्यारंभ', 'औषधि'],
+        ashubh: ['दक्षिण दिशा यात्रा'],
+        note: 'कृष्ण पंचमी' },
+  21: { jati: 'नंदा',  deity: 'कार्तिकेय',
+        shubh:  ['व्यापार', 'प्रतियोगिता'],
+        ashubh: ['विवाह'],
+        note: 'कृष्ण षष्ठी' },
+  22: { jati: 'भद्रा', deity: 'सूर्य',
+        shubh:  ['वाहन', 'यात्रा', 'सूर्य पूजा'],
+        ashubh: ['दवा शुरू करना'],
+        note: 'कृष्ण सप्तमी' },
+  23: { jati: 'जया',   deity: 'श्रीकृष्ण',
+        shubh:  ['कृष्ण पूजा', 'भजन-कीर्तन', 'व्रत'],
+        ashubh: ['विवाह', 'गृह प्रवेश', 'नामकरण'],
+        note: 'कृष्ण अष्टमी — जन्माष्टमी' },
+  24: { jati: 'रिक्ता', deity: 'दुर्गा',
+        shubh:  ['शक्ति पूजा', 'काली पूजा'],
+        ashubh: ['विवाह', 'गृह प्रवेश'],
+        note: 'कृष्ण नवमी' },
+  25: { jati: 'पूर्णा', deity: 'यमराज',
+        shubh:  ['विवाह', 'व्यापार', 'यात्रा'],
+        ashubh: [],
+        note: 'कृष्ण दशमी — शुभ तिथि' },
+  26: { jati: 'नंदा',  deity: 'विष्णु',
+        shubh:  ['व्रत', 'पूजा', 'दान', 'ध्यान'],
+        ashubh: ['बाल कटाना', 'मांसाहार', 'विवाह'],
+        note: 'कृष्ण एकादशी — वैष्णव व्रत' },
+  27: { jati: 'भद्रा', deity: 'विष्णु',
+        shubh:  ['दान', 'विवाह', 'व्यापार'],
+        ashubh: [],
+        note: 'कृष्ण द्वादशी' },
+  28: { jati: 'जया',   deity: 'कामदेव',
+        shubh:  ['आभूषण', 'वस्त्र'],
+        ashubh: ['यात्रा', 'कर्ज लेना'],
+        note: 'कृष्ण त्रयोदशी — मासिक प्रदोष व्रत' },
+  29: { jati: 'रिक्ता', deity: 'शिव',
+        shubh:  ['शिव पूजा', 'मासिक शिवरात्रि व्रत', 'जागरण'],
+        ashubh: ['विवाह', 'गृह प्रवेश', 'यात्रा', 'मुंडन'],
+        note: 'कृष्ण चतुर्दशी — शिवरात्रि, रिक्ता शून्य तिथि' },
+  30: { jati: 'पूर्णा', deity: 'पितर / काली',
+        shubh:  ['पितृ तर्पण', 'श्राद्ध', 'दान', 'पूजा', 'ध्यान'],
+        ashubh: ['विवाह', 'गृह प्रवेश', 'नई शुरुआत', 'यात्रा', 'बाल कटाना'],
+        note: 'अमावस्या — पितृ तिथि, चंद्रमा अदृश्य' }
+};
+```
+
+---
+
+## STEP 2 — MASTER DATA: VARA_RULES
+
+```typescript
+// Priority rule: वार का प्रभाव तिथि से स्वतंत्र और अक्सर अधिक प्रबल होता है
+const VARA_RULES: Record<number, {
+  shubh: string[];
+  ashubh: string[];
+  rulingPlanet: string;
+  deity: string;
+  specialNote: string;
+}> = {
+  0: { // रविवार
+    shubh:  ['सरकारी कार्य', 'नेतृत्व कार्य', 'सोना खरीदना', 'चिकित्सा शुरू करना', 'सूर्य उपासना'],
+    ashubh: ['विवाह', 'पश्चिम दिशा यात्रा', 'नया काम शुरू करना'],
+    rulingPlanet: 'सूर्य', deity: 'सूर्य देव',
+    specialNote: 'राजकीय कार्यों के लिए शुभ, पुराने कार्य मजबूत करें' },
+  1: { // सोमवार
+    shubh:  ['विवाह', 'गृह प्रवेश', 'यात्रा', 'नई वस्तु खरीदना', 'शिव पूजा', 'जल संबंधी कार्य'],
+    ashubh: ['शल्य चिकित्सा', 'कर्ज लेना'],
+    rulingPlanet: 'चंद्रमा', deity: 'शिव',
+    specialNote: 'मन और जल का दिन — भावनात्मक कार्य शुभ' },
+  2: { // मंगलवार
+    shubh:  ['भूमि क्रय', 'निर्माण कार्य', 'शस्त्र खरीदना', 'साहसिक कार्य', 'हनुमान पूजा'],
+    ashubh: ['विवाह', 'दवा शुरू करना', 'बाल / नाखून काटना', 'उत्तर दिशा यात्रा'],
+    rulingPlanet: 'मंगल', deity: 'हनुमान / मंगल देव',
+    specialNote: 'भूमि और तेज का दिन — शांत कार्यों के लिए अनुकूल नहीं' },
+  3: { // बुधवार
+    shubh:  ['व्यापार', 'लेखन', 'पढ़ाई', 'संचार', 'यात्रा', 'नई साझेदारी', 'विवाह'],
+    ashubh: ['शल्य चिकित्सा'],
+    rulingPlanet: 'बुध', deity: 'गणेश',
+    specialNote: 'वाणी और बुद्धि का दिन — व्यापारिक कार्यों के लिए सर्वश्रेष्ठ' },
+  4: { // गुरुवार
+    shubh:  ['विद्यारंभ', 'गुरु दीक्षा', 'विवाह', 'गृह प्रवेश', 'व्यापार', 'धार्मिक कार्य', 'दान'],
+    ashubh: ['बाल कटाना'],
+    rulingPlanet: 'बृहस्पति', deity: 'विष्णु / बृहस्पति',
+    specialNote: 'सर्वाधिक शुभ वार — ज्ञान, धर्म, विस्तार' },
+  5: { // शुक्रवार
+    shubh:  ['विवाह', 'आभूषण', 'वस्त्र', 'सौंदर्य', 'कला', 'संगीत', 'प्रेम संबंधी कार्य'],
+    ashubh: ['पूर्व दिशा यात्रा', 'कर्ज लेना'],
+    rulingPlanet: 'शुक्र', deity: 'लक्ष्मी',
+    specialNote: 'ऐश्वर्य और भोग का दिन — सौंदर्य कार्य उत्तम' },
+  6: { // शनिवार
+    shubh:  ['लोहा / तेल खरीदना', 'भूमि क्रय', 'कृषि कार्य', 'पुराने कार्य पूर्ण करना', 'शनि पूजा', 'शनि दान'],
+    ashubh: ['विवाह', 'गृह प्रवेश', 'नई शुरुआत', 'यात्रा', 'बाल / नाखून काटना', 'तेल मालिश'],
+    rulingPlanet: 'शनि', deity: 'शनि देव',
+    specialNote: 'कर्म और विलंब का दिन — पुरानी जिम्मेदारियां निभाएं' }
+};
+```
+
+---
+
+## STEP 3 — MASTER DATA: NAKSHATRA_RULES
+
+```typescript
+// Nakshatra quality determines the NATURE of outcome, not just which tasks
+const NAKSHATRA_RULES: Record<string, {
+  shubh: string[];
+  ashubh: string[];
+  quality: 'स्थिर' | 'चर' | 'तीक्ष्ण' | 'मृदु' | 'उग्र' | 'मिश्रित';
+  qualityEffect: string; // shown as reason badge
+}> = {
+  'अश्विनी':        { quality: 'चर',      qualityEffect: 'गति और यात्रा के लिए अनुकूल',
+    shubh: ['यात्रा', 'वाहन खरीदना', 'चिकित्सा', 'नई शुरुआत'], ashubh: [] },
+  'भरणी':          { quality: 'उग्र',     qualityEffect: 'अग्नि कार्यों के लिए, सामान्य शुभ में वर्जित',
+    shubh: ['अग्नि कार्य', 'शस्त्र', 'पितृ कार्य'], ashubh: ['विवाह', 'गृह प्रवेश', 'यात्रा'] },
+  'कृत्तिका':      { quality: 'मिश्रित',  qualityEffect: 'मिले-जुले परिणाम',
+    shubh: ['अग्नि पूजा', 'पाक कला', 'सोना खरीदना'], ashubh: ['पूर्व दिशा यात्रा'] },
+  'रोहिणी':        { quality: 'स्थिर',    qualityEffect: 'स्थायी और फलदायी कार्यों के लिए श्रेष्ठ',
+    shubh: ['विवाह', 'गृह प्रवेश', 'व्यापार', 'कृषि', 'आभूषण'], ashubh: [] },
+  'मृगशिरा':       { quality: 'मृदु',     qualityEffect: 'शांतिपूर्ण और सौम्य कार्यों के लिए',
+    shubh: ['यात्रा', 'संगीत', 'कला', 'नए मित्र'], ashubh: [] },
+  'आर्द्रा':       { quality: 'तीक्ष्ण', qualityEffect: 'शत्रु नाश और विज्ञान के लिए',
+    shubh: ['शस्त्र कार्य', 'विज्ञान', 'तकनीकी कार्य'], ashubh: ['विवाह', 'गृह प्रवेश'] },
+  'पुनर्वसु':      { quality: 'चर',       qualityEffect: 'यात्रा और परिवर्तन के लिए',
+    shubh: ['यात्रा', 'व्यापार', 'शिक्षा', 'पुनः प्रयास'], ashubh: [] },
+  'पुष्य':         { quality: 'स्थिर',    qualityEffect: 'सर्वश्रेष्ठ नक्षत्र — स्थायी फल',
+    shubh: ['विवाह', 'गृह प्रवेश', 'व्यापार', 'सोना खरीदना', 'गृह निर्माण', 'विद्यारंभ'], ashubh: [] },
+  'आश्लेषा':       { quality: 'तीक्ष्ण', qualityEffect: 'गुप्त और तांत्रिक कार्यों के लिए',
+    shubh: ['तंत्र विद्या', 'औषधि', 'गुप्त कार्य'], ashubh: ['विवाह', 'यात्रा', 'नई शुरुआत'] },
+  'मघा':           { quality: 'उग्र',     qualityEffect: 'पितृ और राजकीय कार्यों के लिए',
+    shubh: ['पितृ पूजा', 'श्राद्ध', 'राजकीय कार्य', 'नेतृत्व'], ashubh: ['विवाह'] },
+  'पूर्वाफाल्गुनी': { quality: 'मृदु',   qualityEffect: 'प्रेम, कला और आनंद के लिए',
+    shubh: ['विवाह', 'प्रेम', 'मनोरंजन', 'संगीत', 'कला'], ashubh: [] },
+  'उत्तराफाल्गुनी': { quality: 'स्थिर',  qualityEffect: 'स्थायी संबंध और कार्यों के लिए',
+    shubh: ['विवाह', 'गृह प्रवेश', 'व्यापार', 'मित्रता'], ashubh: [] },
+  'हस्त':          { quality: 'चर',       qualityEffect: 'कौशल और व्यापार के लिए',
+    shubh: ['शिल्प कार्य', 'व्यापार', 'यात्रा', 'कृषि'], ashubh: [] },
+  'चित्रा':        { quality: 'मृदु',     qualityEffect: 'सौंदर्य और वास्तु के लिए',
+    shubh: ['वस्त्र', 'आभूषण', 'कला', 'वास्तु', 'गृह सजावट'], ashubh: [] },
+  'स्वाति':        { quality: 'चर',       qualityEffect: 'व्यापार और बदलाव के लिए',
+    shubh: ['व्यापार', 'यात्रा', 'नई साझेदारी', 'स्वतंत्र कार्य'], ashubh: [] },
+  'विशाखा':        { quality: 'मिश्रित',  qualityEffect: 'यज्ञ और धार्मिक कार्यों के लिए',
+    shubh: ['यज्ञ', 'पूजा', 'व्रत', 'धार्मिक कार्य'], ashubh: ['यात्रा'] },
+  'अनुराधा':       { quality: 'मृदु',     qualityEffect: 'मित्रता और सहयोग के लिए',
+    shubh: ['मित्रता', 'यात्रा', 'व्यापार', 'विवाह', 'सहयोग'], ashubh: [] },
+  'ज्येष्ठा':      { quality: 'तीक्ष्ण', qualityEffect: 'नेतृत्व और शस्त्र के लिए, विवाह वर्जित',
+    shubh: ['नेतृत्व कार्य', 'शस्त्र', 'प्रतिस्पर्धा'], ashubh: ['विवाह', 'गृह प्रवेश'] },
+  'मूल':           { quality: 'उग्र',     qualityEffect: 'उखाड़ने और जड़ से काम के लिए',
+    shubh: ['औषधि', 'जड़ी-बूटी', 'उखाड़ने के कार्य'], ashubh: ['विवाह', 'नई शुरुआत', 'गृह प्रवेश'] },
+  'पूर्वाषाढ़ा':   { quality: 'चर',       qualityEffect: 'जल यात्रा और दान के लिए',
+    shubh: ['जल यात्रा', 'दान', 'शुद्धिकरण'], ashubh: [] },
+  'उत्तराषाढ़ा':   { quality: 'स्थिर',    qualityEffect: 'स्थायी कार्यों के लिए',
+    shubh: ['विवाह', 'गृह प्रवेश', 'व्यापार', 'दीर्घकालिक योजना'], ashubh: [] },
+  'श्रवण':         { quality: 'चर',       qualityEffect: 'सुनने, सीखने और यात्रा के लिए',
+    shubh: ['शिक्षा', 'यात्रा', 'व्यापार', 'दान', 'श्रवण-पाठ'], ashubh: [] },
+  'धनिष्ठा':       { quality: 'चर',       qualityEffect: 'संगीत और निर्माण के लिए',
+    shubh: ['संगीत', 'यात्रा', 'निर्माण कार्य'], ashubh: ['विवाह'] },
+  'शतभिषा':       { quality: 'मिश्रित',  qualityEffect: 'चिकित्सा और ज्योतिष के लिए',
+    shubh: ['चिकित्सा', 'औषधि', 'ज्योतिष', 'अनुसंधान'], ashubh: ['विवाह', 'यात्रा'] },
+  'पूर्वाभाद्रपद': { quality: 'उग्र',    qualityEffect: 'साधना और तपस्या के लिए',
+    shubh: ['साधना', 'तपस्या', 'आत्म-चिंतन'], ashubh: ['विवाह', 'गृह प्रवेश'] },
+  'उत्तराभाद्रपद': { quality: 'स्थिर',   qualityEffect: 'धर्म और स्थायित्व के लिए',
+    shubh: ['विवाह', 'गृह प्रवेश', 'दान', 'धर्म कार्य'], ashubh: [] },
+  'रेवती':         { quality: 'मृदु',     qualityEffect: 'यात्रा और आभूषण के लिए शुभ',
+    shubh: ['यात्रा', 'व्यापार', 'आभूषण', 'विवाह', 'अंतिम यात्रा'], ashubh: [] }
+};
+```
+
+---
+
+## STEP 4 — SPECIAL TIME WINDOWS
+
+```typescript
+const SPECIAL_WINDOWS = {
+  rahuKaal: {
+    ashubh: ['सभी शुभ कार्य — राहु काल में आरंभ वर्जित'],
+    note: '⚠️ राहु काल — सभी शुभ कार्य वर्जित (1.5 घंटे)',
+    overridesAll: true  // clears shubh list entirely
+  },
+  abhijitMuhurat: {
+    shubh: ['विवाह', 'गृह प्रवेश', 'व्यापार', 'नई शुरुआत', 'यात्रा'],
+    note: '✨ अभिजित मुहूर्त — ब्रह्मा का समय, सर्वश्रेष्ठ मुहूर्त (12:00–12:48)',
+    reducesAshubh: true  // reduces impact of Rikta tithi
+  },
+  brahmaKaal: {
+    shubh: ['पूजा', 'ध्यान', 'पाठ', 'भजन', 'जप', 'प्राणायाम'],
+    note: '🌅 ब्रह्म मुहूर्त — पृथ्वी पर प्राण वायु सबसे शुद्ध (4:00–5:30 AM)'
+  },
+  gulikKaal: {
+    ashubh: ['यात्रा', 'नई शुरुआत'],
+    shubh:  ['शनि दान', 'शनि मंत्र जप'],  // paradox: Gulik Kaal is good for Saturn remedies
+    note: '🪐 गुलिक काल — यात्रा और नई शुरुआत से बचें, शनि उपाय शुभ'
+  }
+};
+```
+
+---
+
+## STEP 5 — THE ENGINE FUNCTION
+
+```typescript
+export interface PanchangInput {
+  tithiNumber: number;        // 1–30
+  varaIndex: number;          // 0=Sun … 6=Sat
+  nakshatraName: string;      // Hindi name e.g. 'रोहिणी'
+  isRahuKaal: boolean;
+  isAbhijitMuhurat: boolean;
+  isBrahmaKaal: boolean;
+  isGulikKaal: boolean;
+}
+
+export interface KaryaItem {
+  name: string;
+  reason: string;             // badge text e.g. "रोहिणी नक्षत्र • सोमवार"
+  source: 'tithi' | 'vara' | 'nakshatra' | 'special';
+  priority: number;           // 1=high 2=medium 3=low — for sort order
+}
+
+export interface ShubhAshubhResult {
+  shubhKarya: KaryaItem[];
+  ashubhKarya: KaryaItem[];
+  todaySummary: string;
+  dominantFactor: string;
+  tithiJati: string;
+  isRiktaTithi: boolean;
+  activeWarning: string | null;   // Rahu Kaal / Gulik Kaal warning if active
+  activeBoon: string | null;      // Abhijit / Brahma Kaal if active
+}
+
+export function computeShubhAshubhKarya(input: PanchangInput): ShubhAshubhResult {
+  const tithi = TITHI_RULES[input.tithiNumber];
+  const vara = VARA_RULES[input.varaIndex];
+  const nakshatra = NAKSHATRA_RULES[input.nakshatraName] ?? null;
+
+  const varaDayName = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'][input.varaIndex];
+
+  // Build shubh list
+  const shubhMap = new Map<string, KaryaItem>();
+
+  // Priority 3 = Tithi (weakest)
+  tithi.shubh.forEach(k => shubhMap.set(k, {
+    name: k, reason: `${tithi.note.split('—')[0].trim()} तिथि`,
+    source: 'tithi', priority: 3
+  }));
+
+  // Priority 2 = Vara
+  vara.shubh.forEach(k => shubhMap.set(k, {
+    name: k, reason: `${varaDayName} — ${vara.specialNote}`,
+    source: 'vara', priority: 2
+  }));
+
+  // Priority 1 = Nakshatra (strongest, overrides)
+  if (nakshatra) {
+    nakshatra.shubh.forEach(k => shubhMap.set(k, {
+      name: k, reason: `${input.nakshatraName} नक्षत्र — ${nakshatra.qualityEffect}`,
+      source: 'nakshatra', priority: 1
+    }));
+  }
+
+  // Build ashubh list (same priority order)
+  const ashubhMap = new Map<string, KaryaItem>();
+
+  tithi.ashubh.forEach(k => ashubhMap.set(k, {
+    name: k, reason: `${tithi.jati} तिथि — ${tithi.note.split('—')[1]?.trim() ?? ''}`,
+    source: 'tithi', priority: 3
+  }));
+
+  vara.ashubh.forEach(k => ashubhMap.set(k, {
+    name: k, reason: `${varaDayName} — ${vara.rulingPlanet} प्रभाव`,
+    source: 'vara', priority: 2
+  }));
+
+  if (nakshatra) {
+    nakshatra.ashubh.forEach(k => ashubhMap.set(k, {
+      name: k, reason: `${input.nakshatraName} नक्षत्र (${nakshatra.quality}) — ${nakshatra.qualityEffect}`,
+      source: 'nakshatra', priority: 1
+    }));
+  }
+
+  // CONFLICT RESOLUTION:
+  // If item appears in both: if nakshatra quality is 'तीक्ष्ण' or 'उग्र' → keep in ashubh
+  // else if it's in vara.shubh → keep in shubh
+  // else → keep in ashubh (safer)
+  for (const key of shubhMap.keys()) {
+    if (ashubhMap.has(key)) {
+      const isHarshNakshatra = nakshatra && ['तीक्ष्ण', 'उग्र'].includes(nakshatra.quality);
+      if (isHarshNakshatra) {
+        shubhMap.delete(key); // ashubh wins
+      } else {
+        ashubhMap.delete(key); // shubh wins
+      }
+    }
+  }
+
+  // SPECIAL WINDOWS override
+  let activeWarning: string | null = null;
+  let activeBoon: string | null = null;
+
+  if (input.isRahuKaal) {
+    activeWarning = SPECIAL_WINDOWS.rahuKaal.note;
+    shubhMap.clear(); // ALL shubh work is forbidden during Rahu Kaal
+    SPECIAL_WINDOWS.rahuKaal.ashubh.forEach(k => ashubhMap.set(k, {
+      name: k, reason: 'राहु काल — राहु ग्रह का भ्रम और अवरोध',
+      source: 'special', priority: 1
+    }));
+  }
+
+  if (input.isAbhijitMuhurat) {
+    activeBoon = SPECIAL_WINDOWS.abhijitMuhurat.note;
+    SPECIAL_WINDOWS.abhijitMuhurat.shubh.forEach(k => shubhMap.set(k, {
+      name: k, reason: 'अभिजित मुहूर्त — ब्रह्मा का समय, सर्वश्रेष्ठ',
+      source: 'special', priority: 1
+    }));
+    // Abhijit reduces Rikta tithi's ashubh impact if active
+    if (tithi.jati === 'रिक्ता') {
+      for (const [key, val] of ashubhMap.entries()) {
+        if (val.source === 'tithi') ashubhMap.delete(key);
+      }
+    }
+  }
+
+  if (input.isBrahmaKaal) {
+    activeBoon = SPECIAL_WINDOWS.brahmaKaal.note;
+    SPECIAL_WINDOWS.brahmaKaal.shubh.forEach(k => shubhMap.set(k, {
+      name: k, reason: 'ब्रह्म मुहूर्त — प्राण वायु शुद्धतम',
+      source: 'special', priority: 1
+    }));
+  }
+
+  if (input.isGulikKaal && !input.isRahuKaal) {
+    activeWarning = SPECIAL_WINDOWS.gulikKaal.note;
+    SPECIAL_WINDOWS.gulikKaal.ashubh.forEach(k => ashubhMap.set(k, {
+      name: k, reason: 'गुलिक काल — शनि पुत्र का समय',
+      source: 'special', priority: 1
+    }));
+    SPECIAL_WINDOWS.gulikKaal.shubh.forEach(k => shubhMap.set(k, {
+      name: k, reason: 'गुलिक काल में शनि उपाय अत्यंत शुभ',
+      source: 'special', priority: 1
+    }));
+  }
+
+  // Build todaySummary
+  const dominantFactor = input.isRahuKaal
+    ? 'राहु काल'
+    : nakshatra?.quality === 'स्थिर' ? `${input.nakshatraName} नक्षत्र`
+    : tithi.jati === 'पूर्णा' ? tithi.note.split('—')[0].trim()
+    : varaDayName;
+
+  const todaySummary = `आज ${varaDayName}, ${input.nakshatraName} नक्षत्र, ${tithi.note.split('—')[0].trim()} — ${tithi.deity} का आशीर्वाद। ${tithi.note.split('—')[1]?.trim() ?? ''}`;
+
+  return {
+    shubhKarya:    Array.from(shubhMap.values()).sort((a, b) => a.priority - b.priority),
+    ashubhKarya:   Array.from(ashubhMap.values()).sort((a, b) => a.priority - b.priority),
+    todaySummary,
+    dominantFactor,
+    tithiJati:     tithi.jati,
+    isRiktaTithi:  tithi.jati === 'रिक्ता',
+    activeWarning,
+    activeBoon
+  };
+}
+```
+
+---IMPORTANT: The app already fetches full Panchang data from VedAstro via 
+panchangService.ts with daily caching per city. The VedAstro response 
+contains real computed timings for Rahu Kaal, Gulik Kaal, Abhijit Muhurat, 
+and Brahma Kaal for the user's city. 
+
+DO NOT hardcode any time values like "12:00" or "4:00 AM". 
+ALL time window checks must use the actual timestamps from the 
+VedAstro API response already stored in panchangData. 
+If a particular field (e.g. abhijitStart) is absent from the VedAstro 
+response, set that flag to false — never fallback to a hardcoded time.

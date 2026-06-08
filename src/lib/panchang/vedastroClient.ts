@@ -83,6 +83,11 @@ export async function fetchPanchangFromVedAstro(
   sunrise: string;
   sunset: string;
   vara: string;
+  rahu_kaal?: string;
+  brahma_muhurat?: string;
+  abhijit_muhurat?: string;
+  vijay_muhurat?: string;
+  guli_kaal?: string;
 }> {
   const tithi = await calculateWithFallback(['LunarDay'], zone, when.stdTime);
   const nakshatra = await calculateWithFallback(['MoonConstellation'], zone, when.stdTime);
@@ -90,6 +95,14 @@ export async function fetchPanchangFromVedAstro(
   const karana = await calculateWithFallback(['Karana'], zone, when.stdTime);
   const sunriseRaw = await calculateWithFallback(['SunRise', 'SunriseTime'], zone, when.stdTime);
   const sunsetRaw = await calculateWithFallback(['SunSet', 'SunsetTime'], zone, when.stdTime);
+  
+  // Optional computed timings from VedAstro
+  let rahuKaal, brahmaMuhurat, abhijitMuhurat, vijayMuhurat, guliKaal;
+  try { rahuKaal = await calculateWithFallback(['RahuKaal'], zone, when.stdTime); } catch { /* ignore */ }
+  try { brahmaMuhurat = await calculateWithFallback(['BrahmaMuhurat'], zone, when.stdTime); } catch { /* ignore */ }
+  try { abhijitMuhurat = await calculateWithFallback(['AbhijitMuhurat'], zone, when.stdTime); } catch { /* ignore */ }
+  try { vijayMuhurat = await calculateWithFallback(['VijayMuhurat'], zone, when.stdTime); } catch { /* ignore */ }
+  try { guliKaal = await calculateWithFallback(['GulikKaal', 'GuliKaal'], zone, when.stdTime); } catch { /* ignore */ }
 
   return {
     tithi,
@@ -100,5 +113,10 @@ export async function fetchPanchangFromVedAstro(
     sunrise: sunriseRaw,
     sunset: sunsetRaw,
     vara: '',
+    rahu_kaal: rahuKaal,
+    brahma_muhurat: brahmaMuhurat,
+    abhijit_muhurat: abhijitMuhurat,
+    vijay_muhurat: vijayMuhurat,
+    guli_kaal: guliKaal,
   };
 }
