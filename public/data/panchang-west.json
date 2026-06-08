@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-07",
+  "date": "2026-06-08",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Saptami",
-  "tithi_number": 7,
-  "nakshatra": "Satabhisha - 1",
-  "yoga": "Vishkambha",
-  "karana": "Visti",
+  "tithi": "Ashtami",
+  "tithi_number": 8,
+  "nakshatra": "Poorvabhadra - 1",
+  "yoga": "Priti",
+  "karana": "Balava",
   "paksha": "Shukla",
   "sunrise": "06:03 AM",
-  "sunset": "07:10 PM",
-  "rahu_kaal": "05:32 PM - 07:10 PM",
+  "sunset": "07:11 PM",
+  "rahu_kaal": "07:42 AM - 09:20 AM",
   "brahma_muhurat": "04:27 AM - 05:15 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-06-07T07:06:45+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-06-08T07:10:00+05:30"
 }
