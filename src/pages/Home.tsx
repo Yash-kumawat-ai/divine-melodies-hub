@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
+import { HeroSection } from '@/components/HeroSection';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
@@ -136,76 +137,7 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand-brown to-brand-dark py-20 md:py-32 px-4">
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <motion.h1
-            className="font-display text-4xl md:text-6xl font-bold text-brand-cream mb-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {t('discoverThe')} <span className="text-brand-saffron">{t('divine')}</span>
-          </motion.h1>
-          {language !== 'hi' && (
-            <motion.p
-              className="font-hindi text-2xl md:text-3xl text-brand-cream/70 mb-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              हरि कीर्तन
-            </motion.p>
-          )}
-          <motion.p
-            className="text-lg text-brand-cream/60 mb-10 max-w-xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.25 }}
-          >
-            {t('heroSubtitle')}
-          </motion.p>
-          <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            <Button asChild size="lg" className="bg-brand-saffron hover:bg-brand-saffron/90 text-white font-semibold px-8 h-12 text-base rounded-xl">
-              <Link to="/all-bhajans">{t('browseBhajans')}</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={handleUploadClick}
-              className="border-brand-cream/20 text-brand-cream hover:bg-brand-cream/10 px-8 h-12 text-base rounded-xl"
-            >
-              <Upload className="w-5 h-5 mr-2" />
-              {t('uploadYours')}
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-brand-cream/20 text-brand-cream hover:bg-brand-cream/10 px-8 h-12 text-base rounded-xl"
-            >
-              <Link to="/temple">
-                <Landmark className="w-5 h-5 mr-2" />
-                {t('temple')}
-              </Link>
-            </Button>
-          </motion.div>
-          <SearchBar />
-        </div>
-      </section>
-
-      {/* Stats Bar */}
-      <section className="py-10 px-4 bg-card border-y border-border">
-        <div className="container mx-auto max-w-3xl grid grid-cols-3 gap-6">
-          <AnimatedCounter target={stats.bhajans} label={t('bhajans')} />
-          <AnimatedCounter target={stats.artists} label={t('artists')} />
-          <AnimatedCounter target={stats.listeners} label={t('listeners')} />
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Deity Grid */}
       <DeityGrid />

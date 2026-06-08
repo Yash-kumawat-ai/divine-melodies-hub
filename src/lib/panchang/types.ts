@@ -12,6 +12,9 @@ export interface PanchangData {
   sunset: string;
   rahu_kaal: string;
   brahma_muhurat: string;
+  abhijit_muhurat?: string;
+  vijay_muhurat?: string;
+  guli_kaal?: string;
   vara: string;
   updated_at: string;
 }

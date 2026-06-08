@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 
-const AUTH_SACRED_BG = '/auth-sacred-bg.jpg';
+const AUTH_SACRED_BG = '/auth-sacred-bg.webp';
 
 interface AuthShellProps {
   mode: 'login' | 'signup';
@@ -25,31 +25,20 @@ const shellContent = {
 export default function AuthShell({ mode, children }: AuthShellProps) {
   const content = shellContent[mode];
 
-  useEffect(() => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = AUTH_SACRED_BG;
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
-
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 px-4 py-6 sm:py-10">
       <div className="pointer-events-none absolute -left-20 top-16 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-orange-500/5 blur-3xl" />
 
       <div className="relative mx-auto grid min-h-[92vh] w-full max-w-6xl overflow-hidden rounded-3xl border border-orange-200/60 bg-white/75 shadow-[0_28px_80px_-28px_rgba(146,64,14,0.35)] backdrop-blur-xl lg:grid-cols-[1.1fr_0.9fr]">
-        <aside
-          className="relative flex flex-col justify-between overflow-hidden bg-slate-900 p-8 text-orange-50 sm:p-10 lg:p-12"
-          style={{
-            backgroundImage: `url('${AUTH_SACRED_BG}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
+        <aside className="relative flex flex-col justify-between overflow-hidden bg-slate-900 p-8 text-orange-50 sm:p-10 lg:p-12">
+          <img 
+            src={AUTH_SACRED_BG} 
+            alt="Sacred Background" 
+            className="absolute inset-0 h-full w-full object-cover"
+            fetchPriority="high"
+            loading="eager"
+          />
           <div className="absolute inset-0 bg-slate-900/35" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.22),transparent_35%),radial-gradient(circle_at_85%_80%,rgba(120,53,15,0.38),transparent_50%)]" />
           <div className="relative z-10">

@@ -359,3 +359,8 @@
     transform: scale(1.1);
   }
 }
+
+img.h-\[125\%\].w-full.object-cover.object-\[75\%_top\].md\:object-\[center_top\].-translate-y-\[20\%\].transition-transform.duration-700.group-hover\:scale-105{
+  margin-top: -150px;
+  border-radius: 0 !important;
+}
