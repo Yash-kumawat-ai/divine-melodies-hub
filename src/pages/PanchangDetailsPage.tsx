@@ -214,27 +214,27 @@ export default function PanchangDetailsPage() {
               <Sparkles className="h-5 w-5 text-emerald-200 dark:text-emerald-800/40" />
             </div>
             
-            <div className="p-0 overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="p-0">
+              <table className="w-full table-fixed text-left">
                 <thead>
                   <tr className="bg-emerald-50/20 dark:bg-emerald-900/10 text-[10px] uppercase tracking-widest text-emerald-800/40 dark:text-emerald-100/30">
-                    <th className="px-6 py-3 font-bold">{text.karya}</th>
-                    <th className="px-6 py-3 font-bold">{text.whyShubh}</th>
+                    <th className="w-[38%] px-3 py-3 font-bold sm:px-6">{text.karya}</th>
+                    <th className="px-3 py-3 font-bold sm:px-6">{text.whyShubh}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-emerald-50 dark:divide-emerald-900/10">
                   {dynamicKarya?.shubhKarya.map((item, idx) => (
                     <tr key={idx} className="hover:bg-emerald-50/10 dark:hover:bg-emerald-900/5 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
+                        <div className="flex items-start gap-2 sm:items-center sm:gap-3">
+                          <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 sm:w-8 sm:h-8">
                             <Sparkles className="h-4 w-4" />
                           </div>
-                          <span className="font-bold text-brand-brown dark:text-brand-cream text-sm md:text-base">{item.name}</span>
+                          <span className="font-bold text-brand-brown dark:text-brand-cream text-sm md:text-base break-words">{item.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-block px-3 py-1 rounded-full bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium whitespace-nowrap">
+                      <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
+                        <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium break-words whitespace-normal">
                           {item.reason}
                         </span>
                       </td>
@@ -242,7 +242,7 @@ export default function PanchangDetailsPage() {
                   ))}
                   {/* Special Abhijit Row */}
                   <tr className="bg-emerald-50/30 dark:bg-emerald-900/10">
-                    <td colSpan={2} className="px-6 py-4">
+                    <td colSpan={2} className="px-3 py-4 sm:px-6">
                       <div className="flex items-center gap-3 text-emerald-800 dark:text-emerald-200">
                         <Sun className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                         <p className="text-xs font-bold leading-relaxed opacity-80">
@@ -266,27 +266,27 @@ export default function PanchangDetailsPage() {
               <Sparkles className="h-5 w-5 text-rose-200 dark:text-rose-800/40" />
             </div>
 
-            <div className="p-0 overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="p-0">
+              <table className="w-full table-fixed text-left">
                 <thead>
                   <tr className="bg-rose-50/20 dark:bg-rose-900/10 text-[10px] uppercase tracking-widest text-rose-800/40 dark:text-rose-100/30">
-                    <th className="px-6 py-3 font-bold">{text.karya}</th>
-                    <th className="px-6 py-3 font-bold">{text.whyAshubh}</th>
+                    <th className="w-[38%] px-3 py-3 font-bold sm:px-6">{text.karya}</th>
+                    <th className="px-3 py-3 font-bold sm:px-6">{text.whyAshubh}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-rose-50 dark:divide-rose-900/10">
                   {dynamicKarya?.ashubhKarya.map((item, idx) => (
                     <tr key={idx} className="hover:bg-rose-50/10 dark:hover:bg-rose-900/5 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                      <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
+                        <div className="flex items-start gap-2 sm:items-center sm:gap-3">
+                          <div className="w-7 h-7 shrink-0 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 sm:w-8 sm:h-8">
                             <XCircle className="h-4 w-4" />
                           </div>
-                          <span className="font-bold text-brand-brown dark:text-brand-cream text-sm md:text-base">{item.name}</span>
+                          <span className="font-bold text-brand-brown dark:text-brand-cream text-sm md:text-base break-words">{item.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-block px-3 py-1 rounded-full bg-rose-100/50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 text-xs font-medium whitespace-nowrap">
+                      <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
+                        <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-rose-100/50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 text-xs font-medium break-words whitespace-normal">
                           {item.reason}
                         </span>
                       </td>
@@ -294,7 +294,7 @@ export default function PanchangDetailsPage() {
                   ))}
                   {/* Special Rahu Row */}
                   <tr className="bg-rose-50/30 dark:bg-rose-900/10">
-                    <td colSpan={2} className="px-6 py-4">
+                    <td colSpan={2} className="px-3 py-4 sm:px-6">
                       <div className="flex items-center gap-3 text-rose-800 dark:text-rose-200">
                         <TriangleAlert className="h-5 w-5 text-rose-500 dark:text-rose-400" />
                         <p className="text-xs font-bold leading-relaxed opacity-80">

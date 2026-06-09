@@ -1,21 +1,19 @@
 import { useNavigate } from 'react-router-dom'; 
 import { Play, Music2, Users, Heart } from 'lucide-react'; 
 import { motion } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
 
-// Import images from src/pages
-import krishnaMain from '@/pages/krishna main.webp';
-import krishnaMobile from '@/pages/krishna_mobile_wallpaper.webp';
-import panchangIcon from '@/pages/panchang_spiritual_icon.webp';
-import meditationIcon from '@/pages/meditation_spiritual_icon.webp';
-import templeIcon from '@/pages/temple_icon.webp';
-import krishnaAIIcon from '@/pages/devrishi_narad_icon.webp';
-import lyricsIcon from '@/pages/bhajan_lyrics_icon.webp';
-import aartiIcon from '@/pages/live_aarti_icon.webp';
+// Import images from src/pages/images
+import krishnaMain from '@/pages/images/krishna main.webp';
+import krishnaMobile from '@/pages/images/krishna_mobile_wallpaper.webp';
+import panchangIcon from '@/pages/images/panchang_spiritual_icon.webp';
+import meditationIcon from '@/pages/images/meditation_spiritual_icon.webp';
+import templeIcon from '@/pages/images/temple_icon.webp';
+import krishnaAIIcon from '@/pages/images/devrishi_narad_icon.webp';
+import lyricsIcon from '@/pages/images/bhajan_lyrics_icon.webp';
+import aartiIcon from '@/pages/images/live_aarti_icon.webp';
 
 export function HeroSection() { 
   const navigate = useNavigate(); 
-  const isMobile = useIsMobile();
 
   const quickLinks = [ 
     { label: 'Panchang', icon: panchangIcon, path: '/panchang' }, 
@@ -31,14 +29,17 @@ export function HeroSection() {
 
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0"> 
-        <motion.img 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, ease: "easeOut" }}
-          src={isMobile ? krishnaMobile : krishnaMain} 
-          alt="Krishna" 
-          className="w-full h-full object-cover object-[center_top] md:object-center" 
-        /> 
+        <picture className="block w-full h-full">
+          <source media="(min-width: 768px)" srcSet={krishnaMain} />
+          <motion.img 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, ease: "easeOut" }}
+            src={krishnaMobile} 
+            alt="Krishna" 
+            className="w-full h-full object-cover object-[center_top] md:object-center" 
+          />
+        </picture>
         {/* Complex Gradients for maximum readability and depth */} 
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 hidden md:block" />
@@ -137,31 +138,35 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2 }}
-        className="relative z-10 px-4 pb-8 pt-4 max-w-5xl mx-auto w-full"
+        className="relative z-10 px-3 pb-6 pt-2 md:px-6 md:pb-8 max-w-4xl mx-auto w-full"
       > 
-        <div className="grid grid-cols-6 gap-2 md:gap-4"> 
-          {quickLinks.map((item, idx) => ( 
-            <button 
-              key={item.label} 
-              onClick={() => navigate(item.path)} 
-              className="flex flex-col items-center gap-2 group transition-all" 
-            > 
-              <div className="w-full aspect-square bg-white/[0.03] hover:bg-white/[0.08] active:scale-90 backdrop-blur-md rounded-2xl md:rounded-[2rem] border border-white/10 group-hover:border-amber-500/40 flex items-center justify-center p-2 md:p-4 transition-all duration-300 shadow-xl overflow-hidden relative"> 
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-colors" />
-                <img 
-                  src={item.icon} 
-                  alt={item.label} 
-                  className="w-full h-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" 
-                /> 
-              </div> 
-              <span className="text-white/80 text-[9px] md:text-xs font-bold text-center leading-tight uppercase tracking-wider group-hover:text-amber-300 transition-colors"> 
-                {item.label} 
-              </span> 
-            </button> 
-          ))} 
-        </div> 
-      </motion.div> 
+        <div className="rounded-[2rem] bg-black/25 backdrop-blur-2xl border border-white/10 px-3 py-4 md:px-6 md:py-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+          <div className="flex items-start justify-between gap-1 sm:gap-2 md:gap-4"> 
+            {quickLinks.map((item) => ( 
+              <button 
+                key={item.label} 
+                onClick={() => navigate(item.path)} 
+                className="group flex min-w-0 flex-1 flex-col items-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 rounded-xl" 
+              > 
+                <div className="relative shrink-0">
+                  <div className="absolute -inset-[3px] rounded-full bg-gradient-to-b from-amber-300/50 via-amber-500/25 to-orange-600/40 opacity-0 blur-[2px] transition-all duration-300 group-hover:opacity-100" />
+                  <div className="relative flex h-[3.25rem] w-[3.25rem] items-center justify-center overflow-hidden rounded-full border border-white/25 bg-gradient-to-b from-white/15 to-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-300 group-hover:border-amber-300/50 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_12px_28px_rgba(251,191,36,0.15)] group-active:scale-95 sm:h-[3.75rem] sm:w-[3.75rem] md:h-[4.25rem] md:w-[4.25rem]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-amber-100/5" />
+                    <img 
+                      src={item.icon} 
+                      alt={item.label} 
+                      className="relative z-10 h-[88%] w-[88%] rounded-full object-cover object-center transition-transform duration-500 group-hover:scale-105" 
+                    />
+                  </div>
+                </div>
+                <span className="max-w-[4.5rem] text-center text-[7px] font-semibold uppercase leading-tight tracking-[0.08em] text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-colors group-hover:text-amber-200 sm:max-w-none sm:text-[9px] md:text-[10px] md:tracking-[0.12em]"> 
+                  {item.label} 
+                </span> 
+              </button> 
+            ))} 
+          </div>
+        </div>
+      </motion.div>
 
     </section> 
   ); 

@@ -11,7 +11,7 @@ import {
 } from "@/lib/meditation/meditationTypes";
 import { computeStats, loadPreferences, loadSessionLogs } from "@/lib/meditation/meditationStorage";
 import { cn } from "@/lib/utils";
-import meditationBg from "@/pages/meditation.webp";
+import meditationBg from "@/pages/images/meditation.webp";
 import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 

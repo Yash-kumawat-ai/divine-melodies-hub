@@ -96,8 +96,8 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="text-3xl font-semibold text-white">Welcome Back</h2>
-        <p className="text-sm text-slate-400">Continue your journey of bhajans and devotion.</p>
+        <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">Welcome Back</h2>
+        <p className="text-sm text-[#B5BFD0]">Continue your spiritual journey</p>
       </div>
       
       {error && (
@@ -108,7 +108,7 @@ export default function LoginForm() {
               type="button"
               onClick={handleResendConfirmation}
               disabled={loading}
-              className="mt-2 block text-xs font-semibold text-orange-300 hover:text-orange-200 hover:underline"
+              className="mt-2 block text-xs font-semibold text-[#E6C27A] hover:text-[#FFD98A] hover:underline"
             >
               Resend verification email
             </button>
@@ -123,15 +123,15 @@ export default function LoginForm() {
       )}
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email Address</label>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-[#B5BFD0]">Email Address</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E6C27A]/70" />
           <Input
             id="email"
             type="email"
             {...register('email')}
             placeholder="namaste@example.com"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#E6C27A]/25 bg-[#061323]/60 pl-10 text-white shadow-lg shadow-black/20 placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E6C27A]/45 focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E6C27A]/30"
           />
         </div>
         {errors.email && (
@@ -140,15 +140,15 @@ export default function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password</label>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-[#B5BFD0]">Password</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E6C27A]/70" />
           <Input
             id="password"
             type="password"
             {...register('password')}
             placeholder="••••••••"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#E6C27A]/25 bg-[#061323]/60 pl-10 text-white shadow-lg shadow-black/20 placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E6C27A]/45 focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E6C27A]/30"
           />
         </div>
         {errors.password && (
@@ -156,17 +156,21 @@ export default function LoginForm() {
         )}
       </div>
 
-      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/30 transition-all">
-        {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-        Enter The Sanctuary
+      <Button
+        type="submit"
+        disabled={loading}
+        className="h-12 w-full rounded-xl bg-gradient-to-r from-[#E6C27A] to-[#FFD98A] text-base font-semibold text-[#061323] shadow-[0_8px_28px_rgba(230,194,122,0.35)] transition-all hover:from-[#FFD98A] hover:to-[#E6C27A] hover:shadow-[0_10px_32px_rgba(255,217,138,0.4)]"
+      >
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Login
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-orange-500/20" />
+          <span className="w-full border-t border-[#E6C27A]/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-800/50 px-3 text-slate-400">Or seek with</span>
+          <span className="bg-[#0A1830]/80 px-3 text-[#B5BFD0]">OR</span>
         </div>
       </div>
 
@@ -175,16 +179,16 @@ export default function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="h-12 w-full rounded-xl border border-orange-500/30 bg-slate-800/50 text-white hover:bg-slate-700/50 hover:border-orange-500/50"
+        className="h-12 w-full rounded-xl border border-[#E6C27A]/30 bg-transparent text-white hover:border-[#E6C27A]/55 hover:bg-[#061323]/40"
       >
-        <Chrome className="mr-2 w-4 h-4" />
-        Sign in with Google
+        <Chrome className="mr-2 h-4 w-4" />
+        Continue with Google
       </Button>
 
-      <p className="text-center text-sm text-slate-400">
-        New to the Editorial?{' '}
-        <Link to="/auth/signup" className="text-orange-400 hover:text-orange-300 hover:underline font-medium">
-          Create Account
+      <p className="text-center text-sm text-[#B5BFD0]">
+        Don&apos;t have an account?{' '}
+        <Link to="/auth/signup" className="font-medium text-[#E6C27A] hover:text-[#FFD98A] hover:underline">
+          Sign Up
         </Link>
       </p>
     </form>
