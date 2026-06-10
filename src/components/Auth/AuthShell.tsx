@@ -1,8 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Languages, Sparkles } from 'lucide-react';
 import shivDesktop from '@/pages/images/shiv_wallpaper.webp';
 import shivMobile from '@/pages/images/shiv_vertical_wallpaper.webp';
+import { languageOptions } from '@/constants/languageOptions';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface AuthShellProps {
   mode: 'login' | 'signup';
@@ -14,11 +16,33 @@ const shellContent = {
     eyebrow: 'Sacred Editorial',
     heading: 'Return To Your Riyaz',
     body: 'Continue your bhajan journey with your saved uploads, devotion tools, and AI guidance.',
+    guideline: 'By continuing, you agree to our sacred community guidelines.',
+    home: 'Return to Home',
+    language: 'Language',
+  },
+  loginHi: {
+    eyebrow: 'पवित्र अनुभव',
+    heading: 'अपने रियाज में लौटें',
+    body: 'अपने सेव किए गए अपलोड, भक्ति टूल्स और AI सहायता के साथ आगे बढ़ें।',
+    guideline: 'आगे बढ़कर आप हमारी पवित्र समुदाय दिशानिर्देशों से सहमत होते हैं।',
+    home: 'होम पर लौटें',
+    language: 'भाषा',
   },
   signup: {
     eyebrow: 'Sacred Editorial',
     heading: 'Begin Your Sacred Account',
     body: 'Create your space to upload bhajans, organize deity collections, and share lyrics with the community.',
+    guideline: 'By continuing, you agree to our sacred community guidelines.',
+    home: 'Return to Home',
+    language: 'Language',
+  },
+  signupHi: {
+    eyebrow: 'पवित्र अनुभव',
+    heading: 'अपना पवित्र खाता बनाएं',
+    body: 'भजन अपलोड करने, देवता संग्रह व्यवस्थित करने और समुदाय के साथ गीत साझा करने के लिए अपना स्थान बनाएं।',
+    guideline: 'आगे बढ़कर आप हमारी पवित्र समुदाय दिशानिर्देशों से सहमत होते हैं।',
+    home: 'होम पर लौटें',
+    language: 'भाषा',
   },
 };
 
@@ -35,10 +59,44 @@ function OmSymbol({ className = '' }: { className?: string }) {
 }
 
 export default function AuthShell({ mode, children }: AuthShellProps) {
-  const content = shellContent[mode];
+  const { language, setLanguage } = useLanguage();
+  const isHindi = language === 'hi';
+  const content =
+    mode === 'login' && isHindi
+      ? shellContent.loginHi
+      : mode === 'signup' && isHindi
+        ? shellContent.signupHi
+        : shellContent[mode];
+
+  useEffect(() => {
+    if (mode === 'login' || mode === 'signup') {
+      setLanguage('hi');
+    }
+  }, [mode, setLanguage]);
 
   return (
     <div className="relative min-h-[100svh] overflow-hidden bg-[#061323]">
+      <div className="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+        <label className="sr-only" htmlFor="auth-language">
+          {content.language}
+        </label>
+        <div className="flex items-center gap-2 rounded-full border border-[#E6C27A]/30 bg-[#0A1830]/80 px-3 py-2 text-[#E6C27A] shadow-lg shadow-black/30 backdrop-blur-xl">
+          <Languages className="h-4 w-4" />
+          <select
+            id="auth-language"
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as typeof language)}
+            className="bg-transparent text-xs font-semibold uppercase tracking-wide text-[#FFD98A] outline-none"
+            aria-label={content.language}
+          >
+            {languageOptions.map((option) => (
+              <option key={option.code} value={option.code} className="bg-[#0A1830] text-white">
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <div className="relative z-10 flex min-h-[100svh] flex-col lg:grid lg:min-h-[100svh] lg:grid-cols-2">
         {/* Login card — bottom floating on mobile, left panel on desktop */}
         <div className="relative order-2 mt-auto w-full px-4 pb-6 pt-0 lg:order-1 lg:mt-0 lg:flex lg:min-h-[100svh] lg:items-center lg:justify-center lg:bg-gradient-to-br lg:from-[#061323] lg:via-[#0A1830] lg:to-[#061323] lg:px-10 lg:py-10">
@@ -52,10 +110,10 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
               <OmSymbol className="mb-5" />
               {children}
               <div className="mt-6 border-t border-[#E6C27A]/15 pt-4 text-center text-xs text-[#B5BFD0]">
-                <p>By continuing, you agree to our sacred community guidelines.</p>
+                <p>{content.guideline}</p>
                 <p className="mt-2">
                   <Link className="font-semibold text-[#E6C27A] hover:text-[#FFD98A]" to="/">
-                    Return to Home
+                    {content.home}
                   </Link>
                 </p>
               </div>

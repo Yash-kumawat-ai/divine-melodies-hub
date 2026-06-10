@@ -3,14 +3,10 @@ import { deities } from "@/data/bhajans";
 export type NaradIntentType =
   | "start_japa"
   | "start_meditation"
-  | "offer_flower"
-  | "ring_bell"
-  | "light_diya"
   | "daily_devotion"
   | "explain_mantra"
   | "show_favorites"
   | "search_bhajan"
-  | "find_deity"
   | "unknown";
 
 export type NaradIntent = {
@@ -108,68 +104,59 @@ export function looksLikeDirectSongQuery(rawText: string): boolean {
 }
 
 export function parseNaradIntent(rawText: string): NaradIntent {
-  const text = normalize(rawText);
-  const deityHit = findDeity(rawText);
-  const mantra = findMantra(rawText);
+  const normalizedRaw = rawText.normalize('NFD');
+  const text = normalize(normalizedRaw);
+  const deityHit = findDeity(normalizedRaw);
+  const mantra = findMantra(normalizedRaw);
   const entities = {
     deity: deityHit?.name,
     deitySlug: deityHit?.slug,
     mantra,
   };
 
-  if (/japa|jaap|jap|chant|108|\u092e\u093e\u0932\u093e|\u091c\u092a|\u091c\u093e\u092a/i.test(rawText)) {
-    return { type: "start_japa", confidence: 0.94, rawText, entities };
+  if (/japa|jaap|jap|chant|108|\u092e\u093e\u0932\u093e|\u091c\u092a|\u091c\u093e\u092a/i.test(normalizedRaw)) {
+    return { type: "start_japa", confidence: 0.94, rawText: normalizedRaw, entities };
   }
-  if (/meditat|dhyan|\u0927\u094d\u092f\u093e\u0928|shanti|calm/i.test(rawText)) {
-    return { type: "start_meditation", confidence: 0.9, rawText, entities };
+  if (/meditat|dhyan|\u0927\u094d\u092f\u093e\u0928|shanti|calm/i.test(normalizedRaw)) {
+    return { type: "start_meditation", confidence: 0.9, rawText: normalizedRaw, entities };
   }
-  if (/diya|deepak|lamp|\u0926\u0940\u092a/i.test(rawText)) {
-    return { type: "light_diya", confidence: 0.88, rawText, entities };
+
+  if (/daily|today|aaj|\u0906\u091c|suggestion|sankalp|\u0938\u0902\u0915\u0932\u094d\u092a/i.test(normalizedRaw)) {
+    return { type: "daily_devotion", confidence: 0.82, rawText: normalizedRaw, entities };
   }
-  if (/bell|ghanti|\u0918\u0902\u091f\u0940|\u0936\u0902\u0916|shankh/i.test(rawText)) {
-    return { type: "ring_bell", confidence: 0.86, rawText, entities };
+  if (/meaning|explain|arth|matlab|\u0905\u0930\u094d\u0925|\u092e\u0924\u0932\u092c/i.test(normalizedRaw)) {
+    return { type: "explain_mantra", confidence: 0.82, rawText: normalizedRaw, entities };
   }
-  if (/offer|flower|pushp|phool|marigold|\u092b\u0942\u0932|\u092a\u0941\u0937\u094d\u092a|\u091a\u0922\u093c/i.test(rawText)) {
-    return { type: "offer_flower", confidence: 0.88, rawText, entities };
+  if (/favorite|favourite|saved|\u092a\u0938\u0902\u0926/i.test(normalizedRaw)) {
+    return { type: "show_favorites", confidence: 0.78, rawText: normalizedRaw, entities };
   }
-  if (/daily|today|aaj|\u0906\u091c|suggestion|sankalp|\u0938\u0902\u0915\u0932\u094d\u092a/i.test(rawText)) {
-    return { type: "daily_devotion", confidence: 0.82, rawText, entities };
-  }
-  if (/meaning|explain|arth|matlab|\u0905\u0930\u094d\u0925|\u092e\u0924\u0932\u092c/i.test(rawText)) {
-    return { type: "explain_mantra", confidence: 0.82, rawText, entities };
-  }
-  if (/favorite|favourite|saved|\u092a\u0938\u0902\u0926/i.test(rawText)) {
-    return { type: "show_favorites", confidence: 0.78, rawText, entities };
-  }
-  if (deityHit && /\b(bhajan|darshan|mandir|deity)\b/i.test(rawText) && !/\b(chalao|play)\b/i.test(rawText)) {
-    return { type: "find_deity", confidence: 0.75, rawText, entities };
-  }
-  if (/\b(chalao|play|bajao|sunao)\b/i.test(rawText) || /bhajan|aarti|chalisa|\u092d\u091c\u0928/i.test(rawText)) {
+
+  if (/\b(chalao|play|bajao|sunao)\b/i.test(normalizedRaw) || /bhajan|aarti|chalisa|\u092d\u091c\u0928/i.test(normalizedRaw)) {
     return {
       type: "search_bhajan",
       confidence: 0.8,
-      rawText,
-      entities: { ...entities, bhajanName: extractBhajanQuery(rawText) || deityHit?.name || text },
+      rawText: normalizedRaw,
+      entities: { ...entities, bhajanName: extractBhajanQuery(normalizedRaw) || deityHit?.name || text },
     };
   }
-  if (/\b(find|search|dhundho|chahiye)\b/i.test(rawText)) {
+  if (/\b(find|search|dhundho|chahiye)\b/i.test(normalizedRaw)) {
     return {
       type: "search_bhajan",
       confidence: 0.72,
-      rawText,
-      entities: { ...entities, bhajanName: extractBhajanQuery(rawText) || text },
+      rawText: normalizedRaw,
+      entities: { ...entities, bhajanName: extractBhajanQuery(normalizedRaw) || text },
     };
   }
-  if (looksLikeDirectSongQuery(rawText)) {
+  if (looksLikeDirectSongQuery(normalizedRaw)) {
     return {
       type: "search_bhajan",
       confidence: 0.71,
-      rawText,
-      entities: { ...entities, bhajanName: extractBhajanQuery(rawText) || text },
+      rawText: normalizedRaw,
+      entities: { ...entities, bhajanName: extractBhajanQuery(normalizedRaw) || text },
     };
   }
 
-  return { type: "unknown", confidence: 0.2, rawText, entities };
+  return { type: "unknown", confidence: 0.2, rawText: normalizedRaw, entities };
 }
 
 function defaultMantraForDeity(deity?: string) {
@@ -227,46 +214,7 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
     };
   }
 
-  if (intent.type === "offer_flower") {
-    return {
-      kind: "offering",
-      intentType: intent.type,
-      title: "Flower offering",
-      displayText: "Offer a flower with devotion — light, respectful, and free.",
-      spokenText: "Offering a flower with your devotion.",
-      primaryLabel: "Offer flower",
-      secondaryLabel: "Start japa",
-      offeringType: "flower",
-      mantra,
-      ...deityFields,
-    };
-  }
 
-  if (intent.type === "ring_bell") {
-    return {
-      kind: "offering",
-      intentType: intent.type,
-      title: "Temple bell",
-      displayText: "Ring the bell to begin with focus.",
-      spokenText: "Ringing the temple bell.",
-      primaryLabel: "Ring bell",
-      offeringType: "bell",
-      ...deityFields,
-    };
-  }
-
-  if (intent.type === "light_diya") {
-    return {
-      kind: "offering",
-      intentType: intent.type,
-      title: "Light diya",
-      displayText: "Light a diya for your prayer.",
-      spokenText: "Lighting the diya.",
-      primaryLabel: "Light diya",
-      offeringType: "diya",
-      ...deityFields,
-    };
-  }
 
   if (intent.type === "daily_devotion") {
     return {
@@ -307,18 +255,7 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
     };
   }
 
-  if (intent.type === "find_deity" && intent.entities.deitySlug) {
-    return {
-      kind: "route",
-      intentType: intent.type,
-      title: intent.entities.deity ?? "Deity",
-      displayText: `Opening ${intent.entities.deity} darshan.`,
-      spokenText: `Opening ${intent.entities.deity}.`,
-      primaryLabel: "Open",
-      route: intent.entities.deitySlug ? `/temple?deity=${intent.entities.deitySlug}` : "/temple",
-      ...deityFields,
-    };
-  }
+
 
   if (intent.type === "search_bhajan" && intent.entities.bhajanName) {
     return {

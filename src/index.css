@@ -458,8 +458,19 @@ p.text-xs.font-bold.leading-relaxed.opacity-80{
   display: none;
 }
 
-img.h-full.w-full.object-cover.object-center{  
+/* img.h-full.w-full.object-cover.object-center{  
    
     transform: translateY(-205px);
 }
+ */
 
+img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
+
+    transform: translateY(-50px);
+}
+
+/* @media (max-width: 768px) {
+  
+.backdrop-blur-xl{
+margin-top: 300px;
+}} */

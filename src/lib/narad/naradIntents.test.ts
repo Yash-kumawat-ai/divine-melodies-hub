@@ -18,9 +18,7 @@ describe("parseNaradIntent", () => {
     expect(intent.entities.bhajanName).toBeTruthy();
   });
 
-  it("detects flower offering", () => {
-    expect(parseNaradIntent("phool chadhao").type).toBe("offer_flower");
-  });
+
 });
 
 describe("createNaradActionResult", () => {
