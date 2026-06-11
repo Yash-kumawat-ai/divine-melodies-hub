@@ -469,8 +469,51 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
     transform: translateY(-50px);
 }
 
-/* @media (max-width: 768px) {
-  
-.backdrop-blur-xl{
-margin-top: 300px;
-}} */
+.bg-black\/50{
+      margin-top: -20px;
+}
+
+
+.bg-black\/25 {
+
+    margin-top: -30px;
+}
+
+.flex-wrap {
+   
+    margin-top: 300px;
+}
+
+
+ @media (min-width: 768px) {
+  .bg-black\/25 {
+      margin-top: 0px;
+  }
+  .flex.items-center.gap-4.md\:gap-8.bg-black\/50.backdrop-blur-xl.rounded-3xl.px-6.md\:px-10.py-3.md\:py-4.border.border-white\/10.shadow-2xl {
+      margin-top: 0px;
+  }
+  .flex-wrap {
+      margin-top: 0px;
+  }
+}
+
+ @media (min-width: 800px) {
+  .bg-black\/25 {
+      margin-top: 0px;
+  }
+  .flex.items-center.gap-4.md\:gap-8.bg-black\/50.backdrop-blur-xl.rounded-3xl.px-6.md\:px-10.py-3.md\:py-4.border.border-white\/10.shadow-2xl {
+      margin-top: 0px;
+  }
+  .flex-wrap {
+      margin-top: 0px;
+  }
+}
+
+/* Custom scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

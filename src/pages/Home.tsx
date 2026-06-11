@@ -71,7 +71,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ bhajans: 0, artists: 0, listeners: 0 });
+  const [stats, setStats] = useState({ bhajans: 0, artists: 0, devotees: 0 });
 
   const features = [
     { icon: Upload, title: t('uploadAndShare'), desc: t('uploadAndShareDesc') },
@@ -89,14 +89,37 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { count } = await (supabase as any).from('user_profiles').select('id', { count: 'exact', head: true });
+        const { count: profileCount } = await (supabase as any)
+          .from('user_profiles')
+          .select('id', { count: 'exact', head: true });
+
+        const { data: uploadSingers } = await (supabase as any)
+          .from('user_uploads')
+          .select('singer_name')
+          .or('status.eq.approved,status.is.null');
+
+        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
+        if (uploadSingers) {
+          uploadSingers.forEach((row: any) => {
+            if (row.singer_name) {
+              uniqueSingers.add(row.singer_name.trim());
+            }
+          });
+        }
+
         setStats({
           bhajans: totalBhajanCount,
-          artists: Math.max(50, count ?? 0),
-          listeners: Math.max(1000, (count ?? 0) * 10),
+          artists: uniqueSingers.size,
+          devotees: profileCount ?? 0,
         });
-      } catch {
-        setStats({ bhajans: totalBhajanCount || staticBhajans.length, artists: 50, listeners: 1000 });
+      } catch (err) {
+        console.error('Error fetching dynamic stats:', err);
+        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
+        setStats({
+          bhajans: totalBhajanCount || staticBhajans.length,
+          artists: uniqueSingers.size,
+          devotees: 0,
+        });
       }
     };
 
@@ -137,7 +160,7 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      <HeroSection />
+      <HeroSection stats={stats} />
 
       {/* Deity Grid */}
       <DeityGrid />

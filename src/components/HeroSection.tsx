@@ -12,8 +12,20 @@ import krishnaAIIcon from '@/pages/images/devrishi_narad_icon.webp';
 import lyricsIcon from '@/pages/images/bhajan_lyrics_icon.webp';
 import aartiIcon from '@/pages/images/live_aarti_icon.webp';
 
-export function HeroSection() { 
+interface HeroSectionProps {
+  stats?: {
+    bhajans: number;
+    artists: number;
+    devotees: number;
+  };
+}
+
+export function HeroSection({ stats }: HeroSectionProps) { 
   const navigate = useNavigate(); 
+
+  const bhajansCount = stats ? stats.bhajans : 1000;
+  const artistsCount = stats ? stats.artists : 50;
+  const devoteesCount = stats ? stats.devotees : 10000; 
 
   const quickLinks = [ 
     { label: 'Panchang', icon: panchangIcon, path: '/panchang' }, 
@@ -46,14 +58,14 @@ export function HeroSection() {
       </div> 
 
       {/* OVERLAY CONTENT — centered vertically in the upper 70% */} 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-4 text-center"> 
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-2 text-center"> 
 
         {/* Decorative subtitle */} 
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-3 mb-4"
+          className="flex items-center gap-3 mb-2 md:mb-3"
         > 
           <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-400" /> 
           <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">Hare Krishna</p> 
@@ -73,7 +85,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-4 mb-10 tracking-[0.2em] font-light drop-shadow-md"
+          className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-3 mb-6 md:mb-8 tracking-[0.2em] font-light drop-shadow-md"
         > 
           — FOR EVERY MOMENT OF BHAKTI — 
         </motion.p> 
@@ -83,7 +95,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="flex gap-4 mb-12 flex-wrap justify-center"
+          className="flex gap-4 mb-8 md:mb-10 flex-wrap justify-center"
         > 
           <button 
             onClick={() => navigate('/all-bhajans')} 
@@ -99,14 +111,14 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="flex items-center gap-4 md:gap-8 bg-black/50 backdrop-blur-xl rounded-3xl px-6 md:px-10 py-4 border border-white/10 shadow-2xl"
+          className="flex items-center gap-4 md:gap-8 bg-black/50 backdrop-blur-xl rounded-3xl px-6 md:px-10 py-3 md:py-4 border border-white/10 shadow-2xl"
         > 
           <div className="flex flex-col md:flex-row items-center gap-1 md:gap-3"> 
             <div className="p-2 bg-amber-500/10 rounded-lg">
               <Music2 className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">1,000+</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{bhajansCount.toLocaleString()}+</p> 
               <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Bhajans</p> 
             </div>
           </div> 
@@ -116,7 +128,7 @@ export function HeroSection() {
               <Users className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">50+</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{artistsCount.toLocaleString()}</p> 
               <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Artists</p> 
             </div>
           </div> 
@@ -126,7 +138,7 @@ export function HeroSection() {
               <Heart className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">10K+</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{devoteesCount.toLocaleString()}</p> 
               <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Devotees</p> 
             </div>
           </div> 

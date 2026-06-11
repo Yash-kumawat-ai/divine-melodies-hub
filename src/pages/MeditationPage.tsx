@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import MeditationPracticeHome from "@/components/meditation/MeditationPracticeHome";
 import MeditationSession from "@/components/meditation/MeditationSession";
+import MantraJapHome from "@/components/meditation/MantraJapHome";
 import {
   getPracticeById,
   type MeditationPractice,
@@ -8,7 +10,9 @@ import {
 import { loadPreferences } from "@/lib/meditation/meditationStorage";
 
 export default function MeditationPage() {
-  const [practice, setPractice] = useState<MeditationPractice | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const practiceId = searchParams.get("practice");
+  const practice = practiceId ? getPracticeById(practiceId) || null : null;
 
   useEffect(() => {
     if (!practice) return;
@@ -19,26 +23,43 @@ export default function MeditationPage() {
     };
   }, [practice]);
 
+  const handleSelectPractice = (newPractice: { id: string }) => {
+    setSearchParams({ practice: newPractice.id });
+  };
+
+  const handleExit = () => {
+    setSearchParams({});
+  };
+
   const handleQuickStart = () => {
     const prefs = loadPreferences();
     const last = prefs.lastPracticeId ? getPracticeById(prefs.lastPracticeId) : null;
-    setPractice(last ?? getPracticeById("mantra_shiva")!);
+    const targetPractice = last ?? getPracticeById("mantra_shiva")!;
+    setSearchParams({ practice: targetPractice.id });
   };
+
+  const handlePracticeChange = (newPractice: MeditationPractice) => {
+    setSearchParams({ practice: newPractice.id });
+  };
+
+  if (practiceId === "mantra_jap_home") {
+    return <MantraJapHome onBack={handleExit} />;
+  }
 
   if (practice) {
     return (
       <MeditationSession
         key={practice.id}
         practice={practice}
-        onPracticeChange={setPractice}
-        onExit={() => setPractice(null)}
+        onPracticeChange={handlePracticeChange}
+        onExit={handleExit}
       />
     );
   }
 
   return (
     <MeditationPracticeHome
-      onSelectPractice={setPractice}
+      onSelectPractice={handleSelectPractice}
       onQuickStart={handleQuickStart}
     />
   );

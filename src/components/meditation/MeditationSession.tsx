@@ -94,21 +94,7 @@ export default function MeditationSession({ practice, onExit, onPracticeChange }
         onClick={() => setShowUi(true)}
         role="presentation"
       >
-        {isBreath ? (
-          <BreathCoach
-            patternId={practice.breathPattern!}
-            active={session.active}
-            reducedMotion={prefs.reducedMotion}
-          />
-        ) : showMandala ? (
-          <OmMandalaCanvas
-            active={session.active && !prefs.reducedMotion}
-            breath={session.breath}
-            audioEnergy={session.audioEnergy}
-            speed={mandalaSpeed}
-            minimal={practice.visualMode === "minimal"}
-          />
-        ) : null}
+        {/* Visualizer animation removed and kept blank as requested */}
       </div>
 
       <MeditationControls
