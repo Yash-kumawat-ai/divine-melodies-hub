@@ -5,6 +5,7 @@ import {
   Camera,
   Clock3,
   Flower2,
+  Image,
   Info,
   Landmark,
   Languages,
@@ -126,13 +127,14 @@ export default function Header() {
     { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang"), featured: true },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
+    { to: "/wallpaper", label: language === 'hi' ? 'वॉलपेपर' : 'Wallpapers', icon: Image, match: (path: string) => path.startsWith("/wallpaper") },
     { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
   ];
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16 md:h-auto md:py-2 lg:h-20 lg:py-0 md:flex-col md:items-stretch md:justify-start md:gap-y-2 lg:flex-row lg:items-center lg:justify-between">
+      <div className="header-container container mx-auto px-4 flex items-center justify-between h-16 md:h-auto md:py-2 lg:h-20 lg:py-0 md:flex-col md:items-stretch md:justify-start md:gap-y-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && <MobileBackButton />}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
@@ -233,6 +235,13 @@ export default function Header() {
           </Link>
           <Link to="/pricing" className="text-foreground hover:text-primary transition-colors">{t('pricing')}</Link>
           <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
+          <Link
+            to="/wallpaper"
+            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+          >
+            <Image className="w-3.5 h-3.5" />
+            {language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}
+          </Link>
           <Link
             to="/upload-bhajan"
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors md:px-2.5 md:py-1 lg:px-3 lg:py-1.5"

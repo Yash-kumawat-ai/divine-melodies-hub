@@ -6,6 +6,7 @@ import LiveBadge from './LiveBadge';
 import CountdownTimer from './CountdownTimer';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getNextAarti, formatVerifiedTime } from '../../hooks/useLiveAarti';
+import { resolveTempleBanner } from './WatchModal';
 
 interface TempleCardProps {
   temple: Temple;
@@ -71,6 +72,16 @@ export default function TempleCard({
 
       <div className="flex flex-col gap-4 justify-between h-full">
         <div className="space-y-3">
+          {/* Temple image thumbnail */}
+          <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-zinc-950/40 border border-white/5">
+            <img
+              src={resolveTempleBanner(temple.id)}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
           {/* Header row: Category and status badge */}
           <div className="flex items-start justify-between gap-2">
             <span className="text-[10px] uppercase font-bold tracking-wider text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full">

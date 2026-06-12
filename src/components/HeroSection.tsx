@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'; 
 import { Play, Music2, Users, Heart } from 'lucide-react'; 
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/hooks/useLanguage';
 
 // Import images from src/pages/images
 import krishnaMain from '@/pages/images/krishna main.webp';
@@ -22,22 +23,24 @@ interface HeroSectionProps {
 
 export function HeroSection({ stats }: HeroSectionProps) { 
   const navigate = useNavigate(); 
+  const { language } = useLanguage();
+  const isHi = language === 'hi';
 
   const bhajansCount = stats ? stats.bhajans : 1000;
   const artistsCount = stats ? stats.artists : 50;
   const devoteesCount = stats ? stats.devotees : 10000; 
 
   const quickLinks = [ 
-    { label: 'Panchang', icon: panchangIcon, path: '/panchang' }, 
-    { label: 'Meditation', icon: meditationIcon, path: '/meditation' }, 
-    { label: 'Temples', icon: templeIcon, path: '/temple' }, 
-    { label: 'Krishna AI', icon: krishnaAIIcon, path: '/kirtan-ai' }, 
-    { label: 'Lyrics', icon: lyricsIcon, path: '/all-bhajans' }, 
-    { label: 'Aarti', icon: aartiIcon, path: '/aarti' }, 
+    { label: isHi ? 'पंचांग' : 'Panchang', icon: panchangIcon, path: '/panchang' }, 
+    { label: isHi ? 'ध्यान' : 'Meditation', icon: meditationIcon, path: '/meditation' }, 
+    { label: isHi ? 'मंदिर' : 'Temples', icon: templeIcon, path: '/temple' }, 
+    { label: isHi ? 'कृष्णा एआई' : 'Krishna AI', icon: krishnaAIIcon, path: '/kirtan-ai' }, 
+    { label: isHi ? 'गीत' : 'Lyrics', icon: lyricsIcon, path: '/all-bhajans' }, 
+    { label: isHi ? 'आरती' : 'Aarti', icon: aartiIcon, path: '/aarti' }, 
   ]; 
 
   return ( 
-    <section className="relative w-full h-[100svh] overflow-hidden flex flex-col"> 
+    <section className="hero-section relative w-full h-[100svh] overflow-hidden flex flex-col"> 
 
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0"> 
@@ -68,7 +71,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
           className="flex items-center gap-3 mb-2 md:mb-3"
         > 
           <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-400" /> 
-          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">Hare Krishna</p> 
+          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">
+            {isHi ? 'हरे कृष्ण' : 'Hare Krishna'}
+          </p> 
           <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-400" /> 
         </motion.div> 
 
@@ -79,7 +84,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           transition={{ delay: 0.4 }}
           className="text-white text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] max-w-4xl"
         > 
-          Discover Divine Music 
+          {isHi ? 'दिव्य संगीत खोजें' : 'Discover Divine Music'}
         </motion.h1> 
         <motion.p 
           initial={{ opacity: 0 }}
@@ -87,7 +92,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           transition={{ delay: 0.6 }}
           className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-3 mb-6 md:mb-8 tracking-[0.2em] font-light drop-shadow-md"
         > 
-          — FOR EVERY MOMENT OF BHAKTI — 
+          {isHi ? '— भक्ति के हर क्षण के लिए —' : '— FOR EVERY MOMENT OF BHAKTI —'}
         </motion.p> 
 
         {/* CTA Buttons */} 
@@ -102,7 +107,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
             className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-8 py-4 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
           > 
             <Play className="w-5 h-5 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
-            <span className="text-base md:text-lg">Explore Bhajans</span>
+            <span className="text-base md:text-lg">{isHi ? 'भजन खोजें' : 'Explore Bhajans'}</span>
           </button> 
         </motion.div> 
 
@@ -119,7 +124,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </div>
             <div className="text-center md:text-left">
               <p className="text-white font-bold text-sm md:text-lg leading-none">{bhajansCount.toLocaleString()}+</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Bhajans</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'भजन' : 'Bhajans'}
+              </p> 
             </div>
           </div> 
           <div className="w-px h-8 bg-white/10" /> 
@@ -129,7 +136,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </div>
             <div className="text-center md:text-left">
               <p className="text-white font-bold text-sm md:text-lg leading-none">{artistsCount.toLocaleString()}</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Artists</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'कलाकार' : 'Artists'}
+              </p> 
             </div>
           </div> 
           <div className="w-px h-8 bg-white/10" /> 
@@ -139,7 +148,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </div>
             <div className="text-center md:text-left">
               <p className="text-white font-bold text-sm md:text-lg leading-none">{devoteesCount.toLocaleString()}</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Devotees</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'भक्त' : 'Devotees'}
+              </p> 
             </div>
           </div> 
         </motion.div> 

@@ -55,6 +55,7 @@ const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
+const WallpaperPage = lazy(() => import("./pages/WallpaperPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -162,6 +163,7 @@ function AppContent() {
               }
             />
             <Route path="/account/support" element={<SupportPage />} />
+            <Route path="/wallpaper" element={<WallpaperPage />} />
             <Route
               path="/upload-bhajan"
               element={

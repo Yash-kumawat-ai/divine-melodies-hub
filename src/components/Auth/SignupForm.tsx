@@ -37,30 +37,30 @@ const signupCopy = {
     googleFailed: 'Google signup failed',
   },
   hi: {
-    title: 'à¤–à¤¾à¤¤à¤¾ à¤¬à¤¨à¤¾à¤à¤‚',
-    subtitle: 'à¤…à¤ªà¤¨à¥€ à¤ªà¥à¤°à¥‹à¤«à¤¾à¤‡à¤² à¤¬à¤¨à¤¾à¤à¤‚ à¤”à¤° à¤…à¤ªà¤¨à¥€ à¤­à¤•à¥à¤¤à¤¿ à¤¸à¤¬à¤•à¥‡ à¤¸à¤¾à¤¥ à¤¸à¤¾à¤à¤¾ à¤•à¤°à¥‡à¤‚à¥¤',
-    fullName: 'à¤ªà¥‚à¤°à¤¾ à¤¨à¤¾à¤® *',
-    fullNamePlaceholder: 'à¤†à¤ªà¤•à¤¾ à¤ªà¥‚à¤°à¤¾ à¤¨à¤¾à¤®',
-    email: 'à¤ˆà¤®à¥‡à¤² *',
-    phone: 'à¤«à¥‹à¤¨ (à¤µà¥ˆà¤•à¤²à¥à¤ªà¤¿à¤•)',
-    password: 'à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ *',
-    confirmPassword: 'à¤ªà¤¾à¤¸à¤µà¤°à¥à¤¡ à¤ªà¥à¤·à¥à¤Ÿà¤¿ à¤•à¤°à¥‡à¤‚ *',
-    submit: 'à¤ªà¤µà¤¿à¤¤à¥à¤° à¤–à¤¾à¤¤à¤¾ à¤¬à¤¨à¤¾à¤à¤‚',
-    blocked: 'à¤°à¥à¤•à¤¾ à¤¹à¥à¤†',
-    divider: 'à¤¯à¤¾ à¤‡à¤¸à¤¸à¥‡ à¤œà¤¾à¤°à¥€ à¤°à¤–à¥‡à¤‚',
-    google: 'Google à¤¸à¥‡ à¤¸à¤¾à¤‡à¤¨ à¤…à¤ª à¤•à¤°à¥‡à¤‚',
-    alreadyAccount: 'à¤ªà¤¹à¤²à¥‡ à¤¸à¥‡ à¤–à¤¾à¤¤à¤¾ à¤¹à¥ˆ?',
-    login: 'à¤²à¥‰à¤— à¤‡à¤¨',
-    successTitle: 'à¤–à¤¾à¤¤à¤¾ à¤¬à¤¨ à¤—à¤¯à¤¾!',
-    successBody: (name: string) => `à¤¸à¥à¤µà¤¾à¤—à¤¤ à¤¹à¥ˆ, ${name}! à¤•à¥ƒà¤ªà¤¯à¤¾ à¤…à¤ªà¤¨à¤¾ à¤–à¤¾à¤¤à¤¾ à¤µà¥‡à¤°à¤¿à¤«à¤¾à¤ˆ à¤•à¤°à¤¨à¥‡ à¤•à¥‡ à¤²à¤¿à¤ à¤ˆà¤®à¥‡à¤² à¤¦à¥‡à¤–à¥‡à¤‚, à¤«à¤¿à¤° à¤²à¥‰à¤—à¤¿à¤¨ à¤•à¤°à¥‡à¤‚à¥¤`,
-    successHint: 'à¤…à¤—à¤° à¤ˆà¤®à¥‡à¤² à¤¨ à¤®à¤¿à¤²à¥‡ à¤¤à¥‹ à¤¸à¥à¤ªà¥ˆà¤®/à¤œà¤‚à¤• à¤«à¥‹à¤²à¥à¤¡à¤° à¤¦à¥‡à¤–à¥‡à¤‚à¥¤',
-    goToLogin: 'à¤²à¥‰à¤—à¤¿à¤¨ à¤ªà¤° à¤œà¤¾à¤à¤‚',
-    emailConfigError: 'à¤ˆà¤®à¥‡à¤² à¤µà¥‡à¤°à¤¿à¤«à¤¿à¤•à¥‡à¤¶à¤¨ à¤…à¤­à¥€ à¤¸à¤¹à¥€ à¤¤à¤°à¤¹ à¤¸à¥‡ à¤¸à¥‡à¤Ÿ à¤¨à¤¹à¥€à¤‚ à¤¹à¥ˆà¥¤ à¤…à¤­à¥€ Google signup à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤°à¥‡à¤‚, à¤¯à¤¾ Supabase SMTP à¤¸à¥‡à¤Ÿ à¤•à¤°à¤•à¥‡ à¤«à¤¿à¤° à¤•à¥‹à¤¶à¤¿à¤¶ à¤•à¤°à¥‡à¤‚à¥¤',
-    alreadyRegistered: 'à¤¯à¤¹ à¤ˆà¤®à¥‡à¤² à¤ªà¤¹à¤²à¥‡ à¤¸à¥‡ à¤°à¤œà¤¿à¤¸à¥à¤Ÿà¤° à¤¹à¥ˆà¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤²à¥‰à¤— à¤‡à¤¨ à¤•à¤°à¥‡à¤‚à¥¤',
-    rateLimit: (seconds: number) => `à¤¬à¤¹à¥à¤¤ à¤œà¥à¤¯à¤¾à¤¦à¤¾ signup à¤ªà¥à¤°à¤¯à¤¾à¤¸ à¤¹à¥à¤ à¤¹à¥ˆà¤‚à¥¤ à¤ˆà¤®à¥‡à¤² provider rate-limit à¤•à¤° à¤°à¤¹à¤¾ à¤¹à¥ˆà¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ ${seconds} à¤¸à¥‡à¤•à¤‚à¤¡ à¤°à¥à¤•à¥‡à¤‚ à¤¯à¤¾ Google signup à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤°à¥‡à¤‚à¥¤`,
-    rateLimitBanner: (seconds: number) => `Signup ${seconds}s à¤•à¥‡ à¤²à¤¿à¤ à¤°à¥à¤•à¤¾ à¤¹à¥ˆà¥¤ à¤ˆà¤®à¥‡à¤² provider rate-limit à¤•à¤° à¤°à¤¹à¤¾ à¤¹à¥ˆà¥¤ Google signup à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤°à¥‡à¤‚à¥¤`,
-    signupFailed: 'Signup à¤…à¤¸à¤«à¤² à¤°à¤¹à¤¾',
-    googleFailed: 'Google signup à¤…à¤¸à¤«à¤² à¤°à¤¹à¤¾',
+    title: 'खाता बनाएं',
+    subtitle: 'अपनी प्रोफाइल बनाएं और अपनी भक्ति सबके साथ साझा करें।',
+    fullName: 'पूरा नाम *',
+    fullNamePlaceholder: 'आपका पूरा नाम',
+    email: 'ईमेल *',
+    phone: 'फोन (वैकल्पिक)',
+    password: 'पासवर्ड *',
+    confirmPassword: 'पासवर्ड पुष्टि करें *',
+    submit: 'पवित्र खाता बनाएं',
+    blocked: 'रुका हुआ',
+    divider: 'या इससे जारी रखें',
+    google: 'Google से साइन अप करें',
+    alreadyAccount: 'पहले से खाता है?',
+    login: 'लॉग इन',
+    successTitle: 'खाता बन गया!',
+    successBody: (name: string) => `स्वागत है, ${name}! कृपया अपना खाता सत्यापित करने के लिए ईमेल देखें, फिर लॉगिन करें।`,
+    successHint: 'अगर ईमेल न मिले तो स्पैम/जंक फ़ोल्डर देखें।',
+    goToLogin: 'लॉगिन पर जाएं',
+    emailConfigError: 'ईमेल वेरिफिकेशन अभी सही तरह से सेट नहीं है। अभी Google signup उपयोग करें, या Supabase SMTP सेट करके फिर कोशिश करें।',
+    alreadyRegistered: 'यह ईमेल पहले से रजिस्टर्ड है। कृपया लॉग इन करें।',
+    rateLimit: (seconds: number) => `बहुत ज़्यादा signup प्रयास हुए हैं। ईमेल provider rate-limit कर रहा है। कृपया ${seconds} सेकंड रुकें या Google signup उपयोग करें।`,
+    rateLimitBanner: (seconds: number) => `Signup ${seconds}s के लिए रुका है। ईमेल provider rate-limit कर रहा है। Google signup उपयोग करें।`,
+    signupFailed: 'साइनअप असफल रहा',
+    googleFailed: 'Google साइनअप असफल रहा',
   },
 };
 
@@ -198,7 +198,7 @@ export default function SignupForm() {
   if (success) {
     return (
       <div className="w-full py-8 text-center">
-        <div className="mb-4 text-4xl">âœ…</div>
+        <div className="mb-4 text-4xl">✅</div>
         <h2 className="mb-2 text-2xl font-bold">{copy.successTitle}</h2>
         <p className="mb-4 text-muted-foreground">
           {copy.successBody(registeredName)}
@@ -295,7 +295,7 @@ export default function SignupForm() {
             id="password"
             type="password"
             {...register('password')}
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="••••••••"
             className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
           />
         </div>
@@ -312,7 +312,7 @@ export default function SignupForm() {
             id="confirmPassword"
             type="password"
             {...register('confirmPassword')}
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="••••••••"
             className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
           />
         </div>

@@ -8,6 +8,7 @@ import {
   Flower2,
   Grid3X3,
   Home,
+  Image,
   Info,
   Landmark,
   Languages,
@@ -51,7 +52,8 @@ type FeatureItem = {
     | "kirtanAi"
     | "pricing"
     | "about"
-    | "profile";
+    | "profile"
+    | "wallpaper";
   icon: LucideIcon;
   match: (pathname: string) => boolean;
 };
@@ -112,6 +114,12 @@ const FEATURE_ITEMS: FeatureItem[] = [
   },
   { path: "/pricing", labelKey: "pricing", icon: Tags, match: (pathname) => pathname === "/pricing" },
   { path: "/about", labelKey: "about", icon: Info, match: (pathname) => pathname === "/about" },
+  {
+    path: "/wallpaper",
+    labelKey: "wallpaper",
+    icon: Image,
+    match: (pathname) => pathname.startsWith("/wallpaper"),
+  },
 ];
 
 export default function MobileBottomNav() {
@@ -160,8 +168,8 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bottom-2 left-1/2 z-50 grid w-[min(calc(100vw-1rem),28rem)] -translate-x-1/2 grid-cols-5 items-end rounded-[1.65rem] border border-border/80 bg-background/90 px-2 pt-2 shadow-[0_18px_55px_hsl(20_30%_10%/0.22)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/80 dark:border-white/10 dark:bg-[#0d0b08]/80 dark:shadow-[0_18px_60px_rgba(0,0,0,0.55)] md:hidden"
-        style={{ paddingBottom: "max(0.55rem, env(safe-area-inset-bottom))" }}
+        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-border/80 bg-background/90 px-2 pt-2 shadow-[0_-8px_30px_hsl(20_30%_10%/0.12)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/80 dark:border-white/10 dark:bg-[#0d0b08]/80 dark:shadow-[0_-8px_35px_rgba(0,0,0,0.45)] md:hidden"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         aria-label="Main navigation"
       >
         {PRIMARY_NAV.map((item) => {
@@ -297,7 +305,9 @@ export default function MobileBottomNav() {
                     <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-background text-primary shadow-inner">
                       <Icon className="h-5 w-5" strokeWidth={2.25} />
                     </span>
-                    <span className="max-w-full truncate">{t(item.labelKey)}</span>
+                    <span className="max-w-full truncate">
+                      {item.labelKey === "wallpaper" ? (language === "hi" ? "वॉलपेपर" : "Wallpapers") : t(item.labelKey)}
+                    </span>
                   </Link>
                 </SheetClose>
               );

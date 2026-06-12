@@ -23,7 +23,6 @@ export default function AppShell() {
       <main
         className={cn(
           "flex-1",
-          !isFullScreenApp && "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0",
           isFullScreenApp && "flex min-h-0 flex-col overflow-hidden",
         )}
       >
@@ -32,16 +31,7 @@ export default function AppShell() {
         </Suspense>
       </main>
       {!isFullScreenApp && <MobileBottomNav />}
-      {!isFullScreenApp && (
-        <div className="block pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:hidden">
-          <LayoutFooter />
-        </div>
-      )}
-      {!isFullScreenApp && (
-        <div className="hidden md:block">
-          <LayoutFooter />
-        </div>
-      )}
+      {!isFullScreenApp && <LayoutFooter />}
     </div>
   );
 }

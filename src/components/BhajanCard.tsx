@@ -19,7 +19,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [modalBhajan, setModalBhajan] = useState<Bhajan>(bhajan);
   const [playBusy, setPlayBusy] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { isLiked, toggleLike } = useLikedBhajans();
   const { openPlayer } = useYouTubePlayer();
@@ -113,7 +113,9 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
           </button>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">{deity?.emoji}</span>
-            <span className="text-sm font-medium text-muted-foreground">{deity?.name}</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {language === 'hi' ? (deity?.nameHindi || deity?.name) : deity?.name}
+            </span>
           </div>
           <h3
             className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2 md:line-clamp-1 md:group-hover:line-clamp-none"
@@ -127,7 +129,7 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
             </p>
           ) : null}
           <p className="text-sm text-muted-foreground mt-2 line-clamp-1" title={bhajan.singerName}>
-            by {bhajan.singerName}
+            {language === 'hi' ? `${bhajan.singerName} द्वारा` : `by ${bhajan.singerName}`}
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3 text-sm text-muted-foreground shrink-0">

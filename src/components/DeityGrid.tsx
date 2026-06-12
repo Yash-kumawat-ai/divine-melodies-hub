@@ -6,7 +6,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useBhajanCounts } from "@/hooks/useBhajanCounts";
 
 export default function DeityGrid() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { getDeityCount } = useBhajanCounts();
   const displayDeities = deities.slice(0, 4); // Show only first 4 deities
   
@@ -47,9 +47,13 @@ export default function DeityGrid() {
                   )}
                 </div>
                 <h3 className="font-display text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {deity.name}
+                  {language === 'hi' ? deity.nameHindi : deity.name}
                 </h3>
-                <p className="hindi-text text-lg text-muted-foreground mt-1">{deity.nameHindi}</p>
+                {language === 'hi' ? (
+                  deity.name && <p className="text-sm text-muted-foreground mt-1">{deity.name}</p>
+                ) : (
+                  deity.nameHindi && <p className="hindi-text text-lg text-muted-foreground mt-1">{deity.nameHindi}</p>
+                )}
                 <p className="text-sm text-muted-foreground mt-2">{getDeityCount(deity.id)} {t('bhajansCount')}</p>
               </Link>
             </motion.div>

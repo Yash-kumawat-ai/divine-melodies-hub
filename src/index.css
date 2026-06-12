@@ -517,3 +517,37 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* Optimize desktop navigation header for mobile browsers in desktop mode (pointer: coarse) */
+@media (pointer: coarse) and (max-width: 1280px) {
+  @media (min-width: 768px) {
+    header .header-container {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      height: auto !important;
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+      row-gap: 0.75rem !important;
+    }
+    header .header-container > nav {
+      display: flex !important;
+      width: 100% !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      gap: 0.625rem 0.875rem !important;
+      font-size: 13px !important;
+    }
+    header .header-container > nav > a,
+    header .header-container > nav > button,
+    header .header-container > nav > select {
+      padding-left: 0.25rem !important;
+      padding-right: 0.25rem !important;
+    }
+    .hero-section {
+      height: 60vh !important;
+      min-height: 520px !important;
+      max-height: 650px !important;
+    }
+  }
+}

@@ -3,6 +3,7 @@ import { Landmark, MapPin, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import { useLanguage } from '@/hooks/useLanguage';
+import { resolveTempleBanner } from './WatchModal';
 
 interface TodaysTemplesProps {
   temples: Temple[];
@@ -34,7 +35,7 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
               key={temple.id}
               whileTap={{ scale: 0.98 }}
               onClick={() => onTempleClick(temple)}
-              className="flex-shrink-0 w-72 snap-start overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] p-4 transition-all duration-300 relative cursor-pointer flex flex-col justify-between"
+              className="flex-shrink-0 w-72 snap-start overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] p-4 transition-all duration-300 relative cursor-pointer flex flex-col justify-between group"
             >
               {/* Highlight colored bar */}
               <div 
@@ -43,6 +44,16 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
               />
 
               <div className="space-y-2">
+                {/* Temple image thumbnail */}
+                <div className="relative h-28 w-full overflow-hidden rounded-xl bg-zinc-950/40 border border-white/5 mb-1.5">
+                  <img
+                    src={resolveTempleBanner(temple.id)}
+                    alt={title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-85 group-hover:opacity-100"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                </div>
                 <span className="text-[9px] uppercase font-bold tracking-wider text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full inline-block">
                   {temple.category}
                 </span>

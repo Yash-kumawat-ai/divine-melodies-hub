@@ -80,7 +80,11 @@ export default function Home() {
     { icon: ShieldCheck, title: t('curatedQuality'), desc: t('curatedQualityDesc') },
   ];
 
-  const testimonials = [
+  const testimonials = isHi ? [
+    { name: 'प्रिया शर्मा', city: 'जयपुर', initials: 'PS', quote: 'हरि कीर्तन में भजनों का सबसे संपूर्ण संग्रह है जो मुझे ऑनलाइन मिला है। मैं अपनी सुबह की पूजा के लिए हर दिन इसका उपयोग करती हूँ।' },
+    { name: 'रमेश कुमार', city: 'वाराणसी', initials: 'RK', quote: 'मैंने यहाँ अपने दादाजी के दुर्लभ भजन अपलोड किए हैं। यह जानकर बहुत अच्छा लगता है कि वे आने वाली पीढ़ियों के लिए सुरक्षित रहेंगे।' },
+    { name: 'अंजलि गुप्ता', city: 'मुंबई', initials: 'AG', quote: 'भजन के बोल बिल्कुल सटीक और पढ़ने में आसान हैं। इस प्लेटफॉर्म की मदद से अब मेरे बच्चे भी शाम की आरती में साथ गाते हैं।' }
+  ] : [
     { name: 'Priya Sharma', city: 'Jaipur', initials: 'PS', quote: 'Hari Kirtan has the most complete collection of bhajans I have found online. I use it every morning for my puja.' },
     { name: 'Ramesh Kumar', city: 'Varanasi', initials: 'RK', quote: 'I uploaded my grandfather\'s rare bhajans here. It feels wonderful to know they will be preserved for future generations.' },
     { name: 'Anjali Gupta', city: 'Mumbai', initials: 'AG', quote: 'The lyrics are accurate and easy to read. My children now sing along during our evening aarti thanks to this platform.' },
