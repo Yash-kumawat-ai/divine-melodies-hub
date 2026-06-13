@@ -551,3 +551,13 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
     }
   }
 }
+
+
+  .flex-wrap {
+    margin-top: 1px;
+}
+
+.pt-8 {
+    padding-top: 1px;
+}
+
