@@ -149,7 +149,7 @@ export function AartiOverlay({
                   className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
                     i < rounds
                       ? 'scale-110 bg-saffron shadow-[0_0_10px_rgba(249,115,22,0.9)]'
-                      : 'bg-cream/25'
+                      : 'bg-white/25'
                   }`}
                 />
               ))}
@@ -219,7 +219,7 @@ export function AartiOverlay({
             <button
               type="button"
               onClick={onClose}
-              className="absolute right-4 bottom-24 rounded-full border border-cream/30 bg-black/40 px-4 py-1.5 font-serif text-xs text-cream backdrop-blur-sm"
+              className="absolute right-4 bottom-24 rounded-full border border-white/30 bg-black/40 px-4 py-1.5 font-serif text-xs text-white backdrop-blur-sm"
             >
               {t('close')}
             </button>

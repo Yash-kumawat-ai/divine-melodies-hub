@@ -704,3 +704,12 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
   animation: swipe-bounce 1.5s ease-in-out infinite;
 }
 
+/* 9. Temple Mobile Layout */
+@media (max-width: 767px) {
+  .temple-mobile-layout {
+    height: calc(100dvh - calc(60px + max(0.75rem, env(safe-area-inset-bottom)))) !important;
+    max-height: calc(100dvh - calc(60px + max(0.75rem, env(safe-area-inset-bottom)))) !important;
+    flex: none !important;
+  }
+}
+

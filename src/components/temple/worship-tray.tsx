@@ -136,7 +136,7 @@ export function WorshipTray({
               <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-gold/50 bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-saffron group-active:bg-saffron/30">
                 {action.icon}
               </span>
-              <span className="font-serif text-[11px] whitespace-nowrap text-cream-muted">
+              <span className="font-serif text-[11px] whitespace-nowrap text-white/80">
                 {t(action.labelKey)}
               </span>
             </button>

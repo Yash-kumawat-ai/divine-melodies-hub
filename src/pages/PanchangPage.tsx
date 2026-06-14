@@ -1084,6 +1084,7 @@ export default function PanchangPage() {
             {karyaSection}
 
             <div className="space-y-4 lg:hidden">
+              {upcomingEventsSection}
               <ReminderCenter
                 reminders={reminders}
                 language={lang}
@@ -1092,13 +1093,13 @@ export default function PanchangPage() {
                 onRemove={handleRemoveReminder}
                 onCustomAdd={handleCustomReminder}
               />
-              {upcomingEventsSection}
             </div>
 
             <FestivalCalendar />
           </div>
 
           <aside className="hidden min-w-0 space-y-4 sm:space-y-6 lg:block">
+            {upcomingEventsSection}
             <ReminderCenter
               reminders={reminders}
               language={lang}
@@ -1107,7 +1108,6 @@ export default function PanchangPage() {
               onRemove={handleRemoveReminder}
               onCustomAdd={handleCustomReminder}
             />
-            {upcomingEventsSection}
           </aside>
         </div>
       </div>

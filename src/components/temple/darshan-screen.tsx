@@ -528,8 +528,8 @@ export function DarshanScreen() {
             transition={{ delay: 1.2 }}
             className="pointer-events-none absolute bottom-24 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-0.5"
           >
-            <ChevronUp className="swipe-hint-bounce h-4 w-4 text-cream/70" />
-            <p className="text-[11px] text-cream/70">{t('swipeHint')}</p>
+            <ChevronUp className="swipe-hint-bounce h-4 w-4 text-white/70" />
+            <p className="text-[11px] text-white/70">{t('swipeHint')}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -560,7 +560,7 @@ export function DarshanScreen() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             role="status"
-            className="absolute bottom-24 left-1/2 z-50 w-max max-w-[88%] -translate-x-1/2 rounded-full border border-gold/40 bg-black/75 px-5 py-2.5 text-center font-serif text-sm text-cream backdrop-blur-md"
+            className="absolute bottom-24 left-1/2 z-50 w-max max-w-[88%] -translate-x-1/2 rounded-full border border-gold/40 bg-black/75 px-5 py-2.5 text-center font-serif text-sm text-white backdrop-blur-md"
           >
             {toast}
           </motion.div>
@@ -574,7 +574,7 @@ export function DarshanScreen() {
       />
 
       {/* Temple gates (above all darshan layers, below header) */}
-      <div className="absolute inset-0 z-[55] pointer-events-none">
+      <div className="absolute top-[112px] right-0 bottom-20 left-0 z-[55] pointer-events-none">
         <TempleGates open={gatesOpen} />
       </div>
 

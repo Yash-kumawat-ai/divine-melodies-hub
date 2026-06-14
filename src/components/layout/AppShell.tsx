@@ -30,22 +30,19 @@ export default function AppShell() {
         className={cn(
           "flex-1",
           isFullScreenApp && "flex min-h-0 flex-col overflow-hidden",
+          isTemplePage && "temple-mobile-layout"
         )}
       >
         <Suspense fallback={<PageContentFallback />}>
           <Outlet />
         </Suspense>
       </main>
-      {!isFullScreenApp && (
+      {(!isFullScreenApp || isTemplePage) && (
         <div className="block md:hidden">
           <MobileBottomNav />
         </div>
       )}
-      {!isFullScreenApp && (
-        <div className="hidden md:block">
-          <LayoutFooter />
-        </div>
-      )}
+      {!isFullScreenApp && <LayoutFooter />}
     </div>
   );
 }

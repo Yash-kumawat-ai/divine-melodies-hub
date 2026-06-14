@@ -295,9 +295,12 @@ export default function NaradFloatingWidget() {
     onTranscriptPreview: setTranscriptPreview,
     onVoicePhaseChange: setVoicePhase,
     onBotReplyText: setLastReply,
-    onVoiceError: handleVoiceError,
     onNaradAction: handleNaradAction,
   };
+
+  if (pathname === "/temple" || pathname.startsWith("/temple/")) {
+    return null;
+  }
 
   return (
     <>

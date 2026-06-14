@@ -43,11 +43,11 @@ export function FlowerPicker({
             onClick={(e) => e.stopPropagation()}
             className="relative w-full rounded-t-3xl border-t border-gold/30 bg-gradient-to-b from-[#1d0e06] to-[#0d0705] px-5 pb-6 pt-4"
           >
-            <div className="mx-auto mb-2 h-1 w-12 rounded-full bg-cream/20" />
+            <div className="mx-auto mb-2 h-1 w-12 rounded-full bg-white/20" />
             <h3 className="mb-1 font-serif text-lg text-gold">
               {lang === 'hi' ? 'फूल चुनें' : 'Choose Flower'}
             </h3>
-            <p className="mb-4 text-xs text-cream-muted italic">
+            <p className="mb-4 text-xs text-white/60 italic">
               {lang === 'hi' ? 'देवता को अर्पित करने के लिए फूल चुनें' : 'Select a flower to offer'}
             </p>
             <div className="grid grid-cols-4 gap-3">
@@ -68,7 +68,7 @@ export function FlowerPicker({
                       className="h-11 w-11 object-contain"
                     />
                   </span>
-                  <span className="text-[10px] text-cream-muted">
+                  <span className="text-[10px] text-white/70">
                     {lang === 'hi' ? flower.nameHi : flower.nameEn}
                   </span>
                 </button>
