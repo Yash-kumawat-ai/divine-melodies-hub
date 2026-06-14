@@ -561,3 +561,146 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
     padding-top: 1px;
 }
 
+/* Virtual Mandir Animations */
+
+/* 1. Falling Flowers */
+@keyframes flower-fall {
+  0% {
+    transform: translateY(var(--fall-start, -10vh)) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--fall-end, 70vh)) translateX(var(--fall-sway, 20px)) rotate(var(--fall-spin, 120deg));
+    opacity: 0;
+  }
+}
+.flower-fall {
+  animation-name: flower-fall;
+  animation-duration: var(--fall-duration, 2.5s);
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: forwards;
+}
+
+/* 2. Ambient Petals */
+@keyframes ambient-petal {
+  0% {
+    transform: translateY(-5vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(85vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+.ambient-petal {
+  animation-name: ambient-petal;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+}
+
+/* 3. Bell Ringing (Active Swing) */
+@keyframes bell-swing-ring {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(24deg); }
+  30% { transform: rotate(-22deg); }
+  45% { transform: rotate(18deg); }
+  60% { transform: rotate(-14deg); }
+  75% { transform: rotate(8deg); }
+  90% { transform: rotate(-4deg); }
+  100% { transform: rotate(0deg); }
+}
+.bell-ringing {
+  animation: bell-swing-ring 1.2s ease-in-out;
+  transform-origin: top center;
+}
+
+/* 4. Bell Idle Swaying */
+@keyframes bell-idle-sway-left {
+  0%, 100% { transform: rotate(2.5deg); }
+  50% { transform: rotate(-2.5deg); }
+}
+@keyframes bell-idle-sway-right {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.bell-idle-left {
+  animation: bell-idle-sway-left 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+.bell-idle-right {
+  animation: bell-idle-sway-right 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 5. Hand Bell Shake Loop */
+@keyframes bell-ring-loop-shake {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(10deg) translateY(-2px); }
+  75% { transform: rotate(-10deg) translateY(-2px); }
+}
+.bell-ring-loop {
+  animation: bell-ring-loop-shake 0.25s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 6. Incense Smoke Rise */
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+  15% {
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-45px) scaleX(2.2) translateX(3px);
+    opacity: 0.15;
+    filter: blur(2.5px);
+  }
+  100% {
+    transform: translateY(-110px) scaleX(3.5) translateX(-6px);
+    opacity: 0;
+    filter: blur(4.5px);
+  }
+}
+.smoke-wisp {
+  background: linear-gradient(to top, rgba(220,220,220,0.35), rgba(255,255,255,0.02));
+  border-radius: 50%;
+  animation: smoke-rise 4.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* 7. Divine Halo Rotating Rays */
+@keyframes halo-rotation {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.halo-rays {
+  background: radial-gradient(circle, rgba(253,186,116,0.14) 0%, transparent 60%);
+  animation: halo-rotation 24s linear infinite;
+  transform-origin: center center;
+}
+
+/* 8. Swipe Hint Bounce */
+@keyframes swipe-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.swipe-hint-bounce {
+  animation: swipe-bounce 1.5s ease-in-out infinite;
+}
+

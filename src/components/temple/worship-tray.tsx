@@ -122,7 +122,7 @@ export function WorshipTray({
   return (
     <nav
       aria-label={t('offeringsLabel')}
-      className="absolute right-0 bottom-0 left-0 z-50 border-t border-gold/30 bg-gradient-to-t from-[#0d0705] to-[#0d0705]/95"
+      className="absolute right-0 bottom-0 left-0 z-50 border-t border-gold/30 bg-gradient-to-t from-[#0d0705] to-[#0d0705]/95 pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="no-scrollbar flex items-center gap-1 overflow-x-auto px-3 py-2.5">
         {ACTIONS.map((action) => (

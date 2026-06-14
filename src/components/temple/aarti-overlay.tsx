@@ -191,7 +191,7 @@ export function AartiOverlay({
               <img
                 src={image}
                 alt="Ritual offering"
-                className="aarti-plate-glow h-24 w-24 object-contain sm:h-28 sm:w-28"
+                className="aarti-plate-glow h-40 w-40 object-contain sm:h-48 sm:w-48"
               />
             </div>
           </motion.div>

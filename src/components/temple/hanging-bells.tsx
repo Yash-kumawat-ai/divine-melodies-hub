@@ -48,12 +48,12 @@ function Bell({
       }`}
     >
       {/* Rope */}
-      <span className="block h-7 w-0.5 bg-gradient-to-b from-gold/70 to-gold/30" />
+      <span className="block h-14 w-0.5 bg-gradient-to-b from-gold/70 to-gold/30" />
       <span className="relative block">
         <img
           src="/images/bell.png"
           alt=""
-          className={`h-24 w-[4.5rem] object-contain drop-shadow-[0_6px_16px_rgba(212,168,83,0.5)] sm:h-28 sm:w-20 ${
+          className={`h-28 w-[5rem] object-contain drop-shadow-[0_6px_16px_rgba(212,168,83,0.5)] sm:h-32 sm:w-24 ${
             ringing
               ? 'bell-ringing'
               : side === 'left'
@@ -88,7 +88,7 @@ function Bell({
 
 export function HangingBells({ onRing }: { onRing: () => void }) {
   return (
-    <div className="pointer-events-none absolute top-10 right-0 left-0 z-30 h-28">
+    <div className="pointer-events-none absolute top-[112px] right-0 left-0 z-30 h-28">
       <Bell side="left" onRing={onRing} />
       <Bell side="right" onRing={onRing} />
     </div>

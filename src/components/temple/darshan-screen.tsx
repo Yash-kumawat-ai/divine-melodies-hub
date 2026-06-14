@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronUp } from 'lucide-react'
+import { ChevronUp, Bell } from 'lucide-react'
 import { deities } from '@/lib/deities'
 import { useLang } from '@/lib/i18n'
 import {
@@ -248,6 +248,17 @@ export function DarshanScreen() {
     setTimeout(() => setIntenseGlow(false), 1100)
   }, [addXp, showToast, t])
 
+  const ringHeaderBell = useCallback(() => {
+    if (aartiOpen || diyaOpen || flowerPickerOpen || bhogPickerOpen || bellActive || !gatesOpen) return
+    setBellActive(true)
+    playBellChime()
+    addXp(10)
+    showToast(t('bellRung'))
+    setTimeout(() => playBellChime(), 700)
+    setTimeout(() => playBellChime(), 1400)
+    setTimeout(() => setBellActive(false), 2400)
+  }, [aartiOpen, diyaOpen, flowerPickerOpen, bhogPickerOpen, bellActive, gatesOpen, addXp, showToast, t])
+
   const deityFilter = intenseGlow
     ? 'drop-shadow(0 0 120px rgba(249,115,22,0.7))'
     : glowPulse
@@ -256,7 +267,7 @@ export function DarshanScreen() {
 
   return (
     <div
-      className="relative mx-auto h-svh w-full max-w-md overflow-hidden bg-[#0d0705]"
+      className="relative mx-auto h-full w-full max-w-md overflow-hidden bg-[#0d0705]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onWheel={onWheel}
@@ -271,7 +282,7 @@ export function DarshanScreen() {
       />
 
       {/* LAYER 3: DEITY — fills the entire darshan area, face at top */}
-      <div className="absolute top-[80px] right-0 bottom-20 left-0 z-10">
+      <div className="absolute top-[112px] right-0 bottom-20 left-0 z-10">
         <AnimatePresence mode="wait">
           <motion.img
             key={deity.id}
@@ -398,38 +409,114 @@ export function DarshanScreen() {
         )}
       </AnimatePresence>
 
-      {/* Header — minimal, 44px */}
-      <header className="absolute top-0 right-0 left-0 z-50 flex h-11 items-center justify-between px-3">
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label="Toggle language"
-          className="rounded-full border border-gold/30 bg-black/35 px-2.5 py-1 font-serif text-xs text-cream backdrop-blur-sm transition-colors active:bg-saffron/30"
-        >
-          <span className={lang === 'hi' ? 'text-saffron' : 'text-cream-muted'}>
-            {'हिं'}
-          </span>
-          <span className="mx-1 text-gold/40">{'/'}</span>
-          <span className={lang === 'en' ? 'text-saffron' : 'text-cream-muted'}>
-            {'EN'}
-          </span>
-        </button>
-        <motion.p
-          key={`${deity.id}-jaikara`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: gatesOpen ? 1 : 0 }}
-          transition={{ delay: 0.4 }}
-          className="om-pulse absolute left-1/2 -translate-x-1/2 font-serif text-sm text-saffron drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
-        >
-          {deity.jaikara}
-        </motion.p>
-        <span className="rounded-full border border-gold/30 bg-black/35 px-2.5 py-1 text-xs text-gold backdrop-blur-sm">
-          {`🙏 ${xp}`}
-        </span>
-      </header>
+      {/* LAYER 6: Beautiful Temple Header */}
+      <header className="absolute top-0 right-0 left-0 z-50 flex flex-col bg-gradient-to-b from-black/95 via-[#0d0705]/95 to-[#0d0705]/90 border-b border-[#d4a853]/25 px-4 pt-4 pb-3 gap-2">
+        
+        {/* Top Row: Language | Jaikara & Lotus Divider | Diya & Bell */}
+        <div className="flex items-center justify-between w-full min-h-[44px]">
+          
+          {/* Left: Language Toggle */}
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label="Toggle language"
+            className="rounded-full border border-[#d4a853]/30 bg-black/40 px-3.5 py-1.5 font-serif text-xs text-[#fcefd2] shadow-inner transition-all hover:border-[#d4a853]/60 active:scale-95"
+          >
+            {'हिं / EN'}
+          </button>
 
-      {/* All deities listed at top — scrollable, tap to switch */}
-      <DeityStrip activeIndex={activeIndex} onSelect={changeDeity} />
+          {/* Center: Jaikara & Lotus Divider */}
+          <div className="flex flex-col items-center justify-center text-center flex-1 mx-2">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={`${deity.id}-jaikara`}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: gatesOpen ? 1 : 0, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.3 }}
+                className="font-serif text-[15px] font-bold text-[#f2b84b] drop-shadow-[0_1.5px_4px_rgba(0,0,0,0.95)] tracking-wide leading-none"
+              >
+                {deity.jaikara}
+              </motion.p>
+            </AnimatePresence>
+
+            {/* Lotus Divider SVG */}
+            <svg
+              className="w-36 h-5 text-[#d4a853] mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+              viewBox="0 0 200 30"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 15 C45 15, 60 20, 85 15 C88 14.5, 89 12, 87 11 C85 10, 81 12, 82 14 C83 16, 88 17, 90 15"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <path
+                d="M190 15 C155 15, 140 20, 115 15 C112 14.5, 111 12, 113 11 C115 10, 119 12, 118 14 C117 16, 112 17, 110 15"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <circle cx="10" cy="15" r="1.5" fill="currentColor" />
+              <circle cx="190" cy="15" r="1.5" fill="currentColor" />
+              <g transform="translate(88, 3) scale(0.18)" fill="currentColor">
+                <path d="M66.7,68.9c0,0-5.8-12.7-5.8-24.9c0-10.7,5.8-21.7,5.8-21.7s5.8,11,5.8,21.7C72.5,56.2,66.7,68.9,66.7,68.9z" />
+                <path d="M66.7,68.9c-3.1-2.9-14-11.8-19.1-22.3c-4.4-9.1-3.6-20.5-3.6-20.5s9.6,7.5,15,16.5C64,51,66.7,68.9,66.7,68.9z" />
+                <path d="M66.7,68.9c3.1-2.9,14-11.8,19.1-22.3c4.4-9.1,3.6-20.5,3.6-20.5s-9.6,7.5-15,16.5C69.4,51,66.7,68.9,66.7,68.9z" />
+                <path d="M66.7,68.9c-5.8-1.5-21-4.8-29.2-12.8C29.4,48,27,37.3,27,37.3s11.5,2.6,21,9c8.2,5.5,18.7,22.6,18.7,22.6z" />
+                <path d="M66.7,68.9c5.8-1.5,21-4.8,29.2-12.8C104,48,106.4,37.3,106.4,37.3s-11.5,2.6-21,9C77.2,54.8,66.7,68.9,66.7,68.9z" />
+              </g>
+            </svg>
+          </div>
+
+          {/* Right: Diya/XP Pill & Bell Circle */}
+          <div className="flex items-center gap-2">
+            {/* Diya / XP Pill */}
+            <div className="flex items-center gap-1.5 rounded-full border border-[#d4a853]/30 bg-black/40 px-3 py-1.5 text-xs text-[#fcefd2] shadow-inner select-none">
+              <svg className="w-5 h-4 shrink-0" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12,0 C12,0 15,4.5 15,7 C15,8.66 13.66,10 12,10 C10.34,10 9,8.66 9,7 C9,4.5 12,0 12,0 Z" fill="url(#flameGrad)" />
+                <path d="M3,9 C3,9 2,11 2,12 C2,14.5 6.5,16 12,16 C17.5,16 22,14.5 22,12 C22,11 21,9 21,9 C19.5,10.5 16,11.5 12,11.5 C8,11.5 4.5,10.5 3,9 Z" fill="url(#diyaGrad)" stroke="#d4a853" strokeWidth="0.5" />
+                <defs>
+                  <radialGradient id="flameGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#ffffff" />
+                    <stop offset="25%" stopColor="#ffee55" />
+                    <stop offset="70%" stopColor="#ff7a00" />
+                    <stop offset="100%" stopColor="#ff3c00" stopOpacity="0" />
+                  </radialGradient>
+                  <linearGradient id="diyaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#d4a853" />
+                    <stop offset="50%" stopColor="#aa8844" />
+                    <stop offset="100%" stopColor="#665522" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span className="font-serif font-semibold">{xp}</span>
+            </div>
+
+            {/* Bell Circle */}
+            <button
+              type="button"
+              onClick={ringHeaderBell}
+              disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning || bellActive}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d4a853]/30 bg-black/40 text-[#d4a853] transition-all hover:border-[#d4a853]/60 active:scale-90 disabled:opacity-50"
+              aria-label="Ring bell"
+            >
+              <Bell className="h-4.5 w-4.5 fill-[#d4a853] text-[#d4a853]" />
+            </button>
+          </div>
+
+        </div>
+
+        {/* Bottom Row: Deity Selector Strip */}
+        <div className="w-full mt-1">
+          <DeityStrip activeIndex={activeIndex} onSelect={changeDeity} />
+        </div>
+
+      </header>
 
       {/* Swipe hint — fades out after a few seconds */}
       <AnimatePresence>

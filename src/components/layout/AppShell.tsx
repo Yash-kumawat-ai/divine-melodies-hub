@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 export default function AppShell() {
   const { pathname } = useLocation();
   const isKirtanAi = pathname === "/kirtan-ai";
-  const isFullScreenApp = isKirtanAi;
+  const isTemplePage = pathname === "/temple";
+  const isFullScreenApp = isKirtanAi || isTemplePage;
 
   useEffect(() => {
     if (!isFullScreenApp) {
@@ -18,7 +19,12 @@ export default function AppShell() {
   }, [pathname, isFullScreenApp]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-body">
+    <div
+      className={cn(
+        "flex flex-col bg-background font-body",
+        isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-screen"
+      )}
+    >
       {!isFullScreenApp && <Header />}
       <main
         className={cn(
@@ -30,8 +36,16 @@ export default function AppShell() {
           <Outlet />
         </Suspense>
       </main>
-      {!isFullScreenApp && <MobileBottomNav />}
-      {!isFullScreenApp && <LayoutFooter />}
+      {!isFullScreenApp && (
+        <div className="block md:hidden">
+          <MobileBottomNav />
+        </div>
+      )}
+      {!isFullScreenApp && (
+        <div className="hidden md:block">
+          <LayoutFooter />
+        </div>
+      )}
     </div>
   );
 }

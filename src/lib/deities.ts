@@ -48,4 +48,20 @@ export const deities: Deity[] = [
     image: '/images/deity-salangpur.jpg',
     glow: 'rgba(212, 168, 83, 0.4)',
   },
+  {
+    id: 'krishna',
+    nameHindi: 'कृष्ण जी',
+    nameEnglish: 'Lord Krishna',
+    jaikara: 'जय श्री कृष्णा',
+    image: '/images/deity-krishna.png',
+    glow: 'rgba(251, 191, 36, 0.35)',
+  },
+  {
+    id: 'khatu-shyam',
+    nameHindi: 'खाटू श्याम जी',
+    nameEnglish: 'Khatu Shyam Ji',
+    jaikara: 'जय श्री श्याम',
+    image: '/images/deity-khatu-shyam.webp',
+    glow: 'rgba(99, 102, 241, 0.35)',
+  },
 ]

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 
 /**
  * Zone-targeted flower system. Flowers fall ONLY within the deity band
@@ -123,44 +124,33 @@ export function FlowerParticles({
     >
       {/* Action-triggered flowers */}
       {flowers.map((f) => (
-        <img
+        <motion.img
           key={f.id}
           src={f.image}
           alt=""
-          className="flower-fall absolute"
-          style={
-            {
-              left: `${f.x}%`,
-              top: 0,
-              width: f.size,
-              height: f.size,
-              animationDelay: `${f.delay}s`,
-              '--fall-start': `${f.startY}vh`,
-              '--fall-end': `${f.endY}vh`,
-              '--fall-sway': `${f.sway}px`,
-              '--fall-spin': `${f.spin}deg`,
-              '--fall-duration': `${f.duration}s`,
-            } as React.CSSProperties
-          }
-        />
-      ))}
-
-      {/* Ambient petals — always on, very subtle, inside deity band */}
-      {[0, 1, 2].map((i) => (
-        <img
-          key={`ambient-${i}`}
-          src="/images/flower.png"
-          alt=""
-          className="ambient-petal absolute"
-          style={
-            {
-              left: `${20 + i * 28}%`,
-              width: 18,
-              height: 18,
-              animationDelay: `${i * 2.6}s`,
-              animationDuration: `${6.5 + i * 1.2}s`,
-            } as React.CSSProperties
-          }
+          initial={{
+            y: `${f.startY}vh`,
+            x: 0,
+            rotate: 0,
+            opacity: 0,
+          }}
+          animate={{
+            y: `${f.endY}vh`,
+            x: f.sway,
+            rotate: f.spin,
+            opacity: [0, 1, 1, 0],
+          }}
+          transition={{
+            delay: f.delay,
+            duration: f.duration,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+          className="absolute"
+          style={{
+            left: `${f.x}%`,
+            width: f.size,
+            height: f.size,
+          }}
         />
       ))}
     </div>
