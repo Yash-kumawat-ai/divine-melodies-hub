@@ -492,13 +492,6 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <button
-                  onClick={() => document.getElementById("how-to-japa")?.scrollIntoView({ behavior: "smooth" })}
-                  className="group flex items-center justify-center gap-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 px-6 py-3 text-sm font-bold text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/40 active:scale-95 transition-all duration-300"
-                >
-                  <Play className="h-4 w-4 fill-current text-amber-400 group-hover:scale-110 transition-transform" />
-                  <span>{isHi ? "मंत्र जाप कैसे करें?" : "How to do Japa?"}</span>
-                </button>
-                <button
                   onClick={() => document.getElementById("japa-benefits")?.scrollIntoView({ behavior: "smooth" })}
                   className="group flex items-center justify-center gap-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 px-6 py-3 text-sm font-bold text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/40 active:scale-95 transition-all duration-300"
                 >
@@ -614,61 +607,10 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
           )}
         </section>
 
-        {/* TWO COLUMN ROW FOR HOW-TO AND BEGINNERS GUIDE */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: मंत्र जाप कैसे करें? */}
-          <section id="how-to-japa" className="lg:col-span-8 space-y-6 scroll-mt-24">
-            <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 md:p-8 relative">
-              <h3 className="text-lg md:text-xl font-bold text-amber-400 text-center flex items-center justify-center gap-2 mb-8">
-                <span className="text-amber-600">— 🪷 —</span>
-                {isHi ? "जाप कैसे करें?" : "How to do Japa?"}
-                <span className="text-amber-600">— 🪷 —</span>
-              </h3>
-
-              {/* Steps Container */}
-              <div className="flex flex-col gap-4">
-                {japaStepsData.map((step) => {
-                  const StepIcon = step.icon;
-                  return (
-                    <div
-                      key={step.num}
-                      className="bg-black/35 border border-white/5 hover:border-amber-500/20 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 group"
-                    >
-                      {/* Double circular icon container on the left */}
-                      <div className="shrink-0 w-16 h-16 rounded-full border border-amber-500/10 flex items-center justify-center bg-[#18110e]/40 shadow-inner group-hover:border-amber-500/25 transition-colors">
-                        <div className="w-[3.25rem] h-[3.25rem] rounded-full border border-amber-500/20 flex items-center justify-center bg-[#1f1612]/60 group-hover:border-amber-500/35 transition-colors">
-                          <StepIcon className="w-6 h-6 text-amber-500/90 group-hover:text-amber-400 transition-colors" />
-                        </div>
-                      </div>
-
-                      {/* Text information */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-xs shrink-0">
-                            {step.num}
-                          </span>
-                          <h4 className="font-bold text-sm md:text-base text-amber-100/90 group-hover:text-white transition-colors truncate">
-                            {isHi ? step.titleHi : step.titleEn}
-                          </h4>
-                        </div>
-                        <p className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition-colors">
-                          {isHi ? step.descHi : step.descEn}
-                        </p>
-                      </div>
-
-                      {/* Chevron-right icon on the right */}
-                      <div className="shrink-0 flex items-center justify-center pl-2">
-                        <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-amber-400/70 transition-colors" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* Right Column: शुरुआती साधकों के लिए */}
-          <section className="lg:col-span-4 w-full">
+        {/* BEGINNERS GUIDE */}
+        <div className="max-w-3xl mx-auto w-full">
+          {/* Column: शुरुआती साधकों के लिए */}
+          <section className="w-full">
             <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] overflow-hidden shadow-xl">
               {/* Header */}
               <button

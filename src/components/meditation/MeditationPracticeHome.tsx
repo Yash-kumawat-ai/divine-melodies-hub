@@ -5,8 +5,8 @@ import { getPracticeById } from "@/lib/meditation/meditationTypes";
 import { computeStats, loadPreferences, loadSessionLogs } from "@/lib/meditation/meditationStorage";
 import { cn } from "@/lib/utils";
 import meditationDesktopBg from "@/pages/images/meditation_desktop_wallpaper.webp";
+import meditationHighQuality from "@/pages/images/meditation_high_quality.webp";
 import redLotus from "@/pages/images/red_lotus_lossless.webp";
-import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
@@ -187,8 +187,23 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
     x: Math.random() * 100,
     y: Math.random() * 100,
     duration: Math.random() * 15 + 10,
-    delay: Math.random() * 10,
   })), []);
+
+  const handleScrollToPractices = () => {
+    const element = document.getElementById("meditation-practices-section");
+    if (element) {
+      const offset = 80; // offset for sticky navigation header
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306] pb-28 text-amber-50 md:pb-12">
@@ -283,7 +298,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 }}
-              onClick={onQuickStart}
+              onClick={handleScrollToPractices}
               className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-7 py-3.5 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
             >
               <Play className="w-5 h-5 fill-white stroke-none group-hover:scale-110 transition-transform" />
@@ -302,7 +317,8 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             <div className="absolute -top-10 -left-10 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
             
             <div>
-              <h2 className="text-amber-400/55 font-bold uppercase tracking-widest text-[13px] mb-4">
+              <h2 className="text-amber-400 font-display font-bold uppercase tracking-wider text-xs md:text-sm mb-4 flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                 {copy.recent.title}
               </h2>
               
@@ -369,8 +385,10 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/95" />
             </div>
 
-            <h2 className="relative z-10 text-amber-200/50 font-bold uppercase tracking-widest text-[13px]">
+            <h2 className="relative z-10 text-amber-300 font-display font-bold uppercase tracking-wider text-xs md:text-sm flex items-center gap-2 justify-center">
+              <span>✦</span>
               {copy.quote.title}
+              <span>✦</span>
             </h2>
 
             <p className="relative z-10 text-base md:text-lg text-white font-medium max-w-md my-4 italic leading-relaxed">
@@ -459,76 +477,94 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           {/* Right: Streak status & weekday logs */}
           <div className="flex-1 w-full text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 text-orange-500">
-              <Flame className="w-5 h-5 fill-current" />
-              <span className="text-xs font-bold uppercase tracking-wider">{isHi ? "साधना यात्रा" : "Sadhana Yatra"}</span>
+              <Flame className="w-5 h-5 fill-current animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/25">
+                {isHi ? "साधना यात्रा" : "Sadhana Yatra"}
+              </span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight mt-2">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight mt-3 bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent">
               {headingText}
             </h2>
             
-            <p className="text-xs md:text-sm text-white/50 mt-1 font-medium">
+            <p className="text-sm md:text-base text-brand-cream/60 mt-2 font-light max-w-md mx-auto md:mx-0">
               {subtitleText}
             </p>
 
-            {/* Connecting weekdays progress bar */}
-            <div className="relative flex items-center justify-between w-full max-w-md md:max-w-none mx-auto md:mx-0 mt-6 pb-8 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {/* Connecting line container */}
-              <div className="absolute left-[14px] right-[14px] top-[36px] h-[2px] bg-white/10 -z-10">
-                {hasMeditated && orangeLinePosition.width > 0 && (
-                  <div 
-                    className="absolute h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] transition-all duration-500"
-                    style={{ 
-                      left: `${orangeLinePosition.left}%`, 
-                      width: `${orangeLinePosition.width}%` 
-                    }}
-                  />
-                )}
+            {/* Connected Weekday Tracker */}
+            <div className="w-full max-w-md md:max-w-none mx-auto md:mx-0 mt-6 pb-6 select-none">
+              {/* Row 1: Weekday Labels */}
+              <div className="flex justify-between w-full text-xs font-bold text-white/45 mb-3 px-1">
+                {weekProgress.map((day, idx) => (
+                  <span key={idx} className="w-7 text-center">{day.label}</span>
+                ))}
               </div>
-              
-              {weekProgress.map((day, idx) => (
-                <div key={idx} className="relative flex flex-col items-center gap-2 shrink-0 pb-7">
-                  <span className="text-[13px] md:text-[10px] font-bold text-white/40">{day.label}</span>
-                  
-                  {hasMeditated && day.completed ? (
+
+              {/* Row 2: Circles and Line */}
+              <div className="relative flex justify-between w-full items-center px-1">
+                {/* Line */}
+                <div className="absolute left-[14px] right-[14px] h-[2px] bg-white/10 top-1/2 -translate-y-1/2 -z-10">
+                  {hasMeditated && orangeLinePosition.width > 0 && (
                     <div 
-                      className="relative flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-white font-bold text-xs shadow-[0_0_12px_rgba(249,115,22,0.6)] border border-orange-400 animate-node-pulse"
-                      style={{ animationDelay: `${idx * 0.25}s` }}
-                    >
-                      <Check className="w-3.5 h-3.5 stroke-[3px]" />
-                    </div>
-                  ) : (
-                    <div 
-                      className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full bg-black/40 border border-white/10 text-transparent text-xs animate-node-pulse",
-                        hasMeditated && day.isToday && "border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)] bg-black/60"
-                      )}
-                      style={{ animationDelay: `${idx * 0.25}s` }}
+                      className="absolute h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] transition-all duration-500"
+                      style={{ 
+                        left: `${orangeLinePosition.left}%`, 
+                        width: `${orangeLinePosition.width}%` 
+                      }}
                     />
                   )}
-
-                  {hasMeditated && day.isToday && (
-                    <div className="absolute bottom-0 flex flex-col items-center gap-0.5">
-                      <span className="text-orange-500 text-[7px] leading-none animate-bounce">▲</span>
-                      <span className="text-[13px] md:text-[9px] font-bold text-orange-500 tracking-wider uppercase">
-                        {isHi ? "आज" : "Today"}
-                      </span>
-                    </div>
-                  )}
                 </div>
-              ))}
+
+                {/* Circles */}
+                {weekProgress.map((day, idx) => (
+                  <div key={idx} className="w-7 h-7 flex items-center justify-center shrink-0">
+                    {hasMeditated && day.completed ? (
+                      <div 
+                        className="relative flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-white font-bold text-xs shadow-[0_0_12px_rgba(249,115,22,0.6)] border border-orange-400 animate-node-pulse"
+                        style={{ animationDelay: `${idx * 0.25}s` }}
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3px]" />
+                      </div>
+                    ) : (
+                      <div 
+                        className={cn(
+                          "flex h-7 w-7 items-center justify-center rounded-full bg-black/40 border border-white/10 text-transparent text-xs animate-node-pulse",
+                          hasMeditated && day.isToday && "border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)] bg-black/60"
+                        )}
+                        style={{ animationDelay: `${idx * 0.25}s` }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Row 3: "Today" Indicators */}
+              <div className="relative flex justify-between w-full mt-2 px-1 min-h-[20px]">
+                {weekProgress.map((day, idx) => (
+                  <div key={idx} className="w-7 flex flex-col items-center shrink-0">
+                    {hasMeditated && day.isToday && (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-orange-500 text-[7px] leading-none animate-bounce">▲</span>
+                        <span className="text-[10px] font-bold text-orange-500 tracking-wider uppercase">
+                          {isHi ? "आज" : "Today"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Stats Summary Panel */}
-            <div className="bg-black/30 border border-white/5 rounded-2xl p-4 mt-2 w-full max-w-md md:max-w-none flex items-center justify-around divide-x divide-white/5 text-left">
+            <div className="bg-black/30 border border-white/5 rounded-2xl p-4 mt-4 w-full max-w-md md:max-w-none flex items-center justify-around divide-x divide-white/5 text-left">
               {/* Meditation Time */}
               <div className="flex items-center gap-3 pr-4 flex-1">
                 <Clock3 className="w-5 h-5 text-orange-500 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[13px] md:text-[9px] font-bold text-white/30 uppercase tracking-wide">
+                  <p className="text-xs font-bold text-brand-cream/60 uppercase tracking-wider">
                     {isHi ? "ध्यान का समय" : "Meditation Time"}
                   </p>
-                  <p className="text-sm font-bold text-white truncate mt-0.5">
+                  <p className="text-[17px] font-display font-bold text-amber-400 mt-1">
                     {formatMeditationTime(stats.totalMindfulMinutes)}
                   </p>
                 </div>
@@ -538,10 +574,10 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               <div className="flex items-center gap-3 pl-4 flex-1">
                 <Flower2 className="w-5 h-5 text-orange-500 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[13px] md:text-[9px] font-bold text-white/30 uppercase tracking-wide">
+                  <p className="text-xs font-bold text-brand-cream/60 uppercase tracking-wider">
                     {isHi ? "सत्र" : "Sessions"}
                   </p>
-                  <p className="text-sm font-bold text-white truncate mt-0.5">
+                  <p className="text-[17px] font-display font-bold text-amber-400 mt-1">
                     {formatSessionsCount(stats.sessionCount)}
                   </p>
                 </div>
@@ -551,32 +587,26 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
         </section>
 
         {/* SECTION 2: MEDITATION PRACTICES ( ध्यान के अभ्यास ) */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold uppercase tracking-widest text-[13px] text-amber-200/50">
-              {copy.practices.title}
-            </h2>
-            <button className="flex items-center gap-1.5 text-[13px] md:text-xs text-amber-400 hover:underline">
-              <span>{copy.practices.viewAll}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+        <section id="meditation-practices-section" className="space-y-4">
+          <h2 className="font-display font-bold uppercase tracking-wider text-xs md:text-sm text-amber-300/90 flex items-center gap-2 border-l-2 border-orange-500 pl-3.5 my-2">
+            {copy.practices.title}
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             {/* Card 1: मंत्र ध्यान */}
             <div 
               onClick={() => onSelectPractice({ id: "mantra_jap_home" })}
-              className="group relative h-full min-h-[160px] overflow-hidden rounded-3xl border border-white/5 bg-[#130d0a]/50 p-5 hover:border-orange-500/20 hover:bg-[#18100c]/70 transition-all cursor-pointer flex flex-col justify-between shadow-xl"
+              className="group relative h-full min-h-[180px] md:min-h-[190px] overflow-hidden rounded-3xl border border-white/5 bg-[#130d0a]/50 p-5 hover:border-orange-500/20 hover:bg-[#18100c]/70 transition-all cursor-pointer flex flex-col justify-between shadow-xl"
             >
-              {/* Background Mahadev Image */}
               <div className="absolute inset-0 z-0">
                 <img 
-                  src={shivWallpaper} 
+                  src={meditationHighQuality} 
                   alt="" 
-                  className="h-full w-full object-cover opacity-20 object-center transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover object-center opacity-70 transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0705] via-[#0d0705]/40 to-black/80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0705]/90 via-[#0d0705]/25 to-black/40" />
               </div>
 
               <div className="relative z-10 space-y-4">
@@ -584,16 +614,16 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                   <span>ॐ</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white group-hover:text-orange-400 transition-colors">
+                  <h3 className="text-[17px] font-bold text-white group-hover:text-orange-400 transition-colors">
                     {copy.practices.mantra.title}
                   </h3>
-                  <p className="text-[13px] md:text-xs text-white/50 mt-1 leading-relaxed">
+                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
                     {copy.practices.mantra.desc}
                   </p>
                 </div>
               </div>
               <div className="relative z-10 mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] md:text-[11px] text-white/40 font-medium">
+                <span className="text-[13px] text-white/50 font-medium">
                   {copy.practices.mantra.dur}
                 </span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-orange-500/20 group-hover:border-orange-500/30 group-hover:translate-x-0.5 text-orange-400 transition-all">
@@ -612,16 +642,16 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                   <Mic className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors">
+                  <h3 className="text-[17px] font-bold text-white group-hover:text-purple-400 transition-colors">
                     {copy.practices.guided.title}
                   </h3>
-                  <p className="text-[13px] md:text-xs text-white/50 mt-1 leading-relaxed">
+                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
                     {copy.practices.guided.desc}
                   </p>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] md:text-[11px] text-white/40 font-medium">
+                <span className="text-[13px] text-white/50 font-medium">
                   {copy.practices.guided.dur}
                 </span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-purple-500/20 group-hover:border-purple-500/30 group-hover:translate-x-0.5 text-purple-400 transition-all">
@@ -640,16 +670,16 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                   <Wind className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white group-hover:text-green-400 transition-colors">
+                  <h3 className="text-[17px] font-bold text-white group-hover:text-green-400 transition-colors">
                     {copy.practices.breath.title}
                   </h3>
-                  <p className="text-[13px] md:text-xs text-white/50 mt-1 leading-relaxed">
+                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
                     {copy.practices.breath.desc}
                   </p>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] md:text-[11px] text-white/40 font-medium">
+                <span className="text-[13px] text-white/50 font-medium">
                   {copy.practices.breath.dur}
                 </span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-green-500/20 group-hover:border-green-500/30 group-hover:translate-x-0.5 text-green-400 transition-all">

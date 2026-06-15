@@ -720,3 +720,16 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
   }
 }
 
+
+
+@media (max-width: 767px) {
+.shadow-\[0_12px_28px_rgba\(249\2c 115\2c 22\2c 0\.45\)\]{ 
+    margin-bottom: 40px;
+  }
+}
+
+
+
+.opacity-70 {
+    opacity: 1;
+}

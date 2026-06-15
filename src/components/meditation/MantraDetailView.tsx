@@ -72,35 +72,44 @@ const ConcentricCirclesIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const japaStepsData = [
   {
     num: 1,
-    icon: YogiIcon,
-    titleHi: "स्थान चुनें",
-    titleEn: "Choose a Place",
-    descHi: "शांत और स्वच्छ जगह चुनें जहाँ आप आराम से बैठ सकें।",
-    descEn: "Select a quiet, clean spot where you can sit comfortably."
+    titleHi: "आराम से बैठें",
+    titleEn: "Sit Comfortably",
+    descHi: "रीढ़ की हड्डी सीधी और शरीर को ढीला रखें। शांत वातावरण चुनें।",
+    descEn: "Keep your spine straight and body relaxed. Choose a quiet spot.",
+    img: "/src/pages/images/meditation_high_quality.webp",
   },
   {
     num: 2,
-    icon: ConcentricCirclesIcon,
-    titleHi: "संकल्प लें",
-    titleEn: "Take a Resolve",
-    descHi: "अपना संकल्प स्पष्ट करें और मन को एकाग्र करें।",
-    descEn: "Clarify your intention and focus your mind."
+    titleHi: "3 गहरी साँसें लें",
+    titleEn: "Take 3 Deep Breaths",
+    descHi: "अपने मन और शरीर को शांत करने के लिए गहरी और धीमी साँस लें।",
+    descEn: "Inhale deeply and exhale slowly to calm your mind and body.",
+    isSvg: true,
   },
   {
     num: 3,
-    icon: MalaIcon,
-    titleHi: "जाप प्रारंभ करें",
-    titleEn: "Start Chanting",
-    descHi: "माला की एक-एक मनका पर मंत्र का जाप करें।",
-    descEn: "Chant the mantra on each bead of your mala."
+    titleHi: "अर्थ पर ध्यान दें",
+    titleEn: "Focus On The Meaning",
+    descHi: "मंत्र के दिव्य अर्थ को समझें और अपने हृदय में महसूस करें।",
+    descEn: "Understand and feel the sacred meaning of the mantra in your heart.",
+    img: "/src/pages/images/red_lotus_lossless.webp",
   },
   {
     num: 4,
-    icon: TrendingUp,
-    titleHi: "नियमित अभ्यास करें",
-    titleEn: "Practice Regularly",
-    descHi: "रोज़ाना अभ्यास से ही श्रेष्ठ परिणाम मिलते हैं।",
-    descEn: "Consistent daily practice yields the best results."
+    titleHi: "धीरे-धीरे जप करें",
+    titleEn: "Chant Slowly",
+    descHi: "स्पष्ट उच्चारण करें, प्रत्येक शब्द को शुद्धता और भक्ति से जपें।",
+    descEn: "Pronounce clearly and chant each syllable with pure devotion.",
+    img: "/src/pages/images/om.webp",
+    hasAudio: true,
+  },
+  {
+    num: 5,
+    titleHi: "माला से जाप गिनें",
+    titleEn: "Count With Mala",
+    descHi: "मंत्रों की संख्या गिनने के लिए रुद्राक्ष माला या डिजिटल काउंटर का उपयोग करें।",
+    descEn: "Use a rudraksha mala or digital counter to count your chants.",
+    img: "/images/mala.png",
   }
 ];
 
@@ -947,54 +956,135 @@ export default function MantraDetailView({
           </section>
         </div>
 
-        {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
-        <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 shadow-lg">
-          <div className="space-y-6">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2">
-              <span className="text-amber-600">— 🪷 —</span>
-              {isHi ? "जाप कैसे करें?" : "How to do Japa?"}
-              <span className="text-amber-600">— 🪷 —</span>
-            </h3>
+                {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
+        <section className="bg-[#130d0a]/65 backdrop-blur-xl border border-amber-500/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          {/* Decorative background mandala segment */}
+          <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/[0.02] rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="space-y-8">
+            {/* Guide Header */}
+            <div className="text-center space-y-2.5">
+              <h3 className="text-2xl md:text-3xl font-display font-bold text-amber-400 flex items-center justify-center gap-3">
+                <span className="text-amber-600/60 font-light">✦</span>
+                {isHi ? "अभ्यास कैसे करें" : "How To Practice"}
+                <span className="text-amber-600/60 font-light">✦</span>
+              </h3>
+              <p className="text-xs md:text-sm font-medium text-brand-cream/50 tracking-wider flex items-center justify-center gap-2 uppercase">
+                <span className="text-amber-500/40">◆</span>
+                {isHi ? "सर्वश्रेष्ठ अनुभव के लिए इन चरणों का पालन करें" : "Follow these steps for the best experience"}
+                <span className="text-amber-500/40">◆</span>
+              </p>
+            </div>
 
             {/* Steps Container */}
-            <div className="flex flex-col gap-4">
-              {japaStepsData.map((step) => {
-                const StepIcon = step.icon;
-                return (
-                  <div
-                    key={step.num}
-                    className="bg-black/35 border border-white/5 hover:border-amber-500/20 rounded-2xl p-4 flex items-center gap-4 transition-all duration-300 group text-left"
-                  >
-                    {/* Double circular icon container on the left */}
-                    <div className="shrink-0 w-16 h-16 rounded-full border border-amber-500/10 flex items-center justify-center bg-[#18110e]/40 shadow-inner group-hover:border-amber-500/25 transition-colors">
-                      <div className="w-[3.25rem] h-[3.25rem] rounded-full border border-amber-500/20 flex items-center justify-center bg-[#1f1612]/60 group-hover:border-amber-500/35 transition-colors">
-                        <StepIcon className="w-6 h-6 text-amber-500/90 group-hover:text-amber-400 transition-colors" />
+            <div className="grid grid-cols-1 gap-5">
+              {japaStepsData.map((step) => (
+                <div
+                  key={step.num}
+                  className="bg-black/35 border border-white/5 hover:border-amber-500/25 rounded-2xl p-4 md:p-5 flex items-center gap-5 transition-all duration-300 group text-left"
+                >
+                  {/* Left: Illustration */}
+                  <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border border-amber-500/10 flex items-center justify-center bg-black/40 group-hover:border-amber-500/25 transition-colors relative">
+                    {step.isSvg ? (
+                      <div className="w-full h-full flex items-center justify-center bg-teal-950/10 relative rounded-xl">
+                        <div className="absolute inset-0 bg-teal-500/[0.03] rounded-xl" />
+                        <svg className="w-12 h-12 text-teal-400/80 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M2 8h10a4 4 0 0 1 0 8H8" strokeLinecap="round" strokeDecode="async" />
+                          <path d="M4 12h14a3 3 0 0 0 0-6H14" strokeLinecap="round" />
+                          <path d="M1 16h18a2 2 0 0 0 0-4H16" strokeLinecap="round" />
+                        </svg>
                       </div>
-                    </div>
+                    ) : (
+                      <img src={step.img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                  </div>
 
-                    {/* Text information */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-black font-bold text-xs shrink-0">
-                          {step.num}
-                        </span>
-                        <h4 className="font-bold text-sm md:text-base text-amber-100/90 group-hover:text-white transition-colors truncate">
-                          {isHi ? step.titleHi : step.titleEn}
-                        </h4>
-                      </div>
-                      <p className="text-xs text-white/50 leading-relaxed group-hover:text-white/70 transition-colors">
-                        {isHi ? step.descHi : step.descEn}
+                  {/* Right: Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="w-6 h-6 rounded-full border border-amber-500/30 flex items-center justify-center text-amber-500 font-display font-bold text-xs shrink-0 bg-amber-500/5">
+                        {step.num}
+                      </span>
+                      <h4 className="font-display font-bold text-base md:text-lg text-amber-400 group-hover:text-amber-300 transition-colors">
+                        {isHi ? step.titleHi : step.titleEn}
+                      </h4>
+                    </div>
+                    <p className="text-sm text-brand-cream/65 leading-relaxed group-hover:text-brand-cream/85 transition-colors">
+                      {isHi ? step.descHi : step.descEn}
+                    </p>
+                    {step.hasAudio && (
+                      <button 
+                        onClick={handlePlayToggle}
+                        className="mt-2 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors select-none"
+                      >
+                        {isPlaying ? (
+                          <>
+                            <span className="relative flex h-2 w-2 mr-1">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                              <span className="relative rounded-full h-2 w-2 bg-amber-500"></span>
+                            </span>
+                            {isHi ? "रोकें" : "Stop Pronunciation"}
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3 h-3 fill-current" />
+                            {isHi ? "उच्चारण सुनें" : "Play Pronunciation"}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ─── COMMON MISTAKES SECTION ──────────────────────── */}
+            <div className="border-t border-amber-500/10 pt-8 mt-4">
+              <h4 className="text-center font-display font-bold text-lg md:text-xl text-amber-400 flex items-center justify-center gap-3 mb-6">
+                <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
+                {isHi ? "सामान्य गलतियाँ" : "Common Mistakes"}
+                <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
+              </h4>
+
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-black/20 border border-white/5 rounded-2xl p-5 md:p-6">
+                {/* Left side: list of mistakes */}
+                <div className="flex-1 space-y-3 w-full text-left">
+                  {[
+                    { hi: "बहुत तेज़ी से जप करना", en: "Chanting too fast" },
+                    { hi: "काम या अन्य बातों के बारे में सोचना", en: "Thinking about work or other things" },
+                    { hi: "जप करते समय फोन का उपयोग करना", en: "Using phone while chanting" },
+                    { hi: "बिना समझे यंत्रवत् जप करना", en: "Chanting without understanding" }
+                  ].map((mistake, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <span className="w-5 h-5 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0 text-xs font-bold mt-0.5">
+                        ✕
+                      </span>
+                      <p className="text-sm text-brand-cream/70 font-medium">
+                        {isHi ? mistake.hi : mistake.en}
                       </p>
                     </div>
+                  ))}
+                </div>
 
-                    {/* Chevron-right icon on the right */}
-                    <div className="shrink-0 flex items-center justify-center pl-2">
-                      <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-amber-400/70 transition-colors" />
-                    </div>
+                {/* Right side: incense smoke illustration */}
+                <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+                  {/* Rising smoke wisps using existing .smoke-wisp animation */}
+                  <div className="absolute bottom-[3.5rem] w-8 h-20 overflow-visible pointer-events-none flex justify-center z-10">
+                    <div className="smoke-wisp absolute bottom-0 w-2 h-16" style={{ animationDelay: '0s' }} />
+                    <div className="smoke-wisp absolute bottom-0 w-3 h-14" style={{ animationDelay: '1.5s' }} />
+                    <div className="smoke-wisp absolute bottom-0 w-1.5 h-18" style={{ animationDelay: '3s' }} />
                   </div>
-                );
-              })}
+                  {/* Brass Diya Image */}
+                  <img 
+                    src="/images/diya-brass.png" 
+                    alt="Incense burner" 
+                    className="w-24 h-24 object-contain filter drop-shadow-[0_0_12px_rgba(245,158,11,0.25)] relative z-20" 
+                  />
+                </div>
+              </div>
             </div>
+
           </div>
         </section>
 

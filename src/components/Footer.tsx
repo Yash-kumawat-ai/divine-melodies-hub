@@ -17,12 +17,15 @@ import {
   Star, 
   MessageSquare, 
   Sparkles, 
-  BookOpen 
+  BookOpen,
+  ChevronDown
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { bhajans as staticBhajans } from '@/data/bhajans';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Local translation dictionary to support Hindi and English beautifully
 const footerDict = {
@@ -95,6 +98,11 @@ const footerDict = {
 export default function Footer() {
   const { language } = useLanguage();
   const [showScroll, setShowScroll] = useState(false);
+  const [activeSection, setActiveSection] = useState<'explore' | 'community' | 'sadhana' | null>(null);
+
+  const exploreOpen = activeSection === 'explore';
+  const communityOpen = activeSection === 'community';
+  const sadhanaOpen = activeSection === 'sadhana';
 
   const { totalCount: totalBhajanCount } = useBhajanCounts();
   const [artistCount, setArtistCount] = useState(() => {
@@ -275,110 +283,185 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Three Grid Themed Link Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {/* Three Collapsible Buttons (Grid Layout with sliding dropdowns) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 items-start">
           
-          {/* Card 1: Explore (Amber Theme) */}
-          <div className="rounded-2xl border border-amber-500/10 bg-gradient-to-b from-[#16100d] to-[#0d0a08] p-5 shadow-lg transition-all duration-300 hover:border-amber-500/35 hover:shadow-[0_4px_25px_rgba(245,158,11,0.05)]">
-            <h4 className="font-display text-base font-bold text-amber-500/95 mb-4 flex items-center justify-between pb-2 border-b border-amber-500/10">
-              <span className="flex items-center gap-2">
-                <Compass className="w-5 h-5" />
-                {l.explore}
-              </span>
-              <span className="text-amber-500/80 text-sm">🪷</span>
-            </h4>
-            <ul className="space-y-1">
-              {[
-                { label: l.home, href: "/", icon: <Home className="w-4 h-4" /> },
-                { label: l.bhajans, href: "/all-bhajans", icon: <Music className="w-4 h-4" /> },
-                { label: l.mantraJapa, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-amber-500/30 rounded-full bg-amber-500/10 text-amber-500">ॐ</span> },
-                { label: l.aarti, href: "/live-aarti", icon: <Flame className="w-4 h-4" /> },
-                { label: l.panchang, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
-              ].map((item, idx) => (
-                <li key={idx}>
-                  <Link 
-                    to={item.href} 
-                    className="group flex items-center justify-between py-2 px-1 rounded-lg text-sm text-brand-cream/70 hover:text-brand-cream hover:bg-amber-500/5 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-brand-cream/40 group-hover:text-amber-500 transition-colors">
-                        {item.icon}
-                      </span>
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {/* Explore Section */}
+          <div className="flex flex-col">
+            <button 
+              onClick={() => setActiveSection(exploreOpen ? null : 'explore')}
+              className={cn(
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                exploreOpen 
+                  ? "border-amber-500 bg-[#1b130e] shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
+                  : "border-amber-500/20 bg-[#140e0b] hover:bg-[#1b130e] hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.08)]"
+              )}
+            >
+              <div className="flex items-center gap-3.5">
+                <Compass className={cn("w-6 h-6 text-amber-500 transition-transform duration-300", exploreOpen ? "scale-110 rotate-45" : "group-hover:scale-110")} />
+                <span className="font-display text-lg font-bold text-amber-500">{l.explore}</span>
+              </div>
+              <ChevronDown className={cn("w-5 h-5 text-amber-500/60 transition-all duration-300", exploreOpen ? "text-amber-500 rotate-180" : "group-hover:text-amber-500")} />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {exploreOpen && (
+                <motion.div
+                  key="explore-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2.5 p-4 rounded-2xl border border-amber-500/15 bg-[#140e0b]/60 shadow-inner">
+                    <ul className="space-y-1">
+                      {[
+                        { label: l.home, href: "/", icon: <Home className="w-4 h-4" /> },
+                        { label: l.bhajans, href: "/all-bhajans", icon: <Music className="w-4 h-4" /> },
+                        { label: l.mantraJapa, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-amber-500/30 rounded-full bg-amber-500/10 text-amber-500">ॐ</span> },
+                        { label: l.aarti, href: "/live-aarti", icon: <Flame className="w-4 h-4" /> },
+                        { label: l.panchang, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
+                      ].map((item, idx) => (
+                        <li key={idx}>
+                          <Link 
+                            to={item.href} 
+                            onClick={() => setActiveSection(null)}
+                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-brand-cream/75 hover:text-brand-cream hover:bg-amber-500/5 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-brand-cream/40 group-hover:text-amber-500 transition-colors">
+                                {item.icon}
+                              </span>
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Card 2: Community (Emerald Theme) */}
-          <div className="rounded-2xl border border-emerald-500/10 bg-gradient-to-b from-[#0d1410] to-[#080d0a] p-5 shadow-lg transition-all duration-300 hover:border-emerald-500/35 hover:shadow-[0_4px_25px_rgba(16,185,129,0.05)]">
-            <h4 className="font-display text-base font-bold text-emerald-500/95 mb-4 flex items-center justify-between pb-2 border-b border-emerald-500/10">
-              <span className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                {l.community}
-              </span>
-              <span className="text-emerald-500/80 text-sm">👥</span>
-            </h4>
-            <ul className="space-y-1">
-              {[
-                { label: l.uploadBhajan, href: "/upload-bhajan", icon: <Upload className="w-4 h-4" /> },
-                { label: l.becomeArtist, href: "/upload-bhajan", icon: <Star className="w-4 h-4" /> },
-                { label: l.becomeVolunteer, href: "/about", icon: <Heart className="w-4 h-4" /> },
-                { label: l.sendSuggestions, href: "/account/support", icon: <MessageSquare className="w-4 h-4" /> },
-              ].map((item, idx) => (
-                <li key={idx}>
-                  <Link 
-                    to={item.href} 
-                    className="group flex items-center justify-between py-2 px-1 rounded-lg text-sm text-brand-cream/70 hover:text-brand-cream hover:bg-emerald-500/5 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-brand-cream/40 group-hover:text-emerald-500 transition-colors">
-                        {item.icon}
-                      </span>
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {/* Community Section */}
+          <div className="flex flex-col">
+            <button 
+              onClick={() => setActiveSection(communityOpen ? null : 'community')}
+              className={cn(
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                communityOpen 
+                  ? "border-emerald-500 bg-[#0f1712] shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
+                  : "border-emerald-500/20 bg-[#0c120f] hover:bg-[#0f1712] hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.08)]"
+              )}
+            >
+              <div className="flex items-center gap-3.5">
+                <Users className={cn("w-6 h-6 text-emerald-500 transition-transform duration-300", communityOpen ? "scale-110 rotate-6" : "group-hover:scale-110")} />
+                <span className="font-display text-lg font-bold text-emerald-500">{l.community}</span>
+              </div>
+              <ChevronDown className={cn("w-5 h-5 text-emerald-500/60 transition-all duration-300", communityOpen ? "text-emerald-500 rotate-180" : "group-hover:text-emerald-500")} />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {communityOpen && (
+                <motion.div
+                  key="community-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2.5 p-4 rounded-2xl border border-emerald-500/15 bg-[#0c120f]/60 shadow-inner">
+                    <ul className="space-y-1">
+                      {[
+                        { label: l.uploadBhajan, href: "/upload-bhajan", icon: <Upload className="w-4 h-4" /> },
+                        { label: l.becomeArtist, href: "/upload-bhajan", icon: <Star className="w-4 h-4" /> },
+                        { label: l.becomeVolunteer, href: "/about", icon: <Heart className="w-4 h-4" /> },
+                        { label: l.sendSuggestions, href: "/account/support", icon: <MessageSquare className="w-4 h-4" /> },
+                      ].map((item, idx) => (
+                        <li key={idx}>
+                          <Link 
+                            to={item.href} 
+                            onClick={() => setActiveSection(null)}
+                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-brand-cream/75 hover:text-brand-cream hover:bg-emerald-500/5 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-brand-cream/40 group-hover:text-emerald-500 transition-colors">
+                                {item.icon}
+                              </span>
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Card 3: Sadhana (Purple Theme) */}
-          <div className="rounded-2xl border border-purple-500/10 bg-gradient-to-b from-[#130d17] to-[#0a080d] p-5 shadow-lg transition-all duration-300 hover:border-purple-500/35 hover:shadow-[0_4px_25px_rgba(168,85,247,0.05)]">
-            <h4 className="font-display text-base font-bold text-purple-500/95 mb-4 flex items-center justify-between pb-2 border-b border-purple-500/10">
-              <span className="flex items-center gap-2">
-                <Flower2 className="w-5 h-5" />
-                {l.sadhana}
-              </span>
-              <span className="text-purple-500/80 text-sm">🧘</span>
-            </h4>
-            <ul className="space-y-1">
-              {[
-                { label: l.meditationSadhana, href: "/meditation", icon: <Sparkles className="w-4 h-4" /> },
-                { label: l.mantraCollection, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-500">ॐ</span> },
-                { label: l.vratFestivals, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
-                { label: l.kathaDiscourse, href: "/blog", icon: <BookOpen className="w-4 h-4" /> },
-              ].map((item, idx) => (
-                <li key={idx}>
-                  <Link 
-                    to={item.href} 
-                    className="group flex items-center justify-between py-2 px-1 rounded-lg text-sm text-brand-cream/70 hover:text-brand-cream hover:bg-purple-500/5 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-brand-cream/40 group-hover:text-purple-500 transition-colors">
-                        {item.icon}
-                      </span>
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {/* Sadhana Section */}
+          <div className="flex flex-col">
+            <button 
+              onClick={() => setActiveSection(sadhanaOpen ? null : 'sadhana')}
+              className={cn(
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                sadhanaOpen 
+                  ? "border-purple-500 bg-[#160f1b] shadow-[0_0_15px_rgba(168,85,247,0.15)]" 
+                  : "border-purple-500/20 bg-[#110c14] hover:bg-[#160f1b] hover:border-purple-500/50 hover:shadow-[0_0_10px_rgba(168,85,247,0.08)]"
+              )}
+            >
+              <div className="flex items-center gap-3.5">
+                <Flower2 className={cn("w-6 h-6 text-purple-500 transition-transform duration-300", sadhanaOpen ? "scale-110 rotate-12" : "group-hover:scale-110")} />
+                <span className="font-display text-lg font-bold text-purple-500">{l.sadhana}</span>
+              </div>
+              <ChevronDown className={cn("w-5 h-5 text-purple-500/60 transition-all duration-300", sadhanaOpen ? "text-purple-500 rotate-180" : "group-hover:text-purple-500")} />
+            </button>
+
+            <AnimatePresence initial={false}>
+              {sadhanaOpen && (
+                <motion.div
+                  key="sadhana-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2.5 p-4 rounded-2xl border border-purple-500/15 bg-[#110c14]/60 shadow-inner">
+                    <ul className="space-y-1">
+                      {[
+                        { label: l.meditationSadhana, href: "/meditation", icon: <Sparkles className="w-4 h-4" /> },
+                        { label: l.mantraCollection, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-500">ॐ</span> },
+                        { label: l.vratFestivals, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
+                        { label: l.kathaDiscourse, href: "/blog", icon: <BookOpen className="w-4 h-4" /> },
+                      ].map((item, idx) => (
+                        <li key={idx}>
+                          <Link 
+                            to={item.href} 
+                            onClick={() => setActiveSection(null)}
+                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-brand-cream/75 hover:text-brand-cream hover:bg-purple-500/5 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-brand-cream/40 group-hover:text-purple-500 transition-colors">
+                                {item.icon}
+                              </span>
+                              <span className="font-medium">{item.label}</span>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-brand-cream/20 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
