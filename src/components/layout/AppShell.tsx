@@ -15,6 +15,13 @@ export default function AppShell() {
   useEffect(() => {
     if (!isFullScreenApp) {
       window.scrollTo(0, 0);
+      
+      // Delay reset scroll to top to ensure async/lazy page loads are captured
+      const timer = setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [pathname, isFullScreenApp]);
 

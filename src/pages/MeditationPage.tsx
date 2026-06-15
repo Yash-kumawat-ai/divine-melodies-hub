@@ -23,6 +23,10 @@ export default function MeditationPage() {
     };
   }, [practice]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [practiceId]);
+
   const handleSelectPractice = (newPractice: { id: string }) => {
     setSearchParams({ practice: newPractice.id });
   };

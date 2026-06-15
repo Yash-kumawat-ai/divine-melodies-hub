@@ -713,3 +713,10 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
   }
 }
 
+
+@media (max-width: 767px) {
+  .text-white\/20{
+    display: none !important;
+  }
+}
+

@@ -1,11 +1,7 @@
-import { BookOpen, Clock3, Flame, Flower2, Play, Sparkles, Timer, Wind, ArrowRight, Mic, Check } from "lucide-react";
-import { deities } from "@/data/bhajans";
+import { Clock3, Flame, Flower2, Play, Sparkles, Timer, Wind, ArrowRight, Mic, Check } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getMeditationPracticeTitle } from "@/lib/meditation/meditationLocale";
-import {
-  getPracticeById,
-  type MeditationPractice,
-} from "@/lib/meditation/meditationTypes";
+import { getPracticeById } from "@/lib/meditation/meditationTypes";
 import { computeStats, loadPreferences, loadSessionLogs } from "@/lib/meditation/meditationStorage";
 import { cn } from "@/lib/utils";
 import meditationDesktopBg from "@/pages/images/meditation_desktop_wallpaper.webp";
@@ -24,24 +20,10 @@ const MEDITATION_QUOTES = [
   { hi: "“निरंतर अभ्यास ही सच्ची शांति का मार्ग है।”", en: "“Consistent practice is the path to true peace.”" }
 ];
 
-const JOURNEY_IDS = ["mantra_shiva", "mantra_krishna", "mantra_radhe", "mantra_ram", "mantra_narayana"] as const;
-
 type MeditationPracticeHomeProps = {
   onSelectPractice: (practice: { id: string }) => void;
   onQuickStart: () => void;
 };
-
-function deityForPractice(practice: MeditationPractice) {
-  const slug =
-    practice.mantraId === "jai_shree_ram"
-      ? "rama"
-      : practice.mantraId === "hare_krishna" || practice.mantraId === "radhe_radhe"
-        ? "krishna"
-        : practice.mantraId === "om_namo_narayanaya"
-          ? "lakshmi"
-          : "shiva";
-  return deities.find((d) => d.slug === slug);
-}
 
 export default function MeditationPracticeHome({ onSelectPractice, onQuickStart }: MeditationPracticeHomeProps) {
   const { language } = useLanguage();
@@ -196,24 +178,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
         desc: isHi ? "श्वास पर ध्यान करके मन को शांत करें।" : "Calm your mind by focusing on your breath.",
         dur: isHi ? "5 - 15 मिनट" : "5 - 15 mins",
       }
-    },
-    progress: {
-      title: isHi ? "आपकी प्रगति" : "Your Progress",
-      streak: isHi ? "दिन लगातार" : "Days Streak",
-      time: isHi ? "कुल ध्यान समय" : "Total Time",
-      timeShort: isHi ? "कुल समय" : "Total Time",
-      sessions: isHi ? "कुल सत्र" : "Total Sessions",
-      quote: isHi ? "निरंतर अभ्यास ही सच्ची शांति का मार्ग है।" : "Consistent practice is the path to true peace.",
     }
-  };
-
-  const formatMinutes = (totalMins: number) => {
-    const hrs = Math.floor(totalMins / 60);
-    const mins = totalMins % 60;
-    if (isHi) {
-      return hrs > 0 ? `${hrs} घं ${mins} मि` : `${mins} मि`;
-    }
-    return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
 
   const particles = useMemo(() => Array.from({ length: 20 }).map((_, i) => ({
@@ -696,179 +661,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           </div>
         </section>
 
-        {/* SECTION 3: YOUR PROGRESS ( आपकी प्रगति ) */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold uppercase tracking-widest text-[13px] text-amber-200/50">
-              {copy.progress.title}
-            </h2>
-            <button className="flex items-center gap-1.5 text-[13px] md:text-xs text-amber-400 hover:underline">
-              <span>{copy.practices.viewAll}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
 
-          {/* Desktop view (Horizontal Banner) */}
-          <div className="hidden md:flex relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-xl p-6 items-center justify-between gap-6 group/progress">
-            
-            {/* Stats list */}
-            <div className="flex items-center gap-8 lg:gap-12 shrink-0">
-              {/* Streak */}
-              <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
-                  <Flame className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl lg:text-3xl font-display font-bold text-white tracking-tight">
-                    {stats.streakDays}
-                  </p>
-                  <p className="text-[13px] md:text-[10px] text-white/40 font-bold uppercase tracking-wider mt-0.5">
-                    {copy.progress.streak}
-                  </p>
-                </div>
-              </div>
-
-              {/* Total Time */}
-              <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
-                  <Clock3 className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl lg:text-3xl font-display font-bold text-white tracking-tight">
-                    {formatMinutes(stats.totalMindfulMinutes)}
-                  </p>
-                  <p className="text-[13px] md:text-[10px] text-white/40 font-bold uppercase tracking-wider mt-0.5">
-                    {copy.progress.time}
-                  </p>
-                </div>
-              </div>
-
-              {/* Sessions */}
-              <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500">
-                  <Flower2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl lg:text-3xl font-display font-bold text-white tracking-tight">
-                    {stats.sessionCount}
-                  </p>
-                  <p className="text-[13px] md:text-[10px] text-white/40 font-bold uppercase tracking-wider mt-0.5">
-                    {copy.progress.sessions}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-
-
-            {/* Yogi mini landscape image */}
-            <div className="hidden lg:block w-36 h-20 rounded-2xl overflow-hidden border border-white/10 shrink-0">
-              <img
-                src={meditationDesktopBg}
-                alt=""
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-          </div>
-
-          {/* Mobile view (3 columns compact grids) */}
-          <div className="grid grid-cols-3 gap-3 md:hidden">
-            
-            {/* Streak Card */}
-            <div className="bg-[#130d0a]/60 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <Flame className="w-5 h-5 text-orange-500 mb-2" />
-              <p className="text-lg font-bold text-white">
-                {stats.streakDays}
-              </p>
-              <p className="text-[13px] md:text-[8px] font-bold text-white/30 uppercase mt-0.5">
-                {copy.progress.streak}
-              </p>
-            </div>
-
-            {/* Total Time Card */}
-            <div className="bg-[#130d0a]/60 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <Clock3 className="w-5 h-5 text-orange-500 mb-2" />
-              <p className="text-lg font-bold text-white">
-                {formatMinutes(stats.totalMindfulMinutes)}
-              </p>
-              <p className="text-[13px] md:text-[8px] font-bold text-white/30 uppercase mt-0.5 leading-none">
-                {copy.progress.timeShort}
-              </p>
-            </div>
-
-            {/* Sessions Card */}
-            <div className="bg-[#130d0a]/60 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
-              <Flower2 className="w-5 h-5 text-orange-500 mb-2" />
-              <p className="text-lg font-bold text-white">
-                {stats.sessionCount}
-              </p>
-              <p className="text-[13px] md:text-[8px] font-bold text-white/30 uppercase mt-0.5">
-                {copy.progress.sessions}
-              </p>
-            </div>
-
-          </div>
-        </section>
-
-        {/* SECTION 4: DEITY MANTRA JOURNEYS ( मंत्र साधना यात्रा ) */}
-        <section className="mt-8">
-          <div className="mb-4 flex items-center justify-between gap-3 px-1">
-            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-amber-200/50">
-              <Flame className="h-4 w-4 text-orange-400" />
-              {isHi ? "मंत्र साधना यात्रा" : "Deity Mantras Journeys"}
-            </h2>
-          </div>
-          
-          <div className="flex gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-5 md:overflow-visible [&::-webkit-scrollbar]:hidden">
-            {JOURNEY_IDS.map((id) => {
-              const practice = getPracticeById(id);
-              if (!practice) return null;
-              const deity = deityForPractice(practice);
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => onSelectPractice(practice)}
-                  className="group flex w-[10.5rem] shrink-0 flex-col overflow-hidden rounded-2xl border border-white/5 bg-black/40 text-left shadow-md transition-all active:scale-[0.98] hover:border-orange-500/20 hover:bg-black/60 md:w-auto"
-                >
-                  {deity?.imageUrl ? (
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/40">
-                      <img
-                        src={deity.imageUrl}
-                        alt=""
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    </div>
-                  ) : null}
-                  <div className="p-3.5">
-                    <p className="truncate text-sm font-bold text-amber-100/90 group-hover:text-amber-400 transition-colors">
-                      {getMeditationPracticeTitle(practice, language)}
-                    </p>
-                    <p className="mt-1 line-clamp-1 text-[13px] md:text-[11px] leading-4 text-white/40">
-                      {practice.type === "mantra" ? (isHi ? "मंत्र जाप साधना" : "Mantra Japa Practice") : (isHi ? "निर्देशित ध्यान" : "Guided Dhyan")}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* SECTION 5: PRACTICE NOTE / GUIDANCE */}
-        <section className="rounded-3xl border border-orange-500/10 bg-orange-500/[0.02] p-6 backdrop-blur-md mt-8">
-          <h2 className="flex items-center gap-2 text-[13px] md:text-xs font-semibold uppercase tracking-widest text-amber-200/50">
-            <BookOpen className="h-4 w-4 text-orange-400" />
-            {isHi ? "साधना निर्देश" : "Practice Guidance"}
-          </h2>
-          <p className="mt-3 text-[13px] md:text-xs leading-relaxed text-amber-100/60">
-            {isHi 
-              ? "नियमित ध्यान और मंत्र जप आपके मानसिक स्वास्थ्य और आध्यात्मिक चेतना को उन्नत करता है। प्रतिदिन शांत वातावरण में कम से कम १०-१५ मिनट का अभ्यास करने से मन शांत और स्थिर होता है।" 
-              : "Regular dhyan (meditation) and mantra japa elevate your mental health and spiritual consciousness. Practicing for at least 10-15 minutes daily in a quiet environment calms and stabilizes the mind."}
-          </p>
-        </section>
 
       </div>
     </div>

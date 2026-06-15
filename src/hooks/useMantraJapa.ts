@@ -36,24 +36,36 @@ import {
 
 // ─── Image Mapping (local images for each deity) ──────────────────
 import omImage from "@/pages/images/om.webp";
-import deityShiva from "@/assets/deities/shiva.webp";
-import deityKrishna from "@/assets/deities/krishna.webp";
-import deityRama from "@/assets/deities/rama.webp";
-import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
+import deityShiva from "@/pages/images/shiva.webp";
+import deityKrishna from "@/pages/images/krishna.webp";
+import deityRama from "@/pages/images/rama.webp";
+import deityGanesh from "@/pages/images/ganesh.webp";
+import deityDurga from "@/pages/images/durga.webp";
+import deityLakshmi from "@/pages/images/lakshmi.webp";
+import deityHanuman from "@/pages/images/hanuman.webp";
+import deityRadhaKrishna from "@/pages/images/deity-radha-krishna.webp";
 
 const DEITY_IMAGE_MAP: Record<string, string> = {
-  shiva: shivWallpaper,
+  shiva: deityShiva,
   krishna: deityKrishna,
   rama: deityRama,
   vishnu: deityRama, // fallback
+  ganesh: deityGanesh,
+  hanuman: deityHanuman,
+  lakshmi: deityLakshmi,
+  durga: deityDurga,
 };
 
 const MANTRA_ENGLISH_IMAGE_MAP: Record<string, string> = {
   "Om Chanting": omImage,
-  "Om Namah Shivaya": shivWallpaper,
-  "Mahamrityunjaya Mantra": shivWallpaper,
+  "Om Namah Shivaya": deityShiva,
+  "Mahamrityunjaya Mantra": deityShiva,
   "Hare Krishna Mahamantra": deityKrishna,
+  "Radhe Radhe": deityRadhaKrishna,
   "Jai Shree Ram": deityRama,
+  "Om Namo Narayanaya": deityRama,
+  "Gayatri Mantra": deityDurga,
+  "Shri Ganesha Mantra": deityGanesh,
 };
 
 /** Resolve the image for a mantra — prefers DB image_url, then local mapping */
@@ -272,6 +284,7 @@ export function useMantraJapa() {
     mantrasError: mantrasQuery.error,
     stats,
     mantraTotalsMap,
+    todaySessions: todayQuery.data ?? [],
     sankalpas: sankalpasQuery.data ?? [],
     isGuest,
     userId,
