@@ -26,6 +26,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useMantraJapa, resolveMantraImage } from "@/hooks/useMantraJapa";
 import JapaCounter from "@/components/devotion/JapaCounter";
 import MantraDetailView from "./MantraDetailView";
+import MantraSetupView from "./MantraSetupView";
+import PremiumJapaCounter from "./PremiumJapaCounter";
 import meditationDesktopBg from "@/pages/images/meditation_desktop_wallpaper.webp";
 import diyaAndMalaImg from "@/pages/images/diya_and_mala.jpg";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
@@ -120,6 +122,12 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   // ─── Local UI State ────────────────────────────────────────────
   const [activeMantra, setActiveMantra] = useState<Mantra | null>(null);
   const [selectedMantraForDetail, setSelectedMantraForDetail] = useState<Mantra | null>(null);
+  const [showSetup, setShowSetup] = useState(false);
+  const [setupConfig, setSetupConfig] = useState<{
+    sankalpText: string;
+    targetCount: number;
+    practiceMode: "mala" | "tap" | "voice" | "guided";
+  } | null>(null);
   const [isBeginnerOpen, setIsBeginnerOpen] = useState(true);
   const [japaTarget, setJapaTarget] = useState<number>(() => {
     return Number(localStorage.getItem("hari_kirtan_japa_target_v1") || "108");
@@ -383,33 +391,45 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   if (selectedMantraForDetail) {
     return (
       <>
-        <MantraDetailView
-          mantra={selectedMantraForDetail}
-          image={resolveMantraImage(selectedMantraForDetail)}
-          stats={mantraTotalsMap[selectedMantraForDetail.id]}
-          onBack={() => setSelectedMantraForDetail(null)}
-          onStartJapa={() => setActiveMantra(selectedMantraForDetail)}
-        />
+        {showSetup ? (
+          <MantraSetupView
+            mantra={selectedMantraForDetail}
+            onBack={() => setShowSetup(false)}
+            onStartJapa={(opts) => {
+              setSetupConfig(opts);
+              setActiveMantra(selectedMantraForDetail);
+            }}
+          />
+        ) : (
+          <MantraDetailView
+            mantra={selectedMantraForDetail}
+            image={resolveMantraImage(selectedMantraForDetail)}
+            stats={mantraTotalsMap[selectedMantraForDetail.id]}
+            onBack={() => setSelectedMantraForDetail(null)}
+            onStartJapa={() => setShowSetup(true)}
+          />
+        )}
         <AnimatePresence>
           {activeMantra && (
-            <JapaCounter
-              mantraLabel={isHi ? activeMantra.name_hindi : activeMantra.name_english}
-              deitySlug={activeMantra.deity || "shiva"}
-              targetCount={japaTarget}
-              mantraId={activeMantra.id}
-              initialSankalp={activeSankalpText}
+            <PremiumJapaCounter
+              mantra={activeMantra}
+              sankalpText={setupConfig?.sankalpText || activeSankalpText}
+              targetCount={setupConfig?.targetCount || japaTarget}
+              practiceMode={setupConfig?.practiceMode || "mala"}
               onClose={() => setActiveMantra(null)}
-              onComplete={() => {
+              onComplete={(actualCount, durationSeconds) => {
                 completeSession({
                   mantraId: activeMantra.id,
                   mantraLabel: activeMantra.name_english,
-                  sankalp: activeSankalpText,
-                  targetCount: japaTarget,
-                  actualCount: japaTarget,
-                  durationSeconds: Math.round(japaTarget * 1.5),
+                  sankalp: setupConfig?.sankalpText || activeSankalpText,
+                  targetCount: setupConfig?.targetCount || japaTarget,
+                  actualCount: actualCount,
+                  durationSeconds: durationSeconds,
                 });
                 refresh();
-                setTimeout(() => setActiveMantra(null), 1200);
+                setActiveMantra(null);
+                setShowSetup(false);
+                setSelectedMantraForDetail(null);
               }}
             />
           )}
@@ -756,25 +776,23 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
       {/* ─── ACTIVE JAPA COUNTER MODAL ──────────────────────────── */}
       <AnimatePresence>
         {activeMantra && (
-          <JapaCounter
-            mantraLabel={isHi ? activeMantra.name_hindi : activeMantra.name_english}
-            deitySlug={activeMantra.deity || "shiva"}
-            targetCount={japaTarget}
-            mantraId={activeMantra.id}
-            initialSankalp={activeSankalpText}
+          <PremiumJapaCounter
+            mantra={activeMantra}
+            sankalpText={setupConfig?.sankalpText || activeSankalpText}
+            targetCount={setupConfig?.targetCount || japaTarget}
+            practiceMode={setupConfig?.practiceMode || "mala"}
             onClose={() => setActiveMantra(null)}
-            onComplete={() => {
-              // Complete via hook
+            onComplete={(actualCount, durationSeconds) => {
               completeSession({
                 mantraId: activeMantra.id,
                 mantraLabel: activeMantra.name_english,
-                sankalp: activeSankalpText,
-                targetCount: japaTarget,
-                actualCount: japaTarget,
-                durationSeconds: Math.round(japaTarget * 1.5),
+                sankalp: setupConfig?.sankalpText || activeSankalpText,
+                targetCount: setupConfig?.targetCount || japaTarget,
+                actualCount: actualCount,
+                durationSeconds: durationSeconds,
               });
               refresh();
-              setTimeout(() => setActiveMantra(null), 1200);
+              setActiveMantra(null);
             }}
           />
         )}

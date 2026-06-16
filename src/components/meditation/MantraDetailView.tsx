@@ -147,10 +147,14 @@ type MantraDetail = {
   };
   howToStepsHindi: string[];
   howToStepsEnglish: string[];
+  mantraTextHindi?: string;
+  transliteration?: string;
 };
 
 const MANTRA_DETAILS: Record<string, MantraDetail> = {
   om: {
+    mantraTextHindi: "ॐ",
+    transliteration: "Om / Aum",
     meaningHindi: "ॐ सृष्टि की मूल ध्वनि है, जो ब्रह्मांड की चेतना और परम सत्य का प्रतीक है।",
     meaningEnglish: "Om is the primordial sound of the universe, representing cosmic consciousness and absolute truth.",
     whyChantHindi: [
@@ -187,6 +191,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   om_namah_shivaya: {
+    mantraTextHindi: "ॐ नमः शिवाय",
+    transliteration: "Om Namah Shivaya",
     meaningHindi: "मैं भगवान शिव को नमन करता हूं, जो समस्त चेतना के स्रोत हैं।",
     meaningEnglish: "I bow to Lord Shiva, the source of all consciousness.",
     whyChantHindi: [
@@ -223,6 +229,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   mahamrityunjaya: {
+    mantraTextHindi: "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्।\nउर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय मामृतात्॥",
+    transliteration: "Om Tryambakam Yajamahe Sugandhim Pushti-Vardhanam\nUrvarukamiva Bandhanan Mrityor Mukshiya Maamritat",
     meaningHindi: "हम त्रिनेत्रधारी भगवान शिव की आराधना करते हैं, जो सुगंधमय हैं और सबका पोषण करते हैं। जैसे ककड़ी अपनी बेल से अलग होकर मुक्त होती है, वैसे ही वे हमें मृत्यु के बंधन से मुक्त करें और अमरता प्रदान करें।",
     meaningEnglish: "We worship the three-eyed Lord Shiva, who is fragrant and nourishes all. Just as a cucumber is freed from its bond to the vine, may He liberate us from death and grant us immortality.",
     whyChantHindi: [
@@ -259,6 +267,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   hare_krishna: {
+    mantraTextHindi: "हरे कृष्ण हरे कृष्ण, कृष्ण कृष्ण हरे हरे।\nहरे राम हरे राम, राम राम हरे हरे॥",
+    transliteration: "Hare Krishna Hare Krishna, Krishna Krishna Hare Hare\nHare Rama Hare Rama, Rama Rama Hare Hare",
     meaningHindi: "हे भगवान कृष्ण और राम, मैं आपकी शरण लेता हूं। यह मंत्र भगवान को प्रेमपूर्वक पुकारने और उनकी कृपा प्राप्त करने का माध्यम है।",
     meaningEnglish: "O Lord Krishna and Lord Rama, I take shelter in you. This mahamantra is a way to lovingly call upon the Divine and receive grace.",
     whyChantHindi: [
@@ -295,6 +305,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   radhe_radhe: {
+    mantraTextHindi: "राधे राधे",
+    transliteration: "Radhe Radhe",
     meaningHindi: "राधा रानी का नाम जप, प्रेम, समर्पण और भक्ति की पराकाष्ठा का प्रतीक है। यह जप कृष्ण-प्रेम और निःस्वार्थ भक्ति की भावना जगाता है।",
     meaningEnglish: "Chanting Radha Rani's name symbolizes the peak of divine love and surrender. It awakens selfless devotion and love for Lord Krishna.",
     whyChantHindi: [
@@ -331,6 +343,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   jai_shree_ram: {
+    mantraTextHindi: "जय श्री राम",
+    transliteration: "Jai Shree Ram",
     meaningHindi: "भगवान राम की जय हो — यह मंत्र मर्यादा, धर्म, सत्य और साहस के आदर्श पुरुष श्री राम के प्रति श्रद्धा और विजय भाव का उच्चारण है।",
     meaningEnglish: "Victory to Lord Rama — this mantra honors श्री राम as the embodiment of righteousness, truth, and courage.",
     whyChantHindi: [
@@ -367,6 +381,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   om_namo_narayanaya: {
+    mantraTextHindi: "ॐ नमो नारायणाय",
+    transliteration: "Om Namo Narayanaya",
     meaningHindi: "मैं भगवान नारायण (विष्णु) को नमन करता हूं, जो सृष्टि के पालनहार और संरक्षक हैं।",
     meaningEnglish: "I bow to Lord Narayana (Vishnu), the preserver and protector of the universe.",
     whyChantHindi: [
@@ -403,6 +419,8 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     ]
   },
   gayatri: {
+    mantraTextHindi: "ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं।\nभर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्॥",
+    transliteration: "Om Bhur Bhuvah Svah Tat Savitur Varenyam\nBhargo Devasya Dhimahi Dhiyo Yo Nah Pracodayat",
     meaningHindi: "हम उस तेजस्वी, दिव्य सूर्य देवता (सविता) का ध्यान करते हैं, जो पृथ्वी, अंतरिक्ष और स्वर्ग में व्याप्त हैं। वे हमारी बुद्धि को प्रकाशित और प्रेरित करें।",
     meaningEnglish: "We meditate on the glowing solar deity (Savitr) who pervades the earth, sky, and heavens. May He illumine and inspire our intellect.",
     whyChantHindi: [
@@ -440,6 +458,30 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
   }
 };
 
+function getMantraDetailsKey(mantra: Mantra): string {
+  const name = (mantra.name_english || "").trim();
+  if (name === "Om Chanting") return "om";
+  if (name === "Om Namah Shivaya") return "om_namah_shivaya";
+  if (name === "Mahamrityunjaya Mantra") return "mahamrityunjaya";
+  if (name === "Hare Krishna Mahamantra") return "hare_krishna";
+  if (name === "Radhe Radhe") return "radhe_radhe";
+  if (name === "Jai Shree Ram") return "jai_shree_ram";
+  if (name === "Om Namo Narayanaya") return "om_namo_narayanaya";
+  if (name === "Gayatri Mantra") return "gayatri";
+
+  // Fallback checks
+  const nameLower = name.toLowerCase();
+  if (nameLower.includes("shiva") || nameLower.includes("shivaya")) return "om_namah_shivaya";
+  if (nameLower.includes("mrityunjaya")) return "mahamrityunjaya";
+  if (nameLower.includes("krishna")) return "hare_krishna";
+  if (nameLower.includes("radhe")) return "radhe_radhe";
+  if (nameLower.includes("ram") || nameLower.includes("rama")) return "jai_shree_ram";
+  if (nameLower.includes("narayanaya")) return "om_namo_narayanaya";
+  if (nameLower.includes("gayatri")) return "gayatri";
+
+  return "om";
+}
+
 type MantraDetailViewProps = {
   mantra: Mantra;
   image: string | undefined;
@@ -465,7 +507,8 @@ export default function MantraDetailView({
   const gainNodeRef = useRef<GainNode | null>(null);
 
   // Get details
-  const detail = MANTRA_DETAILS[mantra.id] || MANTRA_DETAILS["om"];
+  const detailsKey = getMantraDetailsKey(mantra);
+  const detail = MANTRA_DETAILS[detailsKey] || MANTRA_DETAILS["om"];
 
   // Total and streak
   const totalChants = stats?.total_chants ?? 0;
@@ -683,6 +726,41 @@ export default function MantraDetailView({
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* ─── CARD 0: MANTRA TEXT ────────────────────────────────── */}
+        <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center">
+          {/* Background Mandalas */}
+          <MandalaBg className="absolute -left-16 -bottom-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
+          <MandalaBg className="absolute -right-16 -top-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
+
+          <div className="flex flex-col items-center space-y-5 relative z-10">
+            <h3 className="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+              <span className="text-xl font-display text-amber-500 leading-none">🕉️</span>
+              {isHi ? "मूल मंत्र एवं लिप्यांतरण" : "Sacred Text & Transliteration"}
+            </h3>
+
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              {/* Devanagari Card */}
+              <div className="bg-amber-950/10 border border-amber-500/15 rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group hover:border-amber-500/30 transition-all duration-300">
+                <div className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider text-amber-500/50">
+                  {isHi ? "देवनागरी (संस्कृत)" : "Devanagari (Sanskrit)"}
+                </div>
+                <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line mt-3 select-all">
+                  {detail.mantraTextHindi || mantra.full_text_hindi}
+                </p>
+              </div>
+
+              {/* Transliteration Card */}
+              <div className="bg-black/20 border border-white/5 rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group hover:border-amber-500/20 transition-all duration-300">
+                <div className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider text-brand-cream/30">
+                  {isHi ? "रोमन लिप्यांतरण (रोमन लिपि)" : "Roman Transliteration (English)"}
+                </div>
+                <p className="text-base md:text-lg text-brand-cream/80 tracking-wider font-sans italic whitespace-pre-line mt-3 select-all">
+                  {detail.transliteration || mantra.transliteration}
+                </p>
               </div>
             </div>
           </div>
