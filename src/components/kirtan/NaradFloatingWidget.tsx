@@ -52,7 +52,7 @@ export default function NaradFloatingWidget() {
   const coreRef = useRef<KirtanAIChatCoreHandle>(null);
   const pendingListenRef = useRef(false);
   const pendingTextRef = useRef("");
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -272,7 +272,12 @@ export default function NaradFloatingWidget() {
     }
   }, [activeAction, closeAll, navigate]);
 
-  if (pathname === "/kirtan-ai" || pathname.startsWith("/auth")) {
+  const searchParams = new URLSearchParams(search);
+  if (
+    pathname === "/kirtan-ai" ||
+    pathname.startsWith("/auth") ||
+    (pathname === "/meditation" && searchParams.get("practice") === "mantra_japa_counter")
+  ) {
     return null;
   }
 

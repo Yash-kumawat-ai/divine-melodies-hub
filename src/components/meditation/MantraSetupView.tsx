@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   PenSquare,
   Sparkles,
   Heart,
@@ -50,6 +51,13 @@ const OmSymbol = (props: React.SVGProps<SVGSVGElement>) => (
     <path d="M6 10c0-2.5 2-4.5 4.5-4.5S15 7.5 15 10c0 4-5 5-5 8h7" />
     <path d="M13 5.5a2.5 2.5 0 0 1 4 0" />
     <circle cx="14.5" cy="2.5" r="1" fill="currentColor" />
+  </svg>
+);
+
+const ShieldCrossIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="M12 8v8M9 12h6" />
   </svg>
 );
 
@@ -215,7 +223,7 @@ export default function MantraSetupView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] text-brand-cream/90 font-sans relative overflow-x-hidden pb-16 select-none">
+    <div className="min-h-screen bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] text-brand-cream/90 font-sans relative pb-36 md:pb-28 select-none">
       {/* Decorative watermarked background mandala */}
       <div className="absolute top-0 right-[-100px] md:right-0 w-[400px] h-[400px] opacity-[0.07] pointer-events-none text-amber-500">
         <svg className="w-full h-full animate-[spin_180s_linear_infinite]" viewBox="0 0 100 100">
@@ -468,132 +476,27 @@ export default function MantraSetupView({
             })}
           </div>
         </div>
+      </div>
 
-        {/* ─── YOUR PRACTICE SUMMARY ──────────────────────────── */}
-        <div className="bg-gradient-to-r from-[#160d11] to-[#0b0507] border border-amber-500/20 rounded-3xl p-5 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
-          
-          <h3 className="font-display font-bold text-xs text-amber-400/90 uppercase tracking-widest text-center mb-4 flex items-center justify-center gap-2">
-            <span className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-500/40" />
-            {isHi ? "आपकी साधना का विवरण" : "Your Practice Summary"}
-            <span className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500/40" />
-          </h3>
-
-          {/* Grid layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
-            
-            {/* Stats block (cols 1-7 on desktop) */}
-            <div className="sm:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-2.5">
-              
-              {/* 1. Sankalp */}
-              <div className="flex flex-col items-center text-center p-2 rounded-2xl bg-black/45 border border-white/5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-amber-500/5 flex items-center justify-center text-amber-500 mb-1 border border-amber-500/10">
-                  <LotusIcon className="w-4 h-4" />
-                </div>
-                <span className="text-[7.5px] text-white/35 font-bold uppercase tracking-wider">
-                  {isHi ? "संकल्प" : "Sankalp"}
-                </span>
-                <span className="text-[10px] font-bold text-amber-300 truncate w-full mt-0.5">
-                  {currentSankalpText}
-                </span>
-              </div>
-
-              {/* 2. Mode */}
-              <div className="flex flex-col items-center text-center p-2 rounded-2xl bg-black/45 border border-white/5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-amber-500/5 flex items-center justify-center text-amber-500 mb-1 border border-amber-500/10">
-                  {practiceMode === "mala" && <MalaIcon className="w-4 h-4" />}
-                  {practiceMode === "tap" && <TouchIcon className="w-4.5 h-4.5" />}
-                  {practiceMode === "voice" && <Mic className="w-4 h-4" />}
-                  {practiceMode === "guided" && <Headphones className="w-4 h-4" />}
-                </div>
-                <span className="text-[7.5px] text-white/35 font-bold uppercase tracking-wider">
-                  {isHi ? "विधि" : "Mode"}
-                </span>
-                <span className="text-[10px] font-bold text-amber-300 truncate w-full mt-0.5">
-                  {currentModeText}
-                </span>
-              </div>
-
-              {/* 3. Goal */}
-              <div className="flex flex-col items-center text-center p-2 rounded-2xl bg-black/45 border border-white/5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-amber-500/5 flex items-center justify-center text-amber-400 mb-1 border border-amber-500/10 font-display font-black text-xs">
-                  {targetCount}
-                </div>
-                <span className="text-[7.5px] text-white/35 font-bold uppercase tracking-wider">
-                  {isHi ? "जाप लक्ष्य" : "Goal"}
-                </span>
-                <span className="text-[10px] font-bold text-amber-300 truncate w-full mt-0.5">
-                  {targetCount} {isHi ? "जाप" : "Chants"}
-                </span>
-              </div>
-
-              {/* 4. Est. Time */}
-              <div className="flex flex-col items-center text-center p-2 rounded-2xl bg-black/45 border border-white/5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-amber-500/5 flex items-center justify-center text-amber-500 mb-1 border border-amber-500/10">
-                  <Clock className="w-4 h-4" />
-                </div>
-                <span className="text-[7.5px] text-white/35 font-bold uppercase tracking-wider">
-                  {isHi ? "अवधि" : "Est. Time"}
-                </span>
-                <span className="text-[10px] font-bold text-amber-300 truncate w-full mt-0.5">
-                  {isHi ? `~${currentEstTime} मि.` : `~${currentEstTime} mins`}
-                </span>
-              </div>
-
-            </div>
-
-            {/* Visual Image block (cols 8-12 on desktop) */}
-            <div className="sm:col-span-4 relative rounded-2xl overflow-hidden border border-white/5 h-24 sm:h-28 bg-black/50 flex items-center justify-center group shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent z-10" />
-              <div className="absolute inset-0 bg-amber-500/[0.02] animate-pulse z-0" />
-              
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Mala */}
-                <img
-                  src="/images/mala.png"
-                  alt="Jap Mala"
-                  className="w-28 h-auto object-contain absolute left-[15px] bottom-[-10px] opacity-70 filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)] rotate-[15deg] group-hover:scale-105 transition-transform duration-700"
-                />
-                {/* Diya */}
-                <img
-                  src="/images/diya-brass.png"
-                  alt="Brass Diya"
-                  className="w-16 h-16 object-contain absolute right-4 bottom-1.5 z-20 filter drop-shadow-[0_0_12px_rgba(245,158,11,0.35)] group-hover:scale-105 transition-transform duration-700"
-                />
-                {/* Flame */}
-                <div className="absolute right-[2.9rem] bottom-[3.3rem] w-1.5 h-3.5 z-30 pointer-events-none">
-                  <div className="w-full h-full rounded-full bg-gradient-to-t from-orange-600 via-amber-400 to-yellow-100 blur-[1px] animate-pulse scale-y-110 origin-bottom" />
-                </div>
-              </div>
-
-              <div className="absolute bottom-2 left-3 z-20 flex items-center gap-1 text-[8px] font-black text-amber-400/80 tracking-widest uppercase">
-                <Sparkles className="w-2.5 h-2.5 text-amber-400" />
-                {isHi ? "साधना पथ" : "SADHANA PATH"}
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* ─── BEGIN MANTRA JAP GOLD BUTTON ────────────────────── */}
+      {/* ─── STICKY BOTTOM MANTRA JAP GOLD BUTTON ────────────────── */}
+      <section className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 z-30 pt-4 pb-4 flex flex-col items-center space-y-2 w-full max-w-md mx-auto px-4">
         <button
           onClick={handleBegin}
-          className="w-full relative overflow-hidden group flex items-center justify-between bg-gradient-to-r from-amber-400 via-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-black font-black text-sm md:text-base py-4 px-6 rounded-2xl shadow-[0_12px_32px_rgba(249,115,22,0.3)] border border-amber-300/35 transition-all duration-300 uppercase tracking-widest"
+          className="w-full group flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-white font-bold px-8 py-4 rounded-3xl shadow-[0_12px_28px_rgba(249,115,22,0.45)] border border-amber-400/20 transition-all duration-300"
         >
-          {/* Shine effect */}
-          <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-30deg] translate-x-[-150%] group-hover:translate-x-[250%] transition-transform duration-1000 ease-out" />
-          
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-black stroke-[2.2]" />
-            <span>
-              {isHi ? "मंत्र जाप प्रारंभ करें" : "Begin Mantra Jap"}
-            </span>
-          </div>
-          
-          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <span className="text-xl font-display text-amber-100 leading-none">ॐ</span>
+          <span className="font-bold text-sm md:text-base tracking-wide">
+            {isHi ? "मंत्र जाप प्रारंभ करें" : "Begin Mantra Jap"}
+          </span>
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </button>
 
-      </div>
+        <p className="text-[10px] text-white/35 font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center">
+          <ShieldCrossIcon className="w-3.5 h-3.5 text-amber-500/70" />
+          {isHi ? "आपकी साधना सुरक्षित और निजी है" : "Your Sadhana is Secure & Private"}
+        </p>
+      </section>
+
     </div>
   );
 }

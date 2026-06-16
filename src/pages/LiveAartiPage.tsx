@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLiveAarti, getNextAarti } from '../hooks/useLiveAarti';
+import { useLiveAarti, getNextAarti } from '@/hooks/useLiveAarti';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';

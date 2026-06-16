@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { TextToSpeech, VoiceManager, checkVoiceSupport } from "../lib/voiceUtils";
 import BhajanCard from "../components/BhajanCard";
 import BhajanDetailModal from "../components/BhajanDetailModal";
@@ -11,7 +11,7 @@ import { Bhajan, bhajans as appBhajans, deities as appDeities } from "../data/bh
 import { bhajanMatchesQuery, naradSearchBhajans } from "../lib/searchAlgorithm";
 import { searchUserBhajans } from "../lib/supabaseQueries";
 import { generateBhajanSlug } from "../lib/slugUtils";
-import { useIsMobile } from "../hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { looksLikeDirectSongQuery } from "../lib/narad/naradIntents";
 import {
   createChatSession,

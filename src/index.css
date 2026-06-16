@@ -733,3 +733,21 @@ img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
 .opacity-70 {
     opacity: 1;
 }
+
+
+
+@media (max-width: 767px) {
+    .shadow-\[0_12px_28px_rgba\(249\2c 115\2c 22\2c 0\.45\)\] {
+         margin-bottom: 0px; 
+    }
+}
+
+p.text-\[10px\].text-white\/35.font-bold.uppercase.tracking-wider.flex.items-center.gap-1\.5.justify-center{
+  display: none;
+}
+
+
+.pb-4 {
+    padding-bottom: 0.6rem;
+}
+

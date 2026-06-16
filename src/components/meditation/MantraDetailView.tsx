@@ -634,7 +634,7 @@ export default function MantraDetailView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202] pb-32 text-amber-50 relative select-none">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202] pb-16 text-amber-50 relative select-none">
       {/* Background soft glowing spots */}
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.12),transparent)]" />
 
@@ -1067,7 +1067,7 @@ export default function MantraDetailView({
                       <div className="w-full h-full flex items-center justify-center bg-teal-950/10 relative rounded-xl">
                         <div className="absolute inset-0 bg-teal-500/[0.03] rounded-xl" />
                         <svg className="w-12 h-12 text-teal-400/80 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M2 8h10a4 4 0 0 1 0 8H8" strokeLinecap="round" strokeDecode="async" />
+                          <path d="M2 8h10a4 4 0 0 1 0 8H8" strokeLinecap="round" />
                           <path d="M4 12h14a3 3 0 0 0 0-6H14" strokeLinecap="round" />
                           <path d="M1 16h18a2 2 0 0 0 0-4H16" strokeLinecap="round" />
                         </svg>
@@ -1166,18 +1166,20 @@ export default function MantraDetailView({
           </div>
         </section>
 
-        {/* ─── BOTTOM FLOATING ACTION CTA BUTTON ──────────────────── */}
-        <section className="sticky bottom-4 z-30 pt-4 flex flex-col items-center space-y-2 w-full max-w-md mx-auto">
-          <button
-            onClick={onStartJapa}
-            className="w-full group flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-white font-bold px-8 py-4 rounded-3xl shadow-[0_12px_28px_rgba(249,115,22,0.45)] border border-amber-400/20 transition-all duration-300"
-          >
-            <span className="text-xl font-display text-amber-100 leading-none">ॐ</span>
-            <span>
-              {isHi ? "जप सीखें और प्रारंभ करें" : "Learn & Start Japa"}
-            </span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+      </div>
+
+      {/* ─── BOTTOM FLOATING ACTION CTA BUTTON ──────────────────── */}
+      <section className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 z-30 pt-4 pb-4 flex flex-col items-center space-y-2 w-full max-w-md mx-auto px-4">
+        <button
+          onClick={onStartJapa}
+          className="w-full group flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-white font-bold px-8 py-4 rounded-3xl shadow-[0_12px_28px_rgba(249,115,22,0.45)] border border-amber-400/20 transition-all duration-300"
+        >
+          <span className="text-xl font-display text-amber-100 leading-none">ॐ</span>
+          <span>
+            {isHi ? "जप सीखें और प्रारंभ करें" : "Learn & Start Japa"}
+          </span>
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </button>
 
           <p className="text-[10px] text-white/35 font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center">
             <ShieldCrossIcon className="w-3.5 h-3.5 text-amber-500/70" />
@@ -1185,7 +1187,6 @@ export default function MantraDetailView({
           </p>
         </section>
 
-      </div>
     </div>
   );
 }

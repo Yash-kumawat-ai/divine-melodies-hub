@@ -3,7 +3,7 @@ import { X, ExternalLink, Youtube, Info, AlertTriangle, Clock, Play } from 'luci
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import { useLanguage } from '@/hooks/useLanguage';
-import { getNextAarti } from '../../hooks/useLiveAarti';
+import { getNextAarti } from '@/hooks/useLiveAarti';
 
 // Import high-quality temple & deity banner images
 import shivWallpaper from '@/pages/images/shiv_wallpaper.webp';

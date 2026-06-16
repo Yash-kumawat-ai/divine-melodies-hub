@@ -5,7 +5,7 @@ import type { Temple } from '../../types/liveAarti';
 import LiveBadge from './LiveBadge';
 import CountdownTimer from './CountdownTimer';
 import { useLanguage } from '@/hooks/useLanguage';
-import { getNextAarti, formatVerifiedTime } from '../../hooks/useLiveAarti';
+import { getNextAarti, formatVerifiedTime } from '@/hooks/useLiveAarti';
 import { resolveTempleBanner } from './WatchModal';
 
 interface TempleCardProps {
