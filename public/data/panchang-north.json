@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-15",
+  "date": "2026-06-16",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Amavasya",
-  "tithi_number": 15,
-  "nakshatra": "Mrigasira - 2",
-  "yoga": "Soola",
-  "karana": "Naga",
-  "paksha": "Shukla",
+  "tithi": "Vidiya",
+  "tithi_number": 0,
+  "nakshatra": "Aridra - 2",
+  "yoga": "Vriddha",
+  "karana": "Balava",
+  "paksha": "Krishna",
   "sunrise": "05:27 AM",
   "sunset": "07:16 PM",
-  "rahu_kaal": "07:11 AM - 08:54 AM",
+  "rahu_kaal": "03:49 PM - 05:32 PM",
   "brahma_muhurat": "03:51 AM - 04:39 AM",
-  "vara": "Somvaar",
-  "updated_at": "2026-06-15T07:29:02+05:30"
+  "vara": "Mangalvaar",
+  "updated_at": "2026-06-16T07:36:27+05:30"
 }
