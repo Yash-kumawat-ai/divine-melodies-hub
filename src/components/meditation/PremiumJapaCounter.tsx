@@ -464,8 +464,8 @@ export default function PremiumJapaCounter({
   }, [practiceMode, guidedPlaying, isCompleted, soundEnabled, activeMantra, isHi, incrementCount]);
 
   // ─── MALA BEAD TRAVERSAL CALCULATIONS ────────────────────────────
-  // We use 54 regular beads + 1 Sumeru bead = 55 total beads in the ring layout.
-  const numBeads = 54;
+  // We use 27 regular beads + 1 Sumeru bead = 28 total beads in the ring layout.
+  const numBeads = 27;
   const beadIndices = useMemo(() => {
     const arr = [];
     for (let i = 0; i <= numBeads; i++) {
@@ -474,30 +474,30 @@ export default function PremiumJapaCounter({
     return arr;
   }, [numBeads]);
 
-  // Sizing details (increased by 40% with adjusted radius R and container)
+  // Sizing details for elegant, spaced out, breathable 27-bead layout
   const R = isMobile ? 135 : 195;
-  const regularBeadSize = isMobile ? 31 : 43;
-  const sumeruBeadSize = isMobile ? 48 : 63;
+  const regularBeadSize = isMobile ? 22 : 32;
+  const sumeruBeadSize = isMobile ? 32 : 44;
 
   // Active bead index:
-  // If count is exactly a multiple of 54 (and > 0), the 54th bead is active.
-  // Otherwise, the active bead is the count % 54 + 1.
+  // If count is exactly a multiple of 27 (and > 0), the 27th bead is active.
+  // Otherwise, the active bead is the count % 27 + 1.
   const activeBeadIndex = useMemo(() => {
     if (count === 0) return 1;
     return count % numBeads === 0 ? numBeads : count % numBeads;
   }, [count, numBeads]);
 
   // Completed count in the current mala round:
-  // If count is a multiple of 54 (and > 0), all 54 beads are completed.
-  // Otherwise, completed count is count % 54.
+  // If count is a multiple of 27 (and > 0), all 27 beads are completed.
+  // Otherwise, completed count is count % 27.
   const currentCompletedCount = useMemo(() => {
     if (count === 0) return 0;
     return count % numBeads === 0 ? numBeads : count % numBeads;
   }, [count, numBeads]);
 
-  // Dynamic Today Stats computation
+  // Dynamic Today Stats computation (default rounds for 108 is 4)
   const displayTodayChants = useMemo(() => (stats?.todayChants || 0) + count, [stats?.todayChants, count]);
-  const displayTodayMalas = useMemo(() => (stats?.totalMalas || 0) + Math.floor(count / 108), [stats?.totalMalas, count]);
+  const displayTodayMalas = useMemo(() => ((stats?.totalMalas || 0) * 4) + Math.floor(count / numBeads), [stats?.totalMalas, count, numBeads]);
 
   // Helper formatting for timer mm:ss
   const formatTime = (secs: number) => {
@@ -772,7 +772,7 @@ export default function PremiumJapaCounter({
       </div>
 
       {/* ─── BOTTOM CONTROL BAR ───────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-6 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-6 border-t border-white/5 flex items-center justify-center gap-5 bg-black/10 select-none">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-5 pb-2 border-t border-white/5 flex items-center justify-center gap-5 bg-black/10 select-none">
         <button
           onClick={handleResetClick}
           disabled={count === 0}
@@ -789,6 +789,90 @@ export default function PremiumJapaCounter({
           {timerActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
           <span>{timerActive ? (isHi ? "रोकें" : "Pause") : (isHi ? "शुरू करें" : "Resume")}</span>
         </button>
+      </div>
+
+      {/* ─── QUICK SETTINGS BAR (Premium Pill Design) ──────────────── */}
+      <div
+        className="relative z-10 w-full px-3 py-2 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Outer pill container */}
+        <div className="max-w-lg mx-auto rounded-[2rem] bg-[#1a0f08]/80 backdrop-blur-2xl border border-[#3a2010]/60 shadow-[0_4px_32px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,160,60,0.07)] overflow-hidden">
+          <div className="flex items-stretch divide-x divide-[#3a2010]/50">
+
+            {/* ── 1. MANTRA ──────────────────────────────────────── */}
+            <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3">
+              <img src="/icons/music-player.svg" alt="mantra" className="w-6 h-6 opacity-80" style={{ filter: "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" }} />
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                {isHi ? "मंत्र" : "Mantra"}
+              </span>
+              <span className="text-[10px] font-bold text-amber-400 leading-none text-center max-w-[58px] truncate">
+                {isHi ? activeMantra.name_hindi : activeMantra.name_english}
+              </span>
+            </div>
+
+            {/* ── 2. MALA TYPE ───────────────────────────────────── */}
+            <button
+              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              onClick={() => {
+                const types: Array<"rudraksha" | "tulsi" | "sandalwood"> = ["rudraksha", "tulsi", "sandalwood"];
+                const nextIdx = (types.indexOf(malaType) + 1) % types.length;
+                setMalaType(types[nextIdx]);
+              }}
+            >
+              <img src="/icons/mala.svg" alt="mala" className="w-6 h-6 opacity-80" style={{ filter: "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" }} />
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                {isHi ? "माला" : "Mala Type"}
+              </span>
+              <span className="text-[10px] font-bold text-amber-400 leading-none">
+                {malaType === "rudraksha" ? (isHi ? "रुद्राक्ष" : "Rudraksha") : malaType === "tulsi" ? (isHi ? "तुलसी" : "Tulsi") : (isHi ? "चंदन" : "Sandal")}
+              </span>
+            </button>
+
+            {/* ── 3. SOUND ───────────────────────────────────────── */}
+            <button
+              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+            >
+              <img src="/icons/sound.svg" alt="sound" className="w-6 h-6" style={{ filter: soundEnabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                {isHi ? "ध्वनि" : "Sound"}
+              </span>
+              <span className={`text-[10px] font-black leading-none tracking-wider ${soundEnabled ? "text-[#4ade80]" : "text-white/30"}`}>
+                {soundEnabled ? "On" : "Off"}
+              </span>
+            </button>
+
+            {/* ── 4. VIBRATION ───────────────────────────────────── */}
+            <button
+              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              onClick={() => setVibrationEnabled(!vibrationEnabled)}
+            >
+              <img src="/icons/vibrator.svg" alt="vibration" className="w-6 h-6" style={{ filter: vibrationEnabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                {isHi ? "कंपन" : "Vibration"}
+              </span>
+              <span className={`text-[10px] font-black leading-none tracking-wider ${vibrationEnabled ? "text-[#4ade80]" : "text-white/30"}`}>
+                {vibrationEnabled ? "On" : "Off"}
+              </span>
+            </button>
+
+            {/* ── 5. AUTO-LOCK ───────────────────────────────────── */}
+            <button
+              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              onClick={() => setAutoLockDisabled(!autoLockDisabled)}
+            >
+              <img src="/icons/lock.svg" alt="auto-lock" className="w-6 h-6" style={{ filter: autoLockDisabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+                {isHi ? "स्क्रीन" : "Auto-Lock"}
+              </span>
+              <span className={`text-[10px] font-black leading-none tracking-wider ${autoLockDisabled ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+                {autoLockDisabled ? "On" : "Off"}
+              </span>
+            </button>
+
+          </div>
+        </div>
       </div>
 
       {/* ─── FIXED BOTTOM NAV BAR ─────────────────────────────────── */}
