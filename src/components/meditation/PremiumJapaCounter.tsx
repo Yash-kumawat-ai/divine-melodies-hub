@@ -475,9 +475,9 @@ export default function PremiumJapaCounter({
   }, [numBeads]);
 
   // Sizing details for elegant, spaced out, breathable 27-bead layout
-  const R = isMobile ? 135 : 195;
-  const regularBeadSize = isMobile ? 22 : 32;
-  const sumeruBeadSize = isMobile ? 32 : 44;
+  const R = isMobile ? 120 : 195;
+  const regularBeadSize = isMobile ? 20 : 32;
+  const sumeruBeadSize = isMobile ? 28 : 44;
 
   // Active bead index:
   // If count is exactly a multiple of 27 (and > 0), the 27th bead is active.
@@ -532,13 +532,13 @@ export default function PremiumJapaCounter({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleBackgroundTap}
-      className="fixed inset-0 z-[100] bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] flex flex-col justify-between text-[#fbf6f0] select-none overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-[100] bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] flex flex-col justify-between text-[#fbf6f0] select-none md:overflow-y-auto overflow-y-hidden cursor-pointer"
     >
       {/* Background radial soft light */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.07),transparent_70%)] pointer-events-none" />
 
       {/* ─── HEADER BAR ───────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-2.5 md:py-4 flex items-center justify-between">
         <button
           onClick={() => onClose(activeMantra.id)}
           className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
@@ -566,14 +566,14 @@ export default function PremiumJapaCounter({
       </div>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="flex-1 w-full max-w-lg mx-auto flex flex-col justify-center items-center px-4 relative z-10 py-4">
+      <div className="flex-1 w-full max-w-lg mx-auto flex flex-col justify-center items-center px-4 relative z-10 py-2 md:py-4">
         
         {/* 1. MALA RING CONTAINER */}
         <div 
           className="relative flex items-center justify-center select-none"
           style={{
-            width: isMobile ? "330px" : "470px",
-            height: isMobile ? "330px" : "470px",
+            width: isMobile ? "280px" : "470px",
+            height: isMobile ? "280px" : "470px",
           }}
         >
           {/* Rotating Faint Mandala Background in Ring */}
@@ -708,8 +708,8 @@ export default function PremiumJapaCounter({
         </div>
 
         {/* Sacred Mantra Text Display */}
-        <div className="mt-4 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
-          <p className="font-serif text-lg sm:text-xl md:text-2xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line">
+        <div className="mt-2.5 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
+          <p className="font-serif text-base sm:text-lg md:text-xl lg:text-2xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line">
             {isHi 
               ? activeMantra.full_text_hindi || activeMantra.name_hindi 
               : activeMantra.transliteration || activeMantra.name_english}
@@ -717,7 +717,7 @@ export default function PremiumJapaCounter({
         </div>
 
         {/* 2. CHANT INSTRUCTIONS */}
-        <div className="flex items-center gap-3.5 mt-5 text-amber-400/80 font-serif text-sm tracking-widest select-none w-full justify-center">
+        <div className="flex items-center gap-3.5 mt-3.5 md:mt-5 text-amber-400/80 font-serif text-[13px] md:text-sm tracking-widest select-none w-full justify-center">
           <span className="w-8 h-[1px] bg-gradient-to-r from-transparent to-amber-500/40" />
           <span>
             {practiceMode === "voice" 
@@ -731,7 +731,7 @@ export default function PremiumJapaCounter({
 
         {/* Voice frequency canvas visualization in Voice mode */}
         {practiceMode === "voice" && (
-          <div className="mt-4 w-72 h-8 border border-white/5 bg-black/45 rounded-xl overflow-hidden px-2 py-0.5 flex items-center relative z-10 select-none">
+          <div className="mt-3 w-72 h-8 border border-white/5 bg-black/45 rounded-xl overflow-hidden px-2 py-0.5 flex items-center relative z-10 select-none">
             <canvas ref={micWaveCanvasRef} width={280} height={32} className="w-full h-full" />
             {!voiceActive && (
               <div className="absolute inset-0 flex items-center justify-center text-[9px] text-white/25 uppercase tracking-widest font-semibold">
@@ -742,7 +742,7 @@ export default function PremiumJapaCounter({
         )}
 
         {/* 3. TODAY STATS GRID CARD */}
-        <div className="w-full max-w-sm mt-8 relative z-10 select-none">
+        <div className="w-full max-w-sm mt-4 md:mt-8 relative z-10 select-none">
           <div className="bg-[#130d0a]/40 backdrop-blur-md border border-amber-500/15 rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x divide-amber-500/10">
             {/* Left Col: Today Chants */}
             <div className="flex items-center gap-3 flex-1 justify-center pr-2">
@@ -771,7 +771,7 @@ export default function PremiumJapaCounter({
         </div>
 
         {/* 4. TIME CLOCK */}
-        <div className="mt-4 flex items-center gap-2 text-xs text-white/35 font-bold uppercase tracking-widest select-none">
+        <div className="mt-2.5 md:mt-4 flex items-center gap-2 text-[11px] md:text-xs text-white/35 font-bold uppercase tracking-widest select-none">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
           <span>{formatTime(secondsElapsed)}</span>
           <span className="text-white/20">|</span>
