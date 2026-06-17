@@ -27,6 +27,11 @@ import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
+// Deity images for leaderboard avatars
+import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
+import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
+import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
+
 // ─── SHANKH & BELL SYNTH SOUND GENERATOR ──────────────────────────
 const playBellSound = (volumeEnabled: boolean) => {
   if (!volumeEnabled) return;
@@ -157,6 +162,10 @@ export default function PremiumJapaCounter({
   const [autoLockDisabled, setAutoLockDisabled] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [leaderboardScope, setLeaderboardScope] = useState<"global" | "friends">("global");
+  const [leaderboardTimeframe, setLeaderboardTimeframe] = useState<"today" | "week" | "month" | "all_time">("all_time");
+  const [leaderboardMantraId, setLeaderboardMantraId] = useState<string>("all");
+  const [mockDataEnabled, setMockDataEnabled] = useState(true);
   const [malaType, setMalaType] = useState<"rudraksha" | "tulsi" | "sandalwood">("rudraksha");
   
   // Timer tracking
@@ -187,6 +196,159 @@ export default function PremiumJapaCounter({
 
   // Responsiveness State
   const [isMobile, setIsMobile] = useState(false);
+
+  // Mock devotees list representing other chanters in the community
+  const mockDevotees = useMemo(() => [
+    {
+      id: "1",
+      name: "Shiv Bhakt",
+      avatar: "shiv",
+      streak: 45,
+      chants: 25108,
+      mantraId: "om_namah_shivaya",
+      mantraName: "Om Namah Shivaya",
+      mantraIcon: "🕉️",
+      isFriend: false,
+      timeframe: "all_time"
+    },
+    {
+      id: "2",
+      name: "Radhe Krishna",
+      avatar: "krishna",
+      streak: 32,
+      chants: 18756,
+      mantraId: "hare_krishna",
+      mantraName: "Hare Krishna Mahamantra",
+      mantraIcon: "🪷",
+      isFriend: false,
+      timeframe: "all_time"
+    },
+    {
+      id: "3",
+      name: "Jai Hanuman",
+      avatar: "hanuman",
+      streak: 28,
+      chants: 15430,
+      mantraId: "jai_shree_ram",
+      mantraName: "Hanuman Chalisa",
+      mantraIcon: "🔥",
+      isFriend: false,
+      timeframe: "all_time"
+    },
+    {
+      id: "4",
+      name: "Meera Sharma",
+      avatar: "meera",
+      streak: 27,
+      chants: 12345,
+      mantraId: "om_namah_shivaya",
+      mantraName: "Om Namah Shivaya",
+      mantraIcon: "🕉️",
+      isFriend: true,
+      timeframe: "month"
+    },
+    {
+      id: "5",
+      name: "Ram Premi",
+      avatar: "ram",
+      streak: 21,
+      chants: 11230,
+      mantraId: "jai_shree_ram",
+      mantraName: "Shri Ram Jai Ram Jai Jai Ram",
+      mantraIcon: "🛕",
+      isFriend: true,
+      timeframe: "month"
+    },
+    {
+      id: "6",
+      name: "Bhakti Ras",
+      avatar: "bhakti",
+      streak: 19,
+      chants: 9876,
+      mantraId: "hare_krishna",
+      mantraName: "Hare Krishna Mahamantra",
+      mantraIcon: "🪷",
+      isFriend: false,
+      timeframe: "week"
+    },
+    {
+      id: "7",
+      name: "Divya Jyoti",
+      avatar: "divya",
+      streak: 18,
+      chants: 8765,
+      mantraId: "gayatri",
+      mantraName: "Gayatri Mantra",
+      mantraIcon: "☸️",
+      isFriend: false,
+      timeframe: "week"
+    },
+    {
+      id: "8",
+      name: "Hari Das",
+      avatar: "haridas",
+      streak: 15,
+      chants: 3200,
+      mantraId: "hare_krishna",
+      mantraName: "Hare Krishna Mahamantra",
+      mantraIcon: "🪷",
+      isFriend: true,
+      timeframe: "today"
+    },
+    {
+      id: "9",
+      name: "Gauranga",
+      avatar: "gauranga",
+      streak: 12,
+      chants: 2500,
+      mantraId: "hare_krishna",
+      mantraName: "Hare Krishna Mahamantra",
+      mantraIcon: "🪷",
+      isFriend: true,
+      timeframe: "today"
+    },
+    {
+      id: "10",
+      name: "Aarav Gupta",
+      avatar: "aarav",
+      streak: 8,
+      chants: 1500,
+      mantraId: "gayatri",
+      mantraName: "Gayatri Mantra",
+      mantraIcon: "☸️",
+      isFriend: false,
+      timeframe: "today"
+    }
+  ], []);
+
+  // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
+  const filteredDevotees = useMemo(() => {
+    if (!mockDataEnabled) return [];
+    
+    return mockDevotees.filter((devotee) => {
+      // 1. Filter by scope (Global vs Friends)
+      if (leaderboardScope === "friends" && !devotee.isFriend) {
+        return false;
+      }
+      
+      // 2. Filter by timeframe
+      if (leaderboardTimeframe === "today" && devotee.timeframe !== "today") {
+        return false;
+      }
+      if (leaderboardTimeframe === "week" && !["today", "week"].includes(devotee.timeframe)) {
+        return false;
+      }
+      if (leaderboardTimeframe === "month" && !["today", "week", "month"].includes(devotee.timeframe)) {
+        return false;
+      }
+      
+      // 3. Filter by mantra ID
+      if (leaderboardMantraId !== "all" && devotee.mantraId !== leaderboardMantraId) {
+        return false;
+      }
+      return true;
+    }).sort((a, b) => b.chants - a.chants);
+  }, [mockDevotees, leaderboardScope, leaderboardTimeframe, leaderboardMantraId, mockDataEnabled]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -1036,74 +1198,390 @@ export default function PremiumJapaCounter({
         )}
       </AnimatePresence>
 
-      {/* ─── LEADERBOARD DRAWER BOTTOM SHEET ──────────────────────── */}
+      {/* ─── LEADERBOARD FULL-SCREEN OVERLAY ─────────────────────── */}
       <AnimatePresence>
         {leaderboardOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setLeaderboardOpen(false)}
-              className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs select-none"
-            />
-            
-            {/* Drawer */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 22, stiffness: 160 }}
-              className="fixed bottom-0 inset-x-0 z-[90] bg-gradient-to-b from-[#130d0a] to-[#0a0507] border-t border-amber-500/20 rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl max-w-md mx-auto settings-panel select-none"
-            >
-              {/* Handle Bar */}
-              <div 
-                onClick={() => setLeaderboardOpen(false)}
-                className="w-12 h-1.5 bg-amber-500/20 rounded-full mx-auto mb-6 cursor-pointer hover:bg-amber-500/40 transition-colors" 
-              />
-              
-              <div className="flex flex-col items-center text-center p-4">
-                {/* Gold Trophy Icon */}
-                <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
-                  <Trophy className="w-8 h-8 animate-pulse" />
-                </div>
-                
-                <h3 className="font-serif text-xl font-bold text-amber-400 mb-2">
-                  {isHi ? "साधना लीडरबोर्ड" : "Sadhana Leaderboard"}
-                </h3>
-                
-                <p className="text-xs text-amber-200/50 mb-6 max-w-xs leading-relaxed">
-                  {isHi 
-                    ? "उन साधकों की सूची जिन्होंने आज सबसे अधिक मंत्र जाप पूर्ण किया है।" 
-                    : "List of sadhaks who have completed the most mantra chants today."}
-                </p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[120] bg-gradient-to-b from-[#0c0705] via-[#050202] to-[#0b0503] flex flex-col justify-between text-[#fbf6f0] select-none overflow-y-auto cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Background pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.06),transparent_80%)] pointer-events-none" />
 
-                {/* Empty State Card */}
-                <div className="w-full bg-black/45 border border-amber-500/10 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.03),transparent_70%)] pointer-events-none" />
-                  
-                  <span className="text-3xl mb-2">🧘</span>
-                  <span className="text-xs font-bold text-amber-300/80 uppercase tracking-widest mb-1">
-                    {isHi ? "लीडरबोर्ड खाली है" : "Leaderboard Empty"}
+            {/* Header bar */}
+            <div className="w-full max-w-4xl mx-auto px-6 py-4 flex items-center justify-between border-b border-[#301a0e]/30">
+              <button
+                onClick={() => setLeaderboardOpen(false)}
+                className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+
+              <div className="text-center flex flex-col items-center">
+                <h2 className="font-serif text-[22px] md:text-[26px] font-bold text-amber-400/90 tracking-wide">
+                  {isHi ? "लीडरबोर्ड" : "Leaderboard"}
+                </h2>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="w-4 h-[1px] bg-amber-500/30" />
+                  <span className="text-[10px] md:text-xs font-semibold text-amber-500/60 uppercase tracking-widest font-serif">
+                    {isHi ? "जाप करें, प्रेरित करें" : "Chant more, inspire more"}
                   </span>
-                  <p className="text-[11px] text-white/40 max-w-[200px] leading-normal">
-                    {isHi 
-                      ? "आज की प्रविष्टियाँ अभी उपलब्ध नहीं हैं। पहले स्थान पर आने के लिए जाप प्रारंभ करें!" 
-                      : "No entries available for today yet. Start chanting to take the first spot!"}
-                  </p>
+                  <span className="w-4 h-[1px] bg-amber-500/30" />
                 </div>
-                
-                {/* Close Button */}
-                <button
-                  onClick={() => setLeaderboardOpen(false)}
-                  className="mt-6 w-full py-3 rounded-xl border border-amber-500/20 hover:border-amber-500/40 bg-black/30 hover:bg-black/50 text-amber-200/90 font-bold text-sm tracking-wide transition-all active:scale-95"
+              </div>
+
+              <div className="w-10" />
+            </div>
+
+            {/* Scrollable body content */}
+            <div className="flex-1 w-full max-w-xl mx-auto px-4 py-6 space-y-6">
+              
+              {/* Dev Toggle for Testing Empty State */}
+              <div className="flex justify-center items-center gap-3 bg-[#180d07]/40 border border-[#3e2516]/30 rounded-xl p-2.5">
+                <span className="text-[11px] text-amber-200/50">
+                  {isHi ? "परीक्षण के लिए डेटा टॉगल करें:" : "Toggle data for testing empty state:"}
+                </span>
+                <button 
+                  onClick={() => setMockDataEnabled(!mockDataEnabled)}
+                  className={`text-[10px] font-black px-3 py-1.5 border rounded-lg active:scale-95 transition-all uppercase tracking-wider ${
+                    mockDataEnabled 
+                      ? "border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-950/40" 
+                      : "border-green-500/30 bg-green-950/20 text-green-400 hover:bg-green-950/40"
+                  }`}
                 >
-                  {isHi ? "बंद करें" : "Close"}
+                  {mockDataEnabled ? (isHi ? "लीडरबोर्ड खाली करें" : "Clear Leaderboard") : (isHi ? "डेटा लोड करें" : "Load Leaderboard")}
                 </button>
               </div>
-            </motion.div>
-          </>
+
+              {/* 1. Category Scope Selector (Global vs Friends) */}
+              <div className="bg-[#100906]/65 border border-[#301a0e]/40 p-1.5 rounded-[1.5rem] flex items-center justify-between shadow-md">
+                <button
+                  onClick={() => setLeaderboardScope("global")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.25rem] text-sm font-bold transition-all ${
+                    leaderboardScope === "global"
+                      ? "bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
+                      : "text-amber-200/50 hover:text-amber-200/80"
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>{isHi ? "वैश्विक (Global)" : "Global"}</span>
+                </button>
+                <button
+                  onClick={() => setLeaderboardScope("friends")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.25rem] text-sm font-bold transition-all ${
+                    leaderboardScope === "friends"
+                      ? "bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
+                      : "text-amber-200/50 hover:text-amber-200/80"
+                  }`}
+                >
+                  <span>👥</span>
+                  <span>{isHi ? "मित्र (Friends)" : "Friends"}</span>
+                </button>
+              </div>
+
+              {/* 2. Sub-filters Row (Timeframe pills + Mantra dropdown) */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 justify-between w-full">
+                {/* Timeframes */}
+                <div className="flex items-center gap-1.5 bg-[#100906]/35 border border-[#301a0e]/20 p-1 rounded-xl w-full sm:w-auto justify-between overflow-x-auto">
+                  {(["today", "week", "month", "all_time"] as const).map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setLeaderboardTimeframe(tf)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                        leaderboardTimeframe === tf
+                          ? "bg-amber-600/20 border border-amber-500/40 text-amber-300"
+                          : "border border-transparent text-amber-100/40 hover:text-amber-100/70"
+                      }`}
+                    >
+                      {tf === "today" ? (isHi ? "आज" : "Today") : tf === "week" ? (isHi ? "हफ्ता" : "Week") : tf === "month" ? (isHi ? "महीना" : "Month") : (isHi ? "कुल" : "All Time")}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mantra Dropdown */}
+                <div className="relative w-full sm:w-auto min-w-[140px]">
+                  <select
+                    value={leaderboardMantraId}
+                    onChange={(e) => setLeaderboardMantraId(e.target.value)}
+                    className="w-full bg-black/40 border border-[#301a0e]/60 text-amber-300 rounded-xl pl-8 pr-8 py-2 text-[11px] font-bold uppercase tracking-wider focus:outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+                  >
+                    <option value="all" className="bg-[#130d0a] text-amber-100">{isHi ? "सभी मंत्र" : "All Mantras"}</option>
+                    {(mantras || []).map((m) => (
+                      <option key={m.id} value={m.id} className="bg-[#130d0a] text-amber-100">
+                        {isHi ? m.name_hindi : m.name_english}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs">ॐ</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-amber-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* 3. Your Rank Card (Dynamic stats based on actual chant state) */}
+              <div className="bg-gradient-to-r from-[#21110a] to-[#150a06] border border-[#422212]/50 rounded-[1.75rem] p-4 flex items-center justify-between shadow-xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(245,158,11,0.04),transparent_60%)] pointer-events-none" />
+                
+                {/* Profile placeholder with circular wreath */}
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full border border-amber-500/20 bg-black/40 flex items-center justify-center p-1 relative">
+                    {/* Wreath design */}
+                    <div className="absolute inset-0 rounded-full border border-dashed border-amber-500/10 scale-110 animate-[spin_60s_linear_infinite]" />
+                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-600/30 to-orange-700/30 flex items-center justify-center text-amber-200 text-lg font-black">
+                      {isHi ? "आप" : "YOU"}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-amber-200/40 font-bold uppercase tracking-wider block">Your Rank</span>
+                    <span className="text-2xl font-serif font-black text-amber-400 tracking-wide block leading-tight">
+                      #{mockDataEnabled ? "42" : "1"}
+                    </span>
+                    <span className="text-[9px] font-bold text-green-400 flex items-center gap-1 mt-0.5">
+                      <span>↑</span>
+                      <span>{isHi ? "इस सप्ताह 12 स्थान ऊपर" : "12 positions this week"}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-10 w-[1px] bg-[#3e2516]/40" />
+
+                {/* Chants stats */}
+                <div className="text-center">
+                  <span className="text-[9px] text-amber-200/40 font-bold uppercase tracking-wider flex items-center gap-1 justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    {isHi ? "कुल जाप" : "Total Chants"}
+                  </span>
+                  <span className="text-base font-serif font-black text-amber-300 mt-1 block tabular-nums">
+                    {1245 + count}
+                  </span>
+                </div>
+
+                <div className="h-10 w-[1px] bg-[#3e2516]/40" />
+
+                {/* Streak stats */}
+                <div className="text-center pr-2">
+                  <span className="text-[9px] text-amber-200/40 font-bold uppercase tracking-wider flex items-center gap-1 justify-center">
+                    <span>🔥</span>
+                    {isHi ? "साधना स्ट्रीक" : "Streak"}
+                  </span>
+                  <span className="text-base font-serif font-black text-amber-300 mt-1 block">
+                    7 {isHi ? "दिन" : "Days"}
+                  </span>
+                </div>
+              </div>
+
+              {/* 4. Leaderboard content */}
+              {filteredDevotees.length === 0 ? (
+                /* Dynamic Empty State */
+                <div className="w-full bg-[#100906]/65 border border-[#301a0e]/40 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[300px] text-center shadow-lg relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.03),transparent_70%)] pointer-events-none" />
+                  <span className="text-5xl mb-4 animate-[bounce_3s_infinite]">🧘</span>
+                  <h4 className="font-serif text-lg font-bold text-amber-400 mb-2">
+                    {isHi ? "लीडरबोर्ड खाली है" : "No Devotees Found"}
+                  </h4>
+                  <p className="text-xs text-amber-200/40 max-w-[280px] leading-relaxed">
+                    {isHi 
+                      ? "चयनित फिल्टर के लिए आज कोई प्रविष्टि नहीं है। पहले स्थान पर आने के लिए जाप प्रारंभ करें!" 
+                      : "No devotees match these filters currently. Be the first to start chanting and lead the board!"}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* 4a. Top 3 Podium */}
+                  <div className="grid grid-cols-3 gap-2 items-end pt-6 pb-2 px-1 relative select-none">
+                    
+                    {/* Rank 2 (Left) */}
+                    {filteredDevotees[1] && (
+                      <div className="flex flex-col items-center text-center group">
+                        <div className="w-16 h-16 rounded-full border-2 border-slate-400/80 bg-[#151515] flex items-center justify-center p-0.5 relative shadow-[0_0_10px_rgba(148,163,184,0.15)] group-hover:scale-105 transition-transform duration-300">
+                          {/* Rank badge */}
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-r from-slate-400 to-slate-500 text-black text-[10px] font-black flex items-center justify-center shadow border border-slate-300">
+                            2
+                          </div>
+                          {/* Avatar image */}
+                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500/30 flex items-center justify-center">
+                            {filteredDevotees[1].avatar === "krishna" ? (
+                              <img src={mayapurTvImg} alt="Krishna" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-slate-300 font-bold text-sm">{filteredDevotees[1].name.split(" ").map(w => w[0]).join("")}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <span className="text-[11px] font-bold text-amber-100/90 mt-2 truncate max-w-[90px]">
+                          {filteredDevotees[1].name}
+                        </span>
+                        <span className="text-[8px] font-bold text-orange-400/80 flex items-center gap-0.5 mt-0.5">
+                          <span>🔥</span>
+                          <span>{filteredDevotees[1].streak} {isHi ? "दिन" : "Days"}</span>
+                        </span>
+
+                        {/* Podium Stand */}
+                        <div className="w-full bg-gradient-to-b from-[#1b1a1a] to-[#0d0d0d] border border-slate-400/20 rounded-t-xl h-24 mt-3 flex flex-col justify-center items-center shadow-lg px-1">
+                          <span className="text-sm font-serif font-black text-slate-300 tabular-nums">
+                            {filteredDevotees[1].chants.toLocaleString()}
+                          </span>
+                          <span className="text-[7px] text-slate-400/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Rank 1 (Center) */}
+                    {filteredDevotees[0] && (
+                      <div className="flex flex-col items-center text-center group z-10">
+                        <div className="w-20 h-20 rounded-full border-2 border-yellow-500 bg-[#1c140e] flex items-center justify-center p-0.5 relative shadow-[0_0_16px_rgba(234,179,8,0.35)] group-hover:scale-105 transition-transform duration-300">
+                          {/* Rank badge */}
+                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-black text-xs font-black flex items-center justify-center shadow-md border border-yellow-300 animate-[pulse_2s_infinite]">
+                            1
+                          </div>
+                          {/* Avatar image */}
+                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-700 to-orange-950 border border-yellow-500/30 flex items-center justify-center">
+                            {filteredDevotees[0].avatar === "shiv" ? (
+                              <img src={shivWallpaper} alt="Shiv" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-amber-200 font-bold text-base">{filteredDevotees[0].name.split(" ").map(w => w[0]).join("")}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <span className="text-xs font-serif font-black text-amber-300 mt-2 truncate max-w-[105px] drop-shadow">
+                          {filteredDevotees[0].name}
+                        </span>
+                        <span className="text-[9px] font-bold text-orange-400 flex items-center gap-0.5 mt-0.5">
+                          <span>🔥</span>
+                          <span>{filteredDevotees[0].streak} {isHi ? "दिन" : "Days"}</span>
+                        </span>
+
+                        {/* Podium Stand */}
+                        <div className="w-full bg-gradient-to-b from-[#2a170b] to-[#120904] border border-yellow-500/30 rounded-t-2xl h-32 mt-3 flex flex-col justify-center items-center shadow-2xl relative overflow-hidden px-1">
+                          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
+                          <span className="text-base font-serif font-black text-yellow-400 drop-shadow tabular-nums">
+                            {filteredDevotees[0].chants.toLocaleString()}
+                          </span>
+                          <span className="text-[8px] text-yellow-500/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Rank 3 (Right) */}
+                    {filteredDevotees[2] && (
+                      <div className="flex flex-col items-center text-center group">
+                        <div className="w-14 h-14 rounded-full border-2 border-amber-700/80 bg-[#130f0d] flex items-center justify-center p-0.5 relative shadow-[0_0_10px_rgba(180,83,9,0.15)] group-hover:scale-105 transition-transform duration-300">
+                          {/* Rank badge */}
+                          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-4.5 h-4.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 text-white text-[9px] font-black flex items-center justify-center shadow border border-amber-600">
+                            3
+                          </div>
+                          {/* Avatar image */}
+                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-800 to-orange-950 border border-amber-700/30 flex items-center justify-center">
+                            {filteredDevotees[2].avatar === "hanuman" ? (
+                              <img src={salangpurHanumanImg} alt="Hanuman" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-amber-500 font-bold text-xs">{filteredDevotees[2].name.split(" ").map(w => w[0]).join("")}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <span className="text-[11px] font-bold text-amber-100/90 mt-2 truncate max-w-[85px]">
+                          {filteredDevotees[2].name}
+                        </span>
+                        <span className="text-[8px] font-bold text-orange-400/80 flex items-center gap-0.5 mt-0.5">
+                          <span>🔥</span>
+                          <span>{filteredDevotees[2].streak} {isHi ? "दिन" : "Days"}</span>
+                        </span>
+
+                        {/* Podium Stand */}
+                        <div className="w-full bg-gradient-to-b from-[#18110e] to-[#0c0807] border border-amber-700/20 rounded-t-xl h-20 mt-3 flex flex-col justify-center items-center shadow-lg px-1">
+                          <span className="text-sm font-serif font-black text-amber-600 tabular-nums">
+                            {filteredDevotees[2].chants.toLocaleString()}
+                          </span>
+                          <span className="text-[7px] text-amber-700/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* 4b. Devotees Table List (Ranks 4+) */}
+                  <div className="bg-[#100906]/65 border border-[#301a0e]/40 rounded-3xl overflow-hidden shadow-lg">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-[#170e0a]/80 text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-200/50 border-b border-[#301a0e]/30 select-none">
+                      <div className="col-span-2 text-center">{isHi ? "रैंक" : "Rank"}</div>
+                      <div className="col-span-4 pl-2">{isHi ? "साधक" : "Devotee"}</div>
+                      <div className="col-span-3 text-center">{isHi ? "मुख्य मंत्र" : "Mantra"}</div>
+                      <div className="col-span-3 text-right pr-2">{isHi ? "कुल जाप" : "Chants"}</div>
+                    </div>
+
+                    {/* Table Rows */}
+                    <div className="divide-y divide-[#301a0e]/20 max-h-[300px] overflow-y-auto">
+                      {filteredDevotees.slice(3).map((devotee, idx) => {
+                        const rankNum = idx + 4;
+                        return (
+                          <div 
+                            key={devotee.id}
+                            className="grid grid-cols-12 gap-2 px-4 py-3.5 items-center hover:bg-amber-500/[0.02] transition-colors"
+                          >
+                            {/* Rank */}
+                            <div className="col-span-2 text-center font-serif text-sm font-black text-amber-200/70">
+                              {rankNum}
+                            </div>
+
+                            {/* Devotee Avatar & Name */}
+                            <div className="col-span-4 flex items-center gap-2.5 min-w-0">
+                              {/* Small Avatar circle with initials/gradient */}
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-700/30 to-orange-800/30 border border-amber-600/20 flex items-center justify-center shrink-0">
+                                <span className="text-[10px] font-black text-amber-300">
+                                  {devotee.name.split(" ").map(w => w[0]).join("")}
+                                </span>
+                              </div>
+                              <div className="min-w-0 flex flex-col">
+                                <span className="text-[11px] font-bold text-amber-100 truncate flex items-center gap-1">
+                                  {devotee.name}
+                                  {rankNum === 4 && <span className="text-[9px]">👑</span>}
+                                </span>
+                                <span className="text-[8px] text-orange-400 font-bold flex items-center gap-0.5 mt-0.5">
+                                  <span>🔥</span>
+                                  <span>{devotee.streak}d</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Most Chanted Mantra */}
+                            <div className="col-span-3 flex flex-col items-center text-center min-w-0">
+                              <span className="text-xs">{devotee.mantraIcon}</span>
+                              <span className="text-[8px] text-amber-200/50 truncate font-semibold w-full mt-0.5">
+                                {devotee.mantraName}
+                              </span>
+                            </div>
+
+                            {/* Total Chants */}
+                            <div className="col-span-3 text-right pr-2 flex items-center gap-1.5 justify-end">
+                              <span className="font-serif text-[11px] font-bold text-amber-300 tabular-nums">
+                                {devotee.chants.toLocaleString()}
+                              </span>
+                              {/* Small bead circle indicator */}
+                              <span className="text-[10px] text-amber-500/50">📿</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Close Button */}
+              <button
+                onClick={() => setLeaderboardOpen(false)}
+                className="w-full bg-gradient-to-r from-amber-400 to-orange-600 hover:from-amber-500 hover:to-orange-700 text-black font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm uppercase tracking-widest active:scale-98"
+              >
+                {isHi ? "जाप साधना जारी रखें" : "Keep Chanting"}
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
