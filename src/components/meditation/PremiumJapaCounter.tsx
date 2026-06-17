@@ -280,7 +280,7 @@ export default function PremiumJapaCounter({
 
   // Keep screen active using Wake Lock API
   const requestWakeLock = async () => {
-    if ("wakeLock" in navigator) {
+    if ("wakeLock" in navigator && document.visibilityState === "visible") {
       try {
         wakeLockRef.current = await (navigator as any).wakeLock.request("screen");
       } catch (err) {
