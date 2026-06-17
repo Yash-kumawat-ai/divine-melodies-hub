@@ -19,7 +19,8 @@ import {
   Check,
   Music,
   Flower2,
-  Flame
+  Flame,
+  Trophy
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
@@ -155,6 +156,7 @@ export default function PremiumJapaCounter({
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [autoLockDisabled, setAutoLockDisabled] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [malaType, setMalaType] = useState<"rudraksha" | "tulsi" | "sandalwood">("rudraksha");
   
   // Timer tracking
@@ -556,7 +558,13 @@ export default function PremiumJapaCounter({
           </span>
         </div>
 
-        <div className="w-10" />
+        <button
+          onClick={() => setLeaderboardOpen(true)}
+          className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
+          aria-label="Leaderboard"
+        >
+          <Trophy className="w-5 h-5" />
+        </button>
       </div>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────── */}
@@ -1022,6 +1030,77 @@ export default function PremiumJapaCounter({
                     />
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── LEADERBOARD DRAWER BOTTOM SHEET ──────────────────────── */}
+      <AnimatePresence>
+        {leaderboardOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLeaderboardOpen(false)}
+              className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs select-none"
+            />
+            
+            {/* Drawer */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 22, stiffness: 160 }}
+              className="fixed bottom-0 inset-x-0 z-[90] bg-gradient-to-b from-[#130d0a] to-[#0a0507] border-t border-amber-500/20 rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl max-w-md mx-auto settings-panel select-none"
+            >
+              {/* Handle Bar */}
+              <div 
+                onClick={() => setLeaderboardOpen(false)}
+                className="w-12 h-1.5 bg-amber-500/20 rounded-full mx-auto mb-6 cursor-pointer hover:bg-amber-500/40 transition-colors" 
+              />
+              
+              <div className="flex flex-col items-center text-center p-4">
+                {/* Gold Trophy Icon */}
+                <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+                  <Trophy className="w-8 h-8 animate-pulse" />
+                </div>
+                
+                <h3 className="font-serif text-xl font-bold text-amber-400 mb-2">
+                  {isHi ? "साधना लीडरबोर्ड" : "Sadhana Leaderboard"}
+                </h3>
+                
+                <p className="text-xs text-amber-200/50 mb-6 max-w-xs leading-relaxed">
+                  {isHi 
+                    ? "उन साधकों की सूची जिन्होंने आज सबसे अधिक मंत्र जाप पूर्ण किया है।" 
+                    : "List of sadhaks who have completed the most mantra chants today."}
+                </p>
+
+                {/* Empty State Card */}
+                <div className="w-full bg-black/45 border border-amber-500/10 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.03),transparent_70%)] pointer-events-none" />
+                  
+                  <span className="text-3xl mb-2">🧘</span>
+                  <span className="text-xs font-bold text-amber-300/80 uppercase tracking-widest mb-1">
+                    {isHi ? "लीडरबोर्ड खाली है" : "Leaderboard Empty"}
+                  </span>
+                  <p className="text-[11px] text-white/40 max-w-[200px] leading-normal">
+                    {isHi 
+                      ? "आज की प्रविष्टियाँ अभी उपलब्ध नहीं हैं। पहले स्थान पर आने के लिए जाप प्रारंभ करें!" 
+                      : "No entries available for today yet. Start chanting to take the first spot!"}
+                  </p>
+                </div>
+                
+                {/* Close Button */}
+                <button
+                  onClick={() => setLeaderboardOpen(false)}
+                  className="mt-6 w-full py-3 rounded-xl border border-amber-500/20 hover:border-amber-500/40 bg-black/30 hover:bg-black/50 text-amber-200/90 font-bold text-sm tracking-wide transition-all active:scale-95"
+                >
+                  {isHi ? "बंद करें" : "Close"}
+                </button>
               </div>
             </motion.div>
           </>
