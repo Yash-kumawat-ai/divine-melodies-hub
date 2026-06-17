@@ -602,7 +602,7 @@ export default function PremiumJapaCounter({
                   }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="absolute font-serif text-sm md:text-base text-amber-400 font-bold text-center pointer-events-none whitespace-nowrap"
+                  className="absolute font-serif text-sm md:text-base text-amber-400 font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px]"
                   style={{ textShadow: "0 0 12px rgba(245, 158, 11, 0.75)" }}
                 >
                   {f.text}
@@ -705,6 +705,15 @@ export default function PremiumJapaCounter({
               </div>
             )}
           </div>
+        </div>
+
+        {/* Sacred Mantra Text Display */}
+        <div className="mt-4 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
+          <p className="font-serif text-lg sm:text-xl md:text-2xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line">
+            {isHi 
+              ? activeMantra.full_text_hindi || activeMantra.name_hindi 
+              : activeMantra.transliteration || activeMantra.name_english}
+          </p>
         </div>
 
         {/* 2. CHANT INSTRUCTIONS */}
