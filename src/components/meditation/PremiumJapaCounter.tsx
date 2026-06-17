@@ -26,6 +26,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { useAuth } from "@/hooks/useAuth";
 
 // Deity images for leaderboard avatars
 import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
@@ -149,8 +150,9 @@ export default function PremiumJapaCounter({
   const { language } = useLanguage();
   const isHi = language === "hi";
 
-  // Load mantras database
-  const { mantras, stats } = useMantraJapa();
+  // Load mantras database and authentication context
+  const { mantras, stats, todaySessions, mantraTotalsMap, userId } = useMantraJapa();
+  const { profile } = useAuth();
 
   // ─── LOCAL STATE ────────────────────────────────────────────────
   const [activeMantra, setActiveMantra] = useState<Mantra>(mantra);
@@ -165,7 +167,6 @@ export default function PremiumJapaCounter({
   const [leaderboardScope, setLeaderboardScope] = useState<"global" | "friends">("global");
   const [leaderboardTimeframe, setLeaderboardTimeframe] = useState<"today" | "week" | "month" | "all_time">("all_time");
   const [leaderboardMantraId, setLeaderboardMantraId] = useState<string>("all");
-  const [mockDataEnabled, setMockDataEnabled] = useState(true);
   const [malaType, setMalaType] = useState<"rudraksha" | "tulsi" | "sandalwood">("rudraksha");
   
   // Timer tracking
@@ -197,158 +198,71 @@ export default function PremiumJapaCounter({
   // Responsiveness State
   const [isMobile, setIsMobile] = useState(false);
 
-  // Mock devotees list representing other chanters in the community
-  const mockDevotees = useMemo(() => [
-    {
-      id: "1",
-      name: "Shiv Bhakt",
-      avatar: "shiv",
-      streak: 45,
-      chants: 25108,
-      mantraId: "om_namah_shivaya",
-      mantraName: "Om Namah Shivaya",
-      mantraIcon: "🕉️",
-      isFriend: false,
-      timeframe: "all_time"
-    },
-    {
-      id: "2",
-      name: "Radhe Krishna",
-      avatar: "krishna",
-      streak: 32,
-      chants: 18756,
-      mantraId: "hare_krishna",
-      mantraName: "Hare Krishna Mahamantra",
-      mantraIcon: "🪷",
-      isFriend: false,
-      timeframe: "all_time"
-    },
-    {
-      id: "3",
-      name: "Jai Hanuman",
-      avatar: "hanuman",
-      streak: 28,
-      chants: 15430,
-      mantraId: "jai_shree_ram",
-      mantraName: "Hanuman Chalisa",
-      mantraIcon: "🔥",
-      isFriend: false,
-      timeframe: "all_time"
-    },
-    {
-      id: "4",
-      name: "Meera Sharma",
-      avatar: "meera",
-      streak: 27,
-      chants: 12345,
-      mantraId: "om_namah_shivaya",
-      mantraName: "Om Namah Shivaya",
-      mantraIcon: "🕉️",
-      isFriend: true,
-      timeframe: "month"
-    },
-    {
-      id: "5",
-      name: "Ram Premi",
-      avatar: "ram",
-      streak: 21,
-      chants: 11230,
-      mantraId: "jai_shree_ram",
-      mantraName: "Shri Ram Jai Ram Jai Jai Ram",
-      mantraIcon: "🛕",
-      isFriend: true,
-      timeframe: "month"
-    },
-    {
-      id: "6",
-      name: "Bhakti Ras",
-      avatar: "bhakti",
-      streak: 19,
-      chants: 9876,
-      mantraId: "hare_krishna",
-      mantraName: "Hare Krishna Mahamantra",
-      mantraIcon: "🪷",
-      isFriend: false,
-      timeframe: "week"
-    },
-    {
-      id: "7",
-      name: "Divya Jyoti",
-      avatar: "divya",
-      streak: 18,
-      chants: 8765,
-      mantraId: "gayatri",
-      mantraName: "Gayatri Mantra",
-      mantraIcon: "☸️",
-      isFriend: false,
-      timeframe: "week"
-    },
-    {
-      id: "8",
-      name: "Hari Das",
-      avatar: "haridas",
-      streak: 15,
-      chants: 3200,
-      mantraId: "hare_krishna",
-      mantraName: "Hare Krishna Mahamantra",
-      mantraIcon: "🪷",
-      isFriend: true,
-      timeframe: "today"
-    },
-    {
-      id: "9",
-      name: "Gauranga",
-      avatar: "gauranga",
-      streak: 12,
-      chants: 2500,
-      mantraId: "hare_krishna",
-      mantraName: "Hare Krishna Mahamantra",
-      mantraIcon: "🪷",
-      isFriend: true,
-      timeframe: "today"
-    },
-    {
-      id: "10",
-      name: "Aarav Gupta",
-      avatar: "aarav",
-      streak: 8,
-      chants: 1500,
-      mantraId: "gayatri",
-      mantraName: "Gayatri Mantra",
-      mantraIcon: "☸️",
-      isFriend: false,
-      timeframe: "today"
-    }
-  ], []);
-
   // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
   const filteredDevotees = useMemo(() => {
-    if (!mockDataEnabled) return [];
+    // Since row-level security (RLS) is enabled and restricts user queries to their own records,
+    // the leaderboard only displays the active user (if they have chanted).
+    // If the user selects "friends", we mock it as empty.
+    if (leaderboardScope === "friends") {
+      return [];
+    }
+
+    let userChants = 0;
     
-    return mockDevotees.filter((devotee) => {
-      // 1. Filter by scope (Global vs Friends)
-      if (leaderboardScope === "friends" && !devotee.isFriend) {
-        return false;
+    if (leaderboardTimeframe === "today") {
+      if (leaderboardMantraId === "all") {
+        userChants = stats.todayChants + count;
+      } else {
+        const todayMantraChants = (todaySessions || [])
+          .filter((s) => s.mantra_id === leaderboardMantraId)
+          .reduce((sum, s) => sum + (s.actual_count || 0), 0);
+        const sessionAddition = activeMantra.id === leaderboardMantraId ? count : 0;
+        userChants = todayMantraChants + sessionAddition;
       }
-      
-      // 2. Filter by timeframe
-      if (leaderboardTimeframe === "today" && devotee.timeframe !== "today") {
-        return false;
+    } else {
+      if (leaderboardMantraId === "all") {
+        userChants = stats.totalChants + count;
+      } else {
+        const mantraTotal = mantraTotalsMap[leaderboardMantraId]?.total_chants || 0;
+        const sessionAddition = activeMantra.id === leaderboardMantraId ? count : 0;
+        userChants = mantraTotal + sessionAddition;
       }
-      if (leaderboardTimeframe === "week" && !["today", "week"].includes(devotee.timeframe)) {
-        return false;
+    }
+
+    if (userChants === 0) {
+      return [];
+    }
+
+    // Return the active user as the sole entry in the leaderboard
+    return [
+      {
+        id: profile?.id || userId || "current_user",
+        name: profile?.name || (isHi ? "आप (साधक)" : "You (Devotee)"),
+        avatar: profile?.avatar_url || "user",
+        streak: stats.currentStreak || 0,
+        chants: userChants,
+        mantraId: leaderboardMantraId === "all" ? activeMantra.id : leaderboardMantraId,
+        mantraName: leaderboardMantraId === "all" 
+          ? (isHi ? activeMantra.name_hindi : activeMantra.name_english)
+          : ((mantras || []).find((m) => m.id === leaderboardMantraId)?.name_english || ""),
+        mantraIcon: "🕉️",
+        isFriend: false
       }
-      if (leaderboardTimeframe === "month" && !["today", "week", "month"].includes(devotee.timeframe)) {
-        return false;
-      }
-      
-      // 3. Filter by mantra ID
-      if (leaderboardMantraId !== "all" && devotee.mantraId !== leaderboardMantraId) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => b.chants - a.chants);
-  }, [mockDevotees, leaderboardScope, leaderboardTimeframe, leaderboardMantraId, mockDataEnabled]);
+    ];
+  }, [
+    stats,
+    count,
+    todaySessions,
+    leaderboardTimeframe,
+    leaderboardMantraId,
+    activeMantra,
+    mantraTotalsMap,
+    profile,
+    userId,
+    isHi,
+    mantras,
+    leaderboardScope
+  ]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -1240,23 +1154,6 @@ export default function PremiumJapaCounter({
 
             {/* Scrollable body content */}
             <div className="flex-1 w-full max-w-xl mx-auto px-4 py-6 space-y-6">
-              
-              {/* Dev Toggle for Testing Empty State */}
-              <div className="flex justify-center items-center gap-3 bg-[#180d07]/40 border border-[#3e2516]/30 rounded-xl p-2.5">
-                <span className="text-[11px] text-amber-200/50">
-                  {isHi ? "परीक्षण के लिए डेटा टॉगल करें:" : "Toggle data for testing empty state:"}
-                </span>
-                <button 
-                  onClick={() => setMockDataEnabled(!mockDataEnabled)}
-                  className={`text-[10px] font-black px-3 py-1.5 border rounded-lg active:scale-95 transition-all uppercase tracking-wider ${
-                    mockDataEnabled 
-                      ? "border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-950/40" 
-                      : "border-green-500/30 bg-green-950/20 text-green-400 hover:bg-green-950/40"
-                  }`}
-                >
-                  {mockDataEnabled ? (isHi ? "लीडरबोर्ड खाली करें" : "Clear Leaderboard") : (isHi ? "डेटा लोड करें" : "Load Leaderboard")}
-                </button>
-              </div>
 
               {/* 1. Category Scope Selector (Global vs Friends) */}
               <div className="bg-[#100906]/65 border border-[#301a0e]/40 p-1.5 rounded-[1.5rem] flex items-center justify-between shadow-md">
@@ -1331,18 +1228,18 @@ export default function PremiumJapaCounter({
                   <div className="w-14 h-14 rounded-full border border-amber-500/20 bg-black/40 flex items-center justify-center p-1 relative">
                     {/* Wreath design */}
                     <div className="absolute inset-0 rounded-full border border-dashed border-amber-500/10 scale-110 animate-[spin_60s_linear_infinite]" />
-                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-600/30 to-orange-700/30 flex items-center justify-center text-amber-200 text-lg font-black">
-                      {isHi ? "आप" : "YOU"}
+                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-600/30 to-orange-700/30 flex items-center justify-center text-amber-200 text-lg font-black font-serif">
+                      {profile?.name ? profile.name.slice(0, 2).toUpperCase() : (isHi ? "आप" : "YOU")}
                     </div>
                   </div>
                   <div>
                     <span className="text-[10px] text-amber-200/40 font-bold uppercase tracking-wider block">Your Rank</span>
                     <span className="text-2xl font-serif font-black text-amber-400 tracking-wide block leading-tight">
-                      #{mockDataEnabled ? "42" : "1"}
+                      #{filteredDevotees.length > 0 ? "1" : "--"}
                     </span>
                     <span className="text-[9px] font-bold text-green-400 flex items-center gap-1 mt-0.5">
-                      <span>↑</span>
-                      <span>{isHi ? "इस सप्ताह 12 स्थान ऊपर" : "12 positions this week"}</span>
+                      <span>{filteredDevotees.length > 0 ? "✓" : "•"}</span>
+                      <span>{filteredDevotees.length > 0 ? (isHi ? "सक्रिय स्थान" : "Rank Active") : (isHi ? "कोई सक्रिय सत्र नहीं" : "No active session")}</span>
                     </span>
                   </div>
                 </div>
@@ -1356,7 +1253,7 @@ export default function PremiumJapaCounter({
                     {isHi ? "कुल जाप" : "Total Chants"}
                   </span>
                   <span className="text-base font-serif font-black text-amber-300 mt-1 block tabular-nums">
-                    {1245 + count}
+                    {filteredDevotees.length > 0 ? filteredDevotees[0].chants : (stats.totalChants + count)}
                   </span>
                 </div>
 
@@ -1369,7 +1266,7 @@ export default function PremiumJapaCounter({
                     {isHi ? "साधना स्ट्रीक" : "Streak"}
                   </span>
                   <span className="text-base font-serif font-black text-amber-300 mt-1 block">
-                    7 {isHi ? "दिन" : "Days"}
+                    {stats.currentStreak} {isHi ? "दिन" : stats.currentStreak === 1 ? "Day" : "Days"}
                   </span>
                 </div>
               </div>
