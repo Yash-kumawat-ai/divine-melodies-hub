@@ -55,14 +55,14 @@ const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
-const WallpaperPage = lazy(() => import("./pages/WallpaperPage"));
+const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
 
   return (
     <>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route
             path="/auth/login"

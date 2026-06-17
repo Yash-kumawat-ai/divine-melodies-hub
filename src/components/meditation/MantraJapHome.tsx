@@ -21,6 +21,7 @@ import {
   Sun,
   Target,
   Wind,
+  Trash2,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSearchParams } from "react-router-dom";
@@ -117,12 +118,17 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
     activateSankalp,
     deleteSankalpFn,
     refresh,
+    addCustomMantra,
+    deleteCustomMantra,
   } = useMantraJapa();
 
   // ─── Local UI State ────────────────────────────────────────────
   const [selectedMantraForDetail, setSelectedMantraForDetail] = useState<Mantra | null>(null);
   const [showSetup, setShowSetup] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showAddMantraModal, setShowAddMantraModal] = useState(false);
+  const [customMantraHindi, setCustomMantraHindi] = useState("");
+  const [customMantraEnglish, setCustomMantraEnglish] = useState("");
 
   const urlMantraId = searchParams.get("mantraId");
   const urlShowSetup = searchParams.get("showSetup") === "true";
@@ -559,9 +565,18 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               <Sparkles className="w-5 h-5 text-amber-500" />
               {copy.selectTitle}
             </h3>
-            {mantrasLoading && (
-              <span className="text-[11px] text-white/30 animate-pulse">{isHi ? "लोड हो रहा है..." : "Loading..."}</span>
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowAddMantraModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-bold hover:bg-amber-500/20 hover:border-amber-500/50 active:scale-95 transition-all duration-300"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{isHi ? "नया मंत्र" : "Add Mantra"}</span>
+              </button>
+              {mantrasLoading && (
+                <span className="text-[11px] text-white/30 animate-pulse">{isHi ? "लोड हो रहा है..." : "Loading..."}</span>
+              )}
+            </div>
           </div>
 
           {mantras.length === 0 && !mantrasLoading ? (
@@ -579,11 +594,19 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 const isLastChanted = m.id === lastChantedMantraId;
 
                 return (
-                  <motion.button
+                  <motion.div
                     key={m.id}
                     onClick={() => setSelectedMantraForDetail(m)}
                     whileHover={{ y: -2 }}
-                    className={`group relative w-full flex items-center rounded-[1.5rem] border p-5 text-left shadow-lg transition-all duration-300 ${
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedMantraForDetail(m);
+                      }
+                    }}
+                    className={`group relative w-full flex items-center rounded-[1.5rem] border p-5 text-left shadow-lg cursor-pointer transition-all duration-300 ${
                       isLastChanted
                         ? "border-amber-500/60 bg-[#1a110d]/90 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
                         : "border-white/5 bg-[#120a06]/40 hover:border-orange-500/20 hover:bg-black/45"
@@ -633,11 +656,25 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       </div>
                     </div>
 
-                    {/* Right side: arrow indicator */}
-                    <div className="shrink-0 flex items-center justify-center px-1">
+                    {/* Right side: arrow indicator or delete button */}
+                    <div className="shrink-0 flex items-center justify-center px-1 gap-2">
+                      {m.id.startsWith("custom-") && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(isHi ? "क्या आप इस मंत्र को हटाना चाहते हैं?" : "Are you sure you want to delete this mantra?")) {
+                              deleteCustomMantra(m.id);
+                            }
+                          }}
+                          className="p-2 text-red-500/70 hover:text-red-100 hover:bg-red-500/80 rounded-xl transition-all active:scale-95 z-20"
+                          title={isHi ? "मंत्र हटाएं" : "Delete Mantra"}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                       <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-orange-400 transition-colors" />
                     </div>
-                  </motion.button>
+                  </motion.div>
                 );
               })}
             </div>
@@ -789,6 +826,97 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
         </section>
 
       </div>
+
+      {/* ─── ADD CUSTOM MANTRA MODAL ────────────────────────────── */}
+      <AnimatePresence>
+        {showAddMantraModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-[#180f0a] to-[#0a0503] p-6 shadow-2xl"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowAddMantraModal(false);
+                  setCustomMantraHindi("");
+                  setCustomMantraEnglish("");
+                }}
+                className="absolute top-4 right-4 p-2 text-white/40 hover:text-white/80 hover:bg-white/5 rounded-full transition-all"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-xl text-amber-500">🪷</span>
+                <h3 className="text-lg font-bold text-white font-display">
+                  {isHi ? "अपना मंत्र जोड़ें" : "Add Custom Mantra"}
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-amber-400/80 uppercase tracking-wider mb-1.5">
+                    {isHi ? "मंत्र (हिंदी में)" : "Mantra (in Hindi)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={customMantraHindi}
+                    onChange={(e) => setCustomMantraHindi(e.target.value)}
+                    placeholder={isHi ? "उदा. ॐ नमः शिवाय" : "e.g., ॐ नमः शिवाय"}
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none transition-all text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-amber-400/80 uppercase tracking-wider mb-1.5">
+                    {isHi ? "मंत्र (अंग्रेजी/अनुवाद)" : "Mantra (in English/Transliteration)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={customMantraEnglish}
+                    onChange={(e) => setCustomMantraEnglish(e.target.value)}
+                    placeholder={isHi ? "उदा. Om Namah Shivaya" : "e.g., Om Namah Shivaya"}
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none transition-all text-sm"
+                  />
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowAddMantraModal(false);
+                      setCustomMantraHindi("");
+                      setCustomMantraEnglish("");
+                    }}
+                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-sm font-bold text-white/80 active:scale-95 transition-all"
+                  >
+                    {isHi ? "रद्द करें" : "Cancel"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const hin = customMantraHindi.trim();
+                      const eng = customMantraEnglish.trim();
+                      if (!hin || !eng) {
+                        alert(isHi ? "कृपया दोनों फ़ील्ड भरें।" : "Please fill in both fields.");
+                        return;
+                      }
+                      addCustomMantra(hin, eng);
+                      setShowAddMantraModal(false);
+                      setCustomMantraHindi("");
+                      setCustomMantraEnglish("");
+                    }}
+                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 rounded-xl text-sm font-bold text-black active:scale-95 transition-all"
+                  >
+                    {isHi ? "जोड़ें" : "Add Mantra"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -779,7 +779,9 @@ export default function MantraDetailView({
             </h3>
             
             <p className="font-serif text-lg md:text-xl text-white font-semibold max-w-2xl leading-relaxed italic px-4">
-              “ {isHi ? detail.meaningHindi : detail.meaningEnglish} ”
+              “ {isHi 
+                ? (mantra.id.startsWith("custom-") ? "यह आपका स्वयं जोड़ा गया मंत्र है। श्रद्धा भाव से इसका जाप करें और अपने मन को परमात्मा में विलीन करें।" : detail.meaningHindi) 
+                : (mantra.id.startsWith("custom-") ? "This is your custom added mantra. Chant with devotion and merge your mind in divine consciousness." : detail.meaningEnglish)} ”
             </p>
           </div>
         </section>
