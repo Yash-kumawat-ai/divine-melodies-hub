@@ -556,13 +556,7 @@ export default function PremiumJapaCounter({
           </span>
         </div>
 
-        <button
-          onClick={() => setSettingsOpen(!settingsOpen)}
-          className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
-          aria-label="Settings"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+        <div className="w-10" />
       </div>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────── */}
