@@ -611,6 +611,15 @@ export default function PremiumJapaCounter({
             </AnimatePresence>
           </div>
 
+          {/* Mala Thread (Connecting line/string between beads) */}
+          <div 
+            className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
+            style={{
+              width: `${R * 2}px`,
+              height: `${R * 2}px`,
+            }}
+          />
+
           {/* 55 Beads layout loop */}
           {beadIndices.map((i) => {
             const isSumeru = i === 0;
