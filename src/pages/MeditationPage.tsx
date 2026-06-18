@@ -122,16 +122,20 @@ function MantraJapaCounterView() {
           showSetup: "true",
         });
       }}
-      onComplete={(actualCount, durationSeconds, finalMantraId) => {
+      onComplete={async (actualCount, durationSeconds, finalMantraId) => {
         const finalMantra = mantras.find((m) => m.id === finalMantraId) || activeMantra;
-        completeSession({
-          mantraId: finalMantra.id,
-          mantraLabel: finalMantra.name_english,
-          sankalp: sankalpText,
-          targetCount: targetCount,
-          actualCount: actualCount,
-          durationSeconds: durationSeconds,
-        });
+        try {
+          await completeSession({
+            mantraId: finalMantra.id,
+            mantraLabel: finalMantra.name_english,
+            sankalp: sankalpText,
+            targetCount: targetCount,
+            actualCount: actualCount,
+            durationSeconds: durationSeconds,
+          });
+        } catch (err) {
+          console.error("Error saving Japa session:", err);
+        }
         refresh();
         setSearchParams({
           practice: "mantra_jap_home",

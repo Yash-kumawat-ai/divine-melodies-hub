@@ -137,7 +137,7 @@ export default function Header() {
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-16 md:h-auto md:py-2 lg:h-20 lg:py-0 md:flex-col md:items-stretch md:justify-start md:gap-y-2 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && (
-            <span className="hidden md:inline-flex">
+            <span className="inline-flex md:hidden">
               <MobileBackButton />
             </span>
           )}

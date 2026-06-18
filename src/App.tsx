@@ -56,6 +56,7 @@ const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
 const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -93,7 +94,14 @@ function AppContent() {
             <Route path="/deity/:slug" element={<DeityPage />} />
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/meditation" element={<MeditationPage />} />
+            <Route
+              path="/meditation"
+              element={
+                <ProtectedRoute>
+                  <MeditationPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/panchang" element={<PanchangPage />} />
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
             <Route path="/kirtan-ai" element={<KirtanAIPage />} />
@@ -163,6 +171,14 @@ function AppContent() {
               }
             />
             <Route path="/account/support" element={<SupportPage />} />
+            <Route
+              path="/leaderboard"
+              element={
+                <ProtectedRoute>
+                  <LeaderboardPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/wallpaper" element={<WallpaperPage />} />
             <Route
               path="/upload-bhajan"

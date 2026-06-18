@@ -10,7 +10,8 @@ export default function AppShell() {
   const { pathname } = useLocation();
   const isKirtanAi = pathname === "/kirtan-ai";
   const isTemplePage = pathname === "/temple";
-  const isFullScreenApp = isKirtanAi || isTemplePage;
+  const isLeaderboard = pathname === "/leaderboard";
+  const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
 
   useEffect(() => {
     if (!isFullScreenApp) {

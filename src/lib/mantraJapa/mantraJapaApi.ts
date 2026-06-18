@@ -214,27 +214,27 @@ export async function deleteSankalp(userId: string, sankalpId: string): Promise<
 
 /** Increment sankalp used_count */
 export async function incrementSankalpUsage(userId: string, sankalpId: string): Promise<void> {
-  // We need a raw SQL increment since Supabase JS doesn't support it directly
+  // Try raw SQL increment via RPC first
   const { error } = await supabase.rpc("increment_sankalp_usage" as any, {
     p_sankalp_id: sankalpId,
     p_user_id: userId,
-  }).catch(() => {
-    // Fallback: just fetch and update
-    return supabase
+  });
+
+  // Fallback if the RPC fails or function is not found
+  if (error) {
+    const { data } = await supabase
       .from("user_sankalpas")
       .select("used_count")
       .eq("id", sankalpId)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          return supabase
-            .from("user_sankalpas")
-            .update({ used_count: (data.used_count || 0) + 1 })
-            .eq("id", sankalpId);
-        }
-        return { error: null };
-      });
-  });
+      .single();
+
+    if (data) {
+      await supabase
+        .from("user_sankalpas")
+        .update({ used_count: (data.used_count || 0) + 1 })
+        .eq("id", sankalpId);
+    }
+  }
 }
 
 /** Compute aggregated stats across all mantras for a user */
@@ -247,4 +247,92 @@ export function computeAggregatedStats(totals: JapTotal[], todaySessions: JapSes
   const todayChants = todaySessions.reduce((sum, s) => sum + (s.actual_count || 0), 0);
 
   return { totalChants, totalSessions, totalMalas, currentStreak, longestStreak, todayChants };
+}
+
+export interface LeaderboardRanking {
+  rank: number;
+  user_id: string;
+  display_name: string;
+  avatar_url: string | null;
+  total_chants: number;
+}
+
+/** Fetch rankings using standard client-side queries to avoid any database RPC issues/404s */
+export async function fetchLeaderboardRankings(
+  viewerId?: string
+): Promise<LeaderboardRanking[]> {
+  try {
+    // 1. Fetch user profiles
+    const { data: profiles, error: profilesError } = await supabase
+      .from("user_profiles")
+      .select("id, name, avatar_url");
+
+    if (profilesError) {
+      console.error("Error fetching user_profiles:", profilesError);
+      return [];
+    }
+
+    // 2. Fetch all Japa totals
+    const { data: totals, error: totalsError } = await supabase
+      .from("user_jap_totals")
+      .select("user_id, total_chants");
+
+    if (totalsError) {
+      console.error("Error fetching user_jap_totals:", totalsError);
+      return [];
+    }
+
+    // 3. Aggregate totals by user_id
+    const totalsByUser: Record<string, number> = {};
+    if (totals) {
+      for (const t of totals) {
+        if (t.user_id) {
+          totalsByUser[t.user_id] = (totalsByUser[t.user_id] || 0) + (t.total_chants || 0);
+        }
+      }
+    }
+
+    // 4. Combine profile info and total chants (default to 0 for no chants)
+    const devotees = (profiles ?? []).map((p) => ({
+      user_id: p.id,
+      display_name: p.name || "Unknown Devotee",
+      avatar_url: p.avatar_url || null,
+      total_chants: totalsByUser[p.id] || 0,
+    }));
+
+    // 5. Sort devotees (descending by total_chants, then alphabetical by name)
+    devotees.sort((a, b) => {
+      if (b.total_chants !== a.total_chants) {
+        return b.total_chants - a.total_chants;
+      }
+      return a.display_name.localeCompare(b.display_name);
+    });
+
+    // 6. Calculate Dense Ranks
+    let currentRank = 1;
+    let prevChants = -1;
+    const rankedDevotees: LeaderboardRanking[] = devotees.map((dev, idx) => {
+      if (idx === 0) {
+        prevChants = dev.total_chants;
+      } else if (dev.total_chants < prevChants) {
+        currentRank++;
+        prevChants = dev.total_chants;
+      }
+      return {
+        rank: currentRank,
+        user_id: dev.user_id,
+        display_name: dev.display_name,
+        avatar_url: dev.avatar_url,
+        total_chants: dev.total_chants,
+      };
+    });
+
+    // 7. Filter: Top 10 devotees OR the current viewer's record
+    return rankedDevotees.filter(
+      (r) => r.rank <= 10 || r.user_id === viewerId
+    );
+  } catch (err) {
+    console.error("Critical error in fetchLeaderboardRankings:", err);
+    return [];
+  }
 }

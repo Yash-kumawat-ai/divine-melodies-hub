@@ -22,9 +22,10 @@ import {
   Target,
   Wind,
   Trash2,
+  Trophy,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useMantraJapa, resolveMantraImage } from "@/hooks/useMantraJapa";
 import JapaCounter from "@/components/devotion/JapaCounter";
 import MantraDetailView from "./MantraDetailView";
@@ -104,6 +105,7 @@ const japaStepsData = [
 export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const navigate = useNavigate();
 
   const {
     mantras,
@@ -488,6 +490,13 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               {isHi ? "अतिथि" : "Guest"}
             </span>
           )}
+          <button
+            onClick={() => navigate("/leaderboard")}
+            className="h-10 w-10 rounded-full hover:bg-[#ff9800]/10 flex items-center justify-center text-amber-400 hover:text-amber-300 active:scale-95 transition-all"
+            title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
+          >
+            <Trophy className="w-5 h-5" />
+          </button>
           <button className="h-10 w-10 rounded-full hover:bg-white/5 flex items-center justify-center text-amber-100/70">
             <Bell className="w-5 h-5" />
           </button>

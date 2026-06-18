@@ -23,7 +23,7 @@ import {
   Trophy
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
+import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAuth } from "@/hooks/useAuth";
@@ -164,10 +164,54 @@ export default function PremiumJapaCounter({
   const [autoLockDisabled, setAutoLockDisabled] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const [leaderboardScope, setLeaderboardScope] = useState<"global" | "friends">("global");
-  const [leaderboardTimeframe, setLeaderboardTimeframe] = useState<"today" | "week" | "month" | "all_time">("all_time");
-  const [leaderboardMantraId, setLeaderboardMantraId] = useState<string>("all");
   const [malaType, setMalaType] = useState<"rudraksha" | "tulsi" | "sandalwood">("rudraksha");
+  
+  const [liveRankings, setLiveRankings] = useState<any[]>([]);
+  const [liveRankingsLoading, setLiveRankingsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!leaderboardOpen) return;
+    
+    let active = true;
+    async function loadLiveRankings() {
+      setLiveRankingsLoading(true);
+      try {
+        const rankingsData = await fetchLeaderboardRankings(userId || undefined);
+        if (active) {
+          setLiveRankings(rankingsData);
+        }
+      } catch (err) {
+        console.error("Error fetching live rankings in overlay:", err);
+      } finally {
+        if (active) {
+          setLiveRankingsLoading(false);
+        }
+      }
+    }
+
+    loadLiveRankings();
+
+    return () => {
+      active = false;
+    };
+  }, [leaderboardOpen, userId]);
+
+  // Warn user before reloading or leaving page with unsaved counts
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (count > 0 && !isCompleted) {
+        e.preventDefault();
+        e.returnValue = isHi 
+          ? "आपके पास बिना सहेजे गए मंत्र जाप हैं। क्या आप सच में छोड़ना चाहते हैं?" 
+          : "You have unsaved Japa chants. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [count, isCompleted, isHi]);
   
   // Timer tracking
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -199,70 +243,48 @@ export default function PremiumJapaCounter({
   const [isMobile, setIsMobile] = useState(false);
 
   // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
+  // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
   const filteredDevotees = useMemo(() => {
-    // Since row-level security (RLS) is enabled and restricts user queries to their own records,
-    // the leaderboard only displays the active user (if they have chanted).
-    // If the user selects "friends", we mock it as empty.
-    if (leaderboardScope === "friends") {
-      return [];
-    }
+    let list = (liveRankings || []).map((r) => {
+      const isCurrentUser = userId && r.user_id === userId;
+      if (isCurrentUser) {
+        return {
+          ...r,
+          total_chants: Number(r.total_chants || 0) + count
+        };
+      }
+      return r;
+    });
 
-    let userChants = 0;
+    // Re-sort the list if current user's count increased their rank
+    list.sort((a, b) => Number(b.total_chants) - Number(a.total_chants));
     
-    if (leaderboardTimeframe === "today") {
-      if (leaderboardMantraId === "all") {
-        userChants = stats.todayChants + count;
-      } else {
-        const todayMantraChants = (todaySessions || [])
-          .filter((s) => s.mantra_id === leaderboardMantraId)
-          .reduce((sum, s) => sum + (s.actual_count || 0), 0);
-        const sessionAddition = activeMantra.id === leaderboardMantraId ? count : 0;
-        userChants = todayMantraChants + sessionAddition;
+    // Re-assign ranks based on sorted order
+    let currentRank = 1;
+    let lastChants = -1;
+    return list.map((item, idx) => {
+      const chants = Number(item.total_chants);
+      if (idx > 0 && chants < lastChants) {
+        currentRank = idx + 1;
       }
-    } else {
-      if (leaderboardMantraId === "all") {
-        userChants = stats.totalChants + count;
-      } else {
-        const mantraTotal = mantraTotalsMap[leaderboardMantraId]?.total_chants || 0;
-        const sessionAddition = activeMantra.id === leaderboardMantraId ? count : 0;
-        userChants = mantraTotal + sessionAddition;
-      }
-    }
-
-    if (userChants === 0) {
-      return [];
-    }
-
-    // Return the active user as the sole entry in the leaderboard
-    return [
-      {
-        id: profile?.id || userId || "current_user",
-        name: profile?.name || (isHi ? "आप (साधक)" : "You (Devotee)"),
-        avatar: profile?.avatar_url || "user",
-        streak: stats.currentStreak || 0,
-        chants: userChants,
-        mantraId: leaderboardMantraId === "all" ? activeMantra.id : leaderboardMantraId,
-        mantraName: leaderboardMantraId === "all" 
-          ? (isHi ? activeMantra.name_hindi : activeMantra.name_english)
-          : ((mantras || []).find((m) => m.id === leaderboardMantraId)?.name_english || ""),
-        mantraIcon: "🕉️",
+      lastChants = chants;
+      return {
+        id: item.user_id,
+        name: item.display_name,
+        avatar: item.avatar_url || "user",
+        streak: item.max_streak || 0,
+        chants: chants,
+        rank: currentRank,
+        isCurrentUser: userId && item.user_id === userId,
+        username: item.username,
         isFriend: false
-      }
-    ];
-  }, [
-    stats,
-    count,
-    todaySessions,
-    leaderboardTimeframe,
-    leaderboardMantraId,
-    activeMantra,
-    mantraTotalsMap,
-    profile,
-    userId,
-    isHi,
-    mantras,
-    leaderboardScope
-  ]);
+      };
+    });
+  }, [liveRankings, count, userId]);
+
+  const currentUserRankRow = useMemo(() => {
+    return filteredDevotees.find((d) => d.isCurrentUser);
+  }, [filteredDevotees]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -604,6 +626,249 @@ export default function PremiumJapaCounter({
     }
   };
 
+  // ─── VOICE COUNTER — full screen mode ────────────────────────────
+  if (practiceMode === "voice") {
+    const deityImage =
+      activeMantra.id?.includes("shiv") || activeMantra.deity?.toLowerCase().includes("shiv")
+        ? shivWallpaper
+        : activeMantra.id?.includes("krishna") || activeMantra.id?.includes("radhe") || activeMantra.id?.includes("hare")
+        ? mayapurTvImg
+        : activeMantra.id?.includes("hanuman")
+        ? salangpurHanumanImg
+        : activeMantra.image_url || shivWallpaper;
+
+    const mantraDisplayName = isHi
+      ? activeMantra.name_hindi
+      : activeMantra.name_english;
+
+    // Build 20 waveform bars driven by real dbLevel (0–255)
+    const barCount = 20;
+    const normalizedLevel = Math.min(1, (dbLevel || 0) / 90);
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex flex-col bg-[#080608] text-[#fbf6f0] select-none overflow-hidden"
+        style={{ background: "radial-gradient(ellipse at 50% 0%, #1a0a04 0%, #080608 60%)" }}
+      >
+        {/* ── HEADER ─────────────────────────────────────────────────── */}
+        <div className="relative z-20 flex items-center justify-between px-5 pt-[max(1.1rem,env(safe-area-inset-top))] pb-3">
+          <button
+            onClick={() => {
+              stopMicListening();
+              if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
+              else onClose(activeMantra.id);
+            }}
+            className="w-10 h-10 rounded-full border border-amber-500/25 bg-black/50 flex items-center justify-center text-amber-300 active:scale-90 transition-transform"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+
+          <h1 className="font-serif text-[20px] md:text-[22px] font-bold text-[#d4a53a] tracking-wide">
+            {isHi ? "ध्वनि काउंटर" : "Voice Counter"}
+          </h1>
+
+          <button
+            onClick={() => setSettingsOpen((s) => !s)}
+            className="w-10 h-10 rounded-full border border-amber-500/25 bg-black/50 flex items-center justify-center text-amber-300 active:scale-90 transition-transform"
+            aria-label="Settings"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* ── SCROLLABLE BODY ─────────────────────────────────────────── */}
+        <div className="flex-1 flex flex-col items-center px-5 pb-6 overflow-y-auto gap-5 md:gap-7 md:justify-center">
+
+          {/* Deity Circle — glowing gold ring */}
+          <div className="relative flex-shrink-0 mt-2 md:mt-0">
+            {/* Outer glow ring animates when listening */}
+            <div
+              className={`absolute inset-0 rounded-full transition-all duration-700 ${
+                voiceActive ? "shadow-[0_0_40px_8px_rgba(212,165,58,0.40)] scale-105" : "shadow-[0_0_18px_2px_rgba(212,165,58,0.18)]"
+              }`}
+            />
+            <div
+              className="rounded-full border-[3.5px] overflow-hidden"
+              style={{
+                width: "min(56vw, 230px)",
+                height: "min(56vw, 230px)",
+                borderColor: "#d4a53a",
+                boxShadow: voiceActive
+                  ? "0 0 32px 6px rgba(212,165,58,0.35), inset 0 0 14px rgba(212,165,58,0.08)"
+                  : "0 0 14px 2px rgba(212,165,58,0.18)",
+              }}
+            >
+              <img
+                src={typeof deityImage === "string" ? deityImage : (deityImage as { src: string }).src ?? ""}
+                alt={mantraDisplayName}
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            </div>
+            {/* Mic active badge */}
+            {voiceActive && (
+              <motion.div
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+                className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-green-500 border-2 border-black flex items-center justify-center shadow-lg"
+              >
+                <Mic className="w-3.5 h-3.5 text-white" />
+              </motion.div>
+            )}
+          </div>
+
+          {/* Listening / Status text */}
+          <div className="text-center -mt-1">
+            <motion.h2
+              key={voiceActive ? "listening" : "paused"}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-serif text-[26px] md:text-[30px] font-semibold text-white tracking-tight"
+            >
+              {voiceActive
+                ? (isHi ? "सुन रहा है..." : "Listening...")
+                : (isHi ? "रुका हुआ है..." : "Paused...")}
+            </motion.h2>
+            <p className="text-[13px] md:text-sm text-white/45 mt-1">
+              {isHi ? "स्वाभाविक रूप से जाप करें, हम गिन रहे हैं" : "Chant naturally, we are counting for you"}
+            </p>
+            {micDenied && (
+              <p className="text-[12px] text-red-400 mt-1">
+                {isHi ? "माइक एक्सेस अस्वीकार" : "Microphone access denied"}
+              </p>
+            )}
+          </div>
+
+          {/* Mantra card */}
+          <div className="w-full max-w-sm bg-[#1a1008]/80 border border-amber-500/20 rounded-2xl px-4 py-3.5 flex items-center gap-4 backdrop-blur-md shadow-lg">
+            <div className="w-12 h-12 rounded-full border border-amber-500/40 bg-amber-950/60 flex items-center justify-center flex-shrink-0 shadow-[0_0_12px_rgba(212,165,58,0.2)]">
+              <span className="text-[22px] text-amber-400 font-serif leading-none">ॐ</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] md:text-base font-semibold text-white truncate">{mantraDisplayName}</p>
+              <p className="text-[12px] text-amber-400/70 mt-0.5">
+                {count} {isHi ? "बार पहचाना गया" : "repetitions detected"}
+              </p>
+            </div>
+            <div className="text-amber-400/50 flex-shrink-0">
+              <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Animated waveform — 20 bars driven by dbLevel */}
+          <div className="w-full max-w-sm flex items-end justify-center gap-[3px] h-12 md:h-14">
+            {Array.from({ length: barCount }).map((_, i) => {
+              // Create wave-like variation across bars
+              const center = barCount / 2;
+              const distFromCenter = Math.abs(i - center) / center; // 0 at center, 1 at edges
+              const baseHeight = 0.12;
+              const maxExtra = voiceActive ? normalizedLevel * (1 - distFromCenter * 0.5) : 0;
+              const randomVariance = voiceActive ? Math.sin(i * 2.3 + Date.now() / 180) * 0.12 : 0;
+              const heightFrac = Math.max(baseHeight, Math.min(1, baseHeight + maxExtra + randomVariance));
+              return (
+                <motion.div
+                  key={i}
+                  animate={{ scaleY: heightFrac }}
+                  transition={{ duration: 0.12, ease: "easeOut" }}
+                  className="rounded-full origin-bottom flex-1"
+                  style={{
+                    height: "100%",
+                    background: voiceActive
+                      ? `linear-gradient(to top, #d4a53a, #f59e0b88)`
+                      : "rgba(212,165,58,0.18)",
+                    minWidth: "3px",
+                    maxWidth: "8px",
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          {/* 3-stat row: Duration | Chants | Goal */}
+          <div className="w-full max-w-sm bg-[#110c06]/60 border border-amber-500/15 rounded-2xl backdrop-blur-md overflow-hidden">
+            <div className="flex divide-x divide-amber-500/15">
+              {/* Duration */}
+              <div className="flex-1 flex flex-col items-center py-4 gap-1.5">
+                <svg className="w-5 h-5 text-amber-400/60" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-amber-200/35">
+                  {isHi ? "समय" : "Duration"}
+                </span>
+                <span className="font-mono text-[22px] md:text-[26px] font-bold text-amber-400 leading-none tabular-nums">
+                  {formatTime(secondsElapsed)}
+                </span>
+              </div>
+
+              {/* Chants */}
+              <div className="flex-1 flex flex-col items-center py-4 gap-1.5">
+                <svg className="w-5 h-5 text-amber-400/60" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" />
+                </svg>
+                <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-amber-200/35">
+                  {isHi ? "जाप" : "Chants"}
+                </span>
+                <span className="font-mono text-[22px] md:text-[26px] font-bold text-amber-400 leading-none tabular-nums">
+                  {count}
+                </span>
+              </div>
+
+              {/* Goal */}
+              <div className="flex-1 flex flex-col items-center py-4 gap-1.5">
+                <svg className="w-5 h-5 text-amber-400/60" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeWidth="1.2" />
+                </svg>
+                <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-amber-200/35">
+                  {isHi ? "लक्ष्य" : "Goal"}
+                </span>
+                <span className="font-mono text-[22px] md:text-[26px] font-bold text-amber-400 leading-none tabular-nums">
+                  {targetCount}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full max-w-sm h-1.5 rounded-full bg-amber-900/30 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-400"
+              animate={{ width: `${Math.min(100, Math.round((count / targetCount) * 100))}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+
+          {/* Pause / Resume button */}
+          <button
+            onClick={() => {
+              if (voiceActive) {
+                stopMicListening();
+                setTimerActive(false);
+              } else {
+                setTimerActive(true);
+                setVoiceActive(true);
+              }
+            }}
+            className="w-16 h-16 md:w-20 md:h-20 rounded-full border-[2.5px] border-amber-500 bg-transparent flex items-center justify-center text-amber-400 active:scale-90 transition-all shadow-[0_0_20px_rgba(212,165,58,0.25)] hover:shadow-[0_0_28px_rgba(212,165,58,0.4)]"
+            aria-label={voiceActive ? "Pause" : "Start listening"}
+          >
+            {voiceActive ? (
+              <Pause className="w-7 h-7 md:w-8 md:h-8 fill-current" />
+            ) : (
+              <Mic className="w-7 h-7 md:w-8 md:h-8" />
+            )}
+          </button>
+
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -618,7 +883,13 @@ export default function PremiumJapaCounter({
       {/* ─── HEADER BAR ───────────────────────────────────────────── */}
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-2.5 md:py-4 flex items-center justify-between">
         <button
-          onClick={() => onClose(activeMantra.id)}
+          onClick={() => {
+            if (count >= targetCount) {
+              onComplete(count, secondsElapsed, activeMantra.id);
+            } else {
+              onClose(activeMantra.id);
+            }
+          }}
           className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
           aria-label="Back"
         >
@@ -1155,69 +1426,7 @@ export default function PremiumJapaCounter({
             {/* Scrollable body content */}
             <div className="flex-1 w-full max-w-xl mx-auto px-4 py-6 space-y-6">
 
-              {/* 1. Category Scope Selector (Global vs Friends) */}
-              <div className="bg-[#100906]/65 border border-[#301a0e]/40 p-1.5 rounded-[1.5rem] flex items-center justify-between shadow-md">
-                <button
-                  onClick={() => setLeaderboardScope("global")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.25rem] text-sm font-bold transition-all ${
-                    leaderboardScope === "global"
-                      ? "bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
-                      : "text-amber-200/50 hover:text-amber-200/80"
-                  }`}
-                >
-                  <span>🌐</span>
-                  <span>{isHi ? "वैश्विक (Global)" : "Global"}</span>
-                </button>
-                <button
-                  onClick={() => setLeaderboardScope("friends")}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-[1.25rem] text-sm font-bold transition-all ${
-                    leaderboardScope === "friends"
-                      ? "bg-gradient-to-r from-amber-600 to-amber-800 text-white shadow-[0_2px_10px_rgba(217,119,6,0.25)]"
-                      : "text-amber-200/50 hover:text-amber-200/80"
-                  }`}
-                >
-                  <span>👥</span>
-                  <span>{isHi ? "मित्र (Friends)" : "Friends"}</span>
-                </button>
-              </div>
 
-              {/* 2. Sub-filters Row (Timeframe pills + Mantra dropdown) */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 justify-between w-full">
-                {/* Timeframes */}
-                <div className="flex items-center gap-1.5 bg-[#100906]/35 border border-[#301a0e]/20 p-1 rounded-xl w-full sm:w-auto justify-between overflow-x-auto">
-                  {(["today", "week", "month", "all_time"] as const).map((tf) => (
-                    <button
-                      key={tf}
-                      onClick={() => setLeaderboardTimeframe(tf)}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
-                        leaderboardTimeframe === tf
-                          ? "bg-amber-600/20 border border-amber-500/40 text-amber-300"
-                          : "border border-transparent text-amber-100/40 hover:text-amber-100/70"
-                      }`}
-                    >
-                      {tf === "today" ? (isHi ? "आज" : "Today") : tf === "week" ? (isHi ? "हफ्ता" : "Week") : tf === "month" ? (isHi ? "महीना" : "Month") : (isHi ? "कुल" : "All Time")}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Mantra Dropdown */}
-                <div className="relative w-full sm:w-auto min-w-[140px]">
-                  <select
-                    value={leaderboardMantraId}
-                    onChange={(e) => setLeaderboardMantraId(e.target.value)}
-                    className="w-full bg-black/40 border border-[#301a0e]/60 text-amber-300 rounded-xl pl-8 pr-8 py-2 text-[11px] font-bold uppercase tracking-wider focus:outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
-                  >
-                    <option value="all" className="bg-[#130d0a] text-amber-100">{isHi ? "सभी मंत्र" : "All Mantras"}</option>
-                    {(mantras || []).map((m) => (
-                      <option key={m.id} value={m.id} className="bg-[#130d0a] text-amber-100">
-                        {isHi ? m.name_hindi : m.name_english}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs">ॐ</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-amber-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-              </div>
 
               {/* 3. Your Rank Card (Dynamic stats based on actual chant state) */}
               <div className="bg-gradient-to-r from-[#21110a] to-[#150a06] border border-[#422212]/50 rounded-[1.75rem] p-4 flex items-center justify-between shadow-xl relative overflow-hidden">
@@ -1235,11 +1444,11 @@ export default function PremiumJapaCounter({
                   <div>
                     <span className="text-[10px] text-amber-200/40 font-bold uppercase tracking-wider block">Your Rank</span>
                     <span className="text-2xl font-serif font-black text-amber-400 tracking-wide block leading-tight">
-                      #{filteredDevotees.length > 0 ? "1" : "--"}
+                      #{currentUserRankRow ? currentUserRankRow.rank : "--"}
                     </span>
                     <span className="text-[9px] font-bold text-green-400 flex items-center gap-1 mt-0.5">
-                      <span>{filteredDevotees.length > 0 ? "✓" : "•"}</span>
-                      <span>{filteredDevotees.length > 0 ? (isHi ? "सक्रिय स्थान" : "Rank Active") : (isHi ? "कोई सक्रिय सत्र नहीं" : "No active session")}</span>
+                      <span>{currentUserRankRow ? "✓" : "•"}</span>
+                      <span>{currentUserRankRow ? (isHi ? "सक्रिय स्थान" : "Rank Active") : (isHi ? "कोई सक्रिय सत्र नहीं" : "No active session")}</span>
                     </span>
                   </div>
                 </div>
@@ -1253,7 +1462,7 @@ export default function PremiumJapaCounter({
                     {isHi ? "कुल जाप" : "Total Chants"}
                   </span>
                   <span className="text-base font-serif font-black text-amber-300 mt-1 block tabular-nums">
-                    {filteredDevotees.length > 0 ? filteredDevotees[0].chants : (stats.totalChants + count)}
+                    {currentUserRankRow ? currentUserRankRow.chants.toLocaleString() : ((stats.totalChants || 0) + count).toLocaleString()}
                   </span>
                 </div>
 
@@ -1303,6 +1512,8 @@ export default function PremiumJapaCounter({
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500/30 flex items-center justify-center">
                             {filteredDevotees[1].avatar === "krishna" ? (
                               <img src={mayapurTvImg} alt="Krishna" className="w-full h-full object-cover" />
+                            ) : filteredDevotees[1].avatar && (filteredDevotees[1].avatar.includes("http") || filteredDevotees[1].avatar.includes("/")) ? (
+                              <img src={filteredDevotees[1].avatar} alt={filteredDevotees[1].name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-slate-300 font-bold text-sm">{filteredDevotees[1].name.split(" ").map(w => w[0]).join("")}</span>
                             )}
@@ -1339,6 +1550,8 @@ export default function PremiumJapaCounter({
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-700 to-orange-950 border border-yellow-500/30 flex items-center justify-center">
                             {filteredDevotees[0].avatar === "shiv" ? (
                               <img src={shivWallpaper} alt="Shiv" className="w-full h-full object-cover" />
+                            ) : filteredDevotees[0].avatar && (filteredDevotees[0].avatar.includes("http") || filteredDevotees[0].avatar.includes("/")) ? (
+                              <img src={filteredDevotees[0].avatar} alt={filteredDevotees[0].name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-amber-200 font-bold text-base">{filteredDevotees[0].name.split(" ").map(w => w[0]).join("")}</span>
                             )}
@@ -1376,6 +1589,8 @@ export default function PremiumJapaCounter({
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-800 to-orange-950 border border-amber-700/30 flex items-center justify-center">
                             {filteredDevotees[2].avatar === "hanuman" ? (
                               <img src={salangpurHanumanImg} alt="Hanuman" className="w-full h-full object-cover" />
+                            ) : filteredDevotees[2].avatar && (filteredDevotees[2].avatar.includes("http") || filteredDevotees[2].avatar.includes("/")) ? (
+                              <img src={filteredDevotees[2].avatar} alt={filteredDevotees[2].name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-amber-500 font-bold text-xs">{filteredDevotees[2].name.split(" ").map(w => w[0]).join("")}</span>
                             )}
@@ -1407,8 +1622,7 @@ export default function PremiumJapaCounter({
                     {/* Table Header */}
                     <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-[#170e0a]/80 text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-200/50 border-b border-[#301a0e]/30 select-none">
                       <div className="col-span-2 text-center">{isHi ? "रैंक" : "Rank"}</div>
-                      <div className="col-span-4 pl-2">{isHi ? "साधक" : "Devotee"}</div>
-                      <div className="col-span-3 text-center">{isHi ? "मुख्य मंत्र" : "Mantra"}</div>
+                      <div className="col-span-7 pl-2">{isHi ? "साधक" : "Devotee"}</div>
                       <div className="col-span-3 text-right pr-2">{isHi ? "कुल जाप" : "Chants"}</div>
                     </div>
 
@@ -1426,13 +1640,16 @@ export default function PremiumJapaCounter({
                               {rankNum}
                             </div>
 
-                            {/* Devotee Avatar & Name */}
-                            <div className="col-span-4 flex items-center gap-2.5 min-w-0">
+                            <div className="col-span-7 flex items-center gap-2.5 min-w-0">
                               {/* Small Avatar circle with initials/gradient */}
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-700/30 to-orange-800/30 border border-amber-600/20 flex items-center justify-center shrink-0">
-                                <span className="text-[10px] font-black text-amber-300">
-                                  {devotee.name.split(" ").map(w => w[0]).join("")}
-                                </span>
+                              <div className="w-8 h-8 rounded-full border border-amber-600/20 overflow-hidden bg-[#221221] flex items-center justify-center shrink-0">
+                                {devotee.avatar && (devotee.avatar.includes("http") || devotee.avatar.includes("/")) ? (
+                                  <img src={devotee.avatar} alt={devotee.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[10px] font-black text-amber-300">
+                                    {devotee.name.split(" ").map(w => w[0]).join("")}
+                                  </span>
+                                )}
                               </div>
                               <div className="min-w-0 flex flex-col">
                                 <span className="text-[11px] font-bold text-amber-100 truncate flex items-center gap-1">
@@ -1444,14 +1661,6 @@ export default function PremiumJapaCounter({
                                   <span>{devotee.streak}d</span>
                                 </span>
                               </div>
-                            </div>
-
-                            {/* Most Chanted Mantra */}
-                            <div className="col-span-3 flex flex-col items-center text-center min-w-0">
-                              <span className="text-xs">{devotee.mantraIcon}</span>
-                              <span className="text-[8px] text-amber-200/50 truncate font-semibold w-full mt-0.5">
-                                {devotee.mantraName}
-                              </span>
                             </div>
 
                             {/* Total Chants */}
