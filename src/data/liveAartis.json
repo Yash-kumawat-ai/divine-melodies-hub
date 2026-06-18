@@ -1,0 +1,274 @@
+{
+  "version": "2.0",
+  "timezone": "Asia/Kolkata",
+  "filteringEnabled": true,
+
+  "contentFilter": {
+    "allowedKeywords": [
+      "aarti", "arti", "darshan", "mangala", "mangal", "shayan", "sandhya",
+      "rajbhog", "abhishek", "bhasma", "kirtan", "bhajan", "mahakal",
+      "mahakaleshwar", "vishwanath", "kashi", "somnath", "hanuman", "balaji",
+      "krishna", "radha", "shiv", "shiva", "jyotirlinga", "temple", "mandir",
+      "guru puja", "mayapur", "khatu shyam", "shyam baba", "salasar",
+      "salangpur", "kashtabhanjan", "radhavallabh", "vrindavan", "live"
+    ],
+    "blockedKeywords": [
+      "rashifal", "horoscope", "astrology", "kundli", "prediction",
+      "vastu", "numerology", "stock market", "breaking news", "politics",
+      "election", "debate", "news", "interview", "podcast", "discussion",
+      "राशिफल", "कुंडली", "भविष्यफल"
+    ]
+  },
+
+  "temples": [
+
+    {
+      "id": "mayapur-tv",
+      "name": "Mayapur TV",
+      "nameHindi": "मायापुर टीवी",
+      "location": "Mayapur, West Bengal",
+      "deity": "Sri Sri Radha Madhava",
+      "deityHindi": "श्री श्री राधा माधव",
+      "category": "ISKCON",
+      "priority": 10,
+      "streamReliability": 10,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@MayapurTVOfficial",
+      "youtubeChannelId": "UCv7Wv0e5y-LtO9FpQJez1Xg",
+      "fallbackLiveUrl": "https://www.youtube.com/@MayapurTVOfficial/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@MayapurTVOfficial",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Mayapur+TV+live+aarti+darshan",
+      "accentColor": "#10B981",
+      "auspiciousDay": "Wednesday",
+      "channelVerified": true,
+      "channelNote": "Best-effort ID. ISKCON Mayapur World HQ — streams daily. Verify handle on YouTube.",
+      "aartiSchedule": [
+        { "name": "Mangala Aarti", "nameHindi": "मंगल आरती", "time": "04:30", "durationMinutes": 45 },
+        { "name": "Guru Puja", "nameHindi": "गुरु पूजा", "time": "07:15", "durationMinutes": 30 },
+        { "name": "Sandhya Aarti", "nameHindi": "संध्या आरती", "time": "19:00", "durationMinutes": 45 }
+      ]
+    },
+
+    {
+      "id": "somnath-temple",
+      "name": "Somnath Jyotirlinga",
+      "nameHindi": "सोमनाथ ज्योतिर्लिंग",
+      "location": "Somnath, Gujarat",
+      "deity": "Lord Shiva",
+      "deityHindi": "भगवान शिव",
+      "category": "Jyotirlinga",
+      "priority": 10,
+      "streamReliability": 10,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@SomnathTempleOfficialChannel",
+      "youtubeChannelId": null,
+      "fallbackLiveUrl": "https://www.youtube.com/@SomnathTempleOfficialChannel/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@SomnathTempleOfficialChannel",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Somnath+Temple+Live+Aarti",
+      "accentColor": "#6B46C1",
+      "auspiciousDay": "Monday",
+      "channelVerified": true,
+      "channelNote": "Official Somnath Trust channel — confirmed streaming daily Sayam Aarti. Handle verified. Get channel ID from YouTube About page.",
+      "aartiSchedule": [
+        { "name": "Morning Aarti", "nameHindi": "प्रातः आरती", "time": "06:00", "durationMinutes": 45 },
+        { "name": "Sandhya Aarti", "nameHindi": "संध्या आरती", "time": "19:00", "durationMinutes": 45 }
+      ]
+    },
+
+
+
+    {
+      "id": "kashi-vishwanath",
+      "name": "Kashi Vishwanath",
+      "nameHindi": "काशी विश्वनाथ",
+      "location": "Varanasi, Uttar Pradesh",
+      "deity": "Lord Shiva",
+      "deityHindi": "भगवान शिव",
+      "category": "Jyotirlinga",
+      "priority": 10,
+      "streamReliability": 8,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@ShreeKashiVishwanathMandir",
+      "youtubeChannelId": "UCcG7ukF2dpR71YMFsPQAj1A",
+      "fallbackLiveUrl": "https://www.youtube.com/@ShreeKashiVishwanathMandir/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@ShreeKashiVishwanathMandir",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Kashi+Vishwanath+Mandir+Live+Aarti",
+      "accentColor": "#F97316",
+      "auspiciousDay": "Monday",
+      "channelVerified": false,
+      "channelNote": "⚠️ VERIFY: Best-effort channel ID. Confirmed handle exists on YouTube. Get exact channel ID from About page. Look for Mangala/Saptarishi Aarti streams as proof.",
+      "aartiSchedule": [
+        { "name": "Mangala Aarti", "nameHindi": "मंगला आरती", "time": "03:00", "durationMinutes": 45 },
+        { "name": "Bhog Aarti", "nameHindi": "भोग आरती", "time": "12:00", "durationMinutes": 30 },
+        { "name": "Saptarishi Aarti", "nameHindi": "सप्तऋषि आरती", "time": "19:00", "durationMinutes": 45 },
+        { "name": "Shayan Aarti", "nameHindi": "शयन आरती", "time": "22:30", "durationMinutes": 30 }
+      ]
+    },
+
+    {
+      "id": "salasar-balaji",
+      "name": "Salasar Balaji",
+      "nameHindi": "सालासर बालाजी",
+      "location": "Salasar, Rajasthan",
+      "deity": "Hanuman Ji",
+      "deityHindi": "हनुमान जी",
+      "category": "Hanuman Temple",
+      "priority": 9,
+      "streamReliability": 9,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@salasarofficial",
+      "youtubeChannelId": "UC82-0zBQho_hyV10fFAAeQA",
+      "fallbackLiveUrl": "https://www.youtube.com/@salasarofficial/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@salasarofficial",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Salasar+Balaji+Live+Aarti+Darshan",
+      "accentColor": "#EF4444",
+      "auspiciousDay": "Tuesday",
+      "channelVerified": false,
+      "channelNote": "⚠️ VERIFY: Channel ID from search — 'Shree Salasar Balaji Mandir Official' found at UC82-0zBQho_hyV10fFAAeQA. Confirm this matches @salasarofficial handle on YouTube About page. Facebook page also uses @salasarofficial.",
+      "aartiSchedule": [
+        { "name": "Mangla Aarti", "nameHindi": "मंगला आरती", "time": "05:30", "durationMinutes": 30 },
+        { "name": "Rajbhog", "nameHindi": "राजभोग", "time": "12:00", "durationMinutes": 30 },
+        { "name": "Sandhya Aarti", "nameHindi": "संध्या आरती", "time": "19:30", "durationMinutes": 30 },
+        { "name": "Shayan Aarti", "nameHindi": "शयन आरती", "time": "21:00", "durationMinutes": 30 }
+      ]
+    },
+
+    {
+      "id": "salangpur-hanumanji",
+      "name": "Salangpur Hanumanji",
+      "nameHindi": "सालंगपुर हनुमानजी",
+      "location": "Salangpur, Gujarat",
+      "deity": "Kashtabhanjan Hanuman",
+      "deityHindi": "कष्टभंजन हनुमान",
+      "category": "Hanuman Temple",
+      "priority": 9,
+      "streamReliability": 10,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@salangpurhanumanji",
+      "youtubeChannelId": "UCm_1M80Os-u3Sqge14OWhEA",
+      "fallbackLiveUrl": "https://www.youtube.com/@salangpurhanumanji/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@salangpurhanumanji",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Salangpur+Hanumanji+Live+Darshan",
+      "accentColor": "#DC2626",
+      "auspiciousDay": "Tuesday",
+      "channelVerified": false,
+      "channelNote": "⚠️ VERIFY: Channel ID UCm_1M80Os-u3Sqge14OWhEA found for 'Daily Darshan Shri Salangpur Hanumanji'. Confirm it matches @salangpurhanumanji handle. The official website is salangpurhanumanji.org and points to youtube.com/user/salangpurhanumanji — check if handle matches.",
+      "aartiSchedule": [
+        { "name": "Darshan Aarti", "nameHindi": "दर्शन आरती", "time": "06:00", "durationMinutes": 45 },
+        { "name": "Evening Aarti", "nameHindi": "संध्या आरती", "time": "19:00", "durationMinutes": 45 }
+      ]
+    },
+
+    {
+      "id": "radha-vallabh-vrindavan",
+      "name": "Shri Radha Vallabh",
+      "nameHindi": "श्री राधावल्लभ मंदिर",
+      "location": "Vrindavan, Uttar Pradesh",
+      "deity": "Radha Vallabh Lal Ji",
+      "deityHindi": "राधावल्लभ लाल जी",
+      "category": "Krishna Temple",
+      "priority": 8,
+      "streamReliability": 8,
+      "requiresTitleFilter": false,
+      "youtubeHandle": "@ShriRadhaVallabh-kq6hm",
+      "youtubeChannelId": null,
+      "fallbackLiveUrl": "https://www.youtube.com/@ShriRadhaVallabh-kq6hm/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@ShriRadhaVallabh-kq6hm",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Shri+Radha+Vallabh+Mandir+Vrindavan+Live+Aarti",
+      "accentColor": "#EC4899",
+      "auspiciousDay": "Wednesday",
+      "channelVerified": false,
+      "channelNote": "⚠️ VERIFY: Handle @ShriRadhaVallabh-kq6hm found — described as '24x7 live streaming satsangs, bhajans, and spiritual discourses.' IMPORTANT: Channel description says 'spiritual discourses' which could include non-darshan content. Check their live streams carefully. The official temple YouTube is @shreeradhavallabhmandir — consider using that instead.",
+      "aartiSchedule": [
+        { "name": "Mangala Aarti", "nameHindi": "मंगला आरती", "time": "07:30", "durationMinutes": 30 },
+        { "name": "Shringar Darshan", "nameHindi": "श्रृंगार दर्शन", "time": "09:00", "durationMinutes": 30 },
+        { "name": "Rajbhog Darshan", "nameHindi": "राजभोग दर्शन", "time": "12:00", "durationMinutes": 30 },
+        { "name": "Sandhya Aarti", "nameHindi": "संध्या आरती", "time": "19:30", "durationMinutes": 45 },
+        { "name": "Shayan Darshan", "nameHindi": "शयन दर्शन", "time": "21:30", "durationMinutes": 30 }
+      ]
+    },
+
+    {
+      "id": "shyam-bhakti-rang",
+      "name": "Khatu Shyam Ji",
+      "nameHindi": "खाटू श्याम जी",
+      "location": "Khatu, Rajasthan",
+      "deity": "Khatu Shyam Ji",
+      "deityHindi": "खाटू श्याम जी",
+      "category": "Krishna Tradition",
+      "priority": 6,
+      "streamReliability": 6,
+      "requiresTitleFilter": true,
+      "youtubeHandle": "@ShyamBhaktiRang",
+      "youtubeChannelId": null,
+      "fallbackLiveUrl": "https://www.youtube.com/@ShyamBhaktiRang/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@ShyamBhaktiRang",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Khatu+Shyam+Ji+Live+Darshan+Aarti",
+      "accentColor": "#F59E0B",
+      "auspiciousDay": "Sunday",
+      "channelVerified": false,
+      "channelNote": "⚠️ VERIFY + TITLE FILTER REQUIRED: Medium priority. Channel streams Khatu Shyam content but may include katha, bhajans, and non-darshan content. requiresTitleFilter=true means only show if live title passes the content filter. Get channel ID from YouTube About page.",
+      "aartiSchedule": [
+        { "name": "Mangal Aarti", "nameHindi": "मंगल आरती", "time": "05:00", "durationMinutes": 30 },
+        { "name": "Sandhya Aarti", "nameHindi": "संध्या आरती", "time": "19:00", "durationMinutes": 30 }
+      ]
+    },
+
+    {
+      "id": "dd-astro",
+      "name": "DD Astro (Filtered)",
+      "nameHindi": "डीडी एस्ट्रो",
+      "location": "National",
+      "deity": "Mixed — filtered by title",
+      "deityHindi": "शीर्षक फ़िल्टर के अनुसार",
+      "category": "Mixed Content",
+      "priority": 3,
+      "streamReliability": 3,
+      "requiresTitleFilter": true,
+      "youtubeHandle": "@DDAstro",
+      "youtubeChannelId": null,
+      "fallbackLiveUrl": "https://www.youtube.com/@DDAstro/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@DDAstro",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=DD+Astro+Mahakal+Live+Darshan",
+      "accentColor": "#6B7280",
+      "auspiciousDay": null,
+      "channelVerified": false,
+      "channelNote": "🚨 MIXED CONTENT — requiresTitleFilter=true is MANDATORY. NEVER show this channel's stream without passing title filter. Streams rashifal, horoscope, and astrology shows regularly. Only show if live title contains darshan/aarti keywords AND has no blocked keywords. Low priority — only show in 'Live Now' section if it passes filter, never in 'Upcoming' since you can't predict what they'll stream.",
+      "aartiSchedule": []
+    },
+
+    {
+      "id": "doordarshan-national",
+      "name": "Doordarshan National",
+      "nameHindi": "दूरदर्शन नेशनल",
+      "location": "National",
+      "deity": "Mixed — filtered by title",
+      "deityHindi": "शीर्षक फ़िल्टर के अनुसार",
+      "category": "Mixed Content",
+      "priority": 3,
+      "streamReliability": 3,
+      "requiresTitleFilter": true,
+      "youtubeHandle": "@DoordarshanNational",
+      "youtubeChannelId": null,
+      "fallbackLiveUrl": "https://www.youtube.com/@DoordarshanNational/live",
+      "fallbackChannelUrl": "https://www.youtube.com/@DoordarshanNational",
+      "fallbackSearchUrl": "https://www.youtube.com/results?search_query=Doordarshan+National+Live+Temple+Darshan+Aarti",
+      "accentColor": "#4B5563",
+      "auspiciousDay": null,
+      "channelVerified": false,
+      "channelNote": "🚨 MIXED CONTENT — requiresTitleFilter=true is MANDATORY. National news channel. Only streams temple darshan on special occasions (Ram Navami, Mahashivratri, etc.). NEVER show without title filter. Never show in Upcoming section. Only in Live Now if title clearly matches darshan keywords.",
+      "aartiSchedule": []
+    }
+
+  ],
+
+  "weeklyAuspiciousMapping": {
+    "Sunday": ["shyam-bhakti-rang"],
+    "Monday": ["somnath-temple", "kashi-vishwanath"],
+    "Tuesday": ["salasar-balaji", "salangpur-hanumanji"],
+    "Wednesday": ["mayapur-tv", "radha-vallabh-vrindavan"],
+    "Thursday": ["mayapur-tv"],
+    "Friday": [],
+    "Saturday": ["somnath-temple", "kashi-vishwanath"]
+  }
+}

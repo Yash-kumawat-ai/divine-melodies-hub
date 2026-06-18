@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { TextToSpeech, VoiceManager, checkVoiceSupport } from "../lib/voiceUtils";
 import BhajanCard from "../components/BhajanCard";
 import BhajanDetailModal from "../components/BhajanDetailModal";
@@ -11,7 +11,7 @@ import { Bhajan, bhajans as appBhajans, deities as appDeities } from "../data/bh
 import { bhajanMatchesQuery, naradSearchBhajans } from "../lib/searchAlgorithm";
 import { searchUserBhajans } from "../lib/supabaseQueries";
 import { generateBhajanSlug } from "../lib/slugUtils";
-import { useIsMobile } from "../hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { looksLikeDirectSongQuery } from "../lib/narad/naradIntents";
 import {
   createChatSession,
@@ -101,6 +101,10 @@ function stripFillerWords(value: string): string {
     .trim();
 }
 
+function containsDevanagari(value: string): boolean {
+  return /[\u0900-\u097F]/.test(value);
+}
+
 function extractChatSearchTerm(value: string): { term: string; isSearch: boolean; isDeityBrowse: boolean } {
   let text = stripFillerWords(value);
   const lower = text.toLowerCase();
@@ -115,7 +119,8 @@ function extractChatSearchTerm(value: string): { term: string; isSearch: boolean
     .replace(/\s+(bhajan chahiye|ka bhajan)$/i, "")
     .trim();
 
-  const directName = text.length >= 3 && !/^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|❤️ my favorites|\+ add a bhajan)$/i.test(text);
+  const directName = !/^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|❤️ my favorites|\+ add a bhajan)$/i.test(text) &&
+    (containsDevanagari(text) ? text.length >= 2 : text.length >= 3);
   return { term: text, isSearch: directName, isDeityBrowse: false };
 }
 
@@ -149,9 +154,9 @@ function getDeityNameForBhajan(bhajan: Bhajan): string {
 
 function strictBhajanMatch(term: string, bhajan: Bhajan): boolean {
   if (bhajanMatchesQuery(bhajan, term)) return true;
-  const query = term.toLowerCase().trim();
+  const query = term.normalize('NFC').toLowerCase().trim();
   if (!query) return false;
-  return getDeityNameForBhajan(bhajan).toLowerCase().includes(query);
+  return getDeityNameForBhajan(bhajan).normalize('NFC').toLowerCase().includes(query);
 }
 
 function dedupeBhajans(items: Bhajan[]): Bhajan[] {

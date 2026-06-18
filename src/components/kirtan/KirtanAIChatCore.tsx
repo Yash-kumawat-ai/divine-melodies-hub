@@ -174,9 +174,9 @@ function getDeityNameForBhajan(bhajan: Bhajan): string {
 
 function strictBhajanMatch(term: string, bhajan: Bhajan): boolean {
   if (bhajanMatchesQuery(bhajan, term)) return true;
-  const query = term.toLowerCase().trim();
+  const query = term.normalize('NFC').toLowerCase().trim();
   if (!query) return false;
-  return getDeityNameForBhajan(bhajan).toLowerCase().includes(query);
+  return getDeityNameForBhajan(bhajan).normalize('NFC').toLowerCase().includes(query);
 }
 
 function dedupeBhajans(items: Bhajan[]): Bhajan[] {

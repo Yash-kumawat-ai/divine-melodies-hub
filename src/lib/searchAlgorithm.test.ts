@@ -121,4 +121,48 @@ describe('searchAlgorithm', () => {
     expect(results.some((b) => b.id === 10)).toBe(true);
     expect(results.some((b) => b.id === 11)).toBe(false);
   });
+
+  it('debugs Mor Chadi search', () => {
+    const morChadiBhajan = {
+      id: 100000,
+      slug: 'mor-chadi-lehrai-re-rasiya-o-sanwara-mor-chadi-lehrai-re-bhaktidarshanjaipur',
+      title: 'मोर छड़ी लहराई रे रसिया ओ सांवरा...Mor Chadi Lehrai re ||  BHAKTIDARSHANJAIPUR',
+      titleHindi: 'मोर छड़ी लहराई रे रसिया ओ सांवरा.',
+      deityId: 0,
+      singerName: 'Bhakti Darshan Jaipur',
+      composerName: '',
+      youtubeUrl: '',
+      lyricsHindi: '',
+      lyricsTransliteration: '',
+      playCount: 0,
+      rating: 0,
+      tags: [],
+      featured: false,
+    };
+    const results = naradSearchBhajans('मोर छड़ी लहराई', [morChadiBhajan]);
+    console.log('TEST RESULT BHAJAN:', results);
+    expect(results).toHaveLength(1);
+  });
+
+  it('falls back to partial title matching if no exact or fuzzy match is found', () => {
+    const morChadiBhajan = {
+      id: 100000,
+      slug: 'mor-chadi-lehrai-re-rasiya-o-sanwara-mor-chadi-lehrai-re-bhaktidarshanjaipur',
+      title: 'मोर छड़ी लहराई रे रसिया ओ सांवरा...Mor Chadi Lehrai re ||  BHAKTIDARSHANJAIPUR',
+      titleHindi: 'मोर छड़ी लहराई रे रसिया ओ सांवरा.',
+      deityId: 0,
+      singerName: 'Bhakti Darshan Jaipur',
+      composerName: '',
+      youtubeUrl: '',
+      lyricsHindi: '',
+      lyricsTransliteration: '',
+      playCount: 0,
+      rating: 0,
+      tags: [],
+      featured: false,
+    };
+    const results = naradSearchBhajans('मोर चढ़ी', [morChadiBhajan]);
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe(100000);
+  });
 });

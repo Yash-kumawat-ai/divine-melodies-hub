@@ -8,13 +8,13 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SuspenseFallback from "./components/SuspenseFallback";
 import AppShell from "./components/layout/AppShell";
-import { AuthProvider } from "./hooks/useAuth";
-import { LanguageProvider } from "./hooks/useLanguage";
-import { AssistantContextProvider } from "./hooks/useAssistantContext";
-import { AIModalProvider, useAIModal } from "./hooks/useAIModal";
-import { ThemeProvider } from "./hooks/useTheme";
-import { YouTubePlayerProvider } from "./hooks/useYouTubePlayer";
-import { BhajanModalOpenProvider } from "./hooks/useBhajanModalOpen";
+import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/hooks/useLanguage";
+import { AssistantContextProvider } from "@/hooks/useAssistantContext";
+import { AIModalProvider, useAIModal } from "@/hooks/useAIModal";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
+import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
 import Home from "./pages/Home";
 import AllBhajans from "./pages/AllBhajans";
 import LoginForm from "./components/Auth/LoginForm";
@@ -33,7 +33,7 @@ const MeditationPage = lazy(() => import("./pages/MeditationPage"));
 const PanchangPage = lazy(() => import("./pages/PanchangPage"));
 const PanchangDetailsPage = lazy(() => import("./pages/PanchangDetailsPage"));
 const TemplePage = lazy(() => import("./pages/TemplePage"));
-const AartiPage = lazy(() => import("./pages/AartiPage"));
+const LiveAartiPage = lazy(() => import("./pages/LiveAartiPage"));
 const UploadBhajan = lazy(() => import("./pages/UploadBhajan"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const RecentBhajans = lazy(() => import("./pages/RecentBhajans"));
@@ -55,13 +55,15 @@ const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
+const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
+const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
 
   return (
     <>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route
             path="/auth/login"
@@ -92,11 +94,19 @@ function AppContent() {
             <Route path="/deity/:slug" element={<DeityPage />} />
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/meditation" element={<MeditationPage />} />
+            <Route
+              path="/meditation"
+              element={
+                <ProtectedRoute>
+                  <MeditationPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/panchang" element={<PanchangPage />} />
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
             <Route path="/kirtan-ai" element={<KirtanAIPage />} />
-            <Route path="/aarti" element={<AartiPage />} />
+            <Route path="/aarti" element={<LiveAartiPage />} />
+            <Route path="/live-aarti" element={<LiveAartiPage />} />
             <Route
               path="/temple"
               element={
@@ -161,6 +171,15 @@ function AppContent() {
               }
             />
             <Route path="/account/support" element={<SupportPage />} />
+            <Route
+              path="/leaderboard"
+              element={
+                <ProtectedRoute>
+                  <LeaderboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/wallpaper" element={<WallpaperPage />} />
             <Route
               path="/upload-bhajan"
               element={

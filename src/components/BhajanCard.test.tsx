@@ -7,6 +7,8 @@ import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
 import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
 import type { Bhajan } from "@/data/bhajans";
 
+import { AuthProvider } from "@/hooks/useAuth";
+
 const testBhajan: Bhajan = {
   id: 1,
   slug: "test-bhajan",
@@ -24,17 +26,19 @@ const testBhajan: Bhajan = {
 
 function renderCard() {
   render(
-    <LanguageProvider>
-      <YouTubePlayerProvider>
-        <BhajanModalOpenProvider>
-          <MemoryRouter initialEntries={["/"]}>
-            <Routes>
-              <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
-            </Routes>
-          </MemoryRouter>
-        </BhajanModalOpenProvider>
-      </YouTubePlayerProvider>
-    </LanguageProvider>,
+    <AuthProvider>
+      <LanguageProvider>
+        <YouTubePlayerProvider>
+          <BhajanModalOpenProvider>
+            <MemoryRouter initialEntries={["/"]}>
+              <Routes>
+                <Route path="/" element={<BhajanCard bhajan={testBhajan} />} />
+              </Routes>
+            </MemoryRouter>
+          </BhajanModalOpenProvider>
+        </YouTubePlayerProvider>
+      </LanguageProvider>
+    </AuthProvider>,
   );
 }
 
@@ -42,7 +46,7 @@ describe("BhajanCard", () => {
   it("opens the detail modal when the card is clicked", async () => {
     renderCard();
 
-    const heading = screen.getByRole("heading", { name: /A Very Long Bhajan Headline/i });
+    const heading = screen.getByRole("heading", { name: /Test Hindi Title/i });
     const card = heading.closest('div[tabindex="0"]');
     expect(card).toBeTruthy();
     fireEvent.click(card!);

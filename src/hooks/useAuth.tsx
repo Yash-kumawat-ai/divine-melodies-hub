@@ -85,7 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mfaAal, setMfaAal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
       const client = supabase as any;

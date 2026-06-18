@@ -364,3 +364,390 @@ img.h-\[125\%\].w-full.object-cover.object-\[75\%_top\].md\:object-\[center_top\
   margin-top: -150px;
   border-radius: 0 !important;
 }
+
+.dark{
+  color: rgb(255 144 0);
+
+}
+span.mr-5.sm\:mr-0.sm\:ml-7.text-\[8px\].sm\:text-xs.text-amber-200\/40.dark\:text-amber-200\/20.font-medium{
+  color: rgb(255 144 0);
+}
+
+/* .text-amber-200\/40{
+    color: rgb(255 144 0)!important;
+    font-size: medium;
+} */
+
+.dark\:text-amber-200\/20:is(.dark *){
+    color: rgb(255 144 0)!important;
+    font-size: 12px;
+}
+
+span.truncate.font-bold {
+    font-size: 17px;
+}
+
+.tracking-\[0\.15em\]{
+  font-size: 20px;
+ 
+}
+.tracking-\[0\.15em\]{
+  font-size:14px;
+}
+
+.flex.items-center.gap-1\.5.mb-3.sm\:mb-5 {
+  flex-direction: column-reverse;
+}
+
+.flex.items-center.justify-end.sm\:justify-start.gap-1\.5.mb-3.sm\:mb-5 {
+  flex-direction: column;
+}
+
+.text-brand-brown\/50{
+  font-size:17px;
+  display: none;
+
+}
+.text-brand-brown\/40{
+  font-size:17px!important;
+}
+.text-\[10px\]{
+  font-size:13px;
+}
+
+.dark\:text-brand-cream\/30:is(.dark *) {
+  color: white!important;
+}
+
+dark\:text-emerald-100\/30:is(.dark *){
+  color: white!important;
+}
+.dark\:bg-emerald-900\/10:is(.dark *) {
+color: white!important;
+font-size: 20px;
+}
+.bg-emerald-100\/50{
+  font-size:15px; 
+}
+
+.dark\:text-brand-cream:is(.dark *){
+  font-size: 17px;
+}
+.text-rose-800\/40{
+  color: white!important;
+  font-size: 17px;
+}
+
+.text-brand-brown\/70{
+  color:rgb(224, 110, 4)!important;
+}
+
+.text-rose-700{
+  font-size:15px;
+}
+
+p.text-xs.font-bold.leading-relaxed.opacity-80{
+  font-size:13px;
+}
+
+.to-orange-600\/40 {
+    --tw-gradient-to: rgb(0 126 255) var(--tw-gradient-to-position);
+}
+
+.pointer-events-none.absolute.-top-px.left-1\/2.h-7.w-28.-translate-x-1\/2.rounded-b-\[1\.75rem\].border-b.border-x.border-\[\#E6C27A\]\/20.bg-\[\#0A1830\]\/90{
+  display: none;
+}
+
+/* img.h-full.w-full.object-cover.object-center{  
+   
+    transform: translateY(-205px);
+}
+ */
+
+img.absolute.inset-0.h-full.w-full.object-cover.object-center.lg\:hidden{
+
+    transform: translateY(-50px);
+}
+
+.bg-black\/50{
+      margin-top: -20px;
+}
+
+
+.bg-black\/25 {
+
+    margin-top: -30px;
+}
+
+.flex-wrap {
+   
+    margin-top: 300px;
+}
+
+
+ @media (min-width: 768px) {
+  .bg-black\/25 {
+      margin-top: 0px;
+  }
+  .flex.items-center.gap-4.md\:gap-8.bg-black\/50.backdrop-blur-xl.rounded-3xl.px-6.md\:px-10.py-3.md\:py-4.border.border-white\/10.shadow-2xl {
+      margin-top: 0px;
+  }
+  .flex-wrap {
+      margin-top: 0px;
+  }
+}
+
+ @media (min-width: 800px) {
+  .bg-black\/25 {
+      margin-top: 0px;
+  }
+  .flex.items-center.gap-4.md\:gap-8.bg-black\/50.backdrop-blur-xl.rounded-3xl.px-6.md\:px-10.py-3.md\:py-4.border.border-white\/10.shadow-2xl {
+      margin-top: 0px;
+  }
+  .flex-wrap {
+      margin-top: 0px;
+  }
+}
+
+/* Custom scrollbar hide utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Optimize desktop navigation header for mobile browsers in desktop mode (pointer: coarse) */
+@media (pointer: coarse) and (max-width: 1280px) {
+  @media (min-width: 768px) {
+    header .header-container {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      height: auto !important;
+      padding-top: 0.75rem !important;
+      padding-bottom: 0.75rem !important;
+      row-gap: 0.75rem !important;
+    }
+    header .header-container > nav {
+      display: flex !important;
+      width: 100% !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      gap: 0.625rem 0.875rem !important;
+      font-size: 13px !important;
+    }
+    header .header-container > nav > a,
+    header .header-container > nav > button,
+    header .header-container > nav > select {
+      padding-left: 0.25rem !important;
+      padding-right: 0.25rem !important;
+    }
+    .hero-section {
+      height: 60vh !important;
+      min-height: 520px !important;
+      max-height: 650px !important;
+    }
+  }
+}
+
+
+  .flex-wrap {
+    margin-top: 1px;
+}
+
+.pt-8 {
+    padding-top: 1px;
+}
+
+/* Virtual Mandir Animations */
+
+/* 1. Falling Flowers */
+@keyframes flower-fall {
+  0% {
+    transform: translateY(var(--fall-start, -10vh)) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--fall-end, 70vh)) translateX(var(--fall-sway, 20px)) rotate(var(--fall-spin, 120deg));
+    opacity: 0;
+  }
+}
+.flower-fall {
+  animation-name: flower-fall;
+  animation-duration: var(--fall-duration, 2.5s);
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: forwards;
+}
+
+/* 2. Ambient Petals */
+@keyframes ambient-petal {
+  0% {
+    transform: translateY(-5vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(85vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+.ambient-petal {
+  animation-name: ambient-petal;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-fill-mode: forwards;
+}
+
+/* 3. Bell Ringing (Active Swing) */
+@keyframes bell-swing-ring {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(24deg); }
+  30% { transform: rotate(-22deg); }
+  45% { transform: rotate(18deg); }
+  60% { transform: rotate(-14deg); }
+  75% { transform: rotate(8deg); }
+  90% { transform: rotate(-4deg); }
+  100% { transform: rotate(0deg); }
+}
+.bell-ringing {
+  animation: bell-swing-ring 1.2s ease-in-out;
+  transform-origin: top center;
+}
+
+/* 4. Bell Idle Swaying */
+@keyframes bell-idle-sway-left {
+  0%, 100% { transform: rotate(2.5deg); }
+  50% { transform: rotate(-2.5deg); }
+}
+@keyframes bell-idle-sway-right {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.bell-idle-left {
+  animation: bell-idle-sway-left 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+.bell-idle-right {
+  animation: bell-idle-sway-right 6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 5. Hand Bell Shake Loop */
+@keyframes bell-ring-loop-shake {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(10deg) translateY(-2px); }
+  75% { transform: rotate(-10deg) translateY(-2px); }
+}
+.bell-ring-loop {
+  animation: bell-ring-loop-shake 0.25s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+/* 6. Incense Smoke Rise */
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(0) scaleX(1);
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+  15% {
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-45px) scaleX(2.2) translateX(3px);
+    opacity: 0.15;
+    filter: blur(2.5px);
+  }
+  100% {
+    transform: translateY(-110px) scaleX(3.5) translateX(-6px);
+    opacity: 0;
+    filter: blur(4.5px);
+  }
+}
+.smoke-wisp {
+  background: linear-gradient(to top, rgba(220,220,220,0.35), rgba(255,255,255,0.02));
+  border-radius: 50%;
+  animation: smoke-rise 4.5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* 7. Divine Halo Rotating Rays */
+@keyframes halo-rotation {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.halo-rays {
+  background: radial-gradient(circle, rgba(253,186,116,0.14) 0%, transparent 60%);
+  animation: halo-rotation 24s linear infinite;
+  transform-origin: center center;
+}
+
+/* 8. Swipe Hint Bounce */
+@keyframes swipe-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.swipe-hint-bounce {
+  animation: swipe-bounce 1.5s ease-in-out infinite;
+}
+
+/* 9. Temple Mobile Layout */
+@media (max-width: 767px) {
+  .temple-mobile-layout {
+    height: calc(100dvh - calc(60px + max(0.75rem, env(safe-area-inset-bottom)))) !important;
+    max-height: calc(100dvh - calc(60px + max(0.75rem, env(safe-area-inset-bottom)))) !important;
+    flex: none !important;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .text-white\/20{
+    display: none !important;
+  }
+}
+
+
+
+@media (max-width: 767px) {
+.shadow-\[0_12px_28px_rgba\(249\2c 115\2c 22\2c 0\.45\)\]{ 
+    margin-bottom: 40px;
+  }
+}
+
+
+
+.opacity-70 {
+    opacity: 1;
+}
+
+
+
+@media (max-width: 767px) {
+    .shadow-\[0_12px_28px_rgba\(249\2c 115\2c 22\2c 0\.45\)\] {
+         margin-bottom: 0px; 
+    }
+}
+
+p.text-\[10px\].text-white\/35.font-bold.uppercase.tracking-wider.flex.items-center.gap-1\.5.justify-center{
+  display: none;
+}
+
+
+.pb-4 {
+    padding-bottom: 0.6rem;
+}
+

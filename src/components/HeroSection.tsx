@@ -1,61 +1,79 @@
 import { useNavigate } from 'react-router-dom'; 
 import { Play, Music2, Users, Heart } from 'lucide-react'; 
 import { motion } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useLanguage } from '@/hooks/useLanguage';
 
-// Import images from src/pages
-import krishnaMain from '@/pages/krishna main.webp';
-import krishnaMobile from '@/pages/krishna_mobile_wallpaper.webp';
-import panchangIcon from '@/pages/panchang_spiritual_icon.webp';
-import meditationIcon from '@/pages/meditation_spiritual_icon.webp';
-import templeIcon from '@/pages/temple_icon.webp';
-import krishnaAIIcon from '@/pages/devrishi_narad_icon.webp';
-import lyricsIcon from '@/pages/bhajan_lyrics_icon.webp';
-import aartiIcon from '@/pages/live_aarti_icon.webp';
+// Import images from src/pages/images
+import krishnaMain from '@/pages/images/krishna main.webp';
+import krishnaMobile from '@/pages/images/krishna_mobile_wallpaper.webp';
+import panchangIcon from '@/pages/images/panchang_spiritual_icon.webp';
+import meditationIcon from '@/pages/images/meditation_spiritual_icon.webp';
+import templeIcon from '@/pages/images/temple_icon.webp';
+import krishnaAIIcon from '@/pages/images/devrishi_narad_icon.webp';
+import lyricsIcon from '@/pages/images/bhajan_lyrics_icon.webp';
+import aartiIcon from '@/pages/images/live_aarti_icon.webp';
 
-export function HeroSection() { 
+interface HeroSectionProps {
+  stats?: {
+    bhajans: number;
+    artists: number;
+    devotees: number;
+  };
+}
+
+export function HeroSection({ stats }: HeroSectionProps) { 
   const navigate = useNavigate(); 
-  const isMobile = useIsMobile();
+  const { language } = useLanguage();
+  const isHi = language === 'hi';
+
+  const bhajansCount = stats ? stats.bhajans : 1000;
+  const artistsCount = stats ? stats.artists : 50;
+  const devoteesCount = stats ? stats.devotees : 10000; 
 
   const quickLinks = [ 
-    { label: 'Panchang', icon: panchangIcon, path: '/panchang' }, 
-    { label: 'Meditation', icon: meditationIcon, path: '/meditation' }, 
-    { label: 'Temples', icon: templeIcon, path: '/temple' }, 
-    { label: 'Krishna AI', icon: krishnaAIIcon, path: '/kirtan-ai' }, 
-    { label: 'Lyrics', icon: lyricsIcon, path: '/all-bhajans' }, 
-    { label: 'Aarti', icon: aartiIcon, path: '/aarti' }, 
+    { label: isHi ? 'पंचांग' : 'Panchang', icon: panchangIcon, path: '/panchang' }, 
+    { label: isHi ? 'ध्यान' : 'Meditation', icon: meditationIcon, path: '/meditation' }, 
+    { label: isHi ? 'मंदिर' : 'Temples', icon: templeIcon, path: '/temple' }, 
+    { label: isHi ? 'कृष्णा एआई' : 'Krishna AI', icon: krishnaAIIcon, path: '/kirtan-ai' }, 
+    { label: isHi ? 'गीत' : 'Lyrics', icon: lyricsIcon, path: '/all-bhajans' }, 
+    { label: isHi ? 'आरती' : 'Aarti', icon: aartiIcon, path: '/aarti' }, 
   ]; 
 
   return ( 
-    <section className="relative w-full h-[100svh] overflow-hidden flex flex-col"> 
+    <section className="hero-section relative w-full h-[100svh] overflow-hidden flex flex-col"> 
 
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0"> 
-        <motion.img 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, ease: "easeOut" }}
-          src={isMobile ? krishnaMobile : krishnaMain} 
-          alt="Krishna" 
-          className="w-full h-full object-cover object-[center_top] md:object-center" 
-        /> 
+        <picture className="block w-full h-full">
+          <source media="(min-width: 768px)" srcSet={krishnaMain} />
+          <motion.img 
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 10, ease: "easeOut" }}
+            src={krishnaMobile} 
+            alt="Krishna" 
+            className="w-full h-full object-cover object-[center_top] md:object-center" 
+          />
+        </picture>
         {/* Complex Gradients for maximum readability and depth */} 
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 hidden md:block" />
       </div> 
 
       {/* OVERLAY CONTENT — centered vertically in the upper 70% */} 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-4 text-center"> 
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-2 text-center"> 
 
         {/* Decorative subtitle */} 
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-3 mb-4"
+          className="flex items-center gap-3 mb-2 md:mb-3"
         > 
           <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-400" /> 
-          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">Hare Krishna</p> 
+          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">
+            {isHi ? 'हरे कृष्ण' : 'Hare Krishna'}
+          </p> 
           <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-400" /> 
         </motion.div> 
 
@@ -66,15 +84,15 @@ export function HeroSection() {
           transition={{ delay: 0.4 }}
           className="text-white text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] max-w-4xl"
         > 
-          Discover Divine Music 
+          {isHi ? 'दिव्य संगीत खोजें' : 'Discover Divine Music'}
         </motion.h1> 
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-4 mb-10 tracking-[0.2em] font-light drop-shadow-md"
+          className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-3 mb-6 md:mb-8 tracking-[0.2em] font-light drop-shadow-md"
         > 
-          — FOR EVERY MOMENT OF BHAKTI — 
+          {isHi ? '— भक्ति के हर क्षण के लिए —' : '— FOR EVERY MOMENT OF BHAKTI —'}
         </motion.p> 
 
         {/* CTA Buttons */} 
@@ -82,14 +100,14 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="flex gap-4 mb-12 flex-wrap justify-center"
+          className="flex gap-4 mb-8 md:mb-10 flex-wrap justify-center"
         > 
           <button 
             onClick={() => navigate('/all-bhajans')} 
             className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-8 py-4 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
           > 
             <Play className="w-5 h-5 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
-            <span className="text-base md:text-lg">Explore Bhajans</span>
+            <span className="text-base md:text-lg">{isHi ? 'भजन खोजें' : 'Explore Bhajans'}</span>
           </button> 
         </motion.div> 
 
@@ -98,15 +116,17 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="flex items-center gap-4 md:gap-8 bg-black/50 backdrop-blur-xl rounded-3xl px-6 md:px-10 py-4 border border-white/10 shadow-2xl"
+          className="flex items-center gap-4 md:gap-8 bg-black/50 backdrop-blur-xl rounded-3xl px-6 md:px-10 py-3 md:py-4 border border-white/10 shadow-2xl"
         > 
           <div className="flex flex-col md:flex-row items-center gap-1 md:gap-3"> 
             <div className="p-2 bg-amber-500/10 rounded-lg">
               <Music2 className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">1,000+</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Bhajans</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{bhajansCount.toLocaleString()}+</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'भजन' : 'Bhajans'}
+              </p> 
             </div>
           </div> 
           <div className="w-px h-8 bg-white/10" /> 
@@ -115,8 +135,10 @@ export function HeroSection() {
               <Users className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">50+</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Artists</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{artistsCount.toLocaleString()}</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'कलाकार' : 'Artists'}
+              </p> 
             </div>
           </div> 
           <div className="w-px h-8 bg-white/10" /> 
@@ -125,8 +147,10 @@ export function HeroSection() {
               <Heart className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
             </div>
             <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">10K+</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">Devotees</p> 
+              <p className="text-white font-bold text-sm md:text-lg leading-none">{devoteesCount.toLocaleString()}</p> 
+              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
+                {isHi ? 'भक्त' : 'Devotees'}
+              </p> 
             </div>
           </div> 
         </motion.div> 
@@ -137,31 +161,35 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2 }}
-        className="relative z-10 px-4 pb-8 pt-4 max-w-5xl mx-auto w-full"
+        className="relative z-10 px-3 pb-6 pt-2 md:px-6 md:pb-8 max-w-4xl mx-auto w-full"
       > 
-        <div className="grid grid-cols-6 gap-2 md:gap-4"> 
-          {quickLinks.map((item, idx) => ( 
-            <button 
-              key={item.label} 
-              onClick={() => navigate(item.path)} 
-              className="flex flex-col items-center gap-2 group transition-all" 
-            > 
-              <div className="w-full aspect-square bg-white/[0.03] hover:bg-white/[0.08] active:scale-90 backdrop-blur-md rounded-2xl md:rounded-[2rem] border border-white/10 group-hover:border-amber-500/40 flex items-center justify-center p-2 md:p-4 transition-all duration-300 shadow-xl overflow-hidden relative"> 
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-colors" />
-                <img 
-                  src={item.icon} 
-                  alt={item.label} 
-                  className="w-full h-full object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" 
-                /> 
-              </div> 
-              <span className="text-white/80 text-[9px] md:text-xs font-bold text-center leading-tight uppercase tracking-wider group-hover:text-amber-300 transition-colors"> 
-                {item.label} 
-              </span> 
-            </button> 
-          ))} 
-        </div> 
-      </motion.div> 
+        <div className="rounded-[2rem] bg-black/25 backdrop-blur-2xl border border-white/10 px-3 py-4 md:px-6 md:py-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+          <div className="flex items-start justify-between gap-1 sm:gap-2 md:gap-4"> 
+            {quickLinks.map((item) => ( 
+              <button 
+                key={item.label} 
+                onClick={() => navigate(item.path)} 
+                className="group flex min-w-0 flex-1 flex-col items-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 rounded-xl" 
+              > 
+                <div className="relative shrink-0">
+                  <div className="absolute -inset-[3px] rounded-full bg-gradient-to-b from-amber-300/50 via-amber-500/25 to-orange-600/40 opacity-0 blur-[2px] transition-all duration-300 group-hover:opacity-100" />
+                  <div className="relative flex h-[3.25rem] w-[3.25rem] items-center justify-center overflow-hidden rounded-full border border-white/25 bg-gradient-to-b from-white/15 to-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.35)] backdrop-blur-md transition-all duration-300 group-hover:border-amber-300/50 group-hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_12px_28px_rgba(251,191,36,0.15)] group-active:scale-95 sm:h-[3.75rem] sm:w-[3.75rem] md:h-[4.25rem] md:w-[4.25rem]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-amber-100/5" />
+                    <img 
+                      src={item.icon} 
+                      alt={item.label} 
+                      className="relative z-10 h-[88%] w-[88%] rounded-full object-cover object-center transition-transform duration-500 group-hover:scale-105" 
+                    />
+                  </div>
+                </div>
+                <span className="max-w-[4.5rem] text-center text-[7px] font-semibold uppercase leading-tight tracking-[0.08em] text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] transition-colors group-hover:text-amber-200 sm:max-w-none sm:text-[9px] md:text-[10px] md:tracking-[0.12em]"> 
+                  {item.label} 
+                </span> 
+              </button> 
+            ))} 
+          </div>
+        </div>
+      </motion.div>
 
     </section> 
   ); 

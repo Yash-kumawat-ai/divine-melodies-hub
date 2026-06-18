@@ -9,39 +9,48 @@ import { cn } from "@/lib/utils";
 export default function AppShell() {
   const { pathname } = useLocation();
   const isKirtanAi = pathname === "/kirtan-ai";
-  const isFullScreenApp = isKirtanAi;
+  const isTemplePage = pathname === "/temple";
+  const isLeaderboard = pathname === "/leaderboard";
+  const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
 
   useEffect(() => {
     if (!isFullScreenApp) {
       window.scrollTo(0, 0);
+      
+      // Delay reset scroll to top to ensure async/lazy page loads are captured
+      const timer = setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [pathname, isFullScreenApp]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background font-body">
+    <div
+      className={cn(
+        "flex flex-col bg-background font-body",
+        isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-screen"
+      )}
+    >
       {!isFullScreenApp && <Header />}
       <main
         className={cn(
           "flex-1",
-          !isFullScreenApp && "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0",
           isFullScreenApp && "flex min-h-0 flex-col overflow-hidden",
+          isTemplePage && "temple-mobile-layout"
         )}
       >
         <Suspense fallback={<PageContentFallback />}>
           <Outlet />
         </Suspense>
       </main>
-      {!isFullScreenApp && <MobileBottomNav />}
-      {!isFullScreenApp && (
-        <div className="block pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:hidden">
-          <LayoutFooter />
+      {(!isFullScreenApp || isTemplePage) && (
+        <div className="block md:hidden">
+          <MobileBottomNav />
         </div>
       )}
-      {!isFullScreenApp && (
-        <div className="hidden md:block">
-          <LayoutFooter />
-        </div>
-      )}
+      {!isFullScreenApp && <LayoutFooter />}
     </div>
   );
 }

@@ -30,12 +30,12 @@ import { loadFestivalIndex } from '@/services/festivalService';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import omImage from './om.webp';
-import rahuImage from './rahu.webp';
-import abhijitImg from './abhijit muhrat.webp';
-import vijayImg from './vijay muhrat.webp';
-import godhuliImg from './godhuli muhrat.webp';
-import brahmaImg from './bramha muhrat.webp';
+import omImage from './images/om.webp';
+import rahuImage from './images/rahu.webp';
+import abhijitImg from './images/abhijit muhrat.webp';
+import vijayImg from './images/vijay muhrat.webp';
+import godhuliImg from './images/godhuli muhrat.webp';
+import brahmaImg from './images/bramha muhrat.webp';
 import type { FestivalSummary } from '@/types/festival';
 import { loadPanchang } from '@/lib/panchang/loadPanchang';
 import { todayInIndia, type PanchangData } from '@/lib/panchang/types';
@@ -1084,6 +1084,7 @@ export default function PanchangPage() {
             {karyaSection}
 
             <div className="space-y-4 lg:hidden">
+              {upcomingEventsSection}
               <ReminderCenter
                 reminders={reminders}
                 language={lang}
@@ -1092,13 +1093,13 @@ export default function PanchangPage() {
                 onRemove={handleRemoveReminder}
                 onCustomAdd={handleCustomReminder}
               />
-              {upcomingEventsSection}
             </div>
 
             <FestivalCalendar />
           </div>
 
           <aside className="hidden min-w-0 space-y-4 sm:space-y-6 lg:block">
+            {upcomingEventsSection}
             <ReminderCenter
               reminders={reminders}
               language={lang}
@@ -1107,7 +1108,6 @@ export default function PanchangPage() {
               onRemove={handleRemoveReminder}
               onCustomAdd={handleCustomReminder}
             />
-            {upcomingEventsSection}
           </aside>
         </div>
       </div>

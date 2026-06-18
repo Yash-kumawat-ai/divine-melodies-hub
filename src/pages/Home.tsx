@@ -71,7 +71,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ bhajans: 0, artists: 0, listeners: 0 });
+  const [stats, setStats] = useState({ bhajans: 0, artists: 0, devotees: 0 });
 
   const features = [
     { icon: Upload, title: t('uploadAndShare'), desc: t('uploadAndShareDesc') },
@@ -80,7 +80,11 @@ export default function Home() {
     { icon: ShieldCheck, title: t('curatedQuality'), desc: t('curatedQualityDesc') },
   ];
 
-  const testimonials = [
+  const testimonials = isHi ? [
+    { name: 'प्रिया शर्मा', city: 'जयपुर', initials: 'PS', quote: 'हरि कीर्तन में भजनों का सबसे संपूर्ण संग्रह है जो मुझे ऑनलाइन मिला है। मैं अपनी सुबह की पूजा के लिए हर दिन इसका उपयोग करती हूँ।' },
+    { name: 'रमेश कुमार', city: 'वाराणसी', initials: 'RK', quote: 'मैंने यहाँ अपने दादाजी के दुर्लभ भजन अपलोड किए हैं। यह जानकर बहुत अच्छा लगता है कि वे आने वाली पीढ़ियों के लिए सुरक्षित रहेंगे।' },
+    { name: 'अंजलि गुप्ता', city: 'मुंबई', initials: 'AG', quote: 'भजन के बोल बिल्कुल सटीक और पढ़ने में आसान हैं। इस प्लेटफॉर्म की मदद से अब मेरे बच्चे भी शाम की आरती में साथ गाते हैं।' }
+  ] : [
     { name: 'Priya Sharma', city: 'Jaipur', initials: 'PS', quote: 'Hari Kirtan has the most complete collection of bhajans I have found online. I use it every morning for my puja.' },
     { name: 'Ramesh Kumar', city: 'Varanasi', initials: 'RK', quote: 'I uploaded my grandfather\'s rare bhajans here. It feels wonderful to know they will be preserved for future generations.' },
     { name: 'Anjali Gupta', city: 'Mumbai', initials: 'AG', quote: 'The lyrics are accurate and easy to read. My children now sing along during our evening aarti thanks to this platform.' },
@@ -89,14 +93,37 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { count } = await (supabase as any).from('user_profiles').select('id', { count: 'exact', head: true });
+        const { count: profileCount } = await (supabase as any)
+          .from('user_profiles')
+          .select('id', { count: 'exact', head: true });
+
+        const { data: uploadSingers } = await (supabase as any)
+          .from('user_uploads')
+          .select('singer_name')
+          .or('status.eq.approved,status.is.null');
+
+        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
+        if (uploadSingers) {
+          uploadSingers.forEach((row: any) => {
+            if (row.singer_name) {
+              uniqueSingers.add(row.singer_name.trim());
+            }
+          });
+        }
+
         setStats({
           bhajans: totalBhajanCount,
-          artists: Math.max(50, count ?? 0),
-          listeners: Math.max(1000, (count ?? 0) * 10),
+          artists: uniqueSingers.size,
+          devotees: profileCount ?? 0,
         });
-      } catch {
-        setStats({ bhajans: totalBhajanCount || staticBhajans.length, artists: 50, listeners: 1000 });
+      } catch (err) {
+        console.error('Error fetching dynamic stats:', err);
+        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
+        setStats({
+          bhajans: totalBhajanCount || staticBhajans.length,
+          artists: uniqueSingers.size,
+          devotees: 0,
+        });
       }
     };
 
@@ -137,7 +164,7 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      <HeroSection />
+      <HeroSection stats={stats} />
 
       {/* Deity Grid */}
       <DeityGrid />

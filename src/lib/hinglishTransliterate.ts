@@ -20,7 +20,6 @@ function normalizeCompact(text: string): string {
 const HINGLISH_WORD_MAP: Record<string, string> = {
   ghar: 'घर',
   ghr: 'घर',
-  ghar: 'घर',
   gharme: 'घर',
   me: 'में',
   mein: 'में',
@@ -148,17 +147,16 @@ export function hinglishPhraseToDevanagariSpaced(query: string): string | null {
   return fragments.join(' ');
 }
 
-/** True when mapped Hindi pieces all appear in the bhajan Hindi title. */
 export function latinQueryMatchesHindiTitle(query: string, titleHindi: string): boolean {
   if (!titleHindi?.trim()) return false;
   const fragments = latinQueryToHindiFragments(query);
   if (fragments.length === 0) return false;
 
-  const titleNorm = titleHindi;
-  const titleCompact = normalizeCompact(titleHindi);
+  const titleNorm = titleHindi.normalize('NFC');
+  const titleCompact = normalizeCompact(titleHindi.normalize('NFC'));
 
   const matchedCount = fragments.filter(
-    (frag) => titleNorm.includes(frag) || titleCompact.includes(normalizeCompact(frag)),
+    (frag) => titleNorm.includes(frag.normalize('NFC')) || titleCompact.includes(normalizeCompact(frag.normalize('NFC'))),
   ).length;
 
   if (fragments.length === 1) return matchedCount === 1;

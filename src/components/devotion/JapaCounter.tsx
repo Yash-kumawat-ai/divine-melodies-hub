@@ -13,6 +13,9 @@ type JapaCounterProps = {
   reducedMotion?: boolean;
   onClose: () => void;
   onComplete?: () => void;
+  targetCount?: number;
+  mantraId?: string;
+  initialSankalp?: string;
 };
 
 export default function JapaCounter({
@@ -21,9 +24,12 @@ export default function JapaCounter({
   reducedMotion,
   onClose,
   onComplete,
+  targetCount = 108,
+  mantraId,
+  initialSankalp,
 }: JapaCounterProps) {
   const deity = deities.find((d) => d.slug === deitySlug) ?? deities.find((d) => d.slug === "shiva") ?? deities[0];
-  const [sankalp, setSankalp] = useState("");
+  const [sankalp, setSankalp] = useState(initialSankalp || "");
   const [started, setStarted] = useState(false);
   const [count, setCount] = useState(0);
   const [progress, setProgress] = useState(loadDevotionProgress());
@@ -34,22 +40,27 @@ export default function JapaCounter({
   }, []);
 
   const tap = useCallback(() => {
-    if (count >= 108) return;
+    if (count >= targetCount) return;
     const next = count + 1;
     setCount(next);
-    if (next >= 108) {
-      const p = completeJapaSession({
-        mantra: mantraLabel.slice(0, 120),
-        sankalp: sankalp.trim() || "\u0936\u093e\u0902\u0924\u093f \u0914\u0930 \u092d\u0915\u094d\u0924\u093f",
-        targetCount: 108,
-        completedAt: new Date().toISOString(),
-      });
-      setProgress(p);
-      onComplete?.();
+    if (next >= targetCount) {
+      // If parent provides onComplete, let it handle persistence (Supabase or localStorage)
+      if (onComplete) {
+        onComplete();
+      } else {
+        // Fallback: direct localStorage write
+        const p = completeJapaSession({
+          mantra: mantraLabel.slice(0, 120),
+          sankalp: sankalp.trim() || "शान्ति और भक्ति",
+          targetCount: targetCount,
+          completedAt: new Date().toISOString(),
+        }, new Date(), mantraId);
+        setProgress(p);
+      }
     }
-  }, [count, mantraLabel, onComplete, sankalp]);
+  }, [count, mantraLabel, onComplete, sankalp, targetCount, mantraId]);
 
-  const pct = Math.round((count / 108) * 100);
+  const pct = Math.round((count / targetCount) * 100);
   const milestone = JAPA_MILESTONES.find((m) => m === count);
 
   return (
@@ -65,7 +76,7 @@ export default function JapaCounter({
       <div className="w-full max-w-sm rounded-3xl border border-amber-400/30 bg-gradient-to-b from-[#fffdf6] to-[#fff8ee] p-5 shadow-2xl">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-display text-xl text-[#571c1c]">108 Japa</h3>
+            <h3 className="font-display text-xl text-[#571c1c]">{targetCount} Japa</h3>
             <p className="text-xs text-[#6b4423]/80">{mantraLabel}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-black/5" aria-label="Close">
@@ -97,7 +108,7 @@ export default function JapaCounter({
               onClick={startJapa}
               className="w-full rounded-full bg-gradient-to-r from-amber-600 to-orange-600 py-3 text-sm font-semibold text-white"
             >
-              Start 108
+              Start {targetCount}
             </button>
           </div>
         ) : (
@@ -105,7 +116,7 @@ export default function JapaCounter({
             <div className="mt-5 text-center">
               <p className="text-5xl font-bold tabular-nums text-[#7c2d12]">
                 {count}
-                <span className="text-2xl text-[#92400e]/60">/108</span>
+                <span className="text-2xl text-[#92400e]/60">/{targetCount}</span>
               </p>
               {milestone ? (
                 <p className="mt-1 text-sm font-medium text-amber-700">{milestone} — keep going</p>
@@ -120,13 +131,13 @@ export default function JapaCounter({
             <button
               type="button"
               onClick={tap}
-              disabled={count >= 108}
+              disabled={count >= targetCount}
               className={cn(
                 "mt-5 w-full rounded-full py-4 text-base font-semibold transition active:scale-[0.98]",
-                count >= 108 ? "bg-green-600 text-white" : "bg-[#571c1c] text-amber-50",
+                count >= targetCount ? "bg-green-600 text-white" : "bg-[#571c1c] text-amber-50",
               )}
             >
-              {count >= 108 ? "Hari Om — Complete" : "Tap for each chant"}
+              {count >= targetCount ? "Hari Om — Complete" : "Tap for each chant"}
             </button>
             {progress.currentStreak > 0 ? (
               <p className="mt-3 text-center text-xs text-[#92400e]/70">

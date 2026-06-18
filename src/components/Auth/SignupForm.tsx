@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +7,62 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, Mail, Lock, User, Loader2, Chrome, Phone } from 'lucide-react';
 import { signupSchema, type SignupInput } from '@/schemas';
+import { useLanguage } from '@/hooks/useLanguage';
+
+const signupCopy = {
+  en: {
+    title: 'Create Account',
+    subtitle: 'Build your profile and share your devotion with everyone.',
+    fullName: 'Full Name *',
+    fullNamePlaceholder: 'Your Full Name',
+    email: 'Email *',
+    phone: 'Phone (Optional)',
+    password: 'Password *',
+    confirmPassword: 'Confirm Password *',
+    submit: 'Create Sacred Account',
+    blocked: 'Blocked',
+    divider: 'Or seek with',
+    google: 'Sign up with Google',
+    alreadyAccount: 'Already have an account?',
+    login: 'Login',
+    successTitle: 'Account Created!',
+    successBody: (name: string) => `Welcome, ${name}! Please check your email to verify your account, then login.`,
+    successHint: 'Check spam/junk folder if no email arrives.',
+    goToLogin: 'Go to Login',
+    emailConfigError: 'Email verification is not configured correctly yet. Please use Google signup for now, or configure Supabase SMTP and try again.',
+    alreadyRegistered: 'This email is already registered. Please log in instead.',
+    rateLimit: (seconds: number) => `Too many signup attempts. Email provider is rate-limiting. Please wait ${seconds} seconds or use Google signup.`,
+    rateLimitBanner: (seconds: number) => `Signup blocked for ${seconds}s. Your email provider is rate-limiting. Try Google signup instead.`,
+    signupFailed: 'Signup failed',
+    googleFailed: 'Google signup failed',
+  },
+  hi: {
+    title: 'खाता बनाएं',
+    subtitle: 'अपनी प्रोफाइल बनाएं और अपनी भक्ति सबके साथ साझा करें।',
+    fullName: 'पूरा नाम *',
+    fullNamePlaceholder: 'आपका पूरा नाम',
+    email: 'ईमेल *',
+    phone: 'फोन (वैकल्पिक)',
+    password: 'पासवर्ड *',
+    confirmPassword: 'पासवर्ड पुष्टि करें *',
+    submit: 'पवित्र खाता बनाएं',
+    blocked: 'रुका हुआ',
+    divider: 'या इससे जारी रखें',
+    google: 'Google से साइन अप करें',
+    alreadyAccount: 'पहले से खाता है?',
+    login: 'लॉग इन',
+    successTitle: 'खाता बन गया!',
+    successBody: (name: string) => `स्वागत है, ${name}! कृपया अपना खाता सत्यापित करने के लिए ईमेल देखें, फिर लॉगिन करें।`,
+    successHint: 'अगर ईमेल न मिले तो स्पैम/जंक फ़ोल्डर देखें।',
+    goToLogin: 'लॉगिन पर जाएं',
+    emailConfigError: 'ईमेल वेरिफिकेशन अभी सही तरह से सेट नहीं है। अभी Google signup उपयोग करें, या Supabase SMTP सेट करके फिर कोशिश करें।',
+    alreadyRegistered: 'यह ईमेल पहले से रजिस्टर्ड है। कृपया लॉग इन करें।',
+    rateLimit: (seconds: number) => `बहुत ज़्यादा signup प्रयास हुए हैं। ईमेल provider rate-limit कर रहा है। कृपया ${seconds} सेकंड रुकें या Google signup उपयोग करें।`,
+    rateLimitBanner: (seconds: number) => `Signup ${seconds}s के लिए रुका है। ईमेल provider rate-limit कर रहा है। Google signup उपयोग करें।`,
+    signupFailed: 'साइनअप असफल रहा',
+    googleFailed: 'Google साइनअप असफल रहा',
+  },
+};
 
 export default function SignupForm() {
   const SIGNUP_COOLDOWN_KEY = 'signupCooldownUntil';
@@ -16,6 +72,8 @@ export default function SignupForm() {
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const { signUp, signInWithGoogle } = useAuth();
+  const { language } = useLanguage();
+  const copy = language === 'hi' ? signupCopy.hi : signupCopy.en;
   const navigate = useNavigate();
   
   const { register, handleSubmit, formState: { errors }, getValues } = useForm<SignupInput>({
@@ -66,7 +124,7 @@ export default function SignupForm() {
       normalized.includes('email provider')
     ) {
       return {
-        message: 'Email verification is not configured correctly yet. Please use Google signup for now, or configure Supabase SMTP and try again.',
+        message: copy.emailConfigError,
         isRateLimit: false,
       };
     }
@@ -80,7 +138,7 @@ export default function SignupForm() {
     }
 
     if (normalized.includes('user already registered')) {
-      return { message: 'This email is already registered. Please log in instead.', isRateLimit: false };
+      return { message: copy.alreadyRegistered, isRateLimit: false };
     }
 
     return { message, isRateLimit: false };
@@ -97,7 +155,7 @@ export default function SignupForm() {
       const cooldownUntil = Number(storedCooldown);
       if (!Number.isNaN(cooldownUntil) && cooldownUntil > Date.now()) {
         const waitSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
-        setError(`Too many signup attempts. Email provider is rate-limiting. Please wait ${waitSeconds} seconds or use Google signup.`);
+        setError(copy.rateLimit(waitSeconds));
         return;
       }
     }
@@ -106,7 +164,7 @@ export default function SignupForm() {
     const { error } = await signUp(data.email, data.password, data.name, data.phone);
     
     if (error) {
-      const parsed = toFriendlySignupError(error.message || 'Signup failed');
+      const parsed = toFriendlySignupError(error.message || copy.signupFailed);
       if (!parsed.isRateLimit) {
         setError(parsed.message);
       }
@@ -128,7 +186,7 @@ export default function SignupForm() {
         }
       }
     } catch (err: any) {
-      const parsed = toFriendlySignupError(err.message || 'Google signup failed');
+      const parsed = toFriendlySignupError(err.message || copy.googleFailed);
       if (!parsed.isRateLimit) {
         setError(parsed.message);
       }
@@ -141,19 +199,19 @@ export default function SignupForm() {
     return (
       <div className="w-full py-8 text-center">
         <div className="mb-4 text-4xl">✅</div>
-        <h2 className="mb-2 text-2xl font-bold">Account Created!</h2>
+        <h2 className="mb-2 text-2xl font-bold">{copy.successTitle}</h2>
         <p className="mb-4 text-muted-foreground">
-          Welcome, {registeredName}! Please check your email to verify your account, then login.
+          {copy.successBody(registeredName)}
         </p>
         <p className="mb-6 text-sm text-muted-foreground">
-          Check spam/junk folder if no email arrives.
+          {copy.successHint}
         </p>
         <Link 
           to="/auth/login" 
           className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-amber-600 transition-all"
         >
           <ArrowRight className="w-4 h-4" />
-          Go to Login
+          {copy.goToLogin}
         </Link>
       </div>
     );
@@ -162,8 +220,8 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="text-3xl font-semibold text-white">Create Account</h2>
-        <p className="text-sm text-slate-400">Build your profile and share your devotion with everyone.</p>
+        <h2 className="text-3xl font-semibold text-white">{copy.title}</h2>
+        <p className="text-sm text-slate-400">{copy.subtitle}</p>
       </div>
       
       {error && (
@@ -174,19 +232,19 @@ export default function SignupForm() {
 
       {isRateLimited && (
         <div className="rounded-xl border-2 border-red-500/50 bg-red-500/10 p-4 text-sm font-semibold text-red-400">
-          ⏱️ Signup blocked for {secondsRemaining}s. Your email provider is rate-limiting. Try Google signup instead.
+          {copy.rateLimitBanner(secondsRemaining)}
         </div>
       )}
 
       <div className="space-y-2">
-        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Full Name *</label>
+        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.fullName}</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
             id="name"
             type="text"
             {...register('name')}
-            placeholder="Your Full Name"
+            placeholder={copy.fullNamePlaceholder}
             className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
           />
         </div>
@@ -196,7 +254,7 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Email *</label>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.email}</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
@@ -213,7 +271,7 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Phone (Optional)</label>
+        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.phone}</label>
         <div className="relative">
           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
@@ -230,7 +288,7 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Password *</label>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.password}</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
@@ -247,7 +305,7 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wide text-slate-300">Confirm Password *</label>
+        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.confirmPassword}</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
           <Input
@@ -265,7 +323,7 @@ export default function SignupForm() {
 
       <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all shadow-lg ${isRateLimited ? 'bg-slate-600 text-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-orange-500/30'}`}>
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-        {isRateLimited ? `🔒 Blocked ${secondsRemaining}s` : 'Create Sacred Account'}
+        {isRateLimited ? `${copy.blocked} ${secondsRemaining}s` : copy.submit}
       </Button>
 
       <div className="relative">
@@ -273,7 +331,7 @@ export default function SignupForm() {
           <span className="w-full border-t border-orange-500/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-800/50 px-3 text-slate-400">Or seek with</span>
+          <span className="bg-slate-800/50 px-3 text-slate-400">{copy.divider}</span>
         </div>
       </div>
 
@@ -285,13 +343,13 @@ export default function SignupForm() {
         className="h-12 w-full rounded-xl border border-orange-500/30 bg-slate-800/50 text-white hover:bg-slate-700/50 hover:border-orange-500/50"
       >
         <Chrome className="mr-2 w-4 h-4" />
-        Sign up with Google
+        {copy.google}
       </Button>
 
       <p className="text-center text-sm text-slate-400">
-        Already have an account?{' '}
+        {copy.alreadyAccount}{' '}
         <Link to="/auth/login" className="text-orange-400 hover:text-orange-300 hover:underline font-medium">
-          Login
+          {copy.login}
         </Link>
       </p>
     </form>

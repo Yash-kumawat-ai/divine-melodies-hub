@@ -29,6 +29,10 @@ export type Database = {
       lyrics_cache: AppTable
       newsletter_subscribers: AppTable
       bhajan_ratings: AppTable
+      mantras: AppTable
+      user_jap_sessions: AppTable
+      user_jap_totals: AppTable
+      user_sankalpas: AppTable
     }
     Views: {
       [_ in never]: never

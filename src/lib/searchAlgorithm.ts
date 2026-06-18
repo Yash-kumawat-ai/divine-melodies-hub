@@ -42,7 +42,7 @@ function isLatinQuery(text: string): boolean {
 
 /** Remove spaces/punctuation for "चुप चाप" ↔ "चुपचाप" style matching */
 export function normalizeSearchText(text: string): string {
-  return text.toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
+  return text.normalize('NFC').toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
 }
 
 export function extractWords(text: string): string[] {
@@ -66,17 +66,30 @@ export function getFlexibleSearchTokens(query: string): string[] {
     if (value.length >= minTokenLength) tokens.add(value);
   };
 
-  add(trimmed);
-  extractWords(trimmed).forEach(add);
+  // Add both NFC and NFD variants for Devanagari to support all mobile keyboard encodings
+  const nfcQuery = trimmed.normalize('NFC');
+  const nfdQuery = trimmed.normalize('NFD');
 
-  const compact = normalizeSearchText(trimmed);
-  if (compact.length >= minTokenLength) tokens.add(compact);
+  add(nfcQuery);
+  add(nfdQuery);
 
-  const allowSplit = containsDevanagari(trimmed) || compact.length >= 8;
-  if (allowSplit && !/\s/.test(trimmed) && compact.length >= 6) {
-    const mid = Math.ceil(compact.length / 2);
-    add(compact.slice(0, mid));
-    add(compact.slice(mid));
+  extractWords(nfcQuery).forEach(add);
+  extractWords(nfdQuery).forEach(add);
+
+  const compactNFC = normalizeSearchText(nfcQuery);
+  const compactNFD = normalizeSearchText(nfdQuery);
+  if (compactNFC.length >= minTokenLength) tokens.add(compactNFC);
+  if (compactNFD.length >= minTokenLength) tokens.add(compactNFD);
+
+  const allowSplit = containsDevanagari(trimmed) || compactNFC.length >= 8;
+  if (allowSplit && !/\s/.test(trimmed) && compactNFC.length >= 6) {
+    const midNFC = Math.ceil(compactNFC.length / 2);
+    add(compactNFC.slice(0, midNFC));
+    add(compactNFC.slice(midNFC));
+
+    const midNFD = Math.ceil(compactNFD.length / 2);
+    add(compactNFD.slice(0, midNFD));
+    add(compactNFD.slice(midNFD));
   }
 
   return [...tokens];
@@ -108,7 +121,7 @@ function getBhajanSearchFields(bhajan: any): {
 
 function substringMatch(haystack: string, needle: string): boolean {
   if (!needle || needle.length < 2) return false;
-  return haystack.toLowerCase().includes(needle.toLowerCase());
+  return haystack.normalize('NFC').toLowerCase().includes(needle.normalize('NFC').toLowerCase());
 }
 
 function compactMatch(haystack: string, needle: string): boolean {
@@ -296,9 +309,9 @@ export function smartSearchBhajans(query: string, source: any[] = []): any[] {
 const NARAD_MIN_SCORE = 60;
 
 function getNaradTitleFields(bhajan: any) {
-  const title = String(bhajan.title || '');
-  const titleHindi = String(bhajan.titleHindi || '');
-  const transliteration = String(bhajan.lyricsTransliteration || '');
+  const title = String(bhajan.title || '').normalize('NFC');
+  const titleHindi = String(bhajan.titleHindi || '').normalize('NFC');
+  const transliteration = String(bhajan.lyricsTransliteration || '').normalize('NFC');
   const titleBlob = `${title} ${titleHindi} ${transliteration}`.trim();
   return {
     title,
@@ -405,8 +418,31 @@ function bhajanFuzzyTitleMatch(bhajan: any, query: string): boolean {
   return false;
 }
 
-function scoreNaradBhajan(bhajan: any, query: string, strictOnly: boolean): number {
-  const matches = strictOnly ? bhajanStrictTitleMatch(bhajan, query) : bhajanFuzzyTitleMatch(bhajan, query);
+function bhajanPartialTitleMatch(bhajan: any, query: string): boolean {
+  const trimmed = query.trim();
+  if (!trimmed || !bhajan) return false;
+
+  const fields = getNaradTitleFields(bhajan);
+  const queryWords = extractWords(trimmed).filter((w) => w.length >= 2);
+  if (queryWords.length === 0) return false;
+
+  return queryWords.some((qWord) =>
+    fields.titleWords.some(
+      (tWord) =>
+        tWord.includes(qWord) ||
+        qWord.includes(tWord) ||
+        compactMatch(tWord, qWord) ||
+        (isLatinQuery(qWord) && (laxLatinWordMatch(qWord, tWord) || fuzzyTitleWordMatch(qWord, tWord))),
+    ),
+  );
+}
+
+function scoreNaradBhajan(bhajan: any, query: string, mode: "strict" | "fuzzy" | "partial"): number {
+  let matches = false;
+  if (mode === "strict") matches = bhajanStrictTitleMatch(bhajan, query);
+  else if (mode === "fuzzy") matches = bhajanFuzzyTitleMatch(bhajan, query);
+  else if (mode === "partial") matches = bhajanPartialTitleMatch(bhajan, query);
+
   if (!matches) return 0;
 
   let score = 40;
@@ -463,17 +499,22 @@ export function naradSearchBhajans(query: string, source: any[] = []): any[] {
 
   const strictMatches = source.filter((bhajan) => bhajanStrictTitleMatch(bhajan, trimmed));
   let candidates = strictMatches;
+  let mode: "strict" | "fuzzy" | "partial" = "strict";
 
   if (candidates.length === 0 && allowNaradFuzzyFallback(trimmed)) {
     candidates = source.filter((bhajan) => bhajanFuzzyTitleMatch(bhajan, trimmed));
+    mode = "fuzzy";
   }
 
-  const usedStrictOnly = strictMatches.length > 0;
+  if (candidates.length === 0) {
+    candidates = source.filter((bhajan) => bhajanPartialTitleMatch(bhajan, trimmed));
+    mode = "partial";
+  }
 
   const scoredBhajans = candidates
     .map((bhajan) => ({
       ...bhajan,
-      _searchScore: scoreNaradBhajan(bhajan, trimmed, usedStrictOnly || strictMatches.includes(bhajan)),
+      _searchScore: scoreNaradBhajan(bhajan, trimmed, mode),
     }))
     .filter((b) => b._searchScore >= NARAD_MIN_SCORE)
     .sort((a, b) => b._searchScore - a._searchScore);
