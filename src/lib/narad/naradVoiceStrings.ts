@@ -1,4 +1,4 @@
-/** Narad voice UI — Unicode escapes avoid source encoding corruption. */
+﻿/** Narad voice UI — Unicode escapes avoid source encoding corruption. */
 
 export const NARAD_HI = {
   listening: "\u0938\u0941\u0928 \u0930\u0939\u093e \u0939\u0942\u0901\u2026 \u092c\u094b\u0932\u093f\u090f",
@@ -20,7 +20,7 @@ export const NARAD_HI = {
   noSpeech: "\u0915\u094b\u0908 \u0906\u0935\u093e\u091c\u093c \u0928\u0939\u0940\u0902 \u0938\u0941\u0928\u0940\u0964 \u092b\u093f\u0930 \u0938\u0947 \u0915\u094b\u0936\u093f\u0936 \u0915\u0930\u0947\u0902\u0964",
   privacyTitle: "Microphone for Narad",
   privacyBody:
-    "Your voice is converted to text in your browser only. Hari Kirtan does not record or store audio. You can type instead anytime.",
+    "Your voice is converted to text in your browser only. Raghavam does not record or store audio. You can type instead anytime.",
   privacyOk: "Continue",
   micFallback: "Type your question below",
   typeInstead: "Type",

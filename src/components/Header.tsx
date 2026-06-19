@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+﻿import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
   CalendarDays,
@@ -144,13 +144,13 @@ export default function Header() {
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <img
               src="/brand-logo.webp"
-              alt="Hari Kirtan"
+              alt="Raghavam"
               className="w-8 h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 object-contain shrink-0"
               width={40}
               height={40}
             />
             <span className="font-display text-base md:text-base lg:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
-              Hari Kirtan
+              Raghavam
             </span>
           </Link>
         </div>

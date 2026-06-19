@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import {
   CalendarDays,
   BellRing,
@@ -969,7 +969,7 @@ export default function PanchangPage() {
   return (
     <div className="panchang-temple panchang-temple-bg min-h-screen overflow-x-hidden px-3 py-4 sm:px-4 sm:py-10">
       <SEO
-        title={lang === 'hi' ? 'आज का पंचांग - Hari Kirtan' : "Today's Panchang - Hari Kirtan"}
+        title={lang === 'hi' ? 'आज का पंचांग - Raghavam' : "Today's Panchang - Raghavam"}
         description="Daily Panchang, sacred timings, vrat and Hindu festival guide."
       />
 

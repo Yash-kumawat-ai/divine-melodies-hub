@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 import { Heart, Shield, Users, HandHeart, Github, Twitter, Mail, Lightbulb, Rocket, Music, PartyPopper, MapPin, Linkedin, Instagram } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import founderPhoto from '@/assets/founder-yash.png';
@@ -27,18 +27,18 @@ export default function About() {
     : 'India\'s devotional music tradition spans over a thousand years — from the ecstatic poems of Meera Bai and Kabir to the melodic renditions that fill temples and homes today. Yet much of this heritage exists only in scattered recordings, faded books, and the memories of elderly devotees.';
 
   const missionPara2 = isHi
-    ? 'हरि कीर्तन एक सरल विश्वास से जन्मा है: कि हर भजन इंटरनेट पर एक स्थायी घर का हकदार है, सटीक बोलों, उचित श्रेय और संगीत के माध्यम से परमात्मा की खोज करने वाले हर व्यक्ति के लिए आसान पहुँच के साथ। हम हिंदू भक्ति गीतों का सबसे बड़ा, सबसे सटीक और सबसे सुलभ संग्रह बना रहे हैं — एक ऐसे समुदाय द्वारा संचालित जो संरक्षण की गहरी भावना रखता है।'
-    : 'Hari Kirtan was born from a simple belief: that every bhajan deserves a permanent home on the internet, complete with accurate lyrics, proper attribution, and easy access for anyone who seeks the divine through music. We are building the largest, most accurate, and most accessible collection of Hindu devotional songs — powered by a community that cares deeply about preservation.';
+    ? 'राघवम् एक सरल विश्वास से जन्मा है: कि हर भजन इंटरनेट पर एक स्थायी घर का हकदार है, सटीक बोलों, उचित श्रेय और संगीत के माध्यम से परमात्मा की खोज करने वाले हर व्यक्ति के लिए आसान पहुँच के साथ। हम हिंदू भक्ति गीतों का सबसे बड़ा, सबसे सटीक और सबसे सुलभ संग्रह बना रहे हैं — एक ऐसे समुदाय द्वारा संचालित जो संरक्षण की गहरी भावना रखता है।'
+    : 'Raghavam was born from a simple belief: that every bhajan deserves a permanent home on the internet, complete with accurate lyrics, proper attribution, and easy access for anyone who seeks the divine through music. We are building the largest, most accurate, and most accessible collection of Hindu devotional songs — powered by a community that cares deeply about preservation.';
 
   const founderStory = isHi
-    ? 'मैं यश कुमावत हूँ, जयपुर, राजस्थान का एक डेवलपर, जिसे भक्ति संगीत और प्रौद्योगिकी दोनों से गहरा प्रेम है। मैंने हरि कीर्तन इसलिए बनाया क्योंकि मैं चाहता था कि भारत और दुनिया भर के हर भक्त के पास भजनों को खोजने, अपलोड करने और अनुभव करने के लिए एक साफ, व्यवस्थित जगह हो। जो एक व्यक्तिगत प्रोजेक्ट था वह एक मिशन बन गया — आधुनिक तकनीक का उपयोग करके भारत की भक्ति संगीत विरासत को संरक्षित करना। यहाँ कोड की हर पंक्ति भक्ति और इस संस्कृति के प्रेम से लिखी गई है।'
-    : 'I\'m Yash Kumawat, a developer from Jaipur, Rajasthan with a deep passion for devotional music and technology. I built Hari Kirtan because I wanted every devotee in India and around the world to have one clean, organized place to discover, upload, and experience bhajans. What started as a personal project became a mission — to preserve India\'s devotional music heritage using modern technology. Every line of code here is written with bhakti and love for this culture.';
+    ? 'मैं यश कुमावत हूँ, जयपुर, राजस्थान का एक डेवलपर, जिसे भक्ति संगीत और प्रौद्योगिकी दोनों से गहरा प्रेम है। मैंने राघवम् इसलिए बनाया क्योंकि मैं चाहता था कि भारत और दुनिया भर के हर भक्त के पास भजनों को खोजने, अपलोड करने और अनुभव करने के लिए एक साफ, व्यवस्थित जगह हो। जो एक व्यक्तिगत प्रोजेक्ट था वह एक मिशन बन गया — आधुनिक तकनीक का उपयोग करके भारत की भक्ति संगीत विरासत को संरक्षित करना। यहाँ कोड की हर पंक्ति भक्ति और इस संस्कृति के प्रेम से लिखी गई है।'
+    : 'I\'m Yash Kumawat, a developer from Jaipur, Rajasthan with a deep passion for devotional music and technology. I built Raghavam because I wanted every devotee in India and around the world to have one clean, organized place to discover, upload, and experience bhajans. What started as a personal project became a mission — to preserve India\'s devotional music heritage using modern technology. Every line of code here is written with bhakti and love for this culture.';
 
   return (
     <div className="min-h-screen bg-background font-body">
       <SEO
         title="About"
-        description="Learn about Hari Kirtan — our mission to preserve India's devotional music heritage, our team, and our journey."
+        description="Learn about Raghavam — our mission to preserve India's devotional music heritage, our team, and our journey."
       />
 
       {/* Mission */}
@@ -202,7 +202,7 @@ export default function About() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
-              href="mailto:support@harikirtan.com"
+              href="mailto:support@raghavam.com"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-saffron text-white font-medium hover:bg-brand-saffron/90 transition-colors"
             >
               <Mail className="w-4 h-4" /> {t('emailUs')}

@@ -718,21 +718,21 @@ export default function BlessingsPage() {
               // Draw Watermark attribution at bottom
               ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
               ctx.font = `bold ${format === "square" ? "18px" : "24px"} sans-serif`;
-              ctx.fillText("✨ Created with Hari Kirtan", W / 2, H - (format === "square" ? 50 : 100));
+              ctx.fillText("✨ Created with Raghavam", W / 2, H - (format === "square" ? 50 : 100));
 
               resolve(canvas.toDataURL("image/png"));
             };
             diyaImage.onerror = () => {
               ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
               ctx.font = `bold ${format === "square" ? "18px" : "24px"} sans-serif`;
-              ctx.fillText("✨ Created with Hari Kirtan", W / 2, H - (format === "square" ? 50 : 100));
+              ctx.fillText("✨ Created with Raghavam", W / 2, H - (format === "square" ? 50 : 100));
               resolve(canvas.toDataURL("image/png"));
             };
           } else {
             // Draw Watermark attribution at bottom without Diya
             ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
             ctx.font = `bold ${format === "square" ? "18px" : "24px"} sans-serif`;
-            ctx.fillText("✨ Created with Hari Kirtan", W / 2, H - (format === "square" ? 50 : 100));
+            ctx.fillText("✨ Created with Raghavam", W / 2, H - (format === "square" ? 50 : 100));
 
             resolve(canvas.toDataURL("image/png"));
           }
@@ -836,15 +836,15 @@ export default function BlessingsPage() {
 
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const file = new File([blob], "HariKirtan_Blessing.png", { type: "image/png" });
+      const file = new File([blob], "Raghavam_Blessing.png", { type: "image/png" });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: isHi ? `${todayDarshan.deityHindi} दर्शन` : `${todayDarshan.deity} Darshan`,
           text: isHi 
-            ? `हरि कीर्तन से प्राप्त करें आज का ${todayDarshan.deityHindi} आशीर्वाद दर्शन।` 
-            : `Receive today's divine ${todayDarshan.deity} blessing from Hari Kirtan.`,
+            ? `राघवम् से प्राप्त करें आज का ${todayDarshan.deityHindi} आशीर्वाद दर्शन।` 
+            : `Receive today's divine ${todayDarshan.deity} blessing from Raghavam.`,
         });
         completeTodaySadhana();
         toast.success(isHi ? "सफलतापूर्वक साझा किया गया!" : "Shared successfully!");
@@ -967,7 +967,7 @@ export default function BlessingsPage() {
             {isHi ? "नित्य दर्शन व आशीर्वाद" : "Nitya Darshan & Blessings"}
           </h1>
           <span className="font-sans text-[10px] text-amber-200/40 uppercase tracking-wider block mt-0.5 leading-none">
-            Hari Kirtan Devotional Hub
+            Raghavam Devotional Hub
           </span>
         </div>
 

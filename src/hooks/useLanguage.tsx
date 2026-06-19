@@ -142,7 +142,7 @@ type TranslationKey =
   | 'bhajans'
   | 'artists'
   | 'listeners'
-  | 'whyHariKirtan'
+  | 'whyRaghavam'
   | 'uploadAndShare'
   | 'uploadAndShareDesc'
   | 'discoverBhajans'
@@ -280,9 +280,9 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     allBhajans: 'All Bhajans',
     browseOurCollection: 'Explore our collection of sacred songs, stotrams, and mantras',
     findLyricsAndMeaning: 'Find the lyrics and meaning for your daily devotion',
-    bhajansSandhya: 'Hari Kirtan',
-    completeDevotionalMusic: 'Your complete Hari Kirtan collection — lyrics, audio & more',
-    footerTagline: 'Hari Kirtan — your treasury of devotional music',
+    bhajansSandhya: 'Raghavam',
+    completeDevotionalMusic: 'Your complete Raghavam collection — lyrics, audio & more',
+    footerTagline: 'Raghavam — your treasury of devotional music',
     featuredBhajans: 'Featured Bhajans',
     popularBhajans: 'Popular Bhajans',
     communityBhajans: 'Community Bhajans',
@@ -385,7 +385,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     bhajans: 'Bhajans',
     artists: 'Artists',
     listeners: 'Listeners',
-    whyHariKirtan: 'Why Hari Kirtan?',
+    whyRaghavam: 'Why Raghavam?',
     uploadAndShare: 'Upload & Share',
     uploadAndShareDesc: 'Share your favorite bhajans with the community in minutes.',
     discoverBhajans: 'Discover Bhajans',
@@ -472,7 +472,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     emailReadOnly: 'Email (cannot be changed here)',
     profileUpdated: 'Profile updated',
     supportTitle: 'Help & Support',
-    supportIntro: 'We are here for your devotional journey on Hari Kirtan.',
+    supportIntro: 'We are here for your devotional journey on Raghavam.',
     contactSupport: 'Email support',
     myAccount: 'My account',
     freePlan: 'Free',
@@ -522,9 +522,9 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     allBhajans: 'सभी भजन',
     browseOurCollection: 'पवित्र गीतों, स्तोत्रों और मंत्रों का हमारा संग्रह — खोजें',
     findLyricsAndMeaning: 'अपनी दैनिक पूजा के लिए गीतों और अर्थ खोजें',
-    bhajansSandhya: 'हरि कीर्तन',
-    completeDevotionalMusic: 'आपका पूर्ण हरि कीर्तन संग्रह — गीत, ऑडियो और अधिक',
-    footerTagline: 'हरि कीर्तन — आपका भक्ति संगीत का खजाना',
+    bhajansSandhya: 'राघवम्',
+    completeDevotionalMusic: 'आपका पूर्ण राघवम् संग्रह — गीत, ऑडियो और अधिक',
+    footerTagline: 'राघवम् — आपका भक्ति संगीत का खजाना',
     featuredBhajans: 'विशेष भजन',
     popularBhajans: 'लोकप्रिय भजन',
     communityBhajans: 'समुदाय भजन',
@@ -627,7 +627,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     bhajans: 'भजन',
     artists: 'कलाकार',
     listeners: 'श्रोता',
-    whyHariKirtan: 'हरि कीर्तन क्यों?',
+    whyRaghavam: 'राघवम् क्यों?',
     uploadAndShare: 'अपलोड और साझा करें',
     uploadAndShareDesc: 'अपने पसंदीदा भजन मिनटों में समुदाय के साथ साझा करें।',
     discoverBhajans: 'भजन खोजें',
@@ -714,7 +714,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     emailReadOnly: 'ईमेल (यहाँ बदला नहीं जा सकता)',
     profileUpdated: 'प्रोफाइल अपडेट हो गई',
     supportTitle: 'सहायता',
-    supportIntro: 'हरि कीर्तन पर आपकी भक्ति यात्रा के लिए हम यहाँ हैं।',
+    supportIntro: 'राघवम् पर आपकी भक्ति यात्रा के लिए हम यहाँ हैं।',
     contactSupport: 'ईमेल सहायता',
     myAccount: 'मेरा खाता',
     freePlan: 'मुफ्त',

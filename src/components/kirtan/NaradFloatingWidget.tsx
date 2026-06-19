@@ -276,7 +276,7 @@ export default function NaradFloatingWidget() {
   if (
     pathname === "/kirtan-ai" ||
     pathname.startsWith("/auth") ||
-    (pathname === "/meditation" && searchParams.get("practice") === "mantra_japa_counter")
+    pathname === "/meditation"
   ) {
     return null;
   }
@@ -482,7 +482,7 @@ export default function NaradFloatingWidget() {
                       <h2 id="narad-chat-title" className="font-display text-xl font-semibold tracking-tight text-[#571c1c]">
                         Ask Narad
                       </h2>
-                      <p className="text-xs text-[#6b4423]/85">Your devotional music companion · Hari Kirtan</p>
+                      <p className="text-xs text-[#6b4423]/85">Your devotional music companion · Raghavam</p>
                     </div>
                     <button
                       type="button"

@@ -1,4 +1,4 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 Disallow: /admin/
-Sitemap: https://harikirtan.com/sitemap.xml
+Sitemap: https://raghavam.com/sitemap.xml
