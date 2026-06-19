@@ -1,17 +1,17 @@
 {
-  "date": "2026-05-31",
+  "date": "2026-06-19",
   "zone": "northwest",
   "city": "Jaipur",
-  "tithi": "Poornima",
-  "tithi_number": 15,
-  "nakshatra": "Anuradha - 4",
-  "yoga": "Siddha",
+  "tithi": "Panchimi",
+  "tithi_number": 0,
+  "nakshatra": "Aslesha - 4",
+  "yoga": "Harshana",
   "karana": "Bava",
-  "paksha": "Shukla",
+  "paksha": "Krishna",
   "sunrise": "05:37 AM",
-  "sunset": "07:11 PM",
-  "rahu_kaal": "05:29 PM - 07:11 PM",
+  "sunset": "07:19 PM",
+  "rahu_kaal": "02:11 PM - 03:54 PM",
   "brahma_muhurat": "04:01 AM - 04:49 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-05-31T13:20:29+05:30"
+  "vara": "Shukravaar",
+  "updated_at": "2026-06-19T07:45:46+05:30"
 }
