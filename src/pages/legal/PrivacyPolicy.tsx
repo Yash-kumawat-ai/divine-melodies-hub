@@ -1,9 +1,9 @@
-import { SEO } from '@/components/SEO';
+﻿import { SEO } from '@/components/SEO';
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background font-body">
-      <SEO title="Privacy Policy" description="How Hari Kirtan collects, uses, and protects your personal information." />
+      <SEO title="Privacy Policy" description="How Raghavam collects, uses, and protects your personal information." />
       <article className="py-12 md:py-16 px-4">
         <div className="container mx-auto max-w-3xl prose prose-neutral dark:prose-invert">
           <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">Privacy Policy</h1>
@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
             <p>We use Supabase for authentication and data storage. Your password is hashed and never stored in plain text. We do not collect payment information directly — all payments are processed through Razorpay's secure infrastructure.</p>
 
             <h2 className="font-display text-xl font-bold text-foreground mt-8">2. How We Use Your Data</h2>
-            <p>Your data is used to provide and improve the Hari Kirtan platform. This includes displaying your uploaded bhajans to other users, sending in-app notifications about moderation decisions, and personalizing your experience.</p>
+            <p>Your data is used to provide and improve the Raghavam platform. This includes displaying your uploaded bhajans to other users, sending in-app notifications about moderation decisions, and personalizing your experience.</p>
             <p>We do not sell, rent, or share your personal information with third parties for marketing purposes.</p>
 
             <h2 className="font-display text-xl font-bold text-foreground mt-8">3. Data Storage</h2>
@@ -25,10 +25,10 @@ export default function PrivacyPolicy() {
             <p>We use only essential cookies required for authentication (Supabase session tokens). We do not use any third-party tracking or advertising cookies. See our Cookie Policy for details.</p>
 
             <h2 className="font-display text-xl font-bold text-foreground mt-8">5. Your Rights</h2>
-            <p>You can request access to, correction of, or deletion of your personal data at any time by contacting us at support@harikirtan.com. You may also delete your account through the platform settings.</p>
+            <p>You can request access to, correction of, or deletion of your personal data at any time by contacting us at support@raghavam.com. You may also delete your account through the platform settings.</p>
 
             <h2 className="font-display text-xl font-bold text-foreground mt-8">6. Contact</h2>
-            <p>For privacy-related questions, contact us at <a href="mailto:support@harikirtan.com" className="text-brand-saffron hover:underline">support@harikirtan.com</a>.</p>
+            <p>For privacy-related questions, contact us at <a href="mailto:support@raghavam.com" className="text-brand-saffron hover:underline">support@raghavam.com</a>.</p>
           </section>
         </div>
       </article>

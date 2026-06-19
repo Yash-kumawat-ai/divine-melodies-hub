@@ -50,6 +50,7 @@ export function useBhajanCounts() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     void refreshCounts();
 
     channelSequence += 1;
@@ -59,13 +60,22 @@ export function useBhajanCounts() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'user_uploads' },
         () => {
-          void refreshCounts();
+          if (!cancelled) {
+            void refreshCounts();
+          }
         },
       )
       .subscribe();
 
     return () => {
-      void (supabase as any).removeChannel(channel);
+      cancelled = true;
+      try {
+        channel.unsubscribe();
+        void (supabase as any).removeChannel(channel);
+      } catch {
+        // Ignore errors when WebSocket is closed before connection is established
+        // (common during React StrictMode double-render in development)
+      }
     };
   }, [refreshCounts]);
 

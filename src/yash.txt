@@ -1,4 +1,4 @@
-u are working on the Hari Kirtan devotional web app (Vite + React + TypeScript + Tailwind + Supabase).
+﻿u are working on the Raghavam devotional web app (Vite + React + TypeScript + Tailwind + Supabase).
 
 The current `panchangTemple.ts` has a STATIC list of Shubh/Ashubh Karya that never changes day to day. Replace it with a fully dynamic engine that recomputes instantly based on today's Tithi, Vara, Nakshatra, and special time windows. The UI should feel snappy — no loading states, no API calls, pure TypeScript computation.
 

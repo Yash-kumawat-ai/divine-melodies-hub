@@ -54,7 +54,7 @@
     --temple-shadow: 0 10px 40px -10px hsl(30 60% 30% / 0.2);
 
     --font-display: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
-    --font-hindi: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
+    --font-hindi: "Tiro Devanagari Hindi", "Noto Sans Devanagari", serif;
     --font-body: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
   }
 
@@ -751,3 +751,54 @@ p.text-\[10px\].text-white\/35.font-bold.uppercase.tracking-wider.flex.items-cen
     padding-bottom: 0.6rem;
 }
 
+
+
+/* @media (max-width: 767px) {
+  .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) {
+    margin-left: 90px;
+  }
+} */
+
+@media (max-width: 767px) {
+.gap-2\.5 {
+    gap: 1rem;
+}
+}
+
+@media (max-width: 767px) {
+.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 3fr));
+}
+}
+
+
+
+
+@media (max-width: 767px) {
+bg-\[\#0c0604\]\/80.border.border-amber-500\/10.rounded-2xl.p-2\.5.shadow-md.shadow-black\/20.flex-shrink-0 {
+
+margin-top:-70px;
+}
+
+button.w-\[90\%\].h-14.bg-gradient-to-r.from-amber-500.via-orange-500.to-red-650.hover\:from-amber-600.hover\:to-red-750.active\:scale-\[0\.98\].text-stone-950.font-black.px-6.rounded-2xl.flex.items-center.justify-between.shadow-\[0_6px_24px_rgba\(245\,158\,11\,0\.3\)\].transition-all.duration-300.border.border-amber-400\/20.group.cursor-pointer{
+
+  margin-bottom: 120px;
+}
+
+.h-full.w-full.bg-gradient-to-b.from-\[\#090506\].via-\[\#0c0608\].to-\[\#040205\].text-brand-cream\/90.font-sans.relative.select-none.flex.flex-col.justify-between.overflow-hidden.pb-4.pt-1{
+  overflow: auto !important;
+}
+}
+ 
+
+.overflow-hidden {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+ 
+
+@media (min-width: 770px) {
+.h-full.w-full.bg-gradient-to-b.from-\[\#090506\].via-\[\#0c0608\].to-\[\#040205\].text-brand-cream\/90.font-sans.relative.select-none.flex.flex-col.md\:justify-center.overflow-hidden.pb-4.pt-1.md\:py-8{
+overflow: auto;
+}
+}

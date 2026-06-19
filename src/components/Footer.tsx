@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Heart, 
@@ -172,12 +172,12 @@ export default function Footer() {
             <Link to="/" className="flex items-center justify-center md:justify-start gap-3 mb-4 group">
               <img 
                 src="/brand-logo.webp" 
-                alt="Hari Kirtan Logo" 
+                alt="Raghavam Logo" 
                 className="w-12 h-12 object-contain transition-transform group-hover:rotate-12 duration-300 filter drop-shadow-[0_0_8px_rgba(217,119,6,0.2)]" 
                 width={48} 
                 height={48} 
               />
-              <span className="font-display text-2xl font-bold text-brand-cream tracking-wide">Hari Kirtan</span>
+              <span className="font-display text-2xl font-bold text-brand-cream tracking-wide">Raghavam</span>
             </Link>
             <p className="text-brand-saffron font-display font-medium text-base mb-1.5 leading-snug">
               {l.tagline}
@@ -236,7 +236,7 @@ export default function Footer() {
             {/* Telegram */}
             <div className="flex flex-col items-center gap-1.5 group">
               <a 
-                href="https://t.me/harikirtan" 
+                href="https://t.me/raghavam" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-12 h-12 rounded-full border border-sky-500/20 bg-sky-950/10 flex items-center justify-center text-sky-400 transition-all duration-300 hover:bg-sky-500 hover:text-white hover:border-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.45)] hover:scale-105"
@@ -523,7 +523,7 @@ export default function Footer() {
             <Link to="/account/support" className="hover:text-brand-saffron transition-colors">{l.contactUs}</Link>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-brand-cream/40 mt-1">
-            <span>© 2026 Hari Kirtan. {l.rightsReserved}</span>
+            <span>© 2026 Raghavam. {l.rightsReserved}</span>
             <Heart className="w-3.5 h-3.5 text-brand-saffron fill-current inline-block" />
           </div>
         </div>

@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- 016: Fix notifications + admin role in ONE script.
 -- Run this ONCE in Supabase SQL Editor.
 -- ============================================================
@@ -95,7 +95,7 @@ BEGIN
   END;
 
   event_body := CASE NEW.status
-    WHEN 'approved' THEN 'Your bhajan "' || NEW.title || '" is now live on Hari Kirtan.'
+    WHEN 'approved' THEN 'Your bhajan "' || NEW.title || '" is now live on Raghavam.'
     WHEN 'rejected' THEN 'Your bhajan "' || NEW.title || '" was rejected. Reason: ' || COALESCE(NEW.rejection_reason, NEW.admin_notes, 'Not provided.')
     ELSE 'Your bhajan "' || NEW.title || '" needs changes. Notes: ' || COALESCE(NEW.request_changes_notes, NEW.admin_notes, 'Not provided.')
   END;

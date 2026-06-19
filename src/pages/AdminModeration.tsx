@@ -75,20 +75,29 @@ export default function AdminModeration() {
   }, [loadQueue]);
 
   useEffect(() => {
+    let cancelled = false;
     const channel = supabase
       .channel('admin-queue-realtime')
       .on(
         'postgres_changes' as any,
         { event: '*', schema: 'public', table: 'user_uploads' },
         () => {
-          loadQueue();
-          setRefreshKey((k) => k + 1);
+          if (!cancelled) {
+            loadQueue();
+            setRefreshKey((k) => k + 1);
+          }
         },
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      try {
+        channel.unsubscribe();
+        supabase.removeChannel(channel);
+      } catch {
+        // Ignore WebSocket cleanup errors (React StrictMode)
+      }
     };
   }, [loadQueue]);
 

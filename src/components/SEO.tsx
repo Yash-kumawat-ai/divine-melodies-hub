@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+﻿import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title: string;
@@ -9,7 +9,7 @@ interface SEOProps {
 }
 
 export function SEO({ title, description, image, url, type = 'website' }: SEOProps) {
-  const siteName = 'Hari Kirtan';
+  const siteName = 'Raghavam';
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   return (

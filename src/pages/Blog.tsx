@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function Blog() {
     <div className="min-h-screen bg-background font-body">
       <SEO
         title="Blog"
-        description="Read about devotional music, bhajan history, platform updates, and stories from the Hari Kirtan community."
+        description="Read about devotional music, bhajan history, platform updates, and stories from the Raghavam community."
       />
 
       <section className="py-16 md:py-20 px-4">

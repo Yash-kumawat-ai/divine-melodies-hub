@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, ChevronDown, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -13,7 +13,7 @@ const faqsEn = [
   { q: 'Can I cancel anytime?', a: 'Yes, you can cancel your subscription at any time. Your premium features will remain active until the end of your current billing period.' },
   { q: 'What happens to my uploads if I downgrade?', a: 'All your uploaded bhajans remain on the platform permanently. Downgrading only affects future upload limits and premium features.' },
   { q: 'Is the Free plan really free?', a: 'Absolutely. We believe devotion should never have a paywall. The Free plan gives you full access to explore and search bhajans, plus 3 uploads per month.' },
-  { q: 'Do you offer refunds?', a: 'Yes, we offer a full refund within 7 days of purchase if you are not satisfied. Contact us at support@harikirtan.com.' },
+  { q: 'Do you offer refunds?', a: 'Yes, we offer a full refund within 7 days of purchase if you are not satisfied. Contact us at support@raghavam.com.' },
   { q: 'Can I switch plans?', a: 'Yes, you can upgrade or downgrade at any time. When upgrading, you will be charged the prorated difference. When downgrading, the change takes effect at the next billing cycle.' },
 ];
 
@@ -22,7 +22,7 @@ const faqsHi = [
   { q: 'क्या मैं कभी भी रद्द कर सकता हूँ?', a: 'हाँ, आप कभी भी अपनी सदस्यता रद्द कर सकते हैं। आपकी प्रीमियम सुविधाएं वर्तमान बिलिंग अवधि के अंत तक सक्रिय रहेंगी।' },
   { q: 'डाउनग्रेड करने पर मेरे अपलोड का क्या होगा?', a: 'आपके सभी अपलोड किए गए भजन हमेशा प्लेटफॉर्म पर रहेंगे। डाउनग्रेड केवल भविष्य की अपलोड सीमाओं और प्रीमियम सुविधाओं को प्रभावित करता है।' },
   { q: 'क्या मुफ्त योजना वाकई मुफ्त है?', a: 'बिल्कुल। हम मानते हैं कि भक्ति कभी भी पेवॉल के पीछे नहीं होनी चाहिए। मुफ्त योजना में भजन ब्राउज़ और खोज करने की पूरी पहुँच और 3 अपलोड/माह शामिल हैं।' },
-  { q: 'क्या आप रिफंड देते हैं?', a: 'हाँ, यदि आप संतुष्ट नहीं हैं तो हम खरीद के 7 दिनों के भीतर पूरा रिफंड देते हैं। support@harikirtan.com पर संपर्क करें।' },
+  { q: 'क्या आप रिफंड देते हैं?', a: 'हाँ, यदि आप संतुष्ट नहीं हैं तो हम खरीद के 7 दिनों के भीतर पूरा रिफंड देते हैं। support@raghavam.com पर संपर्क करें।' },
   { q: 'क्या मैं योजनाएं बदल सकता हूँ?', a: 'हाँ, आप कभी भी अपग्रेड या डाउनग्रेड कर सकते हैं। अपग्रेड करने पर आनुपातिक अंतर चार्ज किया जाएगा। डाउनग्रेड अगले बिलिंग चक्र में लागू होता है।' },
 ];
 

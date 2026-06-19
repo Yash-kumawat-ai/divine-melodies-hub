@@ -80,6 +80,7 @@ export default function DeityPage() {
   }, [slug, staticDeity]);
 
   useEffect(() => {
+    let cancelled = false;
     void fetchCustomDeityAndBhajans();
 
     const channel = (supabase as any)
@@ -88,13 +89,21 @@ export default function DeityPage() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'user_uploads' },
         () => {
-          void fetchCustomDeityAndBhajans();
+          if (!cancelled) {
+            void fetchCustomDeityAndBhajans();
+          }
         },
       )
       .subscribe();
 
     return () => {
-      void (supabase as any).removeChannel(channel);
+      cancelled = true;
+      try {
+        channel.unsubscribe();
+        void (supabase as any).removeChannel(channel);
+      } catch {
+        // Ignore WebSocket cleanup errors (React StrictMode)
+      }
     };
   }, [fetchCustomDeityAndBhajans, slug]);
 

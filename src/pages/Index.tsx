@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 import DeityGrid from "@/components/DeityGrid";
@@ -72,7 +72,7 @@ const Index = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
-            हरि कीर्तन
+            राघवम्
           </motion.p>
           )}
           <motion.p

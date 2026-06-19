@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+﻿import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, HelpCircle, Mail, Info } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -27,7 +27,7 @@ export default function SupportPage() {
 
       <div className="space-y-3">
         <a
-          href="mailto:support@harikirtan.com"
+          href="mailto:support@raghavam.com"
           className="flex min-h-[52px] items-center gap-3 rounded-2xl border border-border/80 bg-card px-4 py-3 shadow-sm"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -35,7 +35,7 @@ export default function SupportPage() {
           </span>
           <span>
             <span className="block text-sm font-semibold text-foreground">{t('contactSupport')}</span>
-            <span className="text-xs text-muted-foreground">support@harikirtan.com</span>
+            <span className="text-xs text-muted-foreground">support@raghavam.com</span>
           </span>
         </a>
 
