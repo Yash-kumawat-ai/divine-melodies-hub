@@ -1094,23 +1094,55 @@ export default function PremiumJapaCounter({
   // ─── VOICE COUNTER — full screen mode ────────────────────────────
   if (practiceMode === "voice" && showVoiceInstructions) {
     const mantraDisplayName = isHi ? activeMantra.name_hindi : activeMantra.name_english;
-    const exampleMantras = isHi
-      ? ["ॐ नमः शिवाय", "हरे कृष्ण हरे कृष्ण\nकृष्ण कृष्ण हरे हरे\nहरे राम हरे राम\nराम राम हरे हरे"]
-      : ["Om Namah Shivaya", "Hare Krishna Hare Krishna\nKrishna Krishna Hare Hare"];
+
+    const tips = isHi
+      ? [
+          { icon: <Mic className="w-5 h-5 text-amber-400" />, bg: "bg-amber-500/15 border-amber-500/30", text: "मंत्र को स्पष्ट और सामान्य गति से बोलें" },
+          { icon: <span className="text-lg font-bold text-purple-300 font-serif">ॐ</span>, bg: "bg-purple-500/15 border-purple-400/30", text: "हर पूर्ण मंत्र के बाद गिनती अपने आप बढ़ेगी" },
+          { icon: <MicOff className="w-5 h-5 text-red-400" />, bg: "bg-red-500/15 border-red-400/30", text: "आसपास का शोर कम रखें" },
+          { icon: <Smartphone className="w-5 h-5 text-blue-400" />, bg: "bg-blue-500/15 border-blue-400/30", text: "फोन को अपने पास रखें" },
+          { icon: <span className="text-lg text-rose-400">♡</span>, bg: "bg-rose-500/15 border-rose-400/30", text: "गिनती से अधिक भाव और एकाग्रता महत्वपूर्ण है" },
+        ]
+      : [
+          { icon: <Mic className="w-5 h-5 text-amber-400" />, bg: "bg-amber-500/15 border-amber-500/30", text: "Speak the mantra clearly at a normal pace" },
+          { icon: <span className="text-lg font-bold text-purple-300 font-serif">ॐ</span>, bg: "bg-purple-500/15 border-purple-400/30", text: "Count increases automatically after each full mantra" },
+          { icon: <MicOff className="w-5 h-5 text-red-400" />, bg: "bg-red-500/15 border-red-400/30", text: "Keep surrounding noise to a minimum" },
+          { icon: <Smartphone className="w-5 h-5 text-blue-400" />, bg: "bg-blue-500/15 border-blue-400/30", text: "Keep the phone close to you" },
+          { icon: <span className="text-lg text-rose-400">♡</span>, bg: "bg-rose-500/15 border-rose-400/30", text: "Devotion and focus matter more than the count" },
+        ];
 
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-start bg-[#050305] overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.05),transparent_70%)] pointer-events-none" />
+      /* ── Full-screen backdrop — z-[200] sits above MobileBottomNav (z-50) ── */
+      <div className="fixed inset-0 z-[200] flex flex-col items-center justify-end md:justify-center"
+        style={{ background: "rgba(0,0,0,0.82)" }}
+      >
+        {/* Desktop decorative bg elements */}
+        <div className="hidden md:block absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(120,53,15,0.3)_0%,transparent_55%)] pointer-events-none" />
+        <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(234,179,8,0.05),transparent_60%)] pointer-events-none" />
+        <span className="hidden md:block absolute top-8 left-10 text-[90px] text-amber-500/[0.04] font-serif select-none pointer-events-none">ॐ</span>
+        <span className="hidden md:block absolute bottom-12 right-10 text-[130px] text-amber-500/[0.03] font-serif select-none pointer-events-none">ॐ</span>
 
+        {/* ── CARD — slides up from bottom on mobile, centered on desktop ── */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative w-full h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] md:h-[92dvh] md:max-h-[820px] max-w-md flex flex-col bg-[#080608] text-[#fbf6f0] overflow-hidden md:rounded-[2.5rem] md:border md:border-amber-500/25"
-          style={{ background: "radial-gradient(ellipse at 50% 0%, #1a0a04 0%, #080608 60%)" }}
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 28, stiffness: 200 }}
+          className="relative w-full flex flex-col text-[#fbf6f0] overflow-hidden
+            rounded-t-[2rem]
+            max-h-[92dvh]
+            md:rounded-[2.5rem] md:max-w-2xl md:max-h-[88vh]
+            md:border md:border-amber-500/20
+            md:shadow-[0_0_80px_rgba(0,0,0,0.9),0_0_30px_rgba(120,53,15,0.2)]"
+          style={{ background: "radial-gradient(ellipse at 50% 0%, #1c0e05 0%, #09070a 60%)" }}
         >
+          {/* Drag handle (mobile only) */}
+          <div className="md:hidden flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1.5 rounded-full bg-amber-500/25" />
+          </div>
+
           {/* Header */}
-          <div className="relative z-20 flex items-center justify-between px-5 pt-[max(1.1rem,env(safe-area-inset-top))] pb-3 border-b border-white/5 bg-black/10">
+          <div className="relative z-20 flex items-center justify-between px-5 pt-2 pb-3 border-b border-white/5">
             <button
               onClick={() => {
                 if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
@@ -1122,132 +1154,119 @@ export default function PremiumJapaCounter({
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="text-center flex flex-col items-center flex-1 mx-2">
-              <h1 className="font-serif text-[18px] font-bold text-amber-400/90 tracking-wide select-none">
-                {isHi ? "स्वर जप" : "Voice Japa"}
+              <h1 className="font-serif text-[18px] font-bold text-amber-300 tracking-wide select-none">
+                {isHi ? "🪷 जप कैसे करें? 🪷" : "🪷 How to Chant? 🪷"}
               </h1>
-              <span className="text-[11px] font-semibold text-amber-500/70 tracking-widest mt-0.5 select-none uppercase truncate max-w-[180px]">
-                {mantraDisplayName}
-              </span>
             </div>
-            <div className="w-10 h-10" />{/* spacer */}
+            <div className="w-10 h-10" />
           </div>
 
           {/* Scrollable Body */}
-          <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-5 scrollbar-none">
+          <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4 scrollbar-none overscroll-contain">
+            <div className="grid grid-cols-2 gap-3 items-start">
+              <div className="flex flex-col gap-2">
+                {tips.map((tip, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.07 * i }}
+                    className="flex items-center gap-2.5 bg-[#1a0e06]/80 border border-amber-500/20 rounded-2xl px-3 py-3 shadow-md"
+                  >
+                    <div className={`w-9 h-9 rounded-full ${tip.bg} border flex items-center justify-center flex-shrink-0`}>
+                      {tip.icon}
+                    </div>
+                    <p className="text-[11px] font-semibold text-amber-100/90 leading-snug">{tip.text}</p>
+                  </motion.div>
+                ))}
+              </div>
 
-            {/* Title */}
-            <div className="text-center select-none">
-              <p className="text-3xl mb-1">🪷</p>
-              <h2 className="font-serif text-[22px] font-bold text-amber-300 tracking-tight">
-                {isHi ? "जप कैसे करें?" : "How to Chant?"}
-              </h2>
-              {/* Decorative divider */}
-              <div className="flex items-center justify-center gap-2 mt-2">
-                <span className="w-10 h-[1px] bg-gradient-to-r from-transparent to-amber-500/40" />
-                <span className="text-amber-500 text-xs">◆◆◆</span>
-                <span className="w-10 h-[1px] bg-gradient-to-l from-transparent to-amber-500/40" />
+              <div className="flex flex-col gap-2.5">
+                <p className="text-[9px] font-bold text-amber-500/60 uppercase tracking-widest text-right pr-1">
+                  {isHi ? "उदाहरण मंत्र" : "Example Mantra"}
+                </p>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 }}
+                  className="bg-[#1a0e06]/80 border border-amber-500/25 rounded-2xl px-3 py-3 text-center"
+                >
+                  <p className="font-serif text-[14px] font-bold text-amber-300 leading-relaxed whitespace-pre-line">
+                    {isHi ? "ॐ नमो\nनारायणाय" : "Om Namo\nNarayanaya"}
+                  </p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.22 }}
+                  className="bg-[#1a0e06]/80 border border-amber-500/25 rounded-2xl px-3 py-3 text-center"
+                >
+                  <p className="font-serif text-[11px] font-bold text-amber-300 leading-relaxed whitespace-pre-line">
+                    {isHi
+                      ? "हरे कृष्ण हरे कृष्ण\nकृष्ण हरे हरे\nहरे राम हरे राम\nराम राम हरे हरे"
+                      : "Hare Krishna Hare Krishna\nKrishna Hare Hare\nHare Ram Hare Ram\nRam Ram Hare Hare"}
+                  </p>
+                </motion.div>
+                 <div className="flex items-center gap-1.5">
+                  <span className="flex-1 h-[1px] bg-amber-500/15" />
+                  <span className="text-[9px] text-amber-500/40 font-bold">{isHi ? "या" : "or"}</span>
+                  <span className="flex-1 h-[1px] bg-amber-500/15" />
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.32 }}
+                  className="bg-[#110c06]/70 border border-amber-500/15 rounded-2xl px-3 py-3"
+                >
+                  <p className="text-[9px] font-bold text-amber-400/70 mb-1">🔔 {isHi ? "ध्यान रखें:" : "Note:"}</p>
+                  <p className="text-[10px] text-amber-200/60 leading-snug">
+                    {isHi
+                      ? "स्वर काउंटर केवल सहायता के लिए है। भगवान तक पहुँचने का मार्ग आपकी श्रद्धा और भक्ति है।"
+                      : "Voice counter is just an aid. The path to God is your faith and devotion."}
+                  </p>
+                </motion.div>
               </div>
             </div>
 
-            {/* 3 Instruction Cards */}
-            <div className="flex flex-col gap-3">
-              {/* Tip 1 */}
-              <motion.div
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-4 bg-[#1a0e06]/80 border border-amber-500/20 rounded-2xl px-4 py-4 shadow-md"
-              >
-                <div className="w-11 h-11 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
-                  <Mic className="w-5 h-5 text-amber-400" />
-                </div>
-                <p className="text-[14px] font-semibold text-amber-100/90 leading-snug">
-                  {isHi ? "मंत्र को स्पष्ट और सामान्य गति से बोलें" : "Speak the mantra clearly at a normal pace"}
-                </p>
-              </motion.div>
-
-              {/* Tip 2 */}
-              <motion.div
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex items-center gap-4 bg-[#1a0e06]/80 border border-amber-500/20 rounded-2xl px-4 py-4 shadow-md"
-              >
-                <div className="w-11 h-11 rounded-full bg-purple-500/15 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg font-bold text-purple-300 font-serif">ॐ</span>
-                </div>
-                <p className="text-[14px] font-semibold text-amber-100/90 leading-snug">
-                  {isHi ? "हर पूर्ण मंत्र के बाद गिनती अपने आप बढ़ेगी" : "Count increases automatically after each full mantra"}
-                </p>
-              </motion.div>
-
-              {/* Tip 3 */}
-              <motion.div
-                initial={{ opacity: 0, x: -18 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-4 bg-[#1a0e06]/80 border border-amber-500/20 rounded-2xl px-4 py-4 shadow-md"
-              >
-                <div className="w-11 h-11 rounded-full bg-red-500/15 border border-red-400/30 flex items-center justify-center flex-shrink-0">
-                  <MicOff className="w-5 h-5 text-red-400" />
-                </div>
-                <p className="text-[14px] font-semibold text-amber-100/90 leading-snug">
-                  {isHi ? "आसपास का शोर कम रखें" : "Keep surrounding noise to a minimum"}
-                </p>
-              </motion.div>
-            </div>
-
-            {/* Example card */}
-            <div className="bg-[#110c06]/70 border border-amber-500/20 rounded-2xl px-5 py-4">
-              <p className="text-[10px] font-bold text-amber-500/60 uppercase tracking-widest mb-2">
-                {isHi ? "उदाहरण" : "Example"}
-              </p>
-              <p className="font-serif text-[15px] font-bold text-amber-300 leading-relaxed whitespace-pre-line">
-                {exampleMantras[0]}
-              </p>
-              <div className="my-2 flex items-center gap-2">
-                <span className="flex-1 h-[1px] bg-amber-500/15" />
-                <span className="text-[10px] text-amber-500/40 font-bold">{isHi ? "या" : "or"}</span>
-                <span className="flex-1 h-[1px] bg-amber-500/15" />
-              </div>
-              <p className="font-serif text-[13px] text-amber-300/80 leading-relaxed whitespace-pre-line">
-                {exampleMantras[1]}
-              </p>
-            </div>
-
-            {/* Selection summary: Sankalp, Method, Goal */}
-            <div className="grid grid-cols-3 gap-2.5 w-full select-none">
-              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-black/45 border border-white/5">
+            {/* 3 selection cards: Sankalp, Method, Goal */}
+            <div className="grid grid-cols-3 gap-2 w-full select-none">
+              <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-black/45 border border-white/5">
                 <span className="text-[9px] text-amber-500/60 font-bold uppercase tracking-wider">🌸 {isHi ? "संकल्प" : "Sankalp"}</span>
-                <span className="text-[11px] font-bold text-amber-100 truncate w-full mt-1">
-                  {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                </span>
+                <span className="text-[10px] font-bold text-amber-100 truncate w-full mt-1">{sankalpText || (isHi ? "कोई नहीं" : "None")}</span>
               </div>
-              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-black/45 border border-white/5">
+              <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-black/45 border border-white/5">
                 <span className="text-[9px] text-amber-500/60 font-bold uppercase tracking-wider">📿 {isHi ? "विधि" : "Method"}</span>
-                <span className="text-[11px] font-bold text-amber-100 truncate w-full mt-1">
-                  {isHi ? "स्वर जप" : "Voice Japa"}
-                </span>
+                <span className="text-[10px] font-bold text-amber-100 truncate w-full mt-1">{isHi ? "स्वर जप" : "Voice Japa"}</span>
               </div>
-              <div className="flex flex-col items-center text-center p-3 rounded-2xl bg-black/45 border border-white/5">
+              <div className="flex flex-col items-center text-center p-2.5 rounded-2xl bg-black/45 border border-white/5">
                 <span className="text-[9px] text-amber-500/60 font-bold uppercase tracking-wider">🎯 {isHi ? "लक्ष्य" : "Goal"}</span>
-                <span className="text-[11px] font-bold text-amber-100 truncate w-full mt-1">
-                  {targetCount} {isHi ? "जाप" : "Chants"}
-                </span>
+                <span className="text-[10px] font-bold text-amber-100 truncate w-full mt-1">{targetCount} {isHi ? "जाप" : "Chants"}</span>
               </div>
             </div>
 
           </div>
 
-          {/* Start Button pinned at bottom */}
-          <div className="px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 border-t border-white/5 bg-black/20">
+          {/* Bottom sticky: Start button + Don't show again */}
+          <div className="px-5 pb-6 pt-3 border-t border-white/5 bg-black/20 flex flex-col gap-3">
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => setShowVoiceInstructions(false)}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-600 to-yellow-500 text-black font-bold text-[16px] tracking-wide shadow-[0_0_20px_rgba(212,165,58,0.35)] hover:shadow-[0_0_30px_rgba(212,165,58,0.5)] transition-all font-serif"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-600 to-yellow-500 text-black font-bold text-[15px] tracking-wide shadow-[0_0_20px_rgba(212,165,58,0.35)] hover:shadow-[0_0_30px_rgba(212,165,58,0.5)] transition-all font-serif flex items-center justify-center gap-2"
             >
-              {isHi ? "🎙️ शुरू करें" : "🎙️ Start Chanting"}
+              <Play className="w-4 h-4 fill-current" />
+              {isHi ? "समझ गया, जप प्रारम्भ करें" : "Got it, Start Chanting"}
             </motion.button>
+
+            <button
+              onClick={() => {
+                try { localStorage.setItem("voice_instructions_seen", "1"); } catch { /* ignore */ }
+                setShowVoiceInstructions(false);
+              }}
+              className="flex items-center justify-center gap-2 text-[11px] text-amber-200/40 hover:text-amber-200/70 transition-colors select-none mx-auto pb-1"
+            >
+              <span className="w-4 h-4 rounded border border-amber-500/30 bg-black/30 flex items-center justify-center text-amber-400 text-[10px]">✓</span>
+              {isHi ? "दोबारा न दिखाएं" : "Don't show again"}
+            </button>
           </div>
         </motion.div>
       </div>

@@ -785,20 +785,4 @@ button.w-\[90\%\].h-14.bg-gradient-to-r.from-amber-500.via-orange-500.to-red-650
   margin-bottom: 120px;
 }
 
-.h-full.w-full.bg-gradient-to-b.from-\[\#090506\].via-\[\#0c0608\].to-\[\#040205\].text-brand-cream\/90.font-sans.relative.select-none.flex.flex-col.justify-between.overflow-hidden.pb-4.pt-1{
-  overflow: auto !important;
-}
-}
- 
-
-.overflow-hidden {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
- 
-
-@media (min-width: 770px) {
-.h-full.w-full.bg-gradient-to-b.from-\[\#090506\].via-\[\#0c0608\].to-\[\#040205\].text-brand-cream\/90.font-sans.relative.select-none.flex.flex-col.md\:justify-center.overflow-hidden.pb-4.pt-1.md\:py-8{
-overflow: auto;
-}
 }

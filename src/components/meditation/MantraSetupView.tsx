@@ -335,7 +335,7 @@ export default function MantraSetupView({
   };
 
   return (
-    <div className="h-full w-full bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] text-brand-cream/90 font-sans relative select-none flex flex-col md:justify-center overflow-hidden pb-4 pt-1 md:py-8">
+    <div className="h-full w-full bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] text-brand-cream/90 font-sans relative select-none flex flex-col md:justify-center overflow-y-auto overflow-x-hidden md:overflow-hidden scrollbar-hide pb-4 pt-1 md:py-8">
       {/* Decorative watermarked background mandala */}
       <div className="absolute top-0 right-[-100px] md:right-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] opacity-[0.04] pointer-events-none text-amber-500 z-0">
         <svg className="w-full h-full animate-[spin_180s_linear_infinite]" viewBox="0 0 100 105">
@@ -346,7 +346,7 @@ export default function MantraSetupView({
         </svg>
       </div>
 
-      <div className="w-full max-w-md md:max-w-5xl mx-auto px-4 relative z-10 flex-grow flex flex-col md:grid md:grid-cols-12 md:gap-8 justify-between md:justify-center md:items-stretch h-full overflow-hidden pb-2 pt-1 md:py-0">
+      <div className="w-full max-w-md md:max-w-5xl mx-auto px-4 relative z-10 flex-grow flex flex-col md:grid md:grid-cols-12 md:gap-8 justify-between md:justify-center md:items-stretch h-full overflow-y-auto overflow-x-hidden md:overflow-hidden scrollbar-hide pb-2 pt-1 md:py-0">
         
         {/* ─── LEFT COLUMN (HEADER & HERO) ────────────────────────── */}
         <div className="md:col-span-5 flex flex-col justify-between space-y-3 md:space-y-4 h-full">
