@@ -21,6 +21,7 @@ import {
   Sun,
   Tags,
   User,
+  Users,
 } from "lucide-react";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,7 +54,8 @@ type FeatureItem = {
     | "pricing"
     | "about"
     | "profile"
-    | "wallpaper";
+    | "wallpaper"
+    | "community";
   icon: LucideIcon;
   match: (pathname: string) => boolean;
 };
@@ -99,6 +101,12 @@ const FEATURE_ITEMS: FeatureItem[] = [
     labelKey: "meditation",
     icon: Flower2,
     match: (pathname) => pathname.startsWith("/meditation"),
+  },
+  {
+    path: "/community",
+    labelKey: "community",
+    icon: Users,
+    match: (pathname) => pathname.startsWith("/community"),
   },
   {
     path: "/temple",

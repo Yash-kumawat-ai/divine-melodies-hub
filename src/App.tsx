@@ -57,6 +57,9 @@ const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
 const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const JoinCommunityPage = lazy(() => import("./pages/JoinCommunityPage"));
+
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -122,6 +125,8 @@ function AppContent() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/cookies" element={<CookiePolicy />} />
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/join-community" element={<JoinCommunityPage />} />
             <Route
               path="/admin/moderation"
               element={

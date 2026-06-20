@@ -359,7 +359,7 @@ export default function Home() {
 
                   {/* CTA */}
                   <Link
-                    to="/meditation"
+                    to="/community"
                     className="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-[14px] text-black transition-all hover:scale-[1.03] active:scale-95"
                     style={{
                       background: 'linear-gradient(135deg, #f5a623 0%, #e67c00 100%)',

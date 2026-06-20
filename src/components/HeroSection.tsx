@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'; 
-import { Play, Music2, Users, Heart } from 'lucide-react'; 
+import { Play, Music2, Users, Heart, ChevronDown } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -26,9 +26,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
   const { language } = useLanguage();
   const isHi = language === 'hi';
 
-  const bhajansCount = stats ? stats.bhajans : 1000;
-  const artistsCount = stats ? stats.artists : 50;
-  const devoteesCount = stats ? stats.devotees : 10000; 
+  const bhajansCount = stats ? stats.bhajans : 10000;
+  const japCount = 24000000; // 2.4 Cr Jap Count
+  const devoteesCount = stats ? stats.devotees : 50000; 
 
   const quickLinks = [ 
     { label: isHi ? 'पंचांग' : 'Panchang', icon: panchangIcon, path: '/panchang' }, 
@@ -39,15 +39,21 @@ export function HeroSection({ stats }: HeroSectionProps) {
     { label: isHi ? 'आरती' : 'Aarti', icon: aartiIcon, path: '/aarti' }, 
   ]; 
 
+  const formatJapCount = (n: number) => {
+    if (n >= 10000000) return `${(n / 10000000).toFixed(1)}Cr+`;
+    if (n >= 100000) return `${(n / 100000).toFixed(1)}L+`;
+    return n.toLocaleString() + '+';
+  };
+
   return ( 
-    <section className="hero-section relative w-full h-[100svh] overflow-hidden flex flex-col"> 
+    <section className="hero-section relative w-full overflow-hidden flex flex-col" style={{ height: '90vh', minHeight: '600px' }}> 
 
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0"> 
         <picture className="block w-full h-full">
           <source media="(min-width: 768px)" srcSet={krishnaMain} />
           <motion.img 
-            initial={{ scale: 1.1 }}
+            initial={{ scale: 1.08 }}
             animate={{ scale: 1 }}
             transition={{ duration: 10, ease: "easeOut" }}
             src={krishnaMobile} 
@@ -55,115 +61,138 @@ export function HeroSection({ stats }: HeroSectionProps) {
             className="w-full h-full object-cover object-[center_top] md:object-center" 
           />
         </picture>
-        {/* Complex Gradients for maximum readability and depth */} 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 hidden md:block" />
+
+        {/* Dark gradient behind text for readability — left side heavy */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/90" />
+        <div
+          className="absolute inset-0 hidden md:block"
+          style={{
+            background: 'linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0.05) 100%)'
+          }}
+        />
       </div> 
 
-      {/* OVERLAY CONTENT — centered vertically in the upper 70% */} 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 pt-16 pb-2 text-center"> 
+      {/* HERO CONTENT — left-aligned on desktop, centered on mobile */}
+      <div className="relative z-10 flex flex-col items-center md:items-start justify-start flex-1 px-4 md:px-12 lg:px-20 pt-8 md:pt-12 pb-2 text-center md:text-left max-w-5xl md:max-w-none"> 
 
-        {/* Decorative subtitle */} 
+        {/* HARE KRISHNA accent */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="flex items-center gap-3 mb-2 md:mb-3"
+          className="flex items-center gap-3 mb-3"
         > 
-          <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-400" /> 
-          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase drop-shadow-md">
+          <span className="h-[1px] w-10 bg-gradient-to-r from-transparent to-amber-400" /> 
+          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.35em] uppercase drop-shadow-md">
             {isHi ? 'हरे कृष्ण' : 'Hare Krishna'}
           </p> 
-          <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-400" /> 
+          <span className="h-[1px] w-10 bg-gradient-to-l from-transparent to-amber-400" /> 
         </motion.div> 
 
-        {/* Main heading */} 
+        {/* Main heading */}
         <motion.h1 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-white text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] max-w-4xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="text-white font-display font-bold leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]"
+          style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', maxWidth: '850px' }}
         > 
           {isHi ? 'दिव्य संगीत खोजें' : 'Discover Divine Music'}
         </motion.h1> 
+
+        {/* Spiritual accent */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-amber-400 text-2xl my-2 drop-shadow-md select-none"
+        >
+          🪷
+        </motion.div>
+
+        {/* Subtitle */}
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="text-amber-100/90 text-sm md:text-lg lg:text-xl mt-3 mb-6 md:mb-8 tracking-[0.2em] font-light drop-shadow-md"
+          className="text-amber-100/90 text-sm md:text-lg tracking-[0.2em] font-light drop-shadow-md mb-5"
         > 
           {isHi ? '— भक्ति के हर क्षण के लिए —' : '— FOR EVERY MOMENT OF BHAKTI —'}
-        </motion.p> 
+        </motion.p>
 
-        {/* CTA Buttons */} 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+        {/* Trust stats pills */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="flex gap-4 mb-8 md:mb-10 flex-wrap justify-center"
+          transition={{ delay: 0.7 }}
+          className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-6"
+        >
+          {[
+            { label: isHi ? 'भजन' : 'Bhajans', value: `${bhajansCount >= 1000 ? Math.floor(bhajansCount/1000) + 'K+' : bhajansCount + '+'}` },
+            { label: isHi ? 'जाप' : 'Jap Count', value: formatJapCount(japCount) },
+            { label: isHi ? 'भक्त' : 'Devotees', value: `${devoteesCount >= 1000 ? Math.floor(devoteesCount/1000) + 'K+' : devoteesCount + '+'}` },
+          ].map((stat) => (
+            <span
+              key={stat.label}
+              className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/15 rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/90 shadow-sm"
+            >
+              <span className="text-amber-400 font-bold">{stat.value}</span>
+              <span className="text-white/60">{stat.label}</span>
+            </span>
+          ))}
+        </motion.div>
+
+        {/* CTA Buttons — primary + secondary hierarchy */}
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.85 }}
+          className="flex gap-3 flex-wrap justify-center md:justify-start"
         > 
+          {/* PRIMARY */}
           <button 
             onClick={() => navigate('/all-bhajans')} 
-            className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-8 py-4 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
+            className="group flex items-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-bold px-7 py-3 rounded-full shadow-[0_8px_24px_-6px_rgba(249,115,22,0.55)] transition-all duration-300 text-sm md:text-base"
           > 
-            <Play className="w-5 h-5 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
-            <span className="text-base md:text-lg">{isHi ? 'भजन खोजें' : 'Explore Bhajans'}</span>
-          </button> 
-        </motion.div> 
+            <Play className="w-4 h-4 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
+            {isHi ? 'भजन खोजें' : 'Explore Bhajans'}
+          </button>
 
-        {/* Stats Row */} 
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="flex items-center gap-4 md:gap-8 bg-black/50 backdrop-blur-xl rounded-3xl px-6 md:px-10 py-3 md:py-4 border border-white/10 shadow-2xl"
-        > 
-          <div className="flex flex-col md:flex-row items-center gap-1 md:gap-3"> 
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <Music2 className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">{bhajansCount.toLocaleString()}+</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
-                {isHi ? 'भजन' : 'Bhajans'}
-              </p> 
-            </div>
-          </div> 
-          <div className="w-px h-8 bg-white/10" /> 
-          <div className="flex flex-col md:flex-row items-center gap-1 md:gap-3"> 
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <Users className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">{artistsCount.toLocaleString()}</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
-                {isHi ? 'कलाकार' : 'Artists'}
-              </p> 
-            </div>
-          </div> 
-          <div className="w-px h-8 bg-white/10" /> 
-          <div className="flex flex-col md:flex-row items-center gap-1 md:gap-3"> 
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <Heart className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> 
-            </div>
-            <div className="text-center md:text-left">
-              <p className="text-white font-bold text-sm md:text-lg leading-none">{devoteesCount.toLocaleString()}</p> 
-              <p className="text-zinc-400 text-[9px] md:text-[11px] font-medium uppercase tracking-wider mt-1">
-                {isHi ? 'भक्त' : 'Devotees'}
-              </p> 
-            </div>
-          </div> 
-        </motion.div> 
+          {/* SECONDARY — transparent ghost style */}
+          <button 
+            onClick={() => navigate('/japa-counter')} 
+            className="group flex items-center gap-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 hover:border-white/50 active:scale-95 text-white font-semibold px-7 py-3 rounded-full transition-all duration-300 text-sm md:text-base"
+          > 
+            🧿 {isHi ? 'जाप शुरू करें' : 'Start Chanting'}
+          </button>
+        </motion.div>
       </div> 
 
-      {/* BOTTOM ICON DOCK — pinned to bottom of section */} 
+      {/* SCROLL INDICATOR */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.4 }}
+        className="relative z-10 flex justify-center pb-4 shrink-0"
+      >
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          className="flex flex-col items-center gap-1 text-white/50 cursor-pointer select-none"
+          onClick={() => window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' })}
+        >
+          <ChevronDown className="w-6 h-6" strokeWidth={1.5} />
+        </motion.div>
+      </motion.div>
+
+      {/* BOTTOM ICON DOCK */} 
       <motion.div 
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-        className="relative z-10 px-3 pb-6 pt-2 md:px-6 md:pb-8 max-w-4xl mx-auto w-full"
+        transition={{ delay: 1.1 }}
+        className="relative z-10 px-3 pb-5 pt-1 md:px-6 md:pb-6 max-w-4xl mx-auto w-full"
       > 
-        <div className="rounded-[2rem] bg-black/25 backdrop-blur-2xl border border-white/10 px-3 py-4 md:px-6 md:py-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
+        <div className="rounded-[2rem] bg-black/30 backdrop-blur-2xl border border-white/10 px-3 py-4 md:px-6 md:py-5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]">
           <div className="flex items-start justify-between gap-1 sm:gap-2 md:gap-4"> 
             {quickLinks.map((item) => ( 
               <button 

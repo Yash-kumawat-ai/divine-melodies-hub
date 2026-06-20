@@ -106,6 +106,7 @@ type TranslationKey =
   | 'morning'
   | 'evening'
   | 'meditation'
+  | 'community'
   | 'panchang'
   | 'temple'
   | 'templeTitle'
@@ -200,7 +201,7 @@ type TranslationKey =
   | 'footerDescription'
   | 'emailForUpdates'
   | 'explore'
-  | 'community'
+  | 'footerCommunity'
   | 'legal'
   | 'privacyPolicy'
   | 'termsOfService'
@@ -349,6 +350,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     morning: 'Morning',
     evening: 'Evening',
     meditation: 'Meditation',
+    community: 'Naam Sangh',
     panchang: 'Panchang',
     temple: 'Temple',
     templeTitle: 'Virtual Temple',
@@ -443,7 +445,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     footerDescription: 'Preserving devotion, one bhajan at a time. The largest community-driven collection of Hindu devotional music.',
     emailForUpdates: 'Your email for updates',
     explore: 'Bhajans',
-    community: 'Community',
+    footerCommunity: 'Community',
     legal: 'Legal',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
@@ -589,8 +591,9 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     allOccasions: 'सभी अवसर',
     allMoods: 'सभी भाव',
     morning: 'प्रातः',
-    evening: 'सायं',
+    evening: 'संध्या',
     meditation: 'ध्यान',
+    community: 'नाम संघ',
     panchang: 'पंचांग',
     temple: 'मंदिर',
     templeTitle: 'वर्चुअल मंदिर',
@@ -685,7 +688,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     footerDescription: 'एक-एक भजन से भक्ति को संरक्षित करना। हिंदू भक्ति संगीत का सबसे बड़ा समुदाय-संचालित संग्रह।',
     emailForUpdates: 'अपडेट के लिए ईमेल',
     explore: 'भजन',
-    community: 'समुदाय',
+    footerCommunity: 'समुदाय',
     legal: 'कानूनी',
     privacyPolicy: 'गोपनीयता नीति',
     termsOfService: 'सेवा की शर्तें',
@@ -738,7 +741,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     lyrics: 'ગીત', details: 'વિગતો', selectGodForBhajan: 'ભજન માટે ભગવાન પસંદ કરો',
     addAnotherGod: 'બીજા ભગવાન ઉમેરો', addDeityHint: 'યાદીમાં ન હોય તો ઉમેરો',
     changeGod: 'ભગવાન બદલો', bhajansCount: 'ભજનો',
-    recent: 'તાજેતરનાં', meditation: 'ધ્યાન', temple: 'મંદિર', kirtanAi: 'કીર્તન AI',
+    recent: 'તાજેતરનાં', meditation: 'ધ્યાન', community: 'નામ સંઘ', temple: 'મંદિર', kirtanAi: 'કીર્તન AI',
     notifications: 'સૂચનાઓ', switchToDarkMode: 'ડાર્ક મોડ ચાલુ કરો', switchToLightMode: 'લાઇટ મોડ ચાલુ કરો',
     pricing: 'કિંમત', about: 'અમારા વિશે',
   },
@@ -750,7 +753,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     lyrics: 'गीत', details: 'तपशील', selectGodForBhajan: 'भजनासाठी देव निवडा',
     addAnotherGod: 'आणखी एक देव जोडा', addDeityHint: 'यादीत नसल्यास नवीन जोडा',
     changeGod: 'देव बदला', bhajansCount: 'भजने',
-    recent: 'अलीकडील', meditation: 'ध्यान', temple: 'मंदिर', kirtanAi: 'कीर्तन AI',
+    recent: 'अलीकडील', meditation: 'ध्यान', community: 'नाम संघ', temple: 'मंदिर', kirtanAi: 'कीर्तन AI',
     notifications: 'सूचना', switchToDarkMode: 'डार्क मोड चालू करा', switchToLightMode: 'लाइट मोड चालू करा',
     pricing: 'किंमत', about: 'आमच्याबद्दल',
   },
@@ -762,7 +765,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     lyrics: 'গান', details: 'বিস্তারিত', selectGodForBhajan: 'ভজনের জন্য ঈশ্বর নির্বাচন করুন',
     addAnotherGod: 'আরও একটি ঈশ্বর যোগ করুন', addDeityHint: 'তালিকায় না থাকলে যোগ করুন',
     changeGod: 'ঈশ্বর পরিবর্তন করুন', bhajansCount: 'ভজন',
-    recent: 'সাম্প্রতিক', meditation: 'ধ্যান', temple: 'মন্দির', kirtanAi: 'কীর্তন AI',
+    recent: 'সাম্প্রতিক', meditation: 'ধ্যান', community: 'নাম সংঘ', temple: 'মন্দির', kirtanAi: 'কীর্তন AI',
     notifications: 'বিজ্ঞপ্তি', switchToDarkMode: 'ডার্ক মোড চালু করুন', switchToLightMode: 'লাইট মোড চালু করুন',
     pricing: 'মূল্য', about: 'আমাদের সম্পর্কে',
   },
@@ -774,7 +777,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     lyrics: 'வரிகள்', details: 'விவரங்கள்', selectGodForBhajan: 'பஜனுக்கு கடவுளை தேர்வு செய்யவும்',
     addAnotherGod: 'மற்றொரு கடவுளை சேர்', addDeityHint: 'பட்டியலில் இல்லையெனில் புதிதாக சேர்க்கவும்',
     changeGod: 'கடவுளை மாற்று', bhajansCount: 'பஜன்கள்',
-    recent: 'சமீபத்திய', meditation: 'தியானம்', temple: 'கோவில்', kirtanAi: 'கீர்த்தன் AI',
+    recent: 'சமீபத்திய', meditation: 'தியானம்', community: 'நாம சங்கம்', temple: 'கோவில்', kirtanAi: 'கீர்த்தன் AI',
     notifications: 'அறிவிப்புகள்', switchToDarkMode: 'டார்க் மோடு மாற்று', switchToLightMode: 'லைட் மோடு மாற்று',
     pricing: 'விலை', about: 'எங்களை பற்றி',
   },

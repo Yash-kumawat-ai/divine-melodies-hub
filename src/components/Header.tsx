@@ -1,8 +1,8 @@
-﻿import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Bell,
   CalendarDays,
   Camera,
+  ChevronDown,
   Clock3,
   Flower2,
   Image,
@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   Moon,
+  MoreHorizontal,
   Search,
   ShieldCheck,
   Sparkles,
@@ -19,6 +20,7 @@ import {
   Tags,
   Upload,
   User,
+  Users,
 } from "lucide-react";
 import MobileBackButton from "@/components/MobileBackButton";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
@@ -126,6 +128,7 @@ export default function Header() {
   const mobileHeaderLinks = [
     { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang"), featured: true },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
+    { to: "/community", label: language === 'hi' ? 'नाम संघ' : 'Naam Sangh', icon: Users, match: (path: string) => path.startsWith("/community") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
     { to: "/wallpaper", label: language === 'hi' ? 'वॉलपेपर' : 'Wallpapers', icon: Image, match: (path: string) => path.startsWith("/wallpaper") },
     { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
@@ -134,7 +137,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="header-container container mx-auto px-4 flex items-center justify-between h-16 md:h-auto md:py-2 lg:h-20 lg:py-0 md:flex-col md:items-stretch md:justify-start md:gap-y-2 lg:flex-row lg:items-center lg:justify-between">
+      <div className="header-container container mx-auto px-4 flex items-center justify-between h-14">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && (
             <span className="inline-flex md:hidden">
@@ -145,11 +148,11 @@ export default function Header() {
             <img
               src="/brand-logo.webp"
               alt="Raghavam"
-              className="w-8 h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 object-contain shrink-0"
-              width={40}
-              height={40}
+              className="w-7 h-7 md:w-8 md:h-8 object-contain shrink-0"
+              width={32}
+              height={32}
             />
-            <span className="font-display text-base md:text-base lg:text-lg font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
+            <span className="font-display text-sm md:text-base font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
               Raghavam
             </span>
           </Link>
@@ -198,88 +201,120 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setProfileHubOpen(true)}
-            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95"
             aria-label={t('accountMenu')}
           >
             {user ? (
-              <Avatar className="h-9 w-9 border border-primary/25">
+              <Avatar className="h-8 w-8 border border-primary/25">
                 <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                <AvatarFallback>{initials}</AvatarFallback>
+                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
               </Avatar>
             ) : (
-              <User className="h-5 w-5 text-primary" strokeWidth={2.25} />
+              <User className="h-4 w-4 text-primary" strokeWidth={2.25} />
             )}
           </button>
           <ProfileHubSheet open={profileHubOpen} onOpenChange={setProfileHubOpen} />
         </div>
 
-        <nav className="hidden md:flex md:w-full md:flex-wrap md:justify-start lg:flex-1 lg:justify-end items-center gap-2 md:gap-x-3 md:gap-y-2 lg:gap-4 text-sm md:text-[13px] lg:text-sm font-medium">
-          <Link to="/" className="text-foreground hover:text-primary transition-colors">{t('home')}</Link>
-          <Link to="/all-bhajans" className="text-foreground hover:text-primary transition-colors">{t('browse')}</Link>
+        {/* ── Desktop Nav ─────────────────────────────────── */}
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-0.5 lg:gap-1 text-[13px] font-medium">
+          {/* Primary links */}
+          <Link to="/" className="px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap">{t('home')}</Link>
+          <Link to="/all-bhajans" className="px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap">{t('browse')}</Link>
           <Link
-            to="/panchang"
-            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+            to="/meditation"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
           >
-            <CalendarDays className="w-3.5 h-3.5" />
-            {t('panchang')}
+            <Flower2 className="w-3 h-3" />
+            {t('meditation')}
           </Link>
           <Link
             to="/temple"
-            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
           >
-            <Landmark className="w-3.5 h-3.5" />
+            <Landmark className="w-3 h-3" />
             {t('temple')}
           </Link>
           <Link
-            to="/meditation"
-            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
+            to="/community"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
           >
-            <Flower2 className="w-3.5 h-3.5" />
-            {t('meditation')}
+            <Users className="w-3 h-3" />
+            {language === 'hi' ? 'नाम संघ' : 'Naam Sangh'}
           </Link>
-          <Link to="/pricing" className="text-foreground hover:text-primary transition-colors">{t('pricing')}</Link>
-          <Link to="/about" className="text-foreground hover:text-primary transition-colors">{t('about')}</Link>
-          <Link
-            to="/wallpaper"
-            className="inline-flex items-center gap-1 text-foreground hover:text-primary transition-colors"
-          >
-            <Image className="w-3.5 h-3.5" />
-            {language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}
-          </Link>
-          <Link
-            to="/upload-bhajan"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors md:px-2.5 md:py-1 lg:px-3 lg:py-1.5"
-          >
-            <Upload className="w-3.5 h-3.5" />
-            {t('upload')}
-          </Link>
+
+          {/* More ▼ dropdown */}
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
+              >
+                {language === 'hi' ? 'और' : 'More'}
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-44 rounded-xl">
+              <DropdownMenuItem asChild>
+                <Link to="/pricing" className="flex items-center gap-2">
+                  <Tags className="h-4 w-4 opacity-60" />{t('pricing')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/about" className="flex items-center gap-2">
+                  <Info className="h-4 w-4 opacity-60" />{t('about')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/wallpaper" className="flex items-center gap-2">
+                  <Image className="h-4 w-4 opacity-60" />{language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/recent-bhajans" className="flex items-center gap-2">
+                  <Clock3 className="h-4 w-4 opacity-60" />{t('recent')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/upload-bhajan" className="flex items-center gap-2 text-primary">
+                  <Upload className="h-4 w-4" />{t('upload')}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Kirtan AI pill */}
           <Link
             to="/kirtan-ai"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-xs font-semibold text-white hover:shadow-lg transition-all md:h-7 md:px-2.5 lg:h-8 lg:px-3"
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-[11px] font-semibold text-white hover:shadow-md hover:shadow-orange-500/30 transition-all h-7 px-3 ml-1 whitespace-nowrap"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 h-3" />
             {t('kirtanAi')}
           </Link>
-          <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors md:p-1.5 lg:p-2">
-            <Search className="w-5 h-5" />
+
+          {/* Search */}
+          <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-1.5 shrink-0 ml-0.5">
+            <Search className="w-4 h-4" />
           </Link>
+          {/* Theme toggle */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors md:h-8 md:w-8 lg:h-9 lg:w-9"
+            className="inline-flex items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors h-7 w-7"
             aria-label={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
-            title={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
           </button>
+
+          {/* Notification bell */}
           {user && <UserNotificationBell userId={user.id} />}
 
+          {/* Language select */}
           <select
             value={language}
-            onChange={(e) => {
-              handleLanguageChange(e.target.value as typeof language);
-            }}
-            className="rounded-md border border-border bg-background text-sm md:h-8 md:px-1.5 lg:h-9 lg:px-2"
+            onChange={(e) => handleLanguageChange(e.target.value as typeof language)}
+            className="rounded-md border border-border bg-background text-xs h-7 px-1.5"
             aria-label={t('language')}
           >
             {languageOptions.map((option) => (
@@ -289,19 +324,26 @@ export default function Header() {
             ))}
           </select>
 
-          <div className="flex items-center gap-2">
+          {/* Avatar + name dropdown */}
+          <div className="flex items-center gap-1.5">
             {staffRole && <AdminRoleBadge role={staffRole} className="hidden sm:inline-flex" />}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="relative rounded-full p-0.5 transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="relative flex items-center gap-1.5 rounded-full pl-0.5 pr-2 py-0.5 hover:bg-primary/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                   aria-label={t('accountMenu')}
                 >
-                  <Avatar className="border border-primary/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm md:h-9 md:w-9 lg:h-10 lg:w-10">
+                  <Avatar className="border border-primary/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm h-8 w-8">
                     <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                    <AvatarFallback>{initials}</AvatarFallback>
+                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                   </Avatar>
+                  {user && (
+                    <span className="hidden lg:block text-xs font-medium text-foreground max-w-[80px] truncate">
+                      {displayName.split(' ')[0]}
+                    </span>
+                  )}
+                  <ChevronDown className="hidden lg:block h-3 w-3 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">
