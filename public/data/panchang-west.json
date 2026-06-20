@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-19",
+  "date": "2026-06-20",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Panchimi",
-  "tithi_number": 0,
-  "nakshatra": "Aslesha - 4",
-  "yoga": "Harshana",
-  "karana": "Bava",
-  "paksha": "Krishna",
+  "tithi": "Sashti",
+  "tithi_number": 6,
+  "nakshatra": "Makha - 4",
+  "yoga": "Vajra",
+  "karana": "Taitula",
+  "paksha": "Shukla",
   "sunrise": "06:05 AM",
   "sunset": "07:14 PM",
-  "rahu_kaal": "02:18 PM - 03:57 PM",
+  "rahu_kaal": "09:22 AM - 11:01 AM",
   "brahma_muhurat": "04:29 AM - 05:17 AM",
-  "vara": "Shukravaar",
-  "updated_at": "2026-06-19T07:45:46+05:30"
+  "vara": "Shanivaar",
+  "updated_at": "2026-06-20T07:05:02+05:30"
 }
