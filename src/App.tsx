@@ -127,6 +127,7 @@ function AppContent() {
             <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/join-community" element={<JoinCommunityPage />} />
+            <Route path="/community/groups/:slug" element={<JoinCommunityPage />} />
             <Route
               path="/admin/moderation"
               element={
