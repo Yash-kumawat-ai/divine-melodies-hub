@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-20",
+  "date": "2026-06-21",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Sashti",
-  "tithi_number": 6,
-  "nakshatra": "Makha - 4",
-  "yoga": "Vajra",
-  "karana": "Taitula",
+  "tithi": "Saptami",
+  "tithi_number": 7,
+  "nakshatra": "Pubba - 4",
+  "yoga": "Siddhi",
+  "karana": "Vanija",
   "paksha": "Shukla",
   "sunrise": "05:58 AM",
   "sunset": "06:44 PM",
-  "rahu_kaal": "09:10 AM - 10:45 AM",
+  "rahu_kaal": "05:08 PM - 06:44 PM",
   "brahma_muhurat": "04:22 AM - 05:10 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-06-20T07:05:02+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-06-21T07:27:47+05:30"
 }
