@@ -331,7 +331,7 @@ export const communityApi = {
         .from("group_members")
         .select(`
           *,
-          user_profiles:user_id(display_name, avatar_url)
+          user_profiles:user_id(display_name:name, avatar_url)
         `)
         .eq("group_id", groupId);
 
@@ -377,7 +377,7 @@ export const communityApi = {
         .from("community_posts")
         .select(`
           *,
-          user_profiles:author_id(display_name, avatar_url),
+          user_profiles:author_id(display_name:name, avatar_url),
           groups:group_id(name),
           post_reactions(user_id),
           post_comments(id),
@@ -444,7 +444,7 @@ export const communityApi = {
           rsvp_status: userRsvp?.rsvp_status || null,
           rsvps_count: rsvpsCount,
           vote_percentages: votePercentages,
-          user_voted_option: userVote !== null ? userVote.option_index : null
+          user_voted_option: userVote?.option_index ?? null
         };
       });
     } catch (err) {
@@ -663,7 +663,7 @@ export const communityApi = {
         .from("post_comments")
         .select(`
           *,
-          user_profiles:author_id(display_name, avatar_url)
+          user_profiles:author_id(display_name:name, avatar_url)
         `)
         .eq("post_id", postId)
         .order("created_at", { ascending: true });
