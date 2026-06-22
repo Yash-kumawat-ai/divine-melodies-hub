@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-21",
+  "date": "2026-06-22",
   "zone": "northwest",
   "city": "Jaipur",
-  "tithi": "Saptami",
-  "tithi_number": 7,
-  "nakshatra": "Pubba - 4",
-  "yoga": "Siddhi",
-  "karana": "Vanija",
+  "tithi": "Ashtami",
+  "tithi_number": 8,
+  "nakshatra": "Uttara - 4",
+  "yoga": "Vyatapata",
+  "karana": "Bava",
   "paksha": "Shukla",
   "sunrise": "05:37 AM",
   "sunset": "07:19 PM",
-  "rahu_kaal": "05:36 PM - 07:19 PM",
+  "rahu_kaal": "07:20 AM - 09:02 AM",
   "brahma_muhurat": "04:01 AM - 04:49 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-06-21T07:27:47+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-06-22T07:31:28+05:30"
 }
