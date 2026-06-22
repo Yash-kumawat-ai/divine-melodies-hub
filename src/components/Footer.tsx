@@ -359,7 +359,7 @@ export default function Footer() {
             >
               <div className="flex items-center gap-3.5">
                 <Users className={cn("w-6 h-6 text-emerald-500 transition-transform duration-300", communityOpen ? "scale-110 rotate-6" : "group-hover:scale-110")} />
-                <span className="font-display text-lg font-bold text-emerald-500">{l.footerCommunity}</span>
+                <span className="font-display text-lg font-bold text-emerald-500">{l.community}</span>
               </div>
               <ChevronDown className={cn("w-5 h-5 text-emerald-500/60 transition-all duration-300", communityOpen ? "text-emerald-500 rotate-180" : "group-hover:text-emerald-500")} />
             </button>

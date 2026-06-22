@@ -13,6 +13,12 @@ export default function AppShell() {
   const isLeaderboard = pathname === "/leaderboard";
   const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
 
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isAccountRoute = pathname.startsWith("/account");
+  const isNotifications = pathname === "/notifications";
+  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications;
+
+
   useEffect(() => {
     if (!isFullScreenApp) {
       window.scrollTo(0, 0);
@@ -50,7 +56,7 @@ export default function AppShell() {
           <MobileBottomNav />
         </div>
       )}
-      {!isFullScreenApp && <LayoutFooter />}
+      {!hideFooter && <LayoutFooter />}
     </div>
   );
 }

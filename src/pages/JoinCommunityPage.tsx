@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight
+  ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight,
+  Leaf, Music, BookOpen, HelpCircle, Bookmark
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -569,342 +570,742 @@ export default function JoinCommunityPage() {
       )}
 
       {user && !groupViewOpen && (
-        <div className="max-w-4xl mx-auto px-4 mt-6">
-          {/* ─── TAB SWITCHER ──────────────────────────────────────── */}
-          <div className="flex border-b border-orange-500/10 mb-6 gap-2">
-            {[
-              { id: 'feed', label: isHi ? 'सत्संग फीड' : 'Satsang Feed', icon: MessageSquare },
-              { id: 'groups', label: isHi ? 'नाम संघ' : 'Naam Sangh Groups', icon: Users },
-              { id: 'events', label: isHi ? 'धार्मिक कार्यक्रम' : 'Satsang Events', icon: Calendar }
-            ].map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`relative pb-3 px-4 font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
-                    isActive ? "text-orange-600 dark:text-orange-400" : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                  {isActive && (
-                    <motion.div 
-                      layoutId="community-tab-line"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ─── TAB 1: FEED VIEW ──────────────────────────────────── */}
-          {activeTab === 'feed' && (
-            <div className="space-y-6">
-              {/* Post Composer CTA Card */}
-              <div 
-                onClick={() => setCreatePostOpen(true)}
-                className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center text-orange-600">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <span className="text-stone-400 text-sm font-medium">
-                    {isHi ? "अपने विचार या कोई भजन साझा करें..." : "Share something devotional..."}
-                  </span>
-                </div>
-                <Button size="icon" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-9 h-9">
-                  <Plus className="w-5 h-5" />
-                </Button>
-              </div>
-
-              {/* Bhajan Request Header Banner */}
-              <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-orange-500/15 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-display text-sm font-extrabold text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
-                    📿 {isHi ? "भजन अनुरोध बोर्ड" : "Bhajan Request Board"}
+        <div className="max-w-7xl mx-auto px-4 mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* ─── 1. LEFT SIDEBAR: MY GROUPS (Desktop Only) ────────────── */}
+            <div className="hidden lg:block lg:col-span-3 space-y-4 sticky top-24">
+              <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-orange-500/10">
+                  <Users className="w-4.5 h-4.5 text-orange-500" />
+                  <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider">
+                    {isHi ? "मेरे नाम संघ" : "My Naam Sangh"}
                   </h3>
-                  <p className="text-stone-600 dark:text-stone-300 text-xs mt-1">
-                    {isHi ? "क्या आपको कोई भजन नहीं मिल रहा है? यहाँ अनुरोध करें और भक्तों से सहायता लें।" : "Can't find a bhajan? Request it here and get lyrics from other devotees."}
-                  </p>
                 </div>
-                <Button 
-                  onClick={() => {
-                    setPostType('bhajan_request');
-                    setCreatePostOpen(true);
-                  }}
-                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl whitespace-nowrap"
-                >
-                  {isHi ? "अनुरोध पोस्ट करें" : "Request Bhajan"}
-                </Button>
-              </div>
 
-              {/* Feed Filters */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
-                {["All", "Bhajan Share", "Bhajan Request", "Question", "Thought", "Event"].map(filter => {
-                  const isRequest = filter === "Bhajan Request";
-                  const isSelected = feedFilter === filter;
+                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                  {groups.filter(g => g.is_member).length === 0 ? (
+                    <p className="text-xs text-stone-400 text-center py-4 font-medium">
+                      {isHi ? "आप अभी किसी समूह में नहीं हैं।" : "You haven't joined any groups yet."}
+                    </p>
+                  ) : (
+                    groups.filter(g => g.is_member).map(group => {
+                      const deityFound = DEITIES.find(d => d.id === group.deity);
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => handleOpenGroupDetails(group)}
+                          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-orange-500/5 hover:scale-[1.01] active:scale-95 transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full overflow-hidden border border-orange-500/20 p-0.5 shrink-0">
+                              <img 
+                                src={deityFound ? deityFound.src : "/placeholder-deity.jpg"} 
+                                alt={group.name} 
+                                className="w-full h-full object-cover rounded-full" 
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs text-orange-950 dark:text-amber-100 truncate group-hover:text-orange-500 transition-colors">
+                                {group.name}
+                              </p>
+                              <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5">
+                                {group.member_count} {isHi ? "सदस्य" : "Members"}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0 opacity-80" />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setCreateGroupOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-orange-500/25 text-orange-600 dark:text-orange-400 hover:border-orange-500/50 hover:bg-orange-500/5 text-xs font-bold transition-all mt-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{isHi ? "नाम संघ बनाएं" : "Create Naam Sangh"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ─── 2. MIDDLE COLUMN (MAIN CONTENT) ────────────────────── */}
+            <div className={`col-span-12 ${activeTab === 'feed' ? 'lg:col-span-6' : 'lg:col-span-9'} space-y-6`}>
+              
+              {/* ─── TAB SWITCHER ──────────────────────────────────────── */}
+              <div className="flex border-b border-orange-500/10 mb-6 gap-2 overflow-x-auto scrollbar-none">
+                {[
+                  { id: 'feed', label: isHi ? 'सत्संग फीड' : 'Satsang Feed', icon: MessageSquare },
+                  { id: 'groups', label: isHi ? 'नाम संघ' : 'Naam Sangh Groups', icon: Users },
+                  { id: 'events', label: isHi ? 'धार्मिक कार्यक्रम' : 'Satsang Events', icon: Calendar }
+                ].map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
                   return (
                     <button
-                      key={filter}
-                      onClick={() => setFeedFilter(filter)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border shrink-0 ${
-                        isSelected 
-                          ? (isRequest 
-                              ? "bg-amber-500 text-white border-amber-600"
-                              : "bg-orange-500 text-white border-orange-600")
-                          : (isRequest
-                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/15"
-                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-orange-500/10 hover:bg-orange-500/5")
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`relative pb-3 px-4 font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
+                        isActive ? "text-orange-600 dark:text-orange-400" : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
                       }`}
                     >
-                      {filter === "All" ? (isHi ? "सभी पोस्ट" : "All") : filter}
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
+                      {isActive && (
+                        <motion.div 
+                          layoutId="community-tab-line"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
+                        />
+                      )}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Loader */}
-              {loadingPosts && (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                </div>
-              )}
-
-              {/* Empty state */}
-              {!loadingPosts && filteredPosts.length === 0 && (
-                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
-                  <span className="text-4xl block">🌸</span>
-                  <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
-                    {isHi ? "कोई भक्तिमय पोस्ट नहीं मिली। पहली पोस्ट करें!" : "No devotional posts found. Start the satsang!"}
-                  </p>
-                </div>
-              )}
-
-              {/* Posts Lists */}
-              {!loadingPosts && filteredPosts.length > 0 && (
-                <div className="space-y-4">
-                  {filteredPosts.map(post => (
-                    <PostCard 
-                      key={post.id} 
-                      post={post}
-                      user={user}
-                      isHi={isHi}
-                      comments={commentsMap[post.id] || []}
-                      isCommentsExpanded={expandedCommentsPostId === post.id}
-                      onToggleComments={handleToggleComments}
-                      onToggleReaction={handleToggleReaction}
-                      onToggleRsvp={handleToggleRsvp}
-                      onVoteOption={handleVoteOption}
-                      onDeleteComment={handleDeleteComment}
-                      onAddComment={handleAddComment}
-                      newCommentText={newCommentText}
-                      setNewCommentText={setNewCommentText}
-                      commentIsLyricsSubmit={commentIsLyricsSubmit}
-                      setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                      onDeletePost={async (id) => {
-                        if (confirm("Delete this post?")) {
-                          await communityApi.softRemovePost(id);
-                          loadPosts();
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ─── TAB 2: GROUPS LIST VIEW ───────────────────────────── */}
-          {activeTab === 'groups' && (
-            <div className="space-y-6">
-              {/* Discover Toolbar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-stone-400" />
-                  <Input 
-                    type="text"
-                    placeholder={isHi ? "समूह नाम या विवरण खोजें..." : "Search groups..."}
-                    value={groupSearch}
-                    onChange={(e) => setGroupSearch(e.target.value)}
-                    className="pl-10 border-orange-500/15 bg-white dark:bg-stone-900 rounded-xl"
-                  />
-                </div>
-                <Button 
-                  onClick={() => setCreateGroupOpen(true)}
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl"
-                >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  {isHi ? "समूह बनाएं" : "Create Group"}
-                </Button>
-              </div>
-
-              {/* Subtabs for Groups */}
-              <div className="flex border-b border-orange-500/10 pb-1.5 mb-4">
-                <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
-                  {debouncedGroupSearch ? "Search Results" : (isHi ? "सभी भक्ति समूह" : "Devotional Communities")}
-                </span>
-              </div>
-
-              {loadingGroups && (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                </div>
-              )}
-
-              {/* Empty search */}
-              {!loadingGroups && filteredGroups.length === 0 && (
-                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-dashed border-orange-500/20 rounded-2xl">
-                  <span className="text-4xl block">👥</span>
-                  <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
-                    {isHi ? "कोई समूह नहीं मिला।" : "No groups found."}
-                  </p>
-                  <p className="text-xs text-stone-400 mt-1">
-                    {isHi ? "अपना नया भक्ति समूह बनाने वाले पहले व्यक्ति बनें!" : "Be the first to create one!"}
-                  </p>
-                  <Button 
-                    onClick={() => setCreateGroupOpen(true)}
-                    variant="outline" 
-                    className="mt-4 border-orange-500/25 text-orange-600 dark:text-orange-400 rounded-xl"
-                  >
-                    {isHi ? "पहला समूह बनाएं" : "Create Group"}
-                  </Button>
-                </div>
-              )}
-
-              {/* Groups Grid */}
-              {!loadingGroups && filteredGroups.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredGroups.map(group => {
-                    const deityFound = DEITIES.find(d => d.id === group.deity);
-                    return (
-                      <div 
-                        key={group.id}
-                        className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-all shadow-xs"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/40 overflow-hidden shrink-0 flex items-center justify-center">
-                            {deityFound ? (
-                              <img src={deityFound.src} alt={deityFound.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <Users className="w-6 h-6 text-orange-600" />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-display font-bold text-base text-orange-950 dark:text-amber-100 truncate">
-                              {group.name}
-                            </h3>
-                            <p className="text-xs text-stone-500 mt-0.5">
-                              {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
-                            </p>
-                            <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
-                              {group.description || (isHi ? "भक्तिमय संगीत और नाम जप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2.5 mt-5 border-t border-orange-500/5 pt-3.5">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleOpenGroupDetails(group)}
-                            className="flex-1 text-xs font-bold border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/5 rounded-xl h-9"
-                          >
-                            {group.is_member ? (isHi ? "समूह देखें" : "View") : (isHi ? "विवरण देखें" : "Details")}
-                          </Button>
-                          <Button
-                            onClick={() => handleToggleGroupJoin(group)}
-                            className={`flex-1 text-xs font-bold rounded-xl h-9 ${
-                              group.is_member 
-                                ? "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200" 
-                                : "bg-orange-500 hover:bg-orange-600 text-white"
-                            }`}
-                          >
-                            {group.is_member ? (isHi ? "शामिल हैं" : "Joined") : (isHi ? "शामिल हों" : "Join")}
-                          </Button>
-                        </div>
+              {/* ─── TAB 1: FEED VIEW ──────────────────────────────────── */}
+              {activeTab === 'feed' && (
+                <div className="space-y-6">
+                  
+                  {/* Digital Satsang Premium Banner */}
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-stone-950 via-[#2d1c10] to-stone-950 border border-orange-500/25 p-6 md:p-8 flex items-center justify-between shadow-xl min-h-[140px] select-none text-left">
+                    <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+                    
+                    <div className="relative z-10 space-y-2 max-w-md md:max-w-lg">
+                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-amber-100 tracking-tight drop-shadow-md">
+                        {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
+                      </h2>
+                      <p className="text-xs md:text-sm text-stone-300 font-medium tracking-wide leading-relaxed">
+                        {isHi 
+                          ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
+                          : "Share Bhajans • Connect with Devotees • Advance Devotion"}
+                      </p>
+                      <div className="flex items-center gap-2 pt-1">
+                        <span className="w-12 h-px bg-amber-500/30" />
+                        <span className="text-amber-500 text-[10px]">🌸</span>
+                        <span className="w-12 h-px bg-amber-500/30" />
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+                    </div>
 
-          {/* ─── TAB 3: EVENTS VIEW ────────────────────────────────── */}
-          {activeTab === 'events' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-orange-500/10 pb-3">
-                <div>
-                  <h3 className="font-display font-extrabold text-base text-orange-950 dark:text-amber-100">
-                    {isHi ? "आगामी सत्संग कार्यक्रम" : "Upcoming Satsang Events"}
-                  </h3>
-                  <p className="text-xs text-stone-500 mt-1">
-                    {isHi ? "आसपास हो रहे भजन संध्या, सत्संग और कीर्तन कार्यक्रमों में भाग लें।" : "Participate in local bhajan sandhyas, satsangs, and kirtan programs."}
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => {
-                    setPostType('event');
-                    setCreatePostOpen(true);
-                  }}
-                  className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  {isHi ? "कार्यक्रम जोड़ें" : "Add Event"}
-                </Button>
-              </div>
+                    <div className="relative flex items-center justify-center shrink-0 pr-2">
+                      <div className="absolute w-24 h-24 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
+                      <div className="relative z-10 flex flex-col items-center gap-1">
+                        <span className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500 drop-shadow-[0_2px_12px_rgba(245,158,11,0.5)]">
+                          ॐ
+                        </span>
+                        <span className="text-xl md:text-2xl mt-0.5 filter drop-shadow-[0_2px_6px_rgba(244,63,94,0.3)]">🪷</span>
+                      </div>
+                    </div>
+                  </div>
 
-              {eventsList.length === 0 ? (
-                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
-                  <span className="text-4xl block">📅</span>
-                  <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
-                    {isHi ? "कोई आगामी कार्यक्रम निर्धारित नहीं है।" : "No events scheduled yet."}
-                  </p>
-                  <Button 
-                    onClick={() => {
-                      setPostType('event');
-                      setCreatePostOpen(true);
-                    }}
-                    className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold"
-                  >
-                    {isHi ? "पहला कार्यक्रम जोड़ें" : "Schedule Event"}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {eventsList.map(post => (
-                    <PostCard 
-                      key={post.id} 
-                      post={post}
-                      user={user}
-                      isHi={isHi}
-                      comments={commentsMap[post.id] || []}
-                      isCommentsExpanded={expandedCommentsPostId === post.id}
-                      onToggleComments={handleToggleComments}
-                      onToggleReaction={handleToggleReaction}
-                      onToggleRsvp={handleToggleRsvp}
-                      onVoteOption={handleVoteOption}
-                      onDeleteComment={handleDeleteComment}
-                      onAddComment={handleAddComment}
-                      newCommentText={newCommentText}
-                      setNewCommentText={setNewCommentText}
-                      commentIsLyricsSubmit={commentIsLyricsSubmit}
-                      setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                      onDeletePost={async (id) => {
-                        if (confirm("Delete this event post?")) {
-                          await communityApi.softRemovePost(id);
-                          loadPosts();
-                        }
+                  {/* Desktop Post Composer (Hidden on mobile) */}
+                  <div className="hidden lg:block bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
+                    <p className="font-bold text-xs text-orange-950 dark:text-amber-100 text-left">
+                      {isHi ? "कुछ अच्छा साझा करें..." : "Share something devotional..."}
+                    </p>
+                    
+                    <div className="grid grid-cols-4 gap-3">
+                      {[
+                        { id: 'bhajan_share', label: isHi ? 'भजन साझा करें' : 'Share Bhajan', desc: isHi ? 'अपना प्रिय भजन साझा करें' : 'Share your favorite bhajan', icon: '🎵', color: 'text-orange-500 bg-orange-50 dark:bg-orange-950/20 border-orange-500/15' },
+                        { id: 'bhajan_request', label: isHi ? 'भजन अनुरोध' : 'Request Bhajan', desc: isHi ? 'जो भजन नहीं मिल रहा हो' : 'If lyrics/audio missing', icon: '📿', color: 'text-purple-500 bg-purple-50 dark:bg-purple-950/20 border-purple-500/15' },
+                        { id: 'thought', label: isHi ? 'भक्ति विचार' : 'Devotional Thought', desc: isHi ? 'अपने विचार साझा करें' : 'Share your thoughts', icon: '🌿', color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500/15' },
+                        { id: 'event', label: isHi ? 'कार्यक्रम बनाएं' : 'Create Event', desc: isHi ? 'सत्संग या कार्यक्रम जोड़ें' : 'Add satsang or kirtan', icon: '📅', color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/20 border-rose-500/15' }
+                      ].map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setPostType(item.id as any);
+                            setCreatePostOpen(true);
+                          }}
+                          className={`p-3.5 rounded-xl border flex flex-col items-center justify-center text-center gap-1.5 hover:scale-[1.02] active:scale-95 transition-all group ${item.color}`}
+                        >
+                          <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">{item.icon}</span>
+                          <span className="font-extrabold text-[10px] uppercase tracking-tight">{item.label}</span>
+                          <span className="text-[8.5px] text-stone-400 dark:text-stone-500 line-clamp-1 font-medium">{item.desc}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mobile Post Composer (Hidden on desktop) */}
+                  <div className="lg:hidden bg-orange-50/40 dark:bg-stone-900/60 border border-orange-500/10 rounded-3xl p-5 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between gap-3 text-left">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-950 flex items-center justify-center text-orange-600 font-extrabold text-sm shrink-0 overflow-hidden">
+                          {user.photoURL ? (
+                            <img src={user.photoURL} alt="user avatar" className="w-full h-full object-cover" />
+                          ) : (
+                            user.displayName?.slice(0, 2).toUpperCase() || "DV"
+                          )}
+                        </div>
+                        <span className="text-stone-600 dark:text-stone-300 font-bold text-xs">
+                          {isHi ? "आज आप क्या साझा करना चाहेंगे?" : "What would you like to share today?"}
+                        </span>
+                      </div>
+                      
+                      <Button 
+                        size="icon" 
+                        onClick={() => setCreatePostOpen(true)}
+                        className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-9 h-9 shadow-md active:scale-95 shrink-0"
+                      >
+                        <Plus className="w-5 h-5 text-white" />
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2.5 pt-1">
+                      {[
+                        { id: 'bhajan_share', label: isHi ? 'भजन साझा करें' : 'Bhajan', icon: '🎵' },
+                        { id: 'bhajan_request', label: isHi ? 'भजन अनुरोध' : 'Request', icon: '📿' },
+                        { id: 'thought', label: isHi ? 'विचार साझा करें' : 'Thought', icon: '🌿' },
+                        { id: 'event', label: isHi ? 'कार्यक्रम बनाएं' : 'Event', icon: '📅' }
+                      ].map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setPostType(item.id as any);
+                            setCreatePostOpen(true);
+                          }}
+                          className="bg-white dark:bg-stone-900 border border-orange-500/10 hover:bg-orange-50/50 p-2.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center"
+                        >
+                          <span className="text-xl leading-none">{item.icon}</span>
+                          <span className="font-extrabold text-[8.5px] uppercase tracking-tight text-stone-700 dark:text-stone-300 whitespace-nowrap">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mobile Bhajan Request Board Banner (Hidden on desktop) */}
+                  <div className="lg:hidden bg-[#16120e] border border-orange-500/20 rounded-3xl p-5 shadow-lg flex items-center justify-between gap-4 text-left relative overflow-hidden select-none">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+                    
+                    <div className="flex items-start gap-3.5 relative z-10">
+                      <span className="text-3xl mt-0.5 filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">📿</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <h4 className="font-display font-extrabold text-sm text-amber-100">
+                            {isHi ? "भजन अनुरोध बोर्ड" : "Bhajan Request Board"}
+                          </h4>
+                          <span className="text-[10px] text-stone-400">❓</span>
+                        </div>
+                        <p className="text-[10px] text-stone-300 leading-relaxed max-w-[190px] font-medium">
+                          {isHi ? "क्या आपको कोई भजन नहीं मिल रहा? यहाँ अनुरोध करें और भक्तों से सहायता लें।" : "Can't find a bhajan? Request it here and get lyrics from other devotees."}
+                        </p>
+                        <p className="text-[9px] text-purple-400 font-bold flex items-center gap-1 pt-1">
+                          ✦ {isHi ? "आज 23 नए अनुरोध" : "23 new requests today"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setPostType('bhajan_request');
+                        setCreatePostOpen(true);
                       }}
-                    />
-                  ))}
+                      className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 px-3.5 rounded-2xl flex items-center gap-1 shrink-0 shadow-md shadow-purple-950/20 active:scale-95 transition-all"
+                    >
+                      <span>{isHi ? "अनुरोध करें" : "Request"}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Feed Filters */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+                    {["All", "Bhajan Share", "Bhajan Request", "Question", "Thought", "Event"].map(filter => {
+                      const isRequest = filter === "Bhajan Request";
+                      const isSelected = feedFilter === filter;
+                      return (
+                        <button
+                          key={filter}
+                          onClick={() => setFeedFilter(filter)}
+                          className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border shrink-0 ${
+                            isSelected 
+                              ? (isRequest 
+                                  ? "bg-amber-50 text-white border-amber-600"
+                                  : "bg-orange-500 text-white border-orange-600")
+                              : (isRequest
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/15"
+                                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-orange-500/10 hover:bg-orange-500/5")
+                          }`}
+                        >
+                          {filter === "All" ? (isHi ? "सभी पोस्ट" : "All") : filter}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Loader */}
+                  {loadingPosts && (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                    </div>
+                  )}
+
+                  {/* Empty state */}
+                  {!loadingPosts && filteredPosts.length === 0 && (
+                    <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
+                      <span className="text-4xl block">🌸</span>
+                      <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
+                        {isHi ? "कोई भक्तिमय पोस्ट नहीं मिली। पहली पोस्ट करें!" : "No devotional posts found. Start the satsang!"}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Posts Lists */}
+                  {!loadingPosts && filteredPosts.length > 0 && (
+                    <div className="space-y-4">
+                      {filteredPosts.map(post => (
+                        <PostCard 
+                          key={post.id} 
+                          post={post}
+                          user={user}
+                          isHi={isHi}
+                          comments={commentsMap[post.id] || []}
+                          isCommentsExpanded={expandedCommentsPostId === post.id}
+                          onToggleComments={handleToggleComments}
+                          onToggleReaction={handleToggleReaction}
+                          onToggleRsvp={handleToggleRsvp}
+                          onVoteOption={handleVoteOption}
+                          onDeleteComment={handleDeleteComment}
+                          onAddComment={handleAddComment}
+                          newCommentText={newCommentText}
+                          setNewCommentText={setNewCommentText}
+                          commentIsLyricsSubmit={commentIsLyricsSubmit}
+                          setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          onDeletePost={async (id) => {
+                            if (confirm("Delete this post?")) {
+                              await communityApi.softRemovePost(id);
+                              loadPosts();
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── TAB 2: GROUPS LIST VIEW ───────────────────────────── */}
+              {activeTab === 'groups' && (
+                <div className="space-y-6">
+                  {/* Discover Toolbar */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-stone-400" />
+                      <Input 
+                        type="text"
+                        placeholder={isHi ? "समूह नाम या विवरण खोजें..." : "Search groups..."}
+                        value={groupSearch}
+                        onChange={(e) => setGroupSearch(e.target.value)}
+                        className="pl-10 border-orange-500/15 bg-white dark:bg-stone-900 rounded-xl"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setCreateGroupOpen(true)}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md shadow-orange-500/15 hover:shadow-lg hover:shadow-orange-500/25 hover:scale-[1.01] active:scale-95 transition-all shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)"
+                      }}
+                    >
+                      <Plus className="w-4 h-4 text-white" />
+                      {isHi ? "समूह बनाएं" : "Create Group"}
+                    </button>
+                  </div>
+
+                  {/* Subtabs for Groups */}
+                  <div className="flex border-b border-orange-500/10 pb-1.5 mb-4">
+                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
+                      {debouncedGroupSearch ? "Search Results" : (isHi ? "सभी भक्ति समूह" : "Devotional Communities")}
+                    </span>
+                  </div>
+
+                  {loadingGroups && (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                    </div>
+                  )}
+
+                  {/* Empty search */}
+                  {!loadingGroups && filteredGroups.length === 0 && (
+                    <div className="text-center py-16 bg-white dark:bg-stone-900 border border-dashed border-orange-500/20 rounded-2xl">
+                      <span className="text-4xl block">👥</span>
+                      <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
+                        {isHi ? "कोई समूह नहीं मिला।" : "No groups found."}
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        {isHi ? "अपना नया भक्ति समूह बनाने वाले पहले व्यक्ति बनें!" : "Be the first to create one!"}
+                      </p>
+                      <Button 
+                        onClick={() => setCreateGroupOpen(true)}
+                        variant="outline" 
+                        className="mt-4 border-orange-500/25 text-orange-600 dark:text-orange-400 rounded-xl"
+                      >
+                        {isHi ? "पहला समूह बनाएं" : "Create Group"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Groups Grid */}
+                  {!loadingGroups && filteredGroups.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+                      {filteredGroups.map(group => {
+                        const deityFound = DEITIES.find(d => d.id === group.deity);
+                        return (
+                          <div 
+                            key={group.id}
+                            className="overflow-hidden rounded-2xl bg-white dark:bg-stone-900 border border-orange-500/10 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative group"
+                          >
+                            {/* Header banner image representing deity */}
+                            <div className="h-28 w-full relative overflow-hidden bg-amber-50 dark:bg-stone-950 flex items-center justify-center">
+                              <img
+                                src={deityFound ? deityFound.src : "/placeholder-deity.jpg"}
+                                alt={group.name}
+                                className="w-full h-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-stone-900 via-transparent to-black/20" />
+                              
+                              {/* Public/Private badge */}
+                              <span className="absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs bg-emerald-600/80">
+                                <Globe className="w-2.5 h-2.5" />
+                                {isHi ? "सार्वजनिक" : "Public"}
+                              </span>
+                            </div>
+
+                            <div className="p-5 flex-1 flex flex-col justify-between">
+                              <div>
+                                <h3 className="font-display text-lg font-bold text-orange-950 dark:text-amber-100 leading-snug">
+                                  {group.name}
+                                </h3>
+                                <p className="text-xs text-stone-500 mt-0.5">
+                                  {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
+                                </p>
+                                <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
+                                  {group.description || (isHi ? "भक्तिमय संगीत और नाम जप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2.5 mt-5 border-t border-orange-500/5 pt-3.5">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleOpenGroupDetails(group)}
+                                className="flex-1 text-xs font-bold border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/5 rounded-xl h-9"
+                              >
+                                {group.is_member ? (isHi ? "समूह देखें" : "View") : (isHi ? "विवरण देखें" : "Details")}
+                              </Button>
+                              <Button
+                                onClick={() => handleToggleGroupJoin(group)}
+                                className={`flex-1 text-xs font-bold rounded-xl h-9 ${
+                                  group.is_member 
+                                    ? "bg-stone-100 dark:bg-stone-850 text-stone-700 dark:text-stone-300 hover:bg-stone-200" 
+                                    : "bg-orange-500 hover:bg-orange-600 text-white"
+                                }`}
+                              >
+                                {group.is_member ? (isHi ? "शामिल हैं" : "Joined") : (isHi ? "शामिल हों" : "Join")}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ─── TAB 3: EVENTS VIEW ────────────────────────────────── */}
+              {activeTab === 'events' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b border-orange-500/10 pb-3">
+                    <div>
+                      <h3 className="font-display font-extrabold text-base text-orange-950 dark:text-amber-100">
+                        {isHi ? "आगामी सत्संग कार्यक्रम" : "Upcoming Satsang Events"}
+                      </h3>
+                      <p className="text-xs text-stone-500 mt-1">
+                        {isHi ? "आसपास हो रहे भजन संध्या, सत्संग और कीर्तन कार्यक्रमों में भाग लें।" : "Participate in local bhajan sandhyas, satsangs, and kirtan programs."}
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => {
+                        setPostType('event');
+                        setCreatePostOpen(true);
+                      }}
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {isHi ? "कार्यक्रम जोड़ें" : "Add Event"}
+                    </Button>
+                  </div>
+
+                  {eventsList.length === 0 ? (
+                    <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
+                      <span className="text-4xl block">📅</span>
+                      <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
+                        {isHi ? "कोई आगामी कार्यक्रम निर्धारित नहीं है।" : "No events scheduled yet."}
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          setPostType('event');
+                          setCreatePostOpen(true);
+                        }}
+                        className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold"
+                      >
+                        {isHi ? "पहला कार्यक्रम जोड़ें" : "Schedule Event"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {eventsList.map(post => (
+                        <PostCard 
+                          key={post.id} 
+                          post={post}
+                          user={user}
+                          isHi={isHi}
+                          comments={commentsMap[post.id] || []}
+                          isCommentsExpanded={expandedCommentsPostId === post.id}
+                          onToggleComments={handleToggleComments}
+                          onToggleReaction={handleToggleReaction}
+                          onToggleRsvp={handleToggleRsvp}
+                          onVoteOption={handleVoteOption}
+                          onDeleteComment={handleDeleteComment}
+                          onAddComment={handleAddComment}
+                          newCommentText={newCommentText}
+                          setNewCommentText={setNewCommentText}
+                          commentIsLyricsSubmit={commentIsLyricsSubmit}
+                          setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          onDeletePost={async (id) => {
+                            if (confirm("Delete this event post?")) {
+                              await communityApi.softRemovePost(id);
+                              loadPosts();
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+
+            {/* ─── 3. RIGHT SIDEBAR: COMMUNITY WIDGETS (Feed tab only, desktop only) ─── */}
+            {activeTab === 'feed' && (
+              <div className="hidden lg:block lg:col-span-3 space-y-6 sticky top-24">
+                
+                {/* Widget A: Bhajan Requests list */}
+                <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-orange-500/10">
+                    <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider flex items-center gap-1">
+                      📿 {isHi ? "भजन अनुरोध" : "Bhajan Requests"}
+                    </h3>
+                    <button 
+                      onClick={() => setFeedFilter("Bhajan Request")}
+                      className="text-[10px] font-bold text-orange-500 hover:underline"
+                    >
+                      {isHi ? "सभी देखें" : "See All"}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {posts.filter(p => p.type === 'bhajan_request').slice(0, 2).length === 0 ? (
+                      <p className="text-[11px] text-stone-400 py-3 text-center font-medium">
+                        {isHi ? "अभी कोई सक्रिय अनुरोध नहीं है।" : "No active requests yet."}
+                      </p>
+                    ) : (
+                      posts.filter(p => p.type === 'bhajan_request').slice(0, 2).map(req => (
+                        <div key={req.id} className="p-3 bg-stone-50 dark:bg-stone-950 border border-orange-500/5 rounded-xl space-y-2 text-left">
+                          <div className="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center text-[10px] shrink-0 select-none">
+                            📿
+                          </div>
+                          <div>
+                            <p className="font-bold text-[11.5px] text-orange-950 dark:text-amber-100 line-clamp-1">
+                              {req.title || (isHi ? "मुझे यह भजन नहीं मिल रहा" : "Can't find this bhajan")}
+                            </p>
+                            <p className="text-[10px] text-stone-500 line-clamp-2 mt-0.5">
+                              {req.content}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-900/60 mt-1">
+                            <div className="flex -space-x-1.5 overflow-hidden select-none">
+                              {[1, 2, 3].map((num) => (
+                                <div key={num} className="inline-block h-4 w-4 rounded-full ring-1 ring-white dark:ring-stone-950 bg-stone-200 dark:bg-stone-850 flex items-center justify-center text-[7px] font-bold">
+                                  {num}
+                                </div>
+                              ))}
+                              <span className="text-[8px] text-stone-400 dark:text-stone-500 pl-2 font-bold mt-0.5">+12</span>
+                            </div>
+                            
+                            <button
+                              onClick={() => onToggleComments(req.id)}
+                              className="bg-purple-600 hover:bg-purple-700 text-white text-[9.5px] font-extrabold py-1 px-2.5 rounded-lg active:scale-95 transition-all shadow-sm"
+                            >
+                              {isHi ? "सहायता करें" : "Help"}
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Widget B: Upcoming Events list */}
+                <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-orange-500/10">
+                    <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider flex items-center gap-1">
+                      📅 {isHi ? "आगामी कार्यक्रम" : "Upcoming Events"}
+                    </h3>
+                    <button 
+                      onClick={() => setActiveTab('events')}
+                      className="text-[10px] font-bold text-orange-500 hover:underline"
+                    >
+                      {isHi ? "सभी देखें" : "See All"}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {eventsList.slice(0, 2).length === 0 ? (
+                      <p className="text-[11px] text-stone-400 py-3 text-center font-medium">
+                        {isHi ? "अभी कोई आगामी कार्यक्रम नहीं है।" : "No upcoming events yet."}
+                      </p>
+                    ) : (
+                      eventsList.slice(0, 2).map(evt => {
+                        const dateObj = new Date(evt.created_at);
+                        const day = dateObj.getDate();
+                        const months = isHi 
+                          ? ['जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर']
+                          : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const month = months[dateObj.getMonth()];
+                        
+                        return (
+                          <div key={evt.id} className="flex gap-3 p-3 bg-stone-50 dark:bg-stone-950 border border-orange-500/5 rounded-xl text-left items-start">
+                            <div className="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 flex flex-col items-center justify-center shrink-0">
+                              <span className="text-sm font-extrabold leading-none">{day}</span>
+                              <span className="text-[7.5px] font-extrabold uppercase mt-0.5 leading-none">{month}</span>
+                            </div>
+                            
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <p className="font-bold text-[11.5px] text-orange-950 dark:text-amber-100 truncate">
+                                {evt.title}
+                              </p>
+                              <p className="text-[9px] text-stone-500 truncate leading-none">
+                                {isHi ? "आज • 7:00 PM" : "Today • 7:00 PM"}
+                              </p>
+                              <p className="text-[9.5px] text-stone-600 dark:text-stone-400 font-medium truncate">
+                                {evt.content}
+                              </p>
+                              
+                              <div className="flex items-center justify-between pt-1 mt-1.5 border-t border-stone-100 dark:border-stone-900/60">
+                                <div className="flex -space-x-1 overflow-hidden select-none">
+                                  {[1, 2, 3].map((num) => (
+                                    <div key={num} className="inline-block h-3.5 w-3.5 rounded-full ring-1 ring-white dark:ring-stone-950 bg-stone-200 dark:bg-stone-850 flex items-center justify-center text-[6px] font-bold">
+                                      {num}
+                                    </div>
+                                  ))}
+                                  <span className="text-[8px] text-stone-400 dark:text-stone-500 pl-1.5 font-bold mt-0.5">+18</span>
+                                </div>
+                                
+                                <button
+                                  onClick={() => onToggleRsvp(evt.id)}
+                                  className="bg-rose-500 hover:bg-rose-600 text-white text-[9.5px] font-extrabold py-1 px-2.5 rounded-lg active:scale-95 transition-all shadow-sm"
+                                >
+                                  {isHi ? "रुचि दिखाएं" : "Join"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Widget C: Active Groups recommendation list */}
+                <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-orange-500/10">
+                    <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider flex items-center gap-1">
+                      👥 {isHi ? "सक्रिय नाम संघ" : "Active Naam Sangh"}
+                    </h3>
+                    <button 
+                      onClick={() => setActiveTab('groups')}
+                      className="text-[10px] font-bold text-orange-500 hover:underline"
+                    >
+                      {isHi ? "सभी देखें" : "See All"}
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {groups.filter(g => !g.is_member).slice(0, 2).length === 0 ? (
+                      <p className="text-[11px] text-stone-400 py-3 text-center font-medium">
+                        {isHi ? "सभी समूह आपने जॉइन किए हैं।" : "You've joined all groups."}
+                      </p>
+                    ) : (
+                      groups.filter(g => !g.is_member).slice(0, 2).map(group => {
+                        const deityFound = DEITIES.find(d => d.id === group.deity);
+                        return (
+                          <div 
+                            key={group.id} 
+                            className="flex items-center justify-between p-2.5 bg-stone-50 dark:bg-stone-950 border border-orange-500/5 rounded-xl text-left group"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-8 h-8 rounded-full overflow-hidden border border-orange-500/10 shrink-0">
+                                <img 
+                                  src={deityFound ? deityFound.src : "/placeholder-deity.jpg"} 
+                                  alt={group.name} 
+                                  className="w-full h-full object-cover" 
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-bold text-[11px] text-orange-950 dark:text-amber-100 truncate">
+                                  {group.name}
+                                </p>
+                                <p className="text-[9px] text-emerald-600 dark:text-emerald-450 font-bold mt-0.5 flex items-center gap-0.5">
+                                  ● {isHi ? "24 सक्रिय सदस्य" : "24 Active Devotees"}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <button
+                              onClick={() => handleOpenGroupDetails(group)}
+                              className="text-stone-400 hover:text-orange-500 p-1 shrink-0"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Widget D: Devotional Quote */}
+                <div className="bg-[#FAF6EE]/50 dark:bg-[#120f0b]/40 border border-orange-500/10 rounded-2xl p-5 shadow-xs relative overflow-hidden text-center select-none">
+                  <span className="absolute top-1 left-3 text-stone-200 dark:text-stone-850 font-serif text-5xl opacity-40 shrink-0">“</span>
+                  <span className="absolute bottom-1 right-3 text-stone-200 dark:text-stone-850 font-serif text-5xl opacity-40 shrink-0">”</span>
+                  
+                  <p className="relative z-10 text-[11.5px] italic text-stone-600 dark:text-stone-300 font-medium leading-relaxed px-2">
+                    {isHi 
+                      ? "संगत का प्रभाव ऐसा है, जैसा चंदन का वृक्ष पास आने पर होता है।" 
+                      : "The influence of good association is like that of a sandalwood tree; its fragrance naturally permeates everything nearby."}
+                  </p>
+                  
+                  <div className="flex items-center justify-center gap-2 mt-3.5 relative z-10">
+                    <span className="w-6 h-px bg-amber-500/25" />
+                    <span className="text-[10px] filter drop-shadow-sm">🪷</span>
+                    <span className="w-6 h-px bg-amber-500/25" />
+                  </div>
+                </div>
+
+              </div>
+            )}
+            
+          </div>
+
+          {/* ─── Om FAB Floating Action Button ─── */}
+          <button
+            onClick={() => setCreatePostOpen(true)}
+            className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 hover:shadow-orange-500/20 transition-all z-40 border border-amber-400/20"
+          >
+            <span className="text-2xl font-bold select-none drop-shadow-md">ॐ</span>
+          </button>
         </div>
       )}
 
