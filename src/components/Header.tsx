@@ -126,7 +126,7 @@ export default function Header() {
       : null;
 
   const mobileHeaderLinks = [
-    { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang"), featured: true },
+    { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang") },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
     { to: "/community", label: language === 'hi' ? 'नाम संघ' : 'Naam Sangh', icon: Users, match: (path: string) => path.startsWith("/community") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
@@ -438,9 +438,8 @@ export default function Header() {
                 className={cn(
                   "inline-flex h-9 shrink-0 snap-start items-center gap-2 rounded-full border px-3 text-[11px] font-semibold transition-colors",
                   active
-                    ? "border-primary/40 bg-primary/10 text-primary"
+                    ? "bg-orange-500 text-white border-orange-600 shadow-[0_4px_12px_rgba(234,88,12,0.25)]"
                     : "border-border/80 bg-card/70 text-foreground",
-                  item.featured && "border-orange-300/70 shadow-[0_10px_24px_rgba(234,88,12,0.25)]",
                 )}
                 aria-current={active ? "page" : undefined}
               >

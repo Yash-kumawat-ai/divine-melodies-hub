@@ -28,6 +28,15 @@ const XP_KEY = 'mandir-bhakti-xp'
 const GATE_CLOSE_MS = 900
 const GATE_REOPEN_DELAY_MS = 280
 
+interface Petal {
+  id: number
+  x: number // percentage
+  delay: number // seconds
+  duration: number // seconds
+  size: number // pixels
+  image: string
+}
+
 export function DarshanScreen() {
   const { t, lang, toggle } = useLang()
   const [gatesOpen, setGatesOpen] = useState(false)
@@ -51,6 +60,36 @@ export function DarshanScreen() {
   const [showSwipeHint, setShowSwipeHint] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
   const [xp, setXp] = useState(0)
+  const [petals, setPetals] = useState<Petal[]>([])
+
+  const triggerFullFlowerShower = useCallback((selectedImage?: string) => {
+    const defaultFlowers = [
+      '/images/marigold.png',
+      '/images/flowers/rose.png',
+      '/images/flower.png',
+      '/images/flowers/lily.png',
+      '/images/flowers/hibiscus.png',
+      '/images/flowers/sunflower.png',
+      '/images/flowers/daisy.png',
+      '/images/flowers/peony.png'
+    ]
+
+    const imageToUse = selectedImage || flowerImage || defaultFlowers[0]
+
+    const newPetals = Array.from({ length: 25 }).map((_, i) => ({
+      id: Date.now() + i,
+      x: 2 + Math.random() * 88,
+      delay: Math.random() * 1.5,
+      duration: 3.5 + Math.random() * 2.5,
+      size: 28 + Math.random() * 20,
+      image: imageToUse
+    }))
+
+    setPetals((prev) => [...prev, ...newPetals])
+    setTimeout(() => {
+      setPetals((prev) => prev.filter(p => !newPetals.includes(p)))
+    }, 7000)
+  }, [flowerImage])
 
   const glowTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const touchStartY = useRef<number | null>(null)
@@ -217,8 +256,9 @@ export function DarshanScreen() {
       playFlowerTone()
       pulseGlow()
       addXp(5)
+      triggerFullFlowerShower(image)
     },
-    [pulseGlow, addXp],
+    [pulseGlow, addXp, triggerFullFlowerShower],
   )
 
   const onBhogSelect = useCallback(
@@ -238,15 +278,17 @@ export function DarshanScreen() {
     setBurst((b) => b + 1)
     addXp(20)
     showToast(t('aartiDone'))
+    triggerFullFlowerShower()
     setTimeout(() => setIntenseGlow(false), 1100)
-  }, [addXp, showToast, t])
+  }, [addXp, showToast, t, triggerFullFlowerShower])
 
   const onDiyaComplete = useCallback(() => {
     setIntenseGlow(true)
     addXp(15)
     showToast(t('diyaLit'))
+    triggerFullFlowerShower()
     setTimeout(() => setIntenseGlow(false), 1100)
-  }, [addXp, showToast, t])
+  }, [addXp, showToast, t, triggerFullFlowerShower])
 
   const ringHeaderBell = useCallback(() => {
     if (aartiOpen || diyaOpen || flowerPickerOpen || bhogPickerOpen || bellActive || !gatesOpen) return
@@ -589,6 +631,44 @@ export function DarshanScreen() {
         onSelect={onBhogSelect}
         onClose={() => setBhogPickerOpen(false)}
       />
+
+      {/* ─── FLOWER PETALS OVERLAY ────────────────────────────────────── */}
+      {petals.map((petal) => (
+        <img
+          key={petal.id}
+          src={petal.image}
+          alt=""
+          className="absolute pointer-events-none z-[100] animate-petal select-none"
+          style={{
+            left: `${petal.x}%`,
+            animationDelay: `${petal.delay}s`,
+            animationDuration: `${petal.duration}s`,
+            width: `${petal.size}px`,
+            height: `${petal.size}px`,
+            objectFit: 'contain',
+            top: `-50px`,
+          }}
+        />
+      ))}
+
+      <style>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(-50px) rotate(0deg);
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(105vh) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        .animate-petal {
+          animation: fall linear forwards;
+        }
+      `}</style>
     </div>
   )
 }

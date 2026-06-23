@@ -41,7 +41,7 @@ const DEITIES = [
 export default function JoinCommunityPage() {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { language } = useLanguage();
   const isHi = language === "hi";
 
@@ -102,6 +102,7 @@ export default function JoinCommunityPage() {
   const [commentsMap, setCommentsMap] = useState<Record<string, PostComment[]>>({});
   const [newCommentText, setNewCommentText] = useState("");
   const [commentIsLyricsSubmit, setCommentIsLyricsSubmit] = useState(false);
+  const [loadingCommentsPostIds, setLoadingCommentsPostIds] = useState<Record<string, boolean>>({});
 
   // Debounced search for groups
   const [debouncedGroupSearch, setDebouncedGroupSearch] = useState("");
@@ -168,8 +169,19 @@ export default function JoinCommunityPage() {
       setExpandedCommentsPostId(null);
     } else {
       setExpandedCommentsPostId(postId);
-      const comments = await communityApi.fetchComments(postId);
-      setCommentsMap(prev => ({ ...prev, [postId]: comments }));
+      // Only set loading if we don't have comments in cache already
+      const hasCached = !!commentsMap[postId];
+      if (!hasCached) {
+        setLoadingCommentsPostIds(prev => ({ ...prev, [postId]: true }));
+      }
+      try {
+        const comments = await communityApi.fetchComments(postId);
+        setCommentsMap(prev => ({ ...prev, [postId]: comments }));
+      } catch (err) {
+        console.error("Error fetching comments:", err);
+      } finally {
+        setLoadingCommentsPostIds(prev => ({ ...prev, [postId]: false }));
+      }
     }
   };
 
@@ -183,17 +195,27 @@ export default function JoinCommunityPage() {
 
     try {
       const added = await communityApi.createComment(postId, newCommentText.trim(), user.id, commentIsLyricsSubmit);
+      // Attach commenter profile info so it shows immediately in the UI without waiting for refresh
+      const addedWithProfile = {
+        ...added,
+        author: profile ? {
+          display_name: profile.name || "Devotee",
+          avatar_url: profile.avatar_url || ""
+        } : undefined
+      };
       setCommentsMap(prev => ({
         ...prev,
-        [postId]: [...(prev[postId] || []), added]
+        [postId]: [...(prev[postId] || []), addedWithProfile]
       }));
       setNewCommentText("");
       setCommentIsLyricsSubmit(false);
       toast.success(isHi ? "टिप्पणी जोड़ी गई!" : "Comment posted!");
       // Reload posts to reflect comment counts & potential request status updates
       loadPosts();
-    } catch {
-      toast.error(isHi ? "टिप्पणी जोड़ने में असमर्थ" : "Failed to post comment");
+    } catch (err: any) {
+      console.error("Comment submission error:", err);
+      const errMsg = err?.message || err?.details || JSON.stringify(err);
+      toast.error(isHi ? `टिप्पणी जोड़ने में असमर्थ: ${errMsg}` : `Failed to post comment: ${errMsg}`);
     }
   };
 
@@ -459,8 +481,10 @@ export default function JoinCommunityPage() {
       setCreatePostOpen(false);
 
       loadPosts();
-    } catch {
-      toast.error("Failed to publish post");
+    } catch (err: any) {
+      console.error("Post creation error:", err);
+      const errMsg = err?.message || err?.details || JSON.stringify(err);
+      toast.error(isHi ? `पोस्ट प्रकाशित करने में असमर्थ: ${errMsg}` : `Failed to publish post: ${errMsg}`);
     } finally {
       setPublishingPost(false);
     }
@@ -813,7 +837,6 @@ export default function JoinCommunityPage() {
                   {/* Feed Filters */}
                   <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
                     {["All", "Bhajan Share", "Bhajan Request", "Question", "Thought", "Event"].map(filter => {
-                      const isRequest = filter === "Bhajan Request";
                       const isSelected = feedFilter === filter;
                       return (
                         <button
@@ -821,12 +844,8 @@ export default function JoinCommunityPage() {
                           onClick={() => setFeedFilter(filter)}
                           className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border shrink-0 ${
                             isSelected 
-                              ? (isRequest 
-                                  ? "bg-amber-50 text-white border-amber-600"
-                                  : "bg-orange-500 text-white border-orange-600")
-                              : (isRequest
-                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/15"
-                                  : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-orange-500/10 hover:bg-orange-500/5")
+                              ? "bg-orange-500 text-white border-orange-600"
+                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-orange-500/10 hover:bg-orange-500/5"
                           }`}
                         >
                           {filter === "All" ? (isHi ? "सभी पोस्ट" : "All") : filter}
@@ -873,6 +892,7 @@ export default function JoinCommunityPage() {
                           setNewCommentText={setNewCommentText}
                           commentIsLyricsSubmit={commentIsLyricsSubmit}
                           setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          isLoadingComments={loadingCommentsPostIds[post.id]}
                           onDeletePost={async (id) => {
                             if (confirm("Delete this post?")) {
                               await communityApi.softRemovePost(id);
@@ -1073,6 +1093,7 @@ export default function JoinCommunityPage() {
                           setNewCommentText={setNewCommentText}
                           commentIsLyricsSubmit={commentIsLyricsSubmit}
                           setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          isLoadingComments={loadingCommentsPostIds[post.id]}
                           onDeletePost={async (id) => {
                             if (confirm("Delete this event post?")) {
                               await communityApi.softRemovePost(id);
@@ -1517,6 +1538,7 @@ export default function JoinCommunityPage() {
                     setNewCommentText={setNewCommentText}
                     commentIsLyricsSubmit={commentIsLyricsSubmit}
                     setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                    isLoadingComments={loadingCommentsPostIds[post.id]}
                     onDeletePost={async (id) => {
                       if (confirm("Delete this post?")) {
                         await communityApi.softRemovePost(id);
@@ -2015,10 +2037,12 @@ interface PostCardProps {
   setNewCommentText: (text: string) => void;
   commentIsLyricsSubmit: boolean;
   setCommentIsLyricsSubmit: (val: boolean) => void;
+  isLoadingComments?: boolean;
 }
 
 function PostCard({
-  post, user, isHi, comments, isCommentsExpanded, onToggleComments, onToggleReaction, onToggleRsvp, onVoteOption, onDeleteComment, onAddComment, onDeletePost, newCommentText, setNewCommentText, commentIsLyricsSubmit, setCommentIsLyricsSubmit
+  post, user, isHi, comments, isCommentsExpanded, onToggleComments, onToggleReaction, onToggleRsvp, onVoteOption, onDeleteComment, onAddComment, onDeletePost, newCommentText, setNewCommentText, commentIsLyricsSubmit, setCommentIsLyricsSubmit,
+  isLoadingComments = false
 }: PostCardProps) {
   
   // Format DateTime
@@ -2290,23 +2314,29 @@ function PostCard({
       </div>
 
       {/* ─── ACTION BAR 🙏 🙏 🙏 ─── */}
-      <div className="flex items-center gap-6 mt-5 pt-3.5 border-t border-orange-500/5">
+      <div className="flex items-center gap-3 mt-5 pt-3.5 border-t border-stone-100 dark:border-stone-800/60">
         <button
           onClick={() => onToggleReaction(post.id)}
-          className={`flex items-center gap-1.5 text-xs font-bold transition-all ${
-            post.has_reacted ? "text-orange-600 dark:text-orange-400 scale-105" : "text-stone-500 hover:text-stone-800"
+          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all border select-none active:scale-95 duration-200 ${
+            post.has_reacted 
+              ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400 shadow-sm shadow-orange-500/5" 
+              : "bg-stone-50 dark:bg-stone-900 border-stone-200/60 dark:border-stone-800/40 text-stone-500 hover:text-stone-800 hover:border-stone-300 hover:bg-stone-100/50"
           }`}
         >
-          <span className="text-lg">🙏</span>
-          <span>{isHi ? "प्रणाम" : "Pranam"} ({post.reaction_count})</span>
+          <span className="text-base">🙏</span>
+          <span>{isHi ? "प्रणाम" : "Pranam"} <span className="opacity-70 font-semibold">({post.reaction_count})</span></span>
         </button>
 
         <button
           onClick={() => onToggleComments(post.id)}
-          className="flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-stone-800 transition-all"
+          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all border select-none active:scale-95 duration-200 ${
+            isCommentsExpanded
+              ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400 shadow-sm"
+              : "bg-stone-50 dark:bg-stone-900 border-stone-200/60 dark:border-stone-800/40 text-stone-500 hover:text-stone-800 hover:border-stone-300 hover:bg-stone-100/50"
+          }`}
         >
-          <MessageSquare className="w-4 h-4 text-orange-500" />
-          <span>{isHi ? "टिप्पणियाँ" : "Comments"} ({post.comment_count})</span>
+          <MessageSquare className="w-4.5 h-4.5 text-orange-500" />
+          <span>{isHi ? "टिप्पणियाँ" : "Comments"} <span className="opacity-70 font-semibold">({post.comment_count})</span></span>
         </button>
       </div>
 
@@ -2320,42 +2350,53 @@ function PostCard({
           </div>
 
           {/* Comments List */}
-          <div className="space-y-3 max-h-60 overflow-y-auto">
-            {comments.length === 0 ? (
-              <p className="text-xs text-stone-400 text-center py-2">
-                {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें!" : "No replies yet. Be the first to reply!"}
-              </p>
+          <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
+            {isLoadingComments && comments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-stone-400">
+                <Loader2 className="w-5.5 h-5.5 animate-spin text-orange-500 mb-2" />
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-950/60 dark:text-amber-100/60">
+                  {isHi ? "टिप्पणियाँ लोड हो रही हैं..." : "Loading comments..."}
+                </span>
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-orange-500/10 rounded-xl bg-orange-500/[0.01]">
+                <p className="text-xs text-stone-400 font-medium">
+                  {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें! 📿" : "No replies yet. Be the first to reply! 📿"}
+                </p>
+              </div>
             ) : (
               comments.map(comment => (
-                <div key={comment.id} className="flex gap-2.5 text-xs">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-600">
+                <div key={comment.id} className="flex gap-2.5 text-xs items-start group">
+                  <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-600 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
                     {comment.author?.avatar_url ? (
                       <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full object-cover rounded-full" />
                     ) : (
-                      comment.author?.display_name?.slice(0, 2) || "DV"
+                      comment.author?.display_name ? (
+                        comment.author.display_name.slice(0, 2).toUpperCase()
+                      ) : "DV"
                     )}
                   </div>
-                  <div className="flex-1 bg-white dark:bg-stone-900 border border-orange-500/5 p-2.5 rounded-xl min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-orange-950 dark:text-amber-100 flex items-center gap-1.5 flex-wrap">
+                  <div className="flex-1 bg-stone-50/50 dark:bg-stone-900/60 border border-stone-200/40 dark:border-stone-800/80 p-3 rounded-2xl min-w-0 shadow-xs group-hover:border-orange-500/10 transition-colors">
+                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                      <span className="font-extrabold text-orange-950 dark:text-amber-100 flex items-center gap-1.5 flex-wrap">
                         {comment.author?.display_name || "Devotee"}
                         {comment.is_lyrics_submission && (
-                          <Badge variant="outline" className="text-[8px] bg-amber-500 text-white font-extrabold uppercase border-amber-600 scale-90 px-1 py-0 select-none">
+                          <Badge variant="outline" className="text-[7.5px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
                             Lyrics Submission
                           </Badge>
                         )}
                       </span>
-                      <span className="text-[9px] text-stone-400">{formatTime(comment.created_at)}</span>
+                      <span className="text-[9px] font-semibold text-stone-400">{formatTime(comment.created_at)}</span>
                     </div>
-                    <p className="text-stone-700 dark:text-stone-300 mt-1 whitespace-pre-wrap leading-relaxed break-words font-medium">
+                    <p className="text-stone-700 dark:text-stone-300 text-xs whitespace-pre-wrap leading-relaxed break-words font-medium">
                       {comment.content}
                     </p>
                     {user?.id === comment.author_id && (
                       <button 
                         onClick={() => onDeleteComment(post.id, comment.id)}
-                        className="text-stone-400 hover:text-rose-600 font-bold text-[10px] mt-1.5 block hover:underline"
+                        className="text-stone-400 dark:text-stone-500 hover:text-rose-600 font-bold text-[9px] mt-2 flex items-center gap-0.5 hover:underline transition-colors ml-auto"
                       >
-                        Delete
+                        <Trash2 className="w-3 h-3 inline" /> {isHi ? "हटाएं" : "Delete"}
                       </button>
                     )}
                   </div>

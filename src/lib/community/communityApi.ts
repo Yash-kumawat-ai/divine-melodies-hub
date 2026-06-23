@@ -7,6 +7,19 @@ function isMissingTableError(error: any): boolean {
   return msg.includes("relation") && msg.includes("does not exist");
 }
 
+// Safe UUID generator supporting non-secure contexts (like HTTP on local IP testing on phone)
+function generateUUID(): string {
+  if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+  // Fallback simple UUID generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // Interfaces
 export interface Group {
   id: string;
@@ -158,10 +171,13 @@ export const communityApi = {
           is_member: isMember,
         };
       });
-    } catch (err) {
-      console.warn("Supabase fetchGroups failed, using fallback:", err);
-      isUsingLocalFallback = true;
-      return this.fetchGroupsFallback(currentUserId);
+    } catch (err: any) {
+      console.warn("Supabase fetchGroups failed:", err);
+      if (isMissingTableError(err)) {
+        isUsingLocalFallback = true;
+        return this.fetchGroupsFallback(currentUserId);
+      }
+      throw err;
     }
   },
 
@@ -199,9 +215,12 @@ export const communityApi = {
         throw error;
       }
       return data;
-    } catch (err) {
-      console.warn("Supabase createGroup failed, using fallback:", err);
-      return this.createGroupFallback(name, description, deity, userId);
+    } catch (err: any) {
+      console.warn("Supabase createGroup failed:", err);
+      if (isMissingTableError(err)) {
+        return this.createGroupFallback(name, description, deity, userId);
+      }
+      throw err;
     }
   },
 
@@ -218,7 +237,7 @@ export const communityApi = {
     }
 
     const newGroup: Group = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       name,
       description,
       deity,
@@ -256,9 +275,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.joinGroupFallback(groupId, userId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase joinGroup failed, using fallback:", err);
-      return this.joinGroupFallback(groupId, userId);
+    } catch (err: any) {
+      console.warn("Supabase joinGroup failed:", err);
+      if (isMissingTableError(err)) {
+        return this.joinGroupFallback(groupId, userId);
+      }
+      throw err;
     }
   },
 
@@ -286,9 +308,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.leaveGroupFallback(groupId, userId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase leaveGroup failed, using fallback:", err);
-      return this.leaveGroupFallback(groupId, userId);
+    } catch (err: any) {
+      console.warn("Supabase leaveGroup failed:", err);
+      if (isMissingTableError(err)) {
+        return this.leaveGroupFallback(groupId, userId);
+      }
+      throw err;
     }
   },
 
@@ -309,9 +334,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.deleteGroupFallback(groupId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase deleteGroup failed, using fallback:", err);
-      return this.deleteGroupFallback(groupId);
+    } catch (err: any) {
+      console.warn("Supabase deleteGroup failed:", err);
+      if (isMissingTableError(err)) {
+        return this.deleteGroupFallback(groupId);
+      }
+      throw err;
     }
   },
 
@@ -350,9 +378,12 @@ export const communityApi = {
           avatar_url: m.user_profiles.avatar_url || ""
         } : undefined
       }));
-    } catch (err) {
-      console.warn("Supabase fetchGroupMembers failed, fallback:", err);
-      return this.fetchGroupMembersFallback(groupId);
+    } catch (err: any) {
+      console.warn("Supabase fetchGroupMembers failed:", err);
+      if (isMissingTableError(err)) {
+        return this.fetchGroupMembersFallback(groupId);
+      }
+      throw err;
     }
   },
 
@@ -447,9 +478,12 @@ export const communityApi = {
           user_voted_option: userVote?.option_index ?? null
         };
       });
-    } catch (err) {
-      console.warn("Supabase fetchPosts failed, fallback:", err);
-      return this.fetchPostsFallback(currentUserId, filters);
+    } catch (err: any) {
+      console.warn("Supabase fetchPosts failed:", err);
+      if (isMissingTableError(err)) {
+        return this.fetchPostsFallback(currentUserId, filters);
+      }
+      throw err;
     }
   },
 
@@ -538,16 +572,19 @@ export const communityApi = {
         throw error;
       }
       return data;
-    } catch (err) {
-      console.warn("Supabase createPost failed, fallback:", err);
-      return this.createPostFallback(postData);
+    } catch (err: any) {
+      console.warn("Supabase createPost failed:", err);
+      if (isMissingTableError(err)) {
+        return this.createPostFallback(postData);
+      }
+      throw err;
     }
   },
 
   createPostFallback(postData: Partial<CommunityPost>): CommunityPost {
     const posts = getLS<any[]>(LS_KEY_POSTS, []);
     const newPost: CommunityPost = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       group_id: postData.group_id || null,
       author_id: postData.author_id || "guest",
       type: postData.type || "thought",
@@ -606,9 +643,12 @@ export const communityApi = {
         if (insErr) throw insErr;
         return true;
       }
-    } catch (err) {
-      console.warn("Supabase togglePostReaction failed, fallback:", err);
-      return this.togglePostReactionFallback(postId, userId);
+    } catch (err: any) {
+      console.warn("Supabase togglePostReaction failed:", err);
+      if (isMissingTableError(err)) {
+        return this.togglePostReactionFallback(postId, userId);
+      }
+      throw err;
     }
   },
 
@@ -641,9 +681,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.softRemovePostFallback(postId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase softRemovePost failed, fallback:", err);
-      return this.softRemovePostFallback(postId);
+    } catch (err: any) {
+      console.warn("Supabase softRemovePost failed:", err);
+      if (isMissingTableError(err)) {
+        return this.softRemovePostFallback(postId);
+      }
+      throw err;
     }
   },
 
@@ -685,9 +728,12 @@ export const communityApi = {
           avatar_url: c.user_profiles.avatar_url || ""
         } : undefined
       }));
-    } catch (err) {
-      console.warn("Supabase fetchComments failed, fallback:", err);
-      return this.fetchCommentsFallback(postId);
+    } catch (err: any) {
+      console.warn("Supabase fetchComments failed:", err);
+      if (isMissingTableError(err)) {
+        return this.fetchCommentsFallback(postId);
+      }
+      throw err;
     }
   },
 
@@ -728,16 +774,19 @@ export const communityApi = {
       }
 
       return data;
-    } catch (err) {
-      console.warn("Supabase createComment failed, fallback:", err);
-      return this.createCommentFallback(postId, content, userId, isLyricsSubmission);
+    } catch (err: any) {
+      console.warn("Supabase createComment failed:", err);
+      if (isMissingTableError(err)) {
+        return this.createCommentFallback(postId, content, userId, isLyricsSubmission);
+      }
+      throw err;
     }
   },
 
   createCommentFallback(postId: string, content: string, userId: string, isLyricsSubmission: boolean = false): PostComment {
     const comments = getLS<any[]>(LS_KEY_COMMENTS, []);
     const newComment: PostComment = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       post_id: postId,
       author_id: userId,
       content,
@@ -774,9 +823,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.deleteCommentFallback(commentId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase deleteComment failed, fallback:", err);
-      return this.deleteCommentFallback(commentId);
+    } catch (err: any) {
+      console.warn("Supabase deleteComment failed:", err);
+      if (isMissingTableError(err)) {
+        return this.deleteCommentFallback(commentId);
+      }
+      throw err;
     }
   },
 
@@ -802,9 +854,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.rsvpToEventFallback(postId, userId, rsvpStatus);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase rsvpToEvent failed, fallback:", err);
-      return this.rsvpToEventFallback(postId, userId, rsvpStatus);
+    } catch (err: any) {
+      console.warn("Supabase rsvpToEvent failed:", err);
+      if (isMissingTableError(err)) {
+        return this.rsvpToEventFallback(postId, userId, rsvpStatus);
+      }
+      throw err;
     }
   },
 
@@ -836,9 +891,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.deleteEventRsvpFallback(postId, userId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase deleteEventRsvp failed, fallback:", err);
-      return this.deleteEventRsvpFallback(postId, userId);
+    } catch (err: any) {
+      console.warn("Supabase deleteEventRsvp failed:", err);
+      if (isMissingTableError(err)) {
+        return this.deleteEventRsvpFallback(postId, userId);
+      }
+      throw err;
     }
   },
 
@@ -864,9 +922,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.voteOnQuestionOptionFallback(postId, userId, optionIndex);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase voteOnQuestionOption failed, fallback:", err);
-      return this.voteOnQuestionOptionFallback(postId, userId, optionIndex);
+    } catch (err: any) {
+      console.warn("Supabase voteOnQuestionOption failed:", err);
+      if (isMissingTableError(err)) {
+        return this.voteOnQuestionOptionFallback(postId, userId, optionIndex);
+      }
+      throw err;
     }
   },
 
@@ -925,9 +986,12 @@ export const communityApi = {
       if (postErr) throw postErr;
 
       return newBhajanUploadId;
-    } catch (err) {
-      console.warn("Supabase adminResolveRequestToLibrary failed, fallback:", err);
-      return this.adminResolveRequestToLibraryFallback(postId, lyrics, title, userId);
+    } catch (err: any) {
+      console.warn("Supabase adminResolveRequestToLibrary failed:", err);
+      if (isMissingTableError(err)) {
+        return this.adminResolveRequestToLibraryFallback(postId, lyrics, title, userId);
+      }
+      throw err;
     }
   },
 
@@ -953,9 +1017,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.adminRejectRequestSubmissionFallback(postId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase adminRejectRequestSubmission failed, fallback:", err);
-      return this.adminRejectRequestSubmissionFallback(postId);
+    } catch (err: any) {
+      console.warn("Supabase adminRejectRequestSubmission failed:", err);
+      if (isMissingTableError(err)) {
+        return this.adminRejectRequestSubmissionFallback(postId);
+      }
+      throw err;
     }
   },
 
@@ -979,9 +1046,12 @@ export const communityApi = {
         if (isMissingTableError(error)) return this.adminPickRequestForReviewFallback(postId);
         throw error;
       }
-    } catch (err) {
-      console.warn("Supabase adminPickRequestForReview failed, fallback:", err);
-      return this.adminPickRequestForReviewFallback(postId);
+    } catch (err: any) {
+      console.warn("Supabase adminPickRequestForReview failed:", err);
+      if (isMissingTableError(err)) {
+        return this.adminPickRequestForReviewFallback(postId);
+      }
+      throw err;
     }
   },
 

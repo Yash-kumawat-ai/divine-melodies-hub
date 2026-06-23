@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { getUserNotifications } from '@/lib/supabaseQueries';
-import { Loader2, Bell, CheckCircle2, XCircle, AlertTriangle, FileUp } from 'lucide-react';
+import { Loader2, Bell, CheckCircle2, XCircle, AlertTriangle, FileUp, MessageSquare, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NotificationRow {
   id: number;
-  event_type: 'approved' | 'rejected' | 'changes_requested' | 'new_upload';
+  event_type: 'approved' | 'rejected' | 'changes_requested' | 'new_upload' | 'comment_received' | 'like_received';
   subject: string;
   body: string;
   read: boolean;
@@ -18,6 +18,8 @@ const EVENT_ICON: Record<string, typeof Bell> = {
   rejected: XCircle,
   changes_requested: AlertTriangle,
   new_upload: FileUp,
+  comment_received: MessageSquare,
+  like_received: Heart,
 };
 
 const EVENT_COLOR: Record<string, string> = {
@@ -25,6 +27,8 @@ const EVENT_COLOR: Record<string, string> = {
   rejected: 'text-red-500',
   changes_requested: 'text-amber-500',
   new_upload: 'text-blue-500',
+  comment_received: 'text-purple-500',
+  like_received: 'text-rose-500',
 };
 
 export default function MyNotifications() {

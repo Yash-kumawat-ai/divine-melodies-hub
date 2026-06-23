@@ -76,6 +76,17 @@ export async function uploadToCloudinary(file: File, uploadType: SecureUploadTyp
     throw new Error('Supabase upload gateway is not configured');
   }
 
+  // If running on localhost and we have Cloudinary credentials, we skip the Edge Function
+  // to avoid browser CORS console errors from the non-deployed Supabase function.
+  const isLocalhost = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const canDoUnsigned = !!CLOUDINARY_CLOUD_NAME && !!CLOUDINARY_UPLOAD_PRESET;
+
+  if (isLocalhost && canDoUnsigned) {
+    console.log("Localhost environment detected: Using direct Cloudinary upload to avoid console CORS warnings.");
+    return uploadToCloudinaryUnsigned(prepared, uploadType);
+  }
+
   const {
     data: { session },
     error: sessionError,
@@ -99,8 +110,16 @@ export async function uploadToCloudinary(file: File, uploadType: SecureUploadTyp
       },
       body: formData,
     });
-  } catch {
-    return uploadToCloudinaryUnsigned(prepared, uploadType);
+  } catch (err) {
+    console.warn("Signed upload via Supabase Edge Function failed, trying direct Cloudinary fallback:", err);
+    try {
+      return await uploadToCloudinaryUnsigned(prepared, uploadType);
+    } catch (fallbackErr) {
+      console.error("Direct Cloudinary fallback also failed:", fallbackErr);
+      throw new Error(
+        `Upload failed. Supabase Edge Function is not deployed or has CORS issues, and direct Cloudinary upload failed: ${formatUploadError(fallbackErr)}`
+      );
+    }
   }
 
   const data = await response.json().catch(() => null);
@@ -129,7 +148,7 @@ export async function uploadToCloudinary(file: File, uploadType: SecureUploadTyp
 
 async function uploadToCloudinaryUnsigned(file: File, uploadType: SecureUploadType): Promise<string> {
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-    throw new Error('Could not reach the image upload gateway. Check that the Supabase Edge Function is deployed.');
+    throw new Error('Cloudinary configuration is missing (VITE_CLOUDINARY_CLOUD_NAME or VITE_CLOUDINARY_UPLOAD_PRESET is not set).');
   }
 
   const fallbackForm = new FormData();
