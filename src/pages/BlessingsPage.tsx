@@ -353,7 +353,10 @@ const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: stri
   }, [isHi]);
 
   return (
-    <div className="relative w-[115px] h-[237px] md:w-[200px] md:h-[412px] select-none flex-shrink-0">
+    <div 
+      className="relative w-[115px] h-[237px] md:w-[200px] md:h-[412px] select-none flex-shrink-0 rounded-[20px] md:rounded-[36px]"
+      style={{ boxShadow: "0 20px 50px rgba(0, 0, 0, 0.45)" }}
+    >
       {/* Wallpaper Image (Behind bezel) */}
       <div 
         className="absolute rounded-[16px] md:rounded-[28px] overflow-hidden bg-black z-0"
@@ -1291,32 +1294,60 @@ export default function BlessingsPage() {
 
   const handleShareWallpaper = async (wp: any) => {
     const link = `${window.location.origin}/wallpaper?tab=wallpapers&wpId=${wp.id}`;
+    const imageUrl = wp.imageUrl || wp.thumbnailUrl;
     const title = isHi ? `भक्ति वॉलपेपर - ${wp.nameHindi}` : `Devotional Wallpaper - ${wp.name}`;
     const text = isHi 
-      ? `चेक करें यह पावन मोबाइल वॉलपेपर: ${wp.nameHindi}` 
-      : `Check out this devotional mobile wallpaper: ${wp.name}`;
-    const shareData = {
-      title,
-      text,
-      url: link,
-    };
+      ? `चेक करें यह पावन मोबाइल वॉलपेपर: ${wp.nameHindi}\n${link}` 
+      : `Check out this devotional mobile wallpaper: ${wp.name}\n${link}`;
 
-    // Try native share first (only on secure contexts or compatible platforms)
+    // Try native share first
     if (navigator.share) {
       try {
-        let canShare = true;
-        if (navigator.canShare) {
+        let file: File | null = null;
+        if (imageUrl) {
           try {
-            canShare = navigator.canShare(shareData);
-          } catch (_) {
-            canShare = false;
+            toast.info(isHi ? "साझा करने के लिए छवि तैयार हो रही है..." : "Compiling image to share...");
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            let extension = "jpg";
+            if (blob.type) {
+              const mimeParts = blob.type.split("/");
+              if (mimeParts.length === 2) {
+                extension = mimeParts[1];
+              }
+            } else {
+              extension = imageUrl.split('.').pop()?.split('?')[0] || "jpg";
+            }
+            const filename = `${wp.name.replace(/\s+/g, "_")}.${extension}`;
+            file = new File([blob], filename, { type: blob.type || "image/jpeg" });
+          } catch (fetchErr) {
+            console.warn("Could not fetch image for native share", fetchErr);
           }
         }
 
-        if (canShare) {
-          await navigator.share(shareData);
+        // Check if we can share the file
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title,
+            text,
+          });
           toast.success(isHi ? "वॉलपेपर शेयर किया गया!" : "Wallpaper shared successfully!");
           return;
+        } else {
+          // If file sharing is not supported/fetch failed, fall back to link sharing
+          const linkShareData = {
+            title,
+            text: isHi 
+              ? `चेक करें यह पावन मोबाइल वॉलपेपर: ${wp.nameHindi}` 
+              : `Check out this devotional mobile wallpaper: ${wp.name}`,
+            url: link,
+          };
+          if (navigator.canShare && navigator.canShare(linkShareData)) {
+            await navigator.share(linkShareData);
+            toast.success(isHi ? "वॉलपेपर शेयर किया गया!" : "Wallpaper shared successfully!");
+            return;
+          }
         }
       } catch (err: any) {
         if (err.name === "AbortError") {
@@ -1331,7 +1362,9 @@ export default function BlessingsPage() {
     setShareModalData({
       url: link,
       title,
-      text,
+      text: isHi 
+        ? `चेक करें यह पावन मोबाइल वॉलपेपर: ${wp.nameHindi}` 
+        : `Check out this devotional mobile wallpaper: ${wp.name}`,
       wpName: isHi ? wp.nameHindi : wp.name
     });
   };
@@ -2440,7 +2473,7 @@ export default function BlessingsPage() {
                 <img
                   src={wp.imageUrl}
                   alt=""
-                  className="w-full h-full object-cover scale-105 filter brightness-[0.35] transition-all duration-300"
+                  className="w-full h-full object-cover scale-105 filter brightness-[0.65] transition-all duration-300"
                 />
               </div>
 
@@ -2482,57 +2515,43 @@ export default function BlessingsPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto bg-[#130b07]/80 backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
+                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
               >
                 
                 {/* 1. LEFT SIDE: Info & CTA Card details */}
-                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2.5 md:gap-4 select-none text-left">
+                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2 md:gap-3.5 select-none text-left">
                   <div className="space-y-3.5 md:space-y-5">
                     {/* Header title */}
                     <div className="space-y-1">
-                      <h2 className="text-sm md:text-xl font-bold font-hindi text-amber-100 flex items-center gap-1 leading-tight">
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                        <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
+                      <h2 className="text-base md:text-2xl font-black font-hindi text-amber-100 leading-tight">
+                        {isHi ? wp.nameHindi : wp.name}
                       </h2>
-                      <p className="text-[9px] md:text-xs text-amber-300/80 font-sans flex items-center gap-1">
-                        <span>🔱</span>
-                        <span className="font-extrabold uppercase tracking-wide">
-                          {isHi ? getDeityHindi(wp.deity) : wp.deity}
-                        </span>
-                      </p>
                     </div>
 
-                    {/* Separator */}
-                    <div className="flex items-center gap-1.5 opacity-40 select-none">
-                      <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-500" />
-                      <div className="w-1 h-1 rotate-45 bg-amber-400" />
-                      <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500" />
-                    </div>
-
-                    {/* Toggle Pills Selection (Home screen vs Lock screen) */}
-                    <div className="flex bg-black/50 border border-amber-950/60 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                    {/* Toggle Pills Selection (Home screen vs Lock screen) - Segmented Control */}
+                    <div className="flex bg-stone-950/60 border border-amber-500/10 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
                       <button
                         onClick={() => setPreviewMode("lock")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                           previewMode === "lock"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                            : "bg-transparent text-amber-200/50 hover:text-amber-200"
                         }`}
                       >
                         <Lock className="w-3 h-3" />
-                        <span>{isHi ? "लॉक स्क्रीन" : "Lock Screen"}</span>
+                        <span>{isHi ? "लॉक" : "Lock"}</span>
                       </button>
                       <button
                         onClick={() => setPreviewMode("home")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                           previewMode === "home"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                            : "bg-transparent text-amber-200/50 hover:text-amber-200"
                         }`}
                       >
                         <Smartphone className="w-3 h-3" />
-                        <span>{isHi ? "होम स्क्रीन" : "Home Screen"}</span>
+                        <span>{isHi ? "होम" : "Home"}</span>
                       </button>
                     </div>
                   </div>
@@ -2541,21 +2560,21 @@ export default function BlessingsPage() {
                   <div className="space-y-2 mt-4 md:mt-0 select-none">
                     <button
                       onClick={() => handleDownloadWallpaper(wp)}
-                      className="w-full py-2.5 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                      className="w-full py-2 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
                     >
                       <Download className="w-4 h-4 text-stone-950" />
-                      <span>{isHi ? "वॉलपेपर डाउनलोड करें" : "Download Wallpaper"}</span>
+                      <span>{isHi ? "डाउनलोड" : "Download"}</span>
                     </button>
                     
                     <button
                       onClick={() => toggleSaveWallpaper(wp.id)}
-                      className="w-full py-2 md:py-3 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                      className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
                     >
                       <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                       <span>
                         {savedWallpapers.includes(wp.id) 
-                          ? (isHi ? "संग्रह में सहेजा गया" : "Saved to Collection") 
-                          : (isHi ? "संग्रह में सहेजें" : "Save to Collection")}
+                          ? (isHi ? "सहेजा गया" : "Saved") 
+                          : (isHi ? "सहेजें" : "Save")}
                       </span>
                     </button>
                   </div>
@@ -2567,7 +2586,7 @@ export default function BlessingsPage() {
                   onTouchStart={handleTouchStart}
                   onTouchEnd={(e) => handleTouchEnd(e, WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
                 >
-                  <div className="absolute -top-14 md:-top-24 z-30 transition-transform active:scale-[0.98]">
+                  <div className="absolute -top-20 md:-top-36 z-30 transition-transform active:scale-[0.98]">
                     <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
                   </div>
                 </div>
@@ -2598,7 +2617,7 @@ export default function BlessingsPage() {
                 <img
                   src={wp.thumbnailUrl}
                   alt=""
-                  className="w-full h-full object-cover scale-105 filter brightness-[0.35] transition-all duration-300"
+                  className="w-full h-full object-cover scale-105 filter brightness-[0.65] transition-all duration-300"
                 />
               </div>
 
@@ -2640,60 +2659,46 @@ export default function BlessingsPage() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 50 }}
                 transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto bg-[#130b07]/80 backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
+                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
               >
                 
                 {/* 1. LEFT SIDE: Info & CTA */}
-                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2.5 md:gap-4 select-none text-left">
+                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2 md:gap-3.5 select-none text-left">
                   <div className="space-y-3.5 md:space-y-5">
                     {/* Header title */}
                     <div className="space-y-1">
-                      <h2 className="text-sm md:text-xl font-bold font-hindi text-amber-100 flex items-center gap-1 leading-tight">
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
+                      <h2 className="text-base md:text-2xl font-black font-hindi text-amber-100 leading-tight flex items-center gap-2">
                         <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                      </h2>
-                      <p className="text-[9px] md:text-xs text-amber-300/80 font-sans flex items-center gap-1">
-                        <span>🔱</span>
-                        <span className="font-extrabold uppercase tracking-wide">
-                          {isHi ? getDeityHindi(wp.deity) : wp.deity}
-                        </span>
-                        <span className="px-1 py-0.2 md:py-0.5 rounded bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] text-[6px] md:text-[8px] font-sans font-bold uppercase tracking-widest leading-none scale-90">
+                        <span className="px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[7px] md:text-[9px] font-sans font-bold uppercase tracking-wider leading-none">
                           {wp.effect}
                         </span>
-                      </p>
+                      </h2>
                     </div>
 
-                    {/* Separator */}
-                    <div className="flex items-center gap-1.5 opacity-40 select-none">
-                      <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-500" />
-                      <div className="w-1 h-1 rotate-45 bg-amber-400" />
-                      <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500" />
-                    </div>
-
-                    {/* Toggle Pills Selection */}
-                    <div className="flex bg-black/50 border border-amber-950/60 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                    {/* Toggle Pills Selection - Segmented Control */}
+                    <div className="flex bg-stone-950/60 border border-amber-500/10 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
                       <button
                         onClick={() => setPreviewMode("lock")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                           previewMode === "lock"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                            : "bg-transparent text-amber-200/50 hover:text-amber-200"
                         }`}
                       >
                         <Lock className="w-3 h-3" />
-                        <span>{isHi ? "लॉक स्क्रीन" : "Lock Screen"}</span>
+                        <span>{isHi ? "लॉक" : "Lock"}</span>
                       </button>
                       <button
                         onClick={() => setPreviewMode("home")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                           previewMode === "home"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                            : "bg-transparent text-amber-200/50 hover:text-amber-200"
                         }`}
                       >
                         <Smartphone className="w-3 h-3" />
-                        <span>{isHi ? "होम स्क्रीन" : "Home Screen"}</span>
+                        <span>{isHi ? "होम" : "Home"}</span>
                       </button>
                     </div>
                   </div>
@@ -2702,21 +2707,21 @@ export default function BlessingsPage() {
                   <div className="space-y-2 mt-4 md:mt-0 select-none">
                     <button
                       onClick={() => handleDownloadLiveWallpaper(wp)}
-                      className="w-full py-2.5 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                      className="w-full py-2 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
                     >
                       <CustomDownloadIcon className="w-4 h-4 text-stone-950" />
-                      <span>{isHi ? "सजीव वॉलपेपर डाउनलोड करें" : "Download Live"}</span>
+                      <span>{isHi ? "डाउनलोड" : "Download"}</span>
                     </button>
                     
                     <button
                       onClick={() => toggleSaveWallpaper(wp.id)}
-                      className="w-full py-2 md:py-3 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                      className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
                     >
                       <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                       <span>
                         {savedWallpapers.includes(wp.id) 
-                          ? (isHi ? "संग्रह में सहेजा गया" : "Saved to Collection") 
-                          : (isHi ? "संग्रह में सहेजें" : "Save to Collection")}
+                          ? (isHi ? "सहेजा गया" : "Saved") 
+                          : (isHi ? "सहेजें" : "Save")}
                       </span>
                     </button>
                   </div>
@@ -2728,7 +2733,7 @@ export default function BlessingsPage() {
                   onTouchStart={handleTouchStart}
                   onTouchEnd={(e) => handleTouchEnd(e, LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
                 >
-                  <div className="absolute -top-14 md:-top-24 z-30 transition-transform active:scale-[0.98]">
+                  <div className="absolute -top-20 md:-top-36 z-30 transition-transform active:scale-[0.98]">
                     <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
                   </div>
                 </div>
