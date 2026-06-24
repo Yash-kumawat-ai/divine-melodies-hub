@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-23",
+  "date": "2026-06-24",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Navami",
-  "tithi_number": 9,
-  "nakshatra": "Hasta - 3",
-  "yoga": "Variyan",
-  "karana": "Kaulava",
+  "tithi": "Dasimi",
+  "tithi_number": 10,
+  "nakshatra": "Chitta - 3",
+  "yoga": "Parigha",
+  "karana": "Taitula",
   "paksha": "Shukla",
   "sunrise": "05:37 AM",
   "sunset": "06:54 PM",
-  "rahu_kaal": "03:35 PM - 05:14 PM",
+  "rahu_kaal": "10:36 AM - 12:16 PM",
   "brahma_muhurat": "04:01 AM - 04:49 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-06-23T06:59:25+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-06-24T06:54:21+05:30"
 }

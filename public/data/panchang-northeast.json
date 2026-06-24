@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-23",
+  "date": "2026-06-24",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Navami",
-  "tithi_number": 9,
-  "nakshatra": "Hasta - 3",
-  "yoga": "Variyan",
-  "karana": "Kaulava",
+  "tithi": "Dasimi",
+  "tithi_number": 10,
+  "nakshatra": "Chitta - 3",
+  "yoga": "Parigha",
+  "karana": "Taitula",
   "paksha": "Shukla",
   "sunrise": "04:57 AM",
   "sunset": "06:20 PM",
-  "rahu_kaal": "02:59 PM - 04:40 PM",
+  "rahu_kaal": "09:58 AM - 11:38 AM",
   "brahma_muhurat": "03:21 AM - 04:09 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-06-23T06:59:25+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-06-24T06:54:21+05:30"
 }
