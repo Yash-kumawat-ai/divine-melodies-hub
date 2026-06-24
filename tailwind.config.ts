@@ -16,7 +16,7 @@ export default {
     extend: {
       fontFamily: {
         display: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
-        hindi: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
+        hindi: ['"Tiro Devanagari Hindi"', '"Noto Sans Devanagari"', 'serif'],
         body: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
         sans: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
       },

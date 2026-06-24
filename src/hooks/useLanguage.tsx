@@ -217,6 +217,7 @@ type TranslationKey =
   | 'myProfile'
   | 'editProfile'
   | 'likedBhajans'
+  | 'savedPosts'
   | 'ourSevaPlan'
   | 'helpSupport'
   | 'currentPlan'
@@ -461,6 +462,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     myProfile: 'My Profile',
     editProfile: 'Edit profile',
     likedBhajans: 'Liked Bhajans',
+    savedPosts: 'Saved Posts',
     ourSevaPlan: 'Our Seva Plan',
     helpSupport: 'Help & Support',
     currentPlan: 'Current plan',
@@ -704,6 +706,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     myProfile: 'मेरा प्रोफाइल',
     editProfile: 'प्रोफाइल संपादित करें',
     likedBhajans: 'पसंदीदा भजन',
+    savedPosts: 'सहेजे गए पोस्ट',
     ourSevaPlan: 'हमारी सेवा योजना',
     helpSupport: 'सहायता',
     currentPlan: 'वर्तमान योजना',

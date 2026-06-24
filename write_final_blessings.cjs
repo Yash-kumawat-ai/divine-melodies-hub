@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+const fs = require('fs');
+
+const code = `import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
@@ -353,12 +355,9 @@ const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: stri
   }, [isHi]);
 
   return (
-    <div className="relative w-[115px] h-[237px] md:w-[200px] md:h-[412px] select-none flex-shrink-0">
+    <div className="relative w-[230px] h-[474px] md:w-[280px] md:h-[577px] select-none flex-shrink-0">
       {/* Wallpaper Image (Behind bezel) */}
-      <div 
-        className="absolute rounded-[16px] md:rounded-[28px] overflow-hidden bg-black z-0"
-        style={{ top: '1.4%', bottom: '1.4%', left: '2.8%', right: '2.8%' }}
-      >
+      <div className="absolute inset-[6px] md:inset-[8px] rounded-[28px] md:rounded-[34px] overflow-hidden bg-black z-0">
         <img
           src={imageUrl}
           alt="Phone wallpaper screen"
@@ -373,81 +372,49 @@ const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: stri
 
         {/* Screen Content Overlays */}
         {previewMode === "lock" ? (
-          <div className="absolute inset-0 flex flex-col justify-between p-2 md:p-4 pb-3 md:pb-6 text-white font-sans z-10">
+          <div className="absolute inset-0 flex flex-col justify-between p-4 md:p-6 pb-6 md:pb-8 text-white font-sans z-10">
             {/* Date & Time */}
-            <div className="flex flex-col items-center mt-3 md:mt-7 space-y-0.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
-              <span className="text-[5px] md:text-[8px] font-bold tracking-wide uppercase">{dateStr || "Tuesday, 21 May"}</span>
-              <span className="text-lg md:text-3xl font-extrabold font-sans tracking-tight leading-none">{time}</span>
+            <div className="flex flex-col items-center mt-6 md:mt-8 space-y-0.5 md:space-y-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+              <span className="text-[9px] md:text-[11px] font-bold tracking-wide uppercase">{dateStr || "Tuesday, 21 May"}</span>
+              <span className="text-3xl md:text-4xl font-extrabold font-sans tracking-tight">{time}</span>
             </div>
 
             {/* Bottom Widgets */}
-            <div className="flex flex-col items-center gap-2 md:gap-4 mt-auto">
+            <div className="flex flex-col items-center gap-4 md:gap-6 mt-auto">
               <div className="flex justify-between w-full px-1 md:px-2">
                 {/* Flashlight */}
-                <div className="w-5 h-5 md:w-8 md:h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 shadow-lg border border-white/5 active:scale-90 transition-transform">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-2.5 h-2.5 md:w-4 md:h-4">
+                <div className="w-8 h-8 md:w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 shadow-lg border border-white/5 active:scale-90 transition-transform">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 md:w-4 md:h-4">
                     <path d="M18 6h-2M15 2h-6a2 2 0 00-2 2v2h10V4a2 2 0 00-2-2zM6 10h12v9a3 3 0 01-3 3H9a3 3 0 01-3-3v-9zM12 13v3" />
                   </svg>
                 </div>
                 {/* Camera */}
-                <div className="w-5 h-5 md:w-8 md:h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 shadow-lg border border-white/5 active:scale-90 transition-transform">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-2.5 h-2.5 md:w-4 md:h-4">
+                <div className="w-8 h-8 md:w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 shadow-lg border border-white/5 active:scale-90 transition-transform">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 md:w-4 md:h-4">
                     <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2zM12 17a4 4 0 100-8 4 4 0 000 8z" />
                   </svg>
                 </div>
               </div>
 
               {/* Home indicator bar */}
-              <div className="w-10 md:w-16 h-[1.5px] md:h-[3.5px] bg-white/80 rounded-full drop-shadow-md" />
+              <div className="w-20 md:w-24 h-0.5 md:h-1 bg-white/80 rounded-full drop-shadow-md" />
             </div>
           </div>
         ) : (
-          <div className="absolute inset-0 flex flex-col justify-end p-2 md:p-3 pb-3 md:pb-6 text-white z-10">
-            {/* App Grid */}
-            <div className="grid grid-cols-4 gap-x-1.5 gap-y-2 px-1 mt-4 md:mt-8">
-              {[
-                { label: "दर्शन", icon: "🕉" },
-                { label: "पूजा", icon: "🔱" },
-                { label: "आरती", icon: "🔔" },
-                { label: "मंत्र", icon: "📿" },
-                { label: "कथा", icon: "📖" },
-                { label: "संगीत", icon: "🎵" },
-                { label: "गैलरी", icon: "🖼" },
-                { label: "सेटिंग्स", icon: "⚙" }
-              ].map((app, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-0.5">
-                  <div className="w-4 h-4 md:w-7 md:h-7 rounded-[3px] md:rounded-[7px] bg-white/20 backdrop-blur-xs border border-white/10 flex items-center justify-center text-[8px] md:text-sm shadow-sm hover:bg-white/35 transition-colors">
-                    {app.icon}
-                  </div>
-                  <span className="text-[4px] md:text-[7px] font-sans font-medium text-white/95 truncate max-w-[18px] md:max-w-[32px] tracking-tight">
-                    {app.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Google Search Pill */}
-            <div className="w-[90%] py-1 md:py-1.5 px-2 md:px-3 rounded-full bg-black/45 backdrop-blur-lg border border-white/10 flex items-center gap-1 shadow-lg drop-shadow-md mx-auto mt-auto mb-2">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-1.5 md:w-3 h-1.5 md:h-3 text-white/70">
+          <div className="absolute inset-0 flex flex-col justify-end p-4 pb-6 md:pb-8 text-white z-10">
+            {/* Search Dock Widget */}
+            <div className="w-full py-2 md:py-2.5 px-3.5 md:px-4 rounded-full bg-black/45 backdrop-blur-lg border border-white/10 flex items-center gap-2 shadow-lg drop-shadow-md mt-auto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-3 md:w-3.5 h-3 md:h-3.5 text-white/70">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-              <span className="text-[5px] md:text-[8px] font-sans font-bold text-white/70 tracking-wide">
+              <span className="text-[9px] md:text-[10px] font-sans font-bold text-white/70 tracking-wide">
                 {isHi ? "खोजें..." : "Search..."}
               </span>
             </div>
 
-            {/* Bottom App Dock */}
-            <div className="w-[90%] mx-auto bg-white/15 backdrop-blur-md rounded-md md:rounded-xl p-0.5 md:p-1 flex justify-around border border-white/10 mb-1">
-              {["🕉", "🔱", "🔔", "📿"].map((icon, idx) => (
-                <div key={idx} className="w-3.5 h-3.5 md:w-6 md:h-6 rounded-[3px] md:rounded-[6px] bg-white/25 flex items-center justify-center text-[7px] md:text-xs shadow-xs">
-                  {icon}
-                </div>
-              ))}
-            </div>
-
             {/* Home indicator bar */}
-            <div className="w-10 md:w-16 h-[1.5px] md:h-[3.5px] bg-white/80 rounded-full mx-auto drop-shadow-md" />
+            <div className="w-20 md:w-24 h-0.5 md:h-1 bg-white/80 rounded-full mt-4 md:mt-5 mx-auto drop-shadow-md" />
           </div>
         )}
       </div>
@@ -468,14 +435,14 @@ const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: stri
       >
         <defs>
           <style type="text/css">
-            {`
+            {\`
               .fil2 {fill:black}
               .fil0 {fill:#070707}
               .fil5 {fill:#122735}
               .fil1 {fill:#151515}
               .fil4 {fill:#38383A}
               .fil3 {fill:#B1B1B1}
-            `}
+            \`}
           </style>
         </defs>
         <g id="Layer_x0020_1">
@@ -512,62 +479,13 @@ export default function BlessingsPage() {
     () => (tabParam === "maker" || tabParam === "wallpapers" || tabParam === "saved") ? tabParam : "wallpapers"
   );
 
-  const [showLivePreviewModal, setShowLivePreviewModal] = useState<string | null>(null);
-  const [showPreviewModal, setShowPreviewModal] = useState<string | null>(null);
-  const [shareModalData, setShareModalData] = useState<{ url: string; title: string; text: string; wpName?: string } | null>(null);
-  const [copiedState, setCopiedState] = useState(false);
-
   useEffect(() => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      if (next.get("tab") !== activeTab) {
-        next.set("tab", activeTab);
-      }
-      return next;
-    });
+    setSearchParams({ tab: activeTab });
   }, [activeTab, setSearchParams]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [activeTab]);
-
-  // Synchronize URL search params with open preview modals on mount/URL change
-  useEffect(() => {
-    const wpId = searchParams.get("wpId");
-    if (wpId) {
-      if (wpId.startsWith("live-")) {
-        const wp = LIVE_WALLPAPERS_LIST.find((w) => w.id === wpId);
-        if (wp && showLivePreviewModal !== wpId) {
-          setShowLivePreviewModal(wpId);
-          setShowPreviewModal(null);
-        }
-      } else {
-        const wp = WALLPAPERS_LIST.find((w) => w.id === wpId);
-        if (wp && showPreviewModal !== wpId) {
-          setShowPreviewModal(wpId);
-          setShowLivePreviewModal(null);
-        }
-      }
-    }
-  }, [searchParams]);
-
-  // Synchronize open modals with URL search params when modals are opened/closed
-  useEffect(() => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev);
-      const openId = showPreviewModal || showLivePreviewModal;
-      if (openId) {
-        if (next.get("wpId") !== openId) {
-          next.set("wpId", openId);
-        }
-      } else {
-        if (next.has("wpId")) {
-          next.delete("wpId");
-        }
-      }
-      return next;
-    });
-  }, [showPreviewModal, showLivePreviewModal, setSearchParams]);
 
   const [userName, setUserName] = useState("");
   const [blessingType, setBlessingType] = useState<"self" | "parents" | "family" | "friends" | "universal">("self");
@@ -581,6 +499,8 @@ export default function BlessingsPage() {
   const [wallpaperType, setWallpaperType] = useState<'static' | 'live'>('static');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showLivePreviewModal, setShowLivePreviewModal] = useState<string | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState<string | null>(null);
   const [showPremiumTplModal, setShowPremiumTplModal] = useState<string | null>(null);
 
   // Phone Mockup Preview Settings
@@ -1005,14 +925,14 @@ export default function BlessingsPage() {
         // Render Typography (Title Header)
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${aspect === "square" ? "42px" : "48px"} serif`;
+        ctx.font = `bold \${aspect === "square" ? "42px" : "48px"} serif`;
         ctx.fillText(isHi ? "🙏 आज का दिव्य दर्शन 🙏" : "🙏 Today's Daily Darshan 🙏", w / 2, aspect === "square" ? 95 : 170);
 
         ctx.fillStyle = tpl === "white" ? "#cbd5e1" : "#fbbf24";
-        ctx.font = `italic ${aspect === "square" ? "26px" : "32px"} Georgia, serif`;
+        ctx.font = `italic \${aspect === "square" ? "26px" : "32px"} Georgia, serif`;
         const activeDeity = isHi ? todayDarshan.deityHindi : todayDarshan.deity;
         const activeTemple = isHi ? todayDarshan.templeNameHindi : todayDarshan.templeName;
-        ctx.fillText(`${activeDeity} • ${activeTemple}`, w / 2, aspect === "square" ? 140 : 225);
+        ctx.fillText(`\${activeDeity} • \${activeTemple}`, w / 2, aspect === "square" ? 140 : 225);
 
         // Devotee photo rendering or Om glyph symbol
         const hasPhoto = !!userPhoto;
@@ -1024,7 +944,7 @@ export default function BlessingsPage() {
           // Render Quote Content
           ctx.textAlign = "center";
           ctx.fillStyle = "#ffffff";
-          ctx.font = `italic ${aspect === "square" ? "30px" : "36px"} Georgia, serif`;
+          ctx.font = `italic \${aspect === "square" ? "30px" : "36px"} Georgia, serif`;
           
           const rawQuote = isHi ? todayDarshan.quoteHindi : todayDarshan.quote;
           const words = rawQuote.split(" ");
@@ -1057,15 +977,15 @@ export default function BlessingsPage() {
           
           if (cleanedName) {
             if (blessingType === "parents") {
-              personalizedName = isHi ? `${cleanedName} एवं माता-पिता हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Parents`;
+              personalizedName = isHi ? `\${cleanedName} एवं माता-पिता हेतु आशीर्वाद` : `Blessings for \${cleanedName} & Parents`;
             } else if (blessingType === "family") {
-              personalizedName = isHi ? `${cleanedName} एवं सपरिवार हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Family`;
+              personalizedName = isHi ? `\${cleanedName} एवं सपरिवार हेतु आशीर्वाद` : `Blessings for \${cleanedName} & Family`;
             } else if (blessingType === "friends") {
-              personalizedName = isHi ? `${cleanedName} एवं मित्रों हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Friends`;
+              personalizedName = isHi ? `\${cleanedName} एवं मित्रों हेतु आशीर्वाद` : `Blessings for \${cleanedName} & Friends`;
             } else if (blessingType === "universal") {
-              personalizedName = isHi ? `सर्वे भवन्तु सुखिनः (द्वारा: ${cleanedName})` : `Peace & Blessings for All (by ${cleanedName})`;
+              personalizedName = isHi ? `सर्वे भवन्तु सुखिनः (द्वारा: \${cleanedName})` : `Peace & Blessings for All (by \${cleanedName})`;
             } else {
-              personalizedName = isHi ? `${cleanedName} जी हेतु आशीर्वाद` : `Blessings for ${cleanedName}`;
+              personalizedName = isHi ? `\${cleanedName} जी हेतु आशीर्वाद` : `Blessings for \${cleanedName}`;
             }
           } else {
             if (blessingType === "parents") personalizedName = isHi ? "माता-पिता हेतु दिव्य आशीर्वाद" : "Divine Blessings for Parents";
@@ -1079,7 +999,7 @@ export default function BlessingsPage() {
           ctx.fillStyle = "rgba(251, 191, 36, 0.08)";
           ctx.strokeStyle = "rgba(251, 191, 36, 0.25)";
           ctx.lineWidth = 3;
-          ctx.font = `bold ${aspect === "square" ? "34px" : "40px"} serif`;
+          ctx.font = `bold \${aspect === "square" ? "34px" : "40px"} serif`;
           
           const textWidth = ctx.measureText(personalizedName).width;
           const rectWidth = Math.min(w - 200, textWidth + 80);
@@ -1095,7 +1015,7 @@ export default function BlessingsPage() {
 
           // Add clean watermark at bottom
           ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-          ctx.font = `bold ${aspect === "square" ? "18px" : "24px"} sans-serif`;
+          ctx.font = `bold \${aspect === "square" ? "18px" : "24px"} sans-serif`;
           ctx.fillText("✨ Created with Raghavam", w / 2, h - (aspect === "square" ? 50 : 100));
 
           // Complete Promise with png data url
@@ -1171,7 +1091,7 @@ export default function BlessingsPage() {
       const dataUrl = await compileBlessingCard();
       
       const link = document.createElement("a");
-      link.download = `${todayDarshan.deity.replace(/\\s+/g, "_")}_Daily_Blessing.png`;
+      link.download = `\${todayDarshan.deity.replace(/\\s+/g, "_")}_Daily_Blessing.png`;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
@@ -1183,34 +1103,6 @@ export default function BlessingsPage() {
     } catch (e) {
       console.error(e);
       toast.error(isHi ? "डाउनलोड करने में विफल" : "Failed to compile image.");
-    }
-  };
-
-  const copyTextToClipboard = async (text: string): Promise<boolean> => {
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } catch (err) {
-        console.warn("navigator.clipboard.writeText failed, using fallback:", err);
-      }
-    }
-    // Legacy fallback using textarea
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-999999px";
-      textArea.style.top = "-999999px";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      const success = document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return !!success;
-    } catch (err) {
-      console.error("Legacy copy fallback failed:", err);
-      return false;
     }
   };
 
@@ -1230,16 +1122,16 @@ export default function BlessingsPage() {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: isHi ? `${todayDarshan.deityHindi} दर्शन` : `${todayDarshan.deity} Darshan`,
+          title: isHi ? `\${todayDarshan.deityHindi} दर्शन` : `\${todayDarshan.deity} Darshan`,
           text: isHi 
-            ? `राघवम् से प्राप्त करें आज का ${todayDarshan.deityHindi} आशीर्वाद दर्शन।` 
-            : `Receive today's divine ${todayDarshan.deity} blessing from Raghavam.`
+            ? `राघवम् से प्राप्त करें आज का \${todayDarshan.deityHindi} आशीर्वाद दर्शन।` 
+            : `Receive today's divine \${todayDarshan.deity} blessing from Raghavam.`
         });
         completeTodaySadhana();
         toast.success(isHi ? "सफलतापूर्वक साझा किया गया!" : "Shared successfully!");
       } else {
         // Fallback clipboard copy and download
-        await copyTextToClipboard(window.location.href);
+        navigator.clipboard.writeText(window.location.href);
         toast.info(isHi ? "शेयर लिंक क्लिपबोर्ड पर कॉपी हो गया! इमेज डाउनलोड की जा रही है।" : "Web share unsupported on this browser. Link copied! Saving image to device.");
         handleDownloadSadhana();
       }
@@ -1268,7 +1160,7 @@ export default function BlessingsPage() {
   const handleDownloadWallpaper = (wp: DevotionalWallpaper) => {
     toast.info(isHi ? "वॉलपेपर डाउनलोड हो रहा है..." : "Downloading wallpaper...");
     const link = document.createElement("a");
-    link.download = `${wp.name.replace(/\\s+/g, "_")}_HD.webp`;
+    link.download = `\${wp.name.replace(/\\s+/g, "_")}_HD.webp`;
     link.href = wp.imageUrl;
     document.body.appendChild(link);
     link.click();
@@ -1280,7 +1172,7 @@ export default function BlessingsPage() {
   const handleDownloadLiveWallpaper = (wp: DevotionalLiveWallpaper) => {
     toast.info(isHi ? "सजीव वॉलपेपर (Live Wallpaper) डाउनलोड हो रहा है..." : "Downloading Live Wallpaper...");
     const link = document.createElement("a");
-    link.download = `${wp.name.replace(/\\s+/g, "_")}_Live.webp`;
+    link.download = `\${wp.name.replace(/\\s+/g, "_")}_Live.webp`;
     link.href = wp.thumbnailUrl;
     document.body.appendChild(link);
     link.click();
@@ -1290,50 +1182,11 @@ export default function BlessingsPage() {
   };
 
   const handleShareWallpaper = async (wp: any) => {
-    const link = `${window.location.origin}/wallpaper?tab=wallpapers&wpId=${wp.id}`;
-    const title = isHi ? `भक्ति वॉलपेपर - ${wp.nameHindi}` : `Devotional Wallpaper - ${wp.name}`;
-    const text = isHi 
-      ? `चेक करें यह पावन मोबाइल वॉलपेपर: ${wp.nameHindi}` 
-      : `Check out this devotional mobile wallpaper: ${wp.name}`;
-    const shareData = {
-      title,
-      text,
-      url: link,
-    };
-
-    // Try native share first (only on secure contexts or compatible platforms)
-    if (navigator.share) {
-      try {
-        let canShare = true;
-        if (navigator.canShare) {
-          try {
-            canShare = navigator.canShare(shareData);
-          } catch (_) {
-            canShare = false;
-          }
-        }
-
-        if (canShare) {
-          await navigator.share(shareData);
-          toast.success(isHi ? "वॉलपेपर शेयर किया गया!" : "Wallpaper shared successfully!");
-          return;
-        }
-      } catch (err: any) {
-        if (err.name === "AbortError") {
-          toast.info(isHi ? "साझा करना रद्द किया गया" : "Sharing cancelled");
-          return;
-        }
-        console.warn("Native share failed, showing custom share options sheet", err);
-      }
-    }
-
-    // Fallback: Open our custom share drawer/modal
-    setShareModalData({
-      url: link,
-      title,
-      text,
-      wpName: isHi ? wp.nameHindi : wp.name
-    });
+    try {
+      const link = \`\${window.location.origin}/wallpaper?tab=wallpapers&wpId=\${wp.id}\`;
+      await navigator.clipboard.writeText(link);
+      toast.success(isHi ? "लिंक क्लिपबोर्ड पर कॉपी की गई!" : "Link copied to clipboard!");
+    } catch (_) {}
   };
 
   const navigateToPricing = () => {
@@ -1399,10 +1252,10 @@ export default function BlessingsPage() {
           key={p.id}
           className="fixed pointer-events-none z-50 animate-petal text-xl select-none"
           style={{
-            left: `${p.x}%`,
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.duration}s`,
-            fontSize: `${p.size}px`,
+            left: \`\${p.x}%\`,
+            animationDelay: \`\${p.delay}s\`,
+            animationDuration: \`\${p.duration}s\`,
+            fontSize: \`\${p.size}px\`,
             top: "-50px"
           }}
         >
@@ -1410,7 +1263,7 @@ export default function BlessingsPage() {
         </span>
       ))}
 
-      <style>{`
+      <style>{\`
         @keyframes fall {
           0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
           90% { opacity: 1; }
@@ -1441,7 +1294,7 @@ export default function BlessingsPage() {
           background-size: 200% 200%;
           animation: shimmer-move 4s ease-in-out infinite;
         }
-      `}</style>
+      \`}</style>
 
       {/* Compiler Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
@@ -1510,7 +1363,7 @@ export default function BlessingsPage() {
         <nav className="bg-[#120704]/70 p-1.5 rounded-full border border-amber-950/40 flex items-center shadow-lg">
           <button
             onClick={() => setActiveTab("maker")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${
+            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none \${
               activeTab === "maker"
                 ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md"
                 : "text-amber-200/60 hover:text-amber-200"
@@ -1521,7 +1374,7 @@ export default function BlessingsPage() {
           </button>
           <button
             onClick={() => setActiveTab("wallpapers")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${
+            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none \${
               activeTab === "wallpapers"
                 ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md"
                 : "text-amber-200/60 hover:text-amber-200"
@@ -1532,7 +1385,7 @@ export default function BlessingsPage() {
           </button>
           <button
             onClick={() => setActiveTab("saved")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${
+            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none \${
               activeTab === "saved"
                 ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md"
                 : "text-amber-200/60 hover:text-amber-200"
@@ -1595,7 +1448,7 @@ export default function BlessingsPage() {
                     <button
                       key={opt.key}
                       onClick={() => setBlessingType(opt.key as any)}
-                      className={`py-2 px-3 rounded-xl border text-center transition-all truncate ${
+                      className={`py-2 px-3 rounded-xl border text-center transition-all truncate \${
                         blessingType === opt.key 
                           ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
                           : "border-amber-500/10 bg-black/25 text-amber-200/60"
@@ -1671,7 +1524,7 @@ export default function BlessingsPage() {
                       <button
                         key={tpl.key}
                         onClick={() => setSelectedTemplate(tpl.key as any)}
-                        className={`py-3 px-2 rounded-xl border text-center transition-all flex items-center justify-center gap-1 focus:outline-none ${
+                        className={`py-3 px-2 rounded-xl border text-center transition-all flex items-center justify-center gap-1 focus:outline-none \${
                           selectedTemplate === tpl.key 
                             ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
                             : "border-amber-500/10 bg-black/25 text-amber-200/60"
@@ -1696,7 +1549,7 @@ export default function BlessingsPage() {
                 <div className="flex gap-2.5 font-sans text-xs">
                   <button
                     onClick={() => setGenerationType("status")}
-                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none ${
+                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none \${
                       generationType === "status" 
                         ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
                         : "border-amber-500/10 bg-black/25 text-amber-200/60"
@@ -1707,7 +1560,7 @@ export default function BlessingsPage() {
                   </button>
                   <button
                     onClick={() => setGenerationType("square")}
-                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none ${
+                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none \${
                       generationType === "square" 
                         ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
                         : "border-amber-500/10 bg-black/25 text-amber-200/60"
@@ -1756,18 +1609,18 @@ export default function BlessingsPage() {
                 {/* Bell */}
                 <button
                   onClick={ringBell}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
+                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 \${
                     isBellRinging ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
                   }`}
                 >
-                  <span className={`text-2xl leading-none ${isBellRinging ? "animate-bounce" : ""}`}>🔔</span>
+                  <span className={`text-2xl leading-none \${isBellRinging ? "animate-bounce" : ""}`}>🔔</span>
                   <span className="text-[9px]">{isHi ? "घंटी" : "Bell"}</span>
                 </button>
 
                 {/* Diya */}
                 <button
                   onClick={toggleDiya}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 relative overflow-hidden ${
+                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 relative overflow-hidden \${
                     isDiyaLit ? "bg-amber-500/15 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
                   }`}
                 >
@@ -1796,11 +1649,11 @@ export default function BlessingsPage() {
                 {/* Tanpura loop */}
                 <button
                   onClick={toggleAmbientTanpura}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
+                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 \${
                     isAudioPlaying ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
                   }`}
                 >
-                  <span className={`text-2xl leading-none ${isAudioPlaying ? "animate-pulse" : "opacity-60"}`}>🪈</span>
+                  <span className={`text-2xl leading-none \${isAudioPlaying ? "animate-pulse" : "opacity-60"}`}>🪈</span>
                   <span className="text-[9px]">{isHi ? "तानपुरा" : "Tanpura"}</span>
                 </button>
               </div>
@@ -1832,7 +1685,7 @@ export default function BlessingsPage() {
                   return (
                     <div 
                       key={w.dayNum} 
-                      className={`py-2 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
+                      className={`py-2 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 \${
                         isDone 
                           ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-md"
                           : isToday 
@@ -1841,7 +1694,7 @@ export default function BlessingsPage() {
                       }`}
                     >
                       <span className="text-[9px] font-black uppercase tracking-wider">{isHi ? w.labelHi : w.label}</span>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black \${
                         isDone ? "bg-amber-500 text-black shadow" : "bg-black/35 text-amber-200/40 border border-amber-500/10"
                       }`}>
                         {isDone ? "✓" : targetDate.getDate()}
@@ -1868,7 +1721,7 @@ export default function BlessingsPage() {
               <div className="bg-[#120704]/40 p-1.5 rounded-full border border-amber-950/20 flex items-center shadow-lg">
                 <button
                   onClick={() => setWallpaperType("static")}
-                  className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${
+                  className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none \${
                     wallpaperType === "static"
                       ? "bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] shadow-md font-black"
                       : "text-amber-200/40 hover:text-amber-200/70"
@@ -1879,7 +1732,7 @@ export default function BlessingsPage() {
                 </button>
                 <button
                   onClick={() => setWallpaperType("live")}
-                  className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${
+                  className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none \${
                     wallpaperType === "live"
                       ? "bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] shadow-md font-black"
                       : "text-amber-200/40 hover:text-amber-200/70"
@@ -1953,9 +1806,9 @@ export default function BlessingsPage() {
                           onClick={() => setSelectedDeityFilter(deity.id)}
                           className="flex flex-col items-center gap-2 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-all active:scale-95 shrink-0 group"
                         >
-                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 ${
+                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 \${
                             hasImg ? "rounded-full" : "rounded-2xl"
-                          } ${
+                          } \${
                             isActive 
                               ? "border-amber-400 bg-gradient-to-tr from-amber-500/35 to-orange-500/20 ring-4 ring-amber-500/25 scale-105 shadow-[0_0_10px_rgba(245,158,11,0.4)]"
                               : hasImg 
@@ -1963,7 +1816,7 @@ export default function BlessingsPage() {
                               : "border-amber-950/30 bg-[#1b0a05] text-amber-500/70 hover:border-amber-500/30"
                           }`}>
                             {deity.isIcon ? (
-                              <span className={`text-lg transition-transform group-hover:scale-110 ${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
+                              <span className={`text-lg transition-transform group-hover:scale-110 \${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
                                 {deity.symbol}
                               </span>
                             ) : (
@@ -1975,7 +1828,7 @@ export default function BlessingsPage() {
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold tracking-wide transition-colors ${
+                          <span className={`text-[10px] font-bold tracking-wide transition-colors \${
                             isActive ? "text-amber-400 font-extrabold" : "text-stone-400 group-hover:text-stone-200"
                           }`}>
                             {isHi ? deity.name : deity.nameEn}
@@ -1998,7 +1851,7 @@ export default function BlessingsPage() {
                         onClick={() => {
                           const tomorrowIdx = (todayDay + 1) % 7;
                           const tomorrowDeity = WEEKDAYS[tomorrowIdx].deity;
-                          toast.info(isHi ? `कल का पावन दर्शन: ${getDeityHindi(tomorrowDeity)}` : `Tomorrow's Blessing: ${tomorrowDeity}`);
+                          toast.info(isHi ? `कल का पावन दर्शन: \${getDeityHindi(tomorrowDeity)}` : `Tomorrow's Blessing: \${tomorrowDeity}`);
                         }}
                         className="font-sans text-[10px] font-bold text-amber-500/80 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
                       >
@@ -2169,9 +2022,9 @@ export default function BlessingsPage() {
                           onClick={() => setSelectedDeityFilter(deity.id)}
                           className="flex flex-col items-center gap-2 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-all active:scale-95 shrink-0 group"
                         >
-                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 ${
+                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 \${
                             hasImg ? "rounded-full" : "rounded-2xl"
-                          } ${
+                          } \${
                             isActive 
                               ? "border-amber-400 bg-gradient-to-tr from-amber-500/35 to-orange-500/20 ring-4 ring-amber-500/25 scale-105 shadow-[0_0_10px_rgba(245,158,11,0.4)]"
                               : hasImg 
@@ -2179,7 +2032,7 @@ export default function BlessingsPage() {
                               : "border-amber-950/30 bg-[#1b0a05] text-amber-500/70 hover:border-amber-500/30"
                           }`}>
                             {deity.isIcon ? (
-                              <span className={`text-lg transition-transform group-hover:scale-110 ${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
+                              <span className={`text-lg transition-transform group-hover:scale-110 \${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
                                 {deity.symbol}
                               </span>
                             ) : (
@@ -2191,7 +2044,7 @@ export default function BlessingsPage() {
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold tracking-wide transition-colors ${
+                          <span className={`text-[10px] font-bold tracking-wide transition-colors \${
                             isActive ? "text-amber-400 font-extrabold" : "text-stone-400 group-hover:text-stone-200"
                           }`}>
                             {isHi ? deity.name : deity.nameEn}
@@ -2402,12 +2255,12 @@ export default function BlessingsPage() {
                           try {
                             const res = await fetch(url);
                             const blob = await res.blob();
-                            const file = new File([blob], `Blessing_${idx}.png`, { type: "image/png" });
+                            const file = new File([blob], `Blessing_\${idx}.png`, { type: "image/png" });
                             if (navigator.share) {
                               await navigator.share({ files: [file] });
                             } else {
                               const link = document.createElement("a");
-                              link.download = `Sadhana_Blessing_${idx}.png`;
+                              link.download = `Sadhana_Blessing_\${idx}.png`;
                               link.href = url;
                               link.click();
                             }
@@ -2435,22 +2288,13 @@ export default function BlessingsPage() {
           if (!wp) return null;
           return (
             <>
-              {/* Wallpaper Background (dimmed) */}
-              <div className="fixed inset-0 z-[121] select-none pointer-events-none overflow-hidden">
-                <img
-                  src={wp.imageUrl}
-                  alt=""
-                  className="w-full h-full object-cover scale-105 filter brightness-[0.35] transition-all duration-300"
-                />
-              </div>
-
-              {/* Click-to-close Overlay */}
+              {/* Blurred Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowPreviewModal(null)}
-                className="fixed inset-0 bg-black/30 backdrop-blur-xs z-[122] select-none cursor-pointer"
+                className="fixed inset-0 bg-black/85 backdrop-blur-md z-[120] select-none"
               />
 
               {/* Top Bar Controls */}
@@ -2474,29 +2318,31 @@ export default function BlessingsPage() {
                 </div>
               </div>
 
-
-
               {/* Reconstructed Side-by-side Modal Frame */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 50 }}
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 50 }}
-                transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto bg-[#130b07]/80 backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                transition={{ type: "spring", duration: 0.4 }}
+                className="fixed inset-x-4 bottom-4 top-20 md:top-24 max-w-4xl mx-auto bg-gradient-to-b from-[#1b0c06]/85 to-[#0d0502]/95 border border-amber-500/15 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[130] flex flex-col md:flex-row overflow-hidden"
               >
                 
                 {/* 1. LEFT SIDE: Info & CTA Card details */}
-                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2.5 md:gap-4 select-none text-left">
-                  <div className="space-y-3.5 md:space-y-5">
+                <div className="w-full md:w-[45%] p-6 md:p-8 flex flex-col justify-between text-left h-fit md:h-full relative overflow-y-auto scrollbar-none order-2 md:order-1">
+                  <div className="space-y-6">
+                    
                     {/* Header title */}
-                    <div className="space-y-1">
-                      <h2 className="text-sm md:text-xl font-bold font-hindi text-amber-100 flex items-center gap-1 leading-tight">
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                        <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                      </h2>
-                      <p className="text-[9px] md:text-xs text-amber-300/80 font-sans flex items-center gap-1">
-                        <span>🔱</span>
+                    <div className="space-y-2 text-center md:text-left select-none">
+                      <div className="flex items-center gap-2 justify-center md:justify-start">
+                        <span className="text-amber-500/60 text-sm">❈</span>
+                        <h2 className="text-xl md:text-2xl font-bold font-hindi text-amber-100 tracking-wide leading-tight">
+                          {isHi ? wp.nameHindi : wp.name}
+                        </h2>
+                        <span className="text-amber-500/60 text-sm">❈</span>
+                      </div>
+                      
+                      <p className="text-xs text-amber-200/60 font-sans flex items-center gap-1.5 justify-center md:justify-start">
+                        <span>{getDeityEmoji(wp.deity)}</span>
                         <span className="font-extrabold uppercase tracking-wide">
                           {isHi ? getDeityHindi(wp.deity) : wp.deity}
                         </span>
@@ -2504,54 +2350,54 @@ export default function BlessingsPage() {
                     </div>
 
                     {/* Separator */}
-                    <div className="flex items-center gap-1.5 opacity-40 select-none">
-                      <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-500" />
+                    <div className="flex items-center justify-center md:justify-start gap-2 w-full opacity-40 select-none">
+                      <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500" />
                       <div className="w-1 h-1 rotate-45 bg-amber-400" />
-                      <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500" />
+                      <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500" />
                     </div>
 
                     {/* Toggle Pills Selection (Home screen vs Lock screen) */}
-                    <div className="flex bg-black/50 border border-amber-950/60 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                    <div className="flex bg-black/40 border border-amber-950/40 rounded-full p-1 max-w-[280px] mx-auto md:mx-0 select-none font-sans text-xs mt-2">
                       <button
                         onClick={() => setPreviewMode("lock")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full transition-all cursor-pointer \${
                           previewMode === "lock"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black border border-amber-400/20 shadow-md"
+                            : "text-amber-200/60 hover:text-amber-100"
                         }`}
                       >
-                        <Lock className="w-3 h-3" />
+                        <Lock className="w-3.5 h-3.5" />
                         <span>{isHi ? "लॉक स्क्रीन" : "Lock Screen"}</span>
                       </button>
                       <button
                         onClick={() => setPreviewMode("home")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full transition-all cursor-pointer \${
                           previewMode === "home"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black border border-amber-400/20 shadow-md"
+                            : "text-amber-200/60 hover:text-amber-100"
                         }`}
                       >
-                        <Smartphone className="w-3 h-3" />
+                        <Smartphone className="w-3.5 h-3.5" />
                         <span>{isHi ? "होम स्क्रीन" : "Home Screen"}</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Actions CTA buttons container at bottom */}
-                  <div className="space-y-2 mt-4 md:mt-0 select-none">
+                  <div className="space-y-3.5 mt-8 md:mt-0 select-none">
                     <button
                       onClick={() => handleDownloadWallpaper(wp)}
-                      className="w-full py-2.5 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                      className="w-full py-4.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-stone-950 font-sans font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-2 focus:outline-none shadow-[0_6px_20px_rgba(245,158,11,0.3)] border border-amber-400/20 cursor-pointer"
                     >
-                      <Download className="w-4 h-4 text-stone-950" />
+                      <Download className="w-5 h-5 text-stone-950" />
                       <span>{isHi ? "वॉलपेपर डाउनलोड करें" : "Download Wallpaper"}</span>
                     </button>
                     
                     <button
                       onClick={() => toggleSaveWallpaper(wp.id)}
-                      className="w-full py-2 md:py-3 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                      className="w-full py-3.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-2 focus:outline-none cursor-pointer"
                     >
-                      <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                      <Heart className={`w-5 h-5 \${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                       <span>
                         {savedWallpapers.includes(wp.id) 
                           ? (isHi ? "संग्रह में सहेजा गया" : "Saved to Collection") 
@@ -2563,22 +2409,38 @@ export default function BlessingsPage() {
 
                 {/* 2. RIGHT SIDE: Realistic Phone Mockup panel */}
                 <div 
-                  className="w-[42%] flex items-center justify-center relative overflow-visible self-stretch"
+                  className="flex-1 w-full md:w-[55%] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden bg-black/20 border-b md:border-b-0 md:border-l border-amber-500/10 order-1 md:order-2 min-h-[300px] md:min-h-0"
                   onTouchStart={handleTouchStart}
                   onTouchEnd={(e) => handleTouchEnd(e, WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
                 >
-                  <div className="absolute -top-14 md:-top-24 z-30 transition-transform active:scale-[0.98]">
-                    <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
+                  
+                  {/* Left arrow navigator (desktop only) */}
+                  <button
+                    onClick={() => navigateWallpaper('prev', WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
+                    className="hidden md:flex absolute left-4 w-9 h-9 rounded-full bg-black/40 border border-white/5 items-center justify-center text-white/75 hover:bg-black/60 hover:text-white cursor-pointer active:scale-90 transition-transform z-30"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  {/* Render the Custom Phone SVG Frame Mockup */}
+                  <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
+
+                  {/* Right arrow navigator (desktop only) */}
+                  <button
+                    onClick={() => navigateWallpaper('next', WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
+                    className="hidden md:flex absolute right-4 w-9 h-9 rounded-full bg-black/40 border border-white/5 items-center justify-center text-white/75 hover:bg-black/60 hover:text-white cursor-pointer active:scale-90 transition-transform z-30"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+
+                  {/* Swipe Help instruction */}
+                  <div className="absolute bottom-4 text-[9px] uppercase tracking-widest font-sans text-amber-200/30 flex items-center gap-1 pointer-events-none select-none">
+                    <span>—</span>
+                    <span>{isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
+                    <span>—</span>
                   </div>
                 </div>
               </motion.div>
-
-              {/* Swipe Help instruction at absolute bottom */}
-              <div className="fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans text-amber-200/55 pointer-events-none select-none z-[131]">
-                <span className="text-amber-500/60">❈</span>
-                <span>👆 {isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
-                <span className="text-amber-500/60">❈</span>
-              </div>
             </>
           );
         })()}
@@ -2593,22 +2455,13 @@ export default function BlessingsPage() {
           if (!wp) return null;
           return (
             <>
-              {/* Wallpaper Background (dimmed) */}
-              <div className="fixed inset-0 z-[121] select-none pointer-events-none overflow-hidden">
-                <img
-                  src={wp.thumbnailUrl}
-                  alt=""
-                  className="w-full h-full object-cover scale-105 filter brightness-[0.35] transition-all duration-300"
-                />
-              </div>
-
-              {/* Click-to-close Overlay */}
+              {/* Blurred Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowLivePreviewModal(null)}
-                className="fixed inset-0 bg-black/30 backdrop-blur-xs z-[122] select-none cursor-pointer"
+                className="fixed inset-0 bg-black/85 backdrop-blur-md z-[120] select-none"
               />
 
               {/* Top Bar Controls */}
@@ -2632,87 +2485,89 @@ export default function BlessingsPage() {
                 </div>
               </div>
 
-
-
               {/* Side-by-side Modal Frame */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 50 }}
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 50 }}
-                transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                className="fixed bottom-[10%] left-[4%] right-[4%] max-w-sm md:max-w-2xl mx-auto bg-[#130b07]/80 backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-4 md:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                transition={{ type: "spring", duration: 0.4 }}
+                className="fixed inset-x-4 bottom-4 top-20 md:top-24 max-w-4xl mx-auto bg-gradient-to-b from-[#1b0c06]/85 to-[#0d0502]/95 border border-amber-500/15 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[130] flex flex-col md:flex-row overflow-hidden"
               >
                 
                 {/* 1. LEFT SIDE: Info & CTA */}
-                <div className="w-[55%] flex flex-col justify-between self-stretch py-1 gap-2.5 md:gap-4 select-none text-left">
-                  <div className="space-y-3.5 md:space-y-5">
+                <div className="w-full md:w-[45%] p-6 md:p-8 flex flex-col justify-between text-left h-fit md:h-full relative overflow-y-auto scrollbar-none order-2 md:order-1">
+                  <div className="space-y-6">
+                    
                     {/* Header title */}
-                    <div className="space-y-1">
-                      <h2 className="text-sm md:text-xl font-bold font-hindi text-amber-100 flex items-center gap-1 leading-tight">
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                        <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-                        <span className="text-amber-500/60 text-[10px] md:text-xs">❈</span>
-                      </h2>
-                      <p className="text-[9px] md:text-xs text-amber-300/80 font-sans flex items-center gap-1">
-                        <span>🔱</span>
+                    <div className="space-y-2 text-center md:text-left select-none">
+                      <div className="flex items-center gap-2 justify-center md:justify-start">
+                        <span className="text-amber-500/60 text-sm">❈</span>
+                        <h2 className="text-xl md:text-2xl font-bold font-hindi text-amber-100 tracking-wide leading-tight">
+                          {isHi ? wp.nameHindi : wp.name}
+                        </h2>
+                        <span className="text-amber-500/60 text-sm">❈</span>
+                      </div>
+                      
+                      <p className="text-xs text-amber-200/60 font-sans flex items-center gap-1.5 justify-center md:justify-start">
+                        <span>{getDeityEmoji(wp.deity)}</span>
                         <span className="font-extrabold uppercase tracking-wide">
                           {isHi ? getDeityHindi(wp.deity) : wp.deity}
                         </span>
-                        <span className="px-1 py-0.2 md:py-0.5 rounded bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] text-[6px] md:text-[8px] font-sans font-bold uppercase tracking-widest leading-none scale-90">
+                        <span className="px-1.5 py-0.5 rounded bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] text-[8px] font-sans font-bold uppercase tracking-widest scale-90">
                           {wp.effect}
                         </span>
                       </p>
                     </div>
 
                     {/* Separator */}
-                    <div className="flex items-center gap-1.5 opacity-40 select-none">
-                      <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-500" />
+                    <div className="flex items-center justify-center md:justify-start gap-2 w-full opacity-40 select-none">
+                      <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500" />
                       <div className="w-1 h-1 rotate-45 bg-amber-400" />
-                      <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-amber-500" />
+                      <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500" />
                     </div>
 
                     {/* Toggle Pills Selection */}
-                    <div className="flex bg-black/50 border border-amber-950/60 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                    <div className="flex bg-black/40 border border-amber-950/40 rounded-full p-1 max-w-[280px] mx-auto md:mx-0 select-none font-sans text-xs mt-2">
                       <button
                         onClick={() => setPreviewMode("lock")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full transition-all cursor-pointer \${
                           previewMode === "lock"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black border border-amber-400/20 shadow-md"
+                            : "text-amber-200/60 hover:text-amber-100"
                         }`}
                       >
-                        <Lock className="w-3 h-3" />
+                        <Lock className="w-3.5 h-3.5" />
                         <span>{isHi ? "लॉक स्क्रीन" : "Lock Screen"}</span>
                       </button>
                       <button
                         onClick={() => setPreviewMode("home")}
-                        className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all cursor-pointer border ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full transition-all cursor-pointer \${
                           previewMode === "home"
-                            ? "bg-amber-500/10 border-amber-500/40 text-amber-300 font-bold shadow-md"
-                            : "bg-transparent border-transparent text-amber-200/50 hover:text-amber-200"
+                            ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black font-black border border-amber-400/20 shadow-md"
+                            : "text-amber-200/60 hover:text-amber-100"
                         }`}
                       >
-                        <Smartphone className="w-3 h-3" />
+                        <Smartphone className="w-3.5 h-3.5" />
                         <span>{isHi ? "होम स्क्रीन" : "Home Screen"}</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Actions CTA buttons container at bottom */}
-                  <div className="space-y-2 mt-4 md:mt-0 select-none">
+                  <div className="space-y-3.5 mt-8 md:mt-0 select-none">
                     <button
                       onClick={() => handleDownloadLiveWallpaper(wp)}
-                      className="w-full py-2.5 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                      className="w-full py-4.5 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-stone-950 font-sans font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-2 focus:outline-none shadow-[0_6px_20px_rgba(245,158,11,0.3)] border border-amber-400/20 cursor-pointer"
                     >
-                      <CustomDownloadIcon className="w-4 h-4 text-stone-950" />
-                      <span>{isHi ? "सजीव वॉलपेपर डाउनलोड करें" : "Download Live"}</span>
+                      <CustomDownloadIcon className="w-5 h-5 text-stone-950" />
+                      <span>{isHi ? "सजीव वॉलपेपर डाउनलोड करें" : "Download Live Wallpaper"}</span>
                     </button>
                     
                     <button
                       onClick={() => toggleSaveWallpaper(wp.id)}
-                      className="w-full py-2 md:py-3 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                      className="w-full py-3.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-2 focus:outline-none cursor-pointer"
                     >
-                      <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                      <Heart className={`w-5 h-5 \${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                       <span>
                         {savedWallpapers.includes(wp.id) 
                           ? (isHi ? "संग्रह में सहेजा गया" : "Saved to Collection") 
@@ -2724,22 +2579,38 @@ export default function BlessingsPage() {
 
                 {/* 2. RIGHT SIDE: Phone Mockup panel */}
                 <div 
-                  className="w-[42%] flex items-center justify-center relative overflow-visible self-stretch"
+                  className="flex-1 w-full md:w-[55%] flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden bg-black/20 border-b md:border-b-0 md:border-l border-amber-500/10 order-1 md:order-2 min-h-[300px] md:min-h-0"
                   onTouchStart={handleTouchStart}
                   onTouchEnd={(e) => handleTouchEnd(e, LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
                 >
-                  <div className="absolute -top-14 md:-top-24 z-30 transition-transform active:scale-[0.98]">
-                    <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
+                  
+                  {/* Left arrow navigator (desktop only) */}
+                  <button
+                    onClick={() => navigateWallpaper('prev', LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
+                    className="hidden md:flex absolute left-4 w-9 h-9 rounded-full bg-black/40 border border-white/5 items-center justify-center text-white/75 hover:bg-black/60 hover:text-white cursor-pointer active:scale-90 transition-transform z-30"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  {/* Render the Custom Phone SVG Frame Mockup */}
+                  <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
+
+                  {/* Right arrow navigator (desktop only) */}
+                  <button
+                    onClick={() => navigateWallpaper('next', LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
+                    className="hidden md:flex absolute right-4 w-9 h-9 rounded-full bg-black/40 border border-white/5 items-center justify-center text-white/75 hover:bg-black/60 hover:text-white cursor-pointer active:scale-90 transition-transform z-30"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+
+                  {/* Swipe Help instruction */}
+                  <div className="absolute bottom-4 text-[9px] uppercase tracking-widest font-sans text-amber-200/30 flex items-center gap-1 pointer-events-none select-none">
+                    <span>—</span>
+                    <span>{isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
+                    <span>—</span>
                   </div>
                 </div>
               </motion.div>
-
-              {/* Swipe Help instruction at absolute bottom */}
-              <div className="fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans text-amber-200/55 pointer-events-none select-none z-[131]">
-                <span className="text-amber-500/60">❈</span>
-                <span>👆 {isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
-                <span className="text-amber-500/60">❈</span>
-              </div>
             </>
           );
         })()}
@@ -2774,8 +2645,8 @@ export default function BlessingsPage() {
                 </h3>
                 <p className="text-xs text-amber-200/60 font-sans leading-relaxed">
                   {isHi 
-                    ? `इस मंदिर थीम को अनलॉक करने के लिए अपग्रेड करें। काशी सिंदूरी और वृंदावन मयूर थीम प्रीमियम सदस्यों के लिए उपलब्ध हैं।`
-                    : `Upgrade your membership to use premium borders. Premium themes are reserved for Devotee and Mahabhakt tiers.`}
+                    ? \`इस मंदिर थीम को अनलॉक करने के लिए अपग्रेड करें। काशी सिंदूरी और वृंदावन मयूर थीम प्रीमियम सदस्यों के लिए उपलब्ध हैं।\`
+                    : \`Upgrade your membership to use premium borders. Premium themes are reserved for Devotee and Mahabhakt tiers.\`}
                 </p>
               </div>
 
@@ -2800,144 +2671,14 @@ export default function BlessingsPage() {
         )}
       </AnimatePresence>
 
-      {/* ─── CUSTOM SHARE SHEET MODAL ──────────────────────────── */}
-      <AnimatePresence>
-        {shareModalData && (() => {
-          const handleShareOption = (platform: "whatsapp" | "telegram" | "email" | "copy") => {
-            const encodedText = encodeURIComponent(`${shareModalData.text}\n${shareModalData.url}`);
-            if (platform === "whatsapp") {
-              const url = `https://api.whatsapp.com/send?text=${encodedText}`;
-              window.open(url, "_blank", "noopener,noreferrer");
-            } else if (platform === "telegram") {
-              const url = `https://t.me/share/url?url=${encodeURIComponent(shareModalData.url)}&text=${encodeURIComponent(shareModalData.text)}`;
-              window.open(url, "_blank", "noopener,noreferrer");
-            } else if (platform === "email") {
-              const url = `mailto:?subject=${encodeURIComponent(shareModalData.title)}&body=${encodedText}`;
-              window.open(url, "_blank", "noopener,noreferrer");
-            } else if (platform === "copy") {
-              copyTextToClipboard(shareModalData.url).then((success) => {
-                if (success) {
-                  setCopiedState(true);
-                  toast.success(isHi ? "लिंक क्लिपबोर्ड पर कॉपी की गई!" : "Link copied to clipboard!");
-                  setTimeout(() => setCopiedState(false), 2000);
-                } else {
-                  toast.error(isHi ? "लिंक कॉपी करने में विफल" : "Failed to copy link");
-                }
-              });
-            }
-          };
-
-          return (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShareModalData(null)}
-                className="fixed inset-0 bg-black/75 z-[150] backdrop-blur-sm"
-              />
-              
-              {/* Drawer Container */}
-              <motion.div
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-x-0 bottom-0 max-w-md mx-auto bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-t border-amber-500/30 rounded-t-[2.5rem] p-6 shadow-[0_-15px_40px_rgba(0,0,0,0.8)] z-[160] select-none flex flex-col gap-5 pb-8 md:bottom-auto md:top-[30%] md:rounded-[2rem] md:border"
-              >
-                {/* Drag handle / Indicator on mobile */}
-                <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto md:hidden" />
-
-                <div className="flex justify-between items-center">
-                  <h3 className="font-serif text-lg font-black text-amber-400 uppercase tracking-widest">
-                    {isHi ? "साझा करें" : "Share Wallpaper"}
-                  </h3>
-                  <button
-                    onClick={() => setShareModalData(null)}
-                    className="w-8 h-8 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 flex items-center justify-center text-amber-400 transition-colors"
-                  >
-                    <X className="w-4.5 h-4.5" />
-                  </button>
-                </div>
-
-                <div className="text-left py-1">
-                  <span className="text-[10px] uppercase font-sans font-black text-amber-500/60 tracking-wider">
-                    {isHi ? "वॉलपेपर का नाम" : "Wallpaper"}
-                  </span>
-                  <p className="font-serif text-sm font-bold text-amber-100 truncate mt-0.5">
-                    {shareModalData.wpName || (isHi ? "पावन वॉलपेपर" : "Spiritual Wallpaper")}
-                  </p>
-                </div>
-
-                {/* Share Options Grid */}
-                <div className="grid grid-cols-2 gap-3.5">
-                  {/* WhatsApp */}
-                  <button
-                    onClick={() => handleShareOption("whatsapp")}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 hover:from-emerald-500/15 hover:to-emerald-600/10 border border-emerald-500/25 hover:border-emerald-500/40 text-emerald-400 font-sans font-semibold text-xs transition-all active:scale-[0.97] cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center text-emerald-400">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.59 1.977 14.113.951 12.008.951c-5.442 0-9.866 4.372-9.87 9.802 0 1.714.463 3.39 1.337 4.888l-.99 3.613 3.762-.97zm10.967-7.416c-.365-.18-2.164-1.057-2.499-1.179-.333-.124-.577-.186-.819.177-.243.363-.938 1.179-1.15 1.423-.21.244-.422.271-.787.09-3.57-1.782-4.73-2.614-6.47-5.625-.455-.783.455-.726 1.3-2.399.143-.285.072-.533-.036-.713-.108-.18-.819-1.974-1.122-2.705-.296-.715-.597-.619-.819-.631-.213-.011-.456-.013-.7-.013-.243 0-.639.09-1.004.495-.365.407-1.393 1.343-1.393 3.275 0 1.931 1.402 3.8 1.605 4.07.203.27 2.76 4.17 6.67 5.86 2.44 1.05 3.96 1.1 5.36.89 1.25-.19 2.499-.95 2.85-1.9.35-.95.35-1.76.24-1.93-.11-.17-.4-.27-.765-.45z"/>
-                      </svg>
-                    </div>
-                    <span className="font-sans tracking-wide text-stone-100 hover:text-white">WhatsApp</span>
-                  </button>
-
-                  {/* Telegram */}
-                  <button
-                    onClick={() => handleShareOption("telegram")}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-sky-500/10 to-sky-600/5 hover:from-sky-500/15 hover:to-sky-600/10 border border-sky-500/25 hover:border-sky-500/40 text-sky-400 font-sans font-semibold text-xs transition-all active:scale-[0.97] cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center text-sky-400">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.89 7.82l-2.02 9.53c-.15.68-.56.85-1.13.53l-3.08-2.27-1.48 1.43c-.16.16-.3.3-.62.3l.22-3.13 5.7-5.15c.25-.22-.05-.35-.38-.13l-7.05 4.44-3.04-.95c-.66-.21-.67-.66.14-.97l11.88-4.58c.55-.2 1.03.13.88.94z"/>
-                      </svg>
-                    </div>
-                    <span className="font-sans tracking-wide text-stone-100 hover:text-white">Telegram</span>
-                  </button>
-
-                  {/* Email */}
-                  <button
-                    onClick={() => handleShareOption("email")}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-600/5 hover:from-amber-500/15 hover:to-amber-600/10 border border-amber-500/20 hover:border-amber-500/35 text-amber-400 font-sans font-semibold text-xs transition-all active:scale-[0.97] cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <rect width="20" height="16" x="2" y="4" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
-                    </div>
-                    <span className="font-sans tracking-wide text-stone-100 hover:text-white">{isHi ? "ईमेल" : "Email"}</span>
-                  </button>
-
-                  {/* Copy Link */}
-                  <button
-                    onClick={() => handleShareOption("copy")}
-                    className="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/5 hover:from-amber-500/15 hover:to-orange-500/10 border border-amber-500/20 hover:border-amber-500/35 text-amber-400 font-sans font-semibold text-xs transition-all active:scale-[0.97] cursor-pointer"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                      {copiedState ? (
-                        <Check className="w-5 h-5 text-amber-400" />
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="font-sans tracking-wide text-stone-100 hover:text-white">
-                      {copiedState ? (isHi ? "कॉपी हो गया!" : "Copied!") : (isHi ? "लिंक कॉपी करें" : "Copy Link")}
-                    </span>
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          );
-        })()}
-      </AnimatePresence>
-
     </div>
   );
 }
+\`;
+
+fs.writeFileSync('C:\\\\Users\\\\YASH\\\\Desktop\\\\bhajanwebsite\\\\divine-melodies-hub\\\\src\\\\pages\\\\BlessingsPage.tsx', code, 'utf8');
+console.log("Successfully wrote BlessingsPage.tsx!");
+`;
+
+fs.writeFileSync('C:\\\\Users\\\\YASH\\\\Desktop\\\\bhajanwebsite\\\\divine-melodies-hub\\\\write_final_blessings.cjs', code, 'utf8');
+console.log("Wrote write_final_blessings.cjs script successfully!");

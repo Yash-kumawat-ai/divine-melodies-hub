@@ -54,6 +54,7 @@ const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
 const AccountPage = lazy(() => import("./pages/account/AccountPage"));
 const LikedBhajansPage = lazy(() => import("./pages/account/LikedBhajansPage"));
+const SavedPostsPage = lazy(() => import("./pages/account/SavedPostsPage"));
 const SupportPage = lazy(() => import("./pages/account/SupportPage"));
 const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
@@ -128,6 +129,7 @@ function AppContent() {
             <Route path="/community" element={<CommunityPage />} />
             <Route path="/join-community" element={<JoinCommunityPage />} />
             <Route path="/community/groups/:slug" element={<JoinCommunityPage />} />
+            <Route path="/community/posts/:postId" element={<JoinCommunityPage />} />
             <Route
               path="/admin/moderation"
               element={
@@ -173,6 +175,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <LikedBhajansPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account/saved"
+              element={
+                <ProtectedRoute>
+                  <SavedPostsPage />
                 </ProtectedRoute>
               }
             />

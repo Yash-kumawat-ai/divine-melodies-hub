@@ -5,6 +5,7 @@ import { Flower2, Mic, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import KirtanAIChatCore, {
   type KirtanAIChatCoreHandle,
   type NaradVoicePhase,
@@ -55,6 +56,7 @@ export default function NaradFloatingWidget() {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { isBhajanModalOpen } = useBhajanModalOpen();
 
   const open = uiState !== "closed";
 
@@ -274,6 +276,7 @@ export default function NaradFloatingWidget() {
 
   const searchParams = new URLSearchParams(search);
   if (
+    isBhajanModalOpen ||
     pathname === "/kirtan-ai" ||
     pathname.startsWith("/auth") ||
     pathname === "/meditation"

@@ -12,6 +12,8 @@ export default function AppShell() {
   const isTemplePage = pathname === "/temple";
   const isLeaderboard = pathname === "/leaderboard";
   const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
+  const isWallpaperPage = pathname === "/wallpaper";
+  const hideHeader = isFullScreenApp || isWallpaperPage;
 
   const isAdminRoute = pathname.startsWith("/admin");
   const isAccountRoute = pathname.startsWith("/account");
@@ -39,7 +41,7 @@ export default function AppShell() {
         isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-screen"
       )}
     >
-      {!isFullScreenApp && <Header />}
+      {!hideHeader && <Header />}
       <main
         className={cn(
           "flex-1",

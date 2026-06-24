@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useSavedPosts } from "@/hooks/useSavedPosts";
 import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember } from "@/lib/community/communityApi";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { queryUserUploads } from "@/lib/supabaseQueries";
@@ -40,10 +41,20 @@ const DEITIES = [
 
 export default function JoinCommunityPage() {
   const navigate = useNavigate();
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, postId } = useParams<{ slug?: string; postId?: string }>();
   const { user, profile } = useAuth();
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { isSaved, toggleSave } = useSavedPosts();
+
+  const handleToggleSavePost = (pId: string) => {
+    const saved = toggleSave(pId);
+    if (saved) {
+      toast.success(isHi ? "पोस्ट सहेजी गई!" : "Post saved!");
+    } else {
+      toast.success(isHi ? "सहेजे गए पोस्ट से हटाया गया" : "Removed from saved posts");
+    }
+  };
 
   // Navigation tabs
   const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'events'>('feed');
@@ -138,6 +149,23 @@ export default function JoinCommunityPage() {
     loadGroups();
     loadMyBhajans();
   }, [user?.id]);
+
+  useEffect(() => {
+    if (postId) {
+      setExpandedCommentsPostId(postId);
+      const hasCached = !!commentsMap[postId];
+      if (!hasCached) {
+        setLoadingCommentsPostIds(prev => ({ ...prev, [postId]: true }));
+        communityApi.fetchComments(postId).then(comments => {
+          setCommentsMap(prev => ({ ...prev, [postId]: comments }));
+        }).catch(err => {
+          console.error("Error loading shared post comments:", err);
+        }).finally(() => {
+          setLoadingCommentsPostIds(prev => ({ ...prev, [postId]: false }));
+        });
+      }
+    }
+  }, [postId]);
 
   useEffect(() => {
     if (slug) {
@@ -496,6 +524,9 @@ export default function JoinCommunityPage() {
   // Computed views filter
   const filteredPosts = useMemo(() => {
     let list = posts;
+    if (postId) {
+      return list.filter(p => p.id === postId);
+    }
     if (selectedGroup) {
       list = list.filter(p => p.group_id === selectedGroup.id);
     }
@@ -503,7 +534,7 @@ export default function JoinCommunityPage() {
       list = list.filter(p => p.type === feedFilter.toLowerCase().replace(" ", "_"));
     }
     return list;
-  }, [posts, feedFilter, selectedGroup]);
+  }, [posts, feedFilter, selectedGroup, postId]);
 
   // Group lists filter
   const filteredGroups = useMemo(() => {
@@ -893,6 +924,8 @@ export default function JoinCommunityPage() {
                           commentIsLyricsSubmit={commentIsLyricsSubmit}
                           setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
                           isLoadingComments={loadingCommentsPostIds[post.id]}
+                          isPostSaved={isSaved(post.id)}
+                          onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
                             if (confirm("Delete this post?")) {
                               await communityApi.softRemovePost(id);
@@ -1094,6 +1127,8 @@ export default function JoinCommunityPage() {
                           commentIsLyricsSubmit={commentIsLyricsSubmit}
                           setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
                           isLoadingComments={loadingCommentsPostIds[post.id]}
+                          isPostSaved={isSaved(post.id)}
+                          onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
                             if (confirm("Delete this event post?")) {
                               await communityApi.softRemovePost(id);
@@ -1539,6 +1574,8 @@ export default function JoinCommunityPage() {
                     commentIsLyricsSubmit={commentIsLyricsSubmit}
                     setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
                     isLoadingComments={loadingCommentsPostIds[post.id]}
+                    isPostSaved={isSaved(post.id)}
+                    onToggleSavePost={handleToggleSavePost}
                     onDeletePost={async (id) => {
                       if (confirm("Delete this post?")) {
                         await communityApi.softRemovePost(id);
@@ -2020,7 +2057,7 @@ export default function JoinCommunityPage() {
 
 // ─── POST CARD SUB-COMPONENT ──────────────────────────────────────────
 
-interface PostCardProps {
+export interface PostCardProps {
   post: CommunityPost;
   user: any;
   isHi: boolean;
@@ -2038,11 +2075,15 @@ interface PostCardProps {
   commentIsLyricsSubmit: boolean;
   setCommentIsLyricsSubmit: (val: boolean) => void;
   isLoadingComments?: boolean;
+  isPostSaved: boolean;
+  onToggleSavePost: (postId: string) => void;
 }
 
-function PostCard({
+export function PostCard({
   post, user, isHi, comments, isCommentsExpanded, onToggleComments, onToggleReaction, onToggleRsvp, onVoteOption, onDeleteComment, onAddComment, onDeletePost, newCommentText, setNewCommentText, commentIsLyricsSubmit, setCommentIsLyricsSubmit,
-  isLoadingComments = false
+  isLoadingComments = false,
+  isPostSaved,
+  onToggleSavePost
 }: PostCardProps) {
   
   // Format DateTime
@@ -2056,29 +2097,83 @@ function PostCard({
     return new Date(isoString).toLocaleDateString();
   };
 
+  const getAuthorBadge = (role?: string) => {
+    if (!role) return { label: isHi ? "भक्त" : "Devotee", icon: "🌸", colorClass: "text-amber-500" };
+    const r = role.toLowerCase();
+    if (r.includes("admin") || r.includes("acharya")) return { label: isHi ? "आचार्य" : "Acharya", icon: "🔱", colorClass: "text-orange-500 font-bold" };
+    if (r.includes("mod") || r.includes("satsangi")) return { label: isHi ? "सत्संगी" : "Satsangi", icon: "📿", colorClass: "text-amber-400" };
+    if (r.includes("sadhak")) return { label: isHi ? "साधक" : "Sadhak", icon: "🌿", colorClass: "text-emerald-400" };
+    return { label: isHi ? "भक्त" : "Devotee", icon: "🌸", colorClass: "text-amber-500" };
+  };
+
+  const authorBadge = getAuthorBadge(post.author?.role);
+
+  const getDeityImgForPost = (postId: string) => {
+    const list = [ramaImg, hanumanImg, krishnaImg, shivaImg, ganeshImg, durgaImg, lakshmiImg, saiBabaImg];
+    let num = 0;
+    for (let i = 0; i < postId.length; i++) {
+      num += postId.charCodeAt(i);
+    }
+    return list[num % list.length];
+  };
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'open': return 'bg-[#181310] border-[#2c2018] text-stone-400';
+      case 'lyrics_submitted': return 'bg-blue-950/40 border-blue-900/40 text-blue-400';
+      case 'in_review': return 'bg-amber-950/40 border-amber-900/40 text-amber-400';
+      case 'added_to_library': return 'bg-emerald-950/40 border-emerald-900/40 text-emerald-400';
+      case 'closed_unresolved': return 'bg-rose-950/40 border-rose-900/40 text-rose-400';
+      default: return 'bg-stone-900 text-stone-400';
+    }
+  };
+
+  const highlightSacredText = (text: string) => {
+    if (!text) return "";
+    const keywords = ["108", "Hanuman Chalisa", "हनुमान चालीसा", "जय श्री राम", "जय श्री कृष्णा", "Jai Shree Ram", "Jai Shri Ram", "Hari Bol", "Hare Krishna"];
+    const escapedKeywords = keywords.map(k => k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'));
+    const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
+    
+    const parts = text.split(regex);
+    return parts.map((part, index) => {
+      const isKeyword = keywords.some(k => k.toLowerCase() === part.toLowerCase());
+      if (isKeyword) {
+        return <span key={index} className="text-amber-400 font-bold">{part}</span>;
+      }
+      return part;
+    });
+  };
+
   return (
-    <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 hover:shadow-xs transition-all flex flex-col justify-between">
+    <div className="bg-[#130f0c] border border-[#231b15] rounded-[24px] p-5 hover:border-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.07)] transition-all flex flex-col gap-4 text-left shadow-lg">
       <div>
         {/* Post Card Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center text-orange-600 font-extrabold text-sm uppercase shrink-0">
-              {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt="author" className="w-full h-full object-cover rounded-full" />
-              ) : (
-                post.author?.display_name?.slice(0, 2) || "DV"
-              )}
+            <div className="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 to-orange-600 shrink-0">
+              <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center text-orange-400 font-extrabold text-xs uppercase select-none">
+                {post.author?.avatar_url ? (
+                  <img src={post.author.avatar_url} alt="author" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
+                ) : (
+                  post.author?.display_name?.slice(0, 2).toUpperCase() || "DV"
+                )}
+              </div>
             </div>
             <div>
-              <span className="font-bold text-xs text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
-                {post.author?.display_name || "Anonymous Devotee"}
+              <span className="font-display font-bold text-xs text-stone-100 flex items-center gap-1.5 flex-wrap">
+                {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
+                <span className="text-[10px] select-none" title={authorBadge.label}>
+                  {authorBadge.icon}
+                </span>
                 {post.group_name && (
                   <span className="text-[10px] text-stone-500 font-semibold">
-                    in <span className="text-orange-500 font-bold">#{post.group_name}</span>
+                    in <span className="text-orange-400 font-bold">#${post.group_name}</span>
                   </span>
                 )}
               </span>
-              <p className="text-[10px] text-stone-400 mt-0.5">{formatTime(post.created_at)}</p>
+              <p className="text-[9px] text-stone-400 font-medium tracking-wide mt-0.5">
+                {formatTime(post.created_at)} • <span className={authorBadge.colorClass}>{authorBadge.label}</span>
+              </p>
             </div>
           </div>
 
@@ -2087,11 +2182,11 @@ function PostCard({
             <Badge 
               variant="outline" 
               className={`text-[9px] uppercase font-extrabold border-orange-500/20 ${
-                post.type === 'bhajan_share' ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" :
-                post.type === 'bhajan_request' ? "bg-amber-50 text-amber-600 dark:bg-amber-950/20" :
-                post.type === 'question' ? "bg-blue-50 text-blue-600 dark:bg-blue-950/20" :
-                post.type === 'event' ? "bg-rose-50 text-rose-600 dark:bg-rose-950/20" :
-                "bg-stone-50 text-stone-600 dark:bg-stone-800/40"
+                post.type === 'bhajan_share' ? "bg-emerald-950/20 text-emerald-400" :
+                post.type === 'bhajan_request' ? "bg-[#2c2018] text-amber-400" :
+                post.type === 'question' ? "bg-blue-950/20 text-blue-400" :
+                post.type === 'event' ? "bg-rose-950/20 text-rose-400" :
+                "bg-stone-900 text-stone-400"
               }`}
             >
               {post.type.replace('_', ' ')}
@@ -2099,7 +2194,7 @@ function PostCard({
             {user?.id === post.author_id && (
               <button 
                 onClick={() => onDeletePost(post.id)}
-                className="text-stone-400 hover:text-rose-600 p-1"
+                className="text-stone-400 hover:text-rose-500 p-1 transition-colors"
                 title="Delete Post"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -2108,243 +2203,334 @@ function PostCard({
           </div>
         </div>
 
-        {/* Title */}
-        {post.title && (
-          <h3 className="font-display font-extrabold text-sm text-orange-950 dark:text-amber-100 mt-3">
-            {post.title}
-          </h3>
-        )}
+        {/* Post content and media (stacked vertically like Twitter) */}
+        <div className="mt-3.5 space-y-3.5 text-left w-full">
+          {/* Title */}
+          {post.title && (
+            <h3 className="font-display font-extrabold text-sm sm:text-base text-amber-50 leading-tight">
+              {post.title}
+            </h3>
+          )}
 
-        {/* Content text */}
-        <p className="text-xs text-stone-700 dark:text-stone-300 mt-2.5 whitespace-pre-wrap leading-relaxed">
-          {post.content}
-        </p>
+          {/* Content text */}
+          {post.content && (
+            <p className="text-xs sm:text-[13px] text-stone-300 whitespace-pre-wrap leading-relaxed">
+              {highlightSacredText(post.content)}
+            </p>
+          )}
 
-        {/* Optional Image */}
-        {post.image_url && (
-          <div className="mt-3.5 rounded-xl overflow-hidden border border-orange-500/10 aspect-video">
-            <img src={post.image_url} alt="post visual" className="w-full h-full object-cover" />
-          </div>
-        )}
-
-        {/* Embedded YouTube or Link */}
-        {post.youtube_url && (
-          <div className="mt-3.5 rounded-xl border border-orange-500/15 p-2 bg-stone-50 dark:bg-stone-950 flex items-center justify-between gap-3">
-            <Play className="w-8 h-8 text-orange-500 shrink-0 ml-1" />
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">YouTube Link</span>
-              <a 
-                href={post.youtube_url} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="text-xs font-semibold text-orange-600 dark:text-orange-400 block truncate hover:underline"
-              >
-                {post.youtube_url}
-              </a>
+          {/* Optional Uploaded Image (Full-width, rounded) */}
+          {post.image_url && (
+            <div className="w-full rounded-2xl overflow-hidden border border-orange-500/10 shadow-md bg-stone-900/40">
+              <img 
+                src={post.image_url} 
+                alt="post visual" 
+                className="w-full h-auto max-h-[350px] sm:max-h-[450px] object-cover rounded-2xl" 
+              />
             </div>
-            <ExternalLink className="w-4 h-4 text-stone-400 shrink-0" />
-          </div>
-        )}
+          )}
 
-        {/* ── TYPE SPECIFIC RENDERINGS ── */}
-
-        {/* A. Bhajan Request status timeline */}
-        {post.type === 'bhajan_request' && (
-          <div className="mt-4 bg-orange-500/5 border border-orange-500/10 rounded-2xl p-4">
-            <div className="flex items-center justify-between mb-3.5">
-              <span className="text-xs font-bold text-stone-500">{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
-              <Badge variant="outline" className={`text-[10px] font-extrabold capitalize ${getStatusBadgeColor(post.request_status)}`}>
-                {post.request_status.replace('_', ' ')}
-              </Badge>
-            </div>
-
-            {/* Celebratory alert banner if resolved and added to library */}
-            {post.request_status === 'added_to_library' && (
-              <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold p-3 rounded-xl flex items-center gap-2">
-                <span>🎉</span>
-                <span>
-                  {isHi ? "भजन को मुख्य लाइब्रेरी में जोड़ दिया गया है!" : "Your request was added to the Library!"}
-                </span>
-                {post.resolved_bhajan_id && (
-                  <a 
-                    href={`/bhajan/${post.resolved_bhajan_id}`}
-                    className="underline text-emerald-600 dark:text-emerald-300 ml-auto flex items-center gap-1 shrink-0"
-                  >
-                    View Bhajan <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
-                )}
+          {/* Bhajan share player widget (Only if type is bhajan_share AND youtube_url is present!) */}
+          {post.type === 'bhajan_share' && post.youtube_url && (
+            <div 
+              onClick={() => window.open(post.youtube_url, '_blank')}
+              className="bg-[#17120e] border border-[#2c2018] rounded-2xl p-4 flex items-center gap-3 w-full cursor-pointer hover:bg-[#201813] transition-all group relative shadow-md select-none"
+            >
+              {/* Deity image */}
+              <div className="w-12 h-12 rounded-xl overflow-hidden border border-orange-500/10 shrink-0 bg-stone-900 flex items-center justify-center">
+                <img 
+                  src={getDeityImgForPost(post.id)} 
+                  alt="deity logo" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-            )}
-
-            {/* Status Timeline Circles */}
-            <div className="flex items-center justify-between text-[10px] font-extrabold tracking-tight text-center relative px-2 mb-2">
-              <div className="absolute top-2 left-6 right-6 h-0.5 bg-stone-200 dark:bg-stone-800 -z-10" />
-              {[
-                { status: 'open', label: isHi ? 'खुला' : 'Open' },
-                { status: 'lyrics_submitted', label: isHi ? 'उत्तर प्राप्त' : 'Lyrics' },
-                { status: 'in_review', label: isHi ? 'समीक्षा' : 'Review' },
-                { status: 'added_to_library', label: isHi ? 'लाइब्रेरी' : 'Library' }
-              ].map((step, idx) => {
-                const stages = ['open', 'lyrics_submitted', 'in_review', 'added_to_library'];
-                const currentIdx = stages.indexOf(post.request_status);
-                const stepIdx = stages.indexOf(step.status);
-                const isPassed = stepIdx <= currentIdx && post.request_status !== 'closed_unresolved';
-                return (
-                  <div key={step.status} className="flex flex-col items-center">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center text-[7.5px] font-bold ${
-                      isPassed 
-                        ? "bg-orange-500 border-orange-600 text-white" 
-                        : "bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-800 text-stone-400"
-                    }`}>
-                      {isPassed && "✓"}
-                    </div>
-                    <span className={`mt-1 font-semibold ${isPassed ? 'text-orange-600' : 'text-stone-400'}`}>
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Lyrics submit CTA */}
-            {post.request_status === 'open' && (
-              <Button 
-                onClick={() => onToggleComments(post.id)}
-                className="mt-3.5 w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl h-9 shadow-xs"
-              >
-                📿 {isHi ? "मुझे इस भजन के बोल पता हैं (उत्तर दें)" : "I Know This Bhajan (Submit Lyrics)"}
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* B. Event Date and Location detail card */}
-        {post.type === 'event' && (
-          <div className="mt-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl p-4 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold text-stone-700 dark:text-stone-300 gap-2 border-b border-orange-500/5 pb-2.5">
-              <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
-                <Calendar className="w-4 h-4" />
-                {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : "Date/Time not set"}
-              </span>
-              <span className="flex items-center gap-1 text-stone-600 dark:text-stone-400">
-                <MapPin className="w-4 h-4" />
-                {post.event_location || "Virtual Zoom"}
-              </span>
-            </div>
-
-            {/* Attach targeted libraries bhajan card if present */}
-            {post.linked_bhajan_id && (
-              <div className="p-3 bg-white dark:bg-stone-950 rounded-xl border border-orange-500/10 flex items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-500 block">Linked Bhajan</span>
-                  <span className="text-xs font-bold text-stone-950 dark:text-stone-50 truncate block">Bhajan Page Reference</span>
+              {/* Title & wave visualizer */}
+              <div className="min-w-0 flex-1 flex flex-col justify-between text-left">
+                <div>
+                  <span className="font-bold text-xs sm:text-sm text-stone-100 truncate block group-hover:text-orange-400 transition-colors">
+                    {post.title || (isHi ? "भजन कीर्तन" : "Bhajan Share")}
+                  </span>
+                  <span className="text-[10px] sm:text-xs text-orange-400/90 font-medium block truncate mt-0.5">
+                    {isHi ? "भजन श्रवण" : "Devotional Melody"}
+                  </span>
                 </div>
+                {/* Audio Wave Visualizer */}
+                <div className="flex items-end gap-[1.5px] h-3.5 mt-1.5 opacity-80">
+                  {[2, 4, 3, 5, 8, 6, 4, 7, 5, 3, 6, 4, 2, 5, 3, 4, 6, 8, 5, 3].map((h, i) => (
+                    <span key={i} className="w-[1.5px] bg-gradient-to-t from-orange-600 to-amber-400 rounded-full" style={{ height: (h * 1.5) + 'px' }} />
+                  ))}
+                </div>
+              </div>
+              {/* Play Button */}
+              <button
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center shadow-md text-white shrink-0 group-hover:scale-105 transition-all"
+              >
+                <Play className="w-3.5 h-3.5 fill-white text-white translate-x-[0.5px]" />
+              </button>
+            </div>
+          )}
+
+          {/* Embedded YouTube Link (For posts that are NOT bhajan_share but have youtube_url) */}
+          {post.youtube_url && post.type !== 'bhajan_share' && (
+            <div className="rounded-xl border border-orange-500/10 p-2.5 bg-[#1a1410]/50 flex items-center justify-between gap-3 max-w-[400px]">
+              <Play className="w-6 h-6 text-orange-500 shrink-0 ml-1" />
+              <div className="min-w-0 flex-1">
+                <span className="text-[8px] text-stone-400 font-bold uppercase tracking-wider block">YouTube Link</span>
                 <a 
-                  href={`/bhajan/${post.linked_bhajan_id}`}
-                  className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
+                  href={post.youtube_url} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="text-xs font-semibold text-orange-400 block truncate hover:underline"
                 >
-                  Open lyrics <ChevronRight className="w-3 h-3" />
+                  {post.youtube_url}
                 </a>
               </div>
-            )}
-
-            {/* RSVP Selection Buttons */}
-            <div className="flex gap-2">
-              {[
-                { status: 'interested', label: isHi ? 'रुचि है' : 'Interested' },
-                { status: 'going', label: isHi ? 'शामिल होऊंगा' : 'Going' }
-              ].map(opt => {
-                const isActive = post.rsvp_status === opt.status;
-                const count = opt.status === 'interested' 
-                  ? post.rsvps_count?.interested || 0
-                  : post.rsvps_count?.going || 0;
-
-                return (
-                  <button
-                    key={opt.status}
-                    onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status as any)}
-                    className={`flex-1 flex items-center justify-center gap-2 border px-3 py-2 rounded-xl text-xs font-bold active:scale-98 transition-all ${
-                      isActive 
-                        ? "bg-rose-500 border-rose-600 text-white shadow-xs" 
-                        : "bg-white dark:bg-stone-900 border-rose-500/15 text-rose-600 hover:bg-rose-500/5"
-                    }`}
-                  >
-                    <span>{opt.status === 'interested' ? '⭐' : '✓'}</span>
-                    <span>{opt.label} ({count})</span>
-                  </button>
-                );
-              })}
+              <ExternalLink className="w-3.5 h-3.5 text-stone-400 shrink-0" />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* C. Question poll quick choices render */}
-        {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
-          <div className="mt-4 space-y-2.5 bg-blue-500/5 p-4 rounded-2xl border border-blue-500/10">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 block">
-              Quick tap option poll
-            </span>
-            <div className="space-y-2">
-              {post.question_options.map((opt, index) => {
-                const isVoted = post.user_voted_option === index;
-                const pct = post.vote_percentages ? post.vote_percentages[index] || 0 : 0;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => onVoteOption(post.id, index)}
-                    className="w-full relative overflow-hidden text-left p-3 rounded-xl border border-blue-500/15 bg-white hover:border-blue-500/30 transition-all flex items-center justify-between"
-                  >
-                    {/* Percentage Progress Fill */}
-                    <div 
-                      className="absolute left-0 top-0 bottom-0 bg-blue-500/10 transition-all duration-300"
-                      style={{ width: `${pct}%` }}
-                    />
-                    
-                    <span className={`text-xs font-bold relative z-10 flex items-center gap-1.5 ${isVoted ? 'text-blue-600' : 'text-stone-700'}`}>
-                      {isVoted && "✦"} {opt}
-                    </span>
-                    <span className="text-xs font-bold text-blue-600 relative z-10">{pct}%</span>
-                  </button>
-                );
-              })}
+          {/* ── TYPE SPECIFIC RENDERINGS ── */}
+
+          {/* A. Bhajan Request status timeline */}
+          {post.type === 'bhajan_request' && (
+            <div className="bg-stone-900/20 border border-orange-500/10 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3.5">
+                <span className="text-xs font-bold text-stone-400">{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
+                <Badge variant="outline" className={"text-[10px] font-extrabold capitalize " + getStatusBadgeColor(post.request_status)}>
+                  {post.request_status.replace('_', ' ')}
+                </Badge>
+              </div>
+
+              {/* Celebratory alert banner if resolved and added to library */}
+              {post.request_status === 'added_to_library' && (
+                <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold p-3 rounded-xl flex items-center gap-2">
+                  <span>🎉</span>
+                  <span>
+                    {isHi ? "भजन को मुख्य लाइब्रेरी में जोड़ दिया गया है!" : "Your request was added to the Library!"}
+                  </span>
+                  {post.resolved_bhajan_id && (
+                    <a 
+                      href={"/bhajan/" + post.resolved_bhajan_id}
+                      className="underline text-emerald-400 ml-auto flex items-center gap-1 shrink-0"
+                    >
+                      View Bhajan <ChevronRight className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Status Timeline Circles */}
+              <div className="flex items-center justify-between text-[10px] font-extrabold tracking-tight text-center relative px-2 mb-2">
+                <div className="absolute top-2 left-6 right-6 h-0.5 bg-stone-850 -z-10" />
+                {[
+                  { status: 'open', label: isHi ? 'खुला' : 'Open' },
+                  { status: 'lyrics_submitted', label: isHi ? 'उत्तर प्राप्त' : 'Lyrics' },
+                  { status: 'in_review', label: isHi ? 'समीक्षा' : 'Review' },
+                  { status: 'added_to_library', label: isHi ? 'लाइब्रेरी' : 'Library' }
+                ].map((step, idx) => {
+                  const stages = ['open', 'lyrics_submitted', 'in_review', 'added_to_library'];
+                  const currentIdx = stages.indexOf(post.request_status);
+                  const stepIdx = stages.indexOf(step.status);
+                  const isPassed = stepIdx <= currentIdx && post.request_status !== 'closed_unresolved';
+                  return (
+                    <div key={step.status} className="flex flex-col items-center">
+                      <div className={"w-4 h-4 rounded-full border flex items-center justify-center text-[7.5px] font-bold " + (
+                        isPassed 
+                          ? "bg-orange-500 border-orange-600 text-white" 
+                          : "bg-[#130f0c] border-stone-800 text-stone-400"
+                      )}>
+                        {isPassed && "✓"}
+                      </div>
+                      <span className={"mt-1 font-semibold " + (isPassed ? "text-orange-400" : "text-stone-500")}>
+                        {step.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Lyrics submit CTA */}
+              {post.request_status === 'open' && (
+                <Button 
+                  onClick={() => onToggleComments(post.id)}
+                  className="mt-3.5 w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl h-9 shadow-xs"
+                >
+                  📿 {isHi ? "मुझे इस भजन के बोल पता हैं (उत्तर दें)" : "I Know This Bhajan (Submit Lyrics)"}
+                </Button>
+              )}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* B. Event Date and Location detail card */}
+          {post.type === 'event' && (
+            <div className="bg-stone-900/20 border border-orange-500/10 rounded-2xl p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold text-stone-300 gap-2 border-b border-[#2c2018] pb-2.5">
+                <span className="flex items-center gap-1 text-rose-400">
+                  <Calendar className="w-4 h-4" />
+                  {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : "Date/Time not set"}
+                </span>
+                <span className="flex items-center gap-1 text-stone-400">
+                  <MapPin className="w-4 h-4" />
+                  {post.event_location || "Virtual Zoom"}
+                </span>
+              </div>
+
+              {/* Linked Bhajan */}
+              {post.linked_bhajan_id && (
+                <div className="p-3 bg-[#1a1410]/50 rounded-xl border border-orange-500/10 flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">Linked Bhajan</span>
+                    <span className="text-xs font-bold text-stone-200 truncate block">Bhajan Page Reference</span>
+                  </div>
+                  <a 
+                    href={"/bhajan/" + post.linked_bhajan_id}
+                    className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
+                  >
+                    Open lyrics <ChevronRight className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+
+              {/* RSVP Selection Buttons */}
+              <div className="flex gap-2">
+                {[
+                  { status: 'interested', label: isHi ? 'रुचि है' : 'Interested' },
+                  { status: 'going', label: isHi ? 'शामिल होऊंगा' : 'Going' }
+                ].map(opt => {
+                  const isActive = post.rsvp_status === opt.status;
+                  const count = opt.status === 'interested' 
+                    ? post.rsvps_count?.interested || 0
+                    : post.rsvps_count?.going || 0;
+
+                  return (
+                    <button
+                      key={opt.status}
+                      onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status as any)}
+                      className={"flex-1 flex items-center justify-center gap-2 border px-3 py-2 rounded-xl text-xs font-bold active:scale-98 transition-all " + (
+                        isActive 
+                          ? "bg-rose-500 border-rose-600 text-white shadow-xs" 
+                          : "bg-[#1a1410] border-rose-500/15 text-rose-400 hover:bg-rose-500/5"
+                      )}
+                    >
+                      <span>{opt.status === 'interested' ? '⭐' : '✓'}</span>
+                      <span>{opt.label} ({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* C. Question poll quick choices render */}
+          {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
+            <div className="bg-stone-900/20 p-4 rounded-2xl border border-orange-500/10">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-400 block">
+                Quick tap option poll
+              </span>
+              <div className="space-y-2">
+                {post.question_options.map((opt, index) => {
+                  const isVoted = post.user_voted_option === index;
+                  const pct = post.vote_percentages ? post.vote_percentages[index] || 0 : 0;
+                  
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => onVoteOption(post.id, index)}
+                      className="w-full relative overflow-hidden text-left p-3 rounded-xl border border-orange-500/10 bg-[#130f0c] hover:border-orange-500/25 transition-all flex items-center justify-between"
+                    >
+                      {/* Percentage Progress Fill */}
+                      <div 
+                        className="absolute left-0 top-0 bottom-0 bg-orange-500/10 transition-all duration-300"
+                        style={{ width: pct + '%' }}
+                      />
+                      
+                      <span className={"text-xs font-bold relative z-10 flex items-center gap-1.5 " + (isVoted ? "text-orange-400" : "text-stone-300")}>
+                        {isVoted && "✦"} {opt}
+                      </span>
+                      <span className="text-xs font-bold text-orange-400 relative z-10">{pct}%</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      {/* ─── ACTION BAR 🙏 🙏 🙏 ─── */}
-      <div className="flex items-center gap-3 mt-5 pt-3.5 border-t border-stone-100 dark:border-stone-800/60">
+      <div className="flex items-center bg-[#181310] border border-[#281f19] rounded-full px-5 py-2 w-fit gap-4 mt-3 shadow-inner">
+        {/* Blessings (Like) */}
         <button
           onClick={() => onToggleReaction(post.id)}
-          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all border select-none active:scale-95 duration-200 ${
-            post.has_reacted 
-              ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400 shadow-sm shadow-orange-500/5" 
-              : "bg-stone-50 dark:bg-stone-900 border-stone-200/60 dark:border-stone-800/40 text-stone-500 hover:text-stone-800 hover:border-stone-300 hover:bg-stone-100/50"
-          }`}
+          className={`flex items-center gap-2.5 text-left transition-all active:scale-95 group ${post.has_reacted ? 'text-rose-500' : 'text-stone-400'}`}
         >
-          <span className="text-base">🙏</span>
-          <span>{isHi ? "प्रणाम" : "Pranam"} <span className="opacity-70 font-semibold">({post.reaction_count})</span></span>
+          <Heart className={`w-5 h-5 transition-all ${post.has_reacted ? 'text-rose-500 fill-rose-500 scale-110' : 'text-stone-400 group-hover:text-rose-500'}`} />
+          <div>
+            <p className={`text-xs font-black leading-none transition-colors ${post.has_reacted ? 'text-rose-500' : 'text-stone-100'}`}>{post.reaction_count}</p>
+            <p className={`text-[9px] font-bold mt-0.5 transition-colors ${post.has_reacted ? 'text-rose-400' : 'text-stone-400 group-hover:text-rose-300'}`}>{isHi ? "प्रणाम" : "Blessings"}</p>
+          </div>
         </button>
 
+        {/* Divider */}
+        <span className="w-px h-6 bg-[#2c2018]" />
+
+        {/* Comments */}
         <button
           onClick={() => onToggleComments(post.id)}
-          className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all border select-none active:scale-95 duration-200 ${
-            isCommentsExpanded
-              ? "bg-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400 shadow-sm"
-              : "bg-stone-50 dark:bg-stone-900 border-stone-200/60 dark:border-stone-800/40 text-stone-500 hover:text-stone-800 hover:border-stone-300 hover:bg-stone-100/50"
-          }`}
+          className="flex items-center gap-2.5 text-left transition-all active:scale-95 group"
         >
-          <MessageSquare className="w-4.5 h-4.5 text-orange-500" />
-          <span>{isHi ? "टिप्पणियाँ" : "Comments"} <span className="opacity-70 font-semibold">({post.comment_count})</span></span>
+          <MessageSquare className={`w-5 h-5 transition-all ${isCommentsExpanded ? 'text-orange-400 scale-110' : 'text-stone-400 group-hover:text-orange-400'}`} />
+          <div>
+            <p className="text-xs font-black text-stone-100 leading-none">{post.comment_count}</p>
+            <p className="text-[9px] font-bold text-stone-400 mt-0.5">{isHi ? "टिप्पणी" : "Comments"}</p>
+          </div>
+        </button>
+
+        {/* Divider */}
+        <span className="w-px h-6 bg-[#2c2018]" />
+
+        {/* Save button */}
+        <button
+          onClick={() => onToggleSavePost(post.id)}
+          className="flex items-center gap-2 text-left transition-all active:scale-95 group"
+        >
+          <Bookmark className={`w-4.5 h-4.5 transition-all ${isPostSaved ? 'text-amber-500 fill-amber-500 scale-110' : 'text-stone-400 group-hover:text-amber-500'}`} />
+          <span className={`text-[11px] font-bold transition-colors ${isPostSaved ? 'text-amber-500' : 'text-stone-300 group-hover:text-stone-100'}`}>{isHi ? "सहेजें" : "Save"}</span>
+        </button>
+
+        {/* Divider */}
+        <span className="w-px h-6 bg-[#2c2018]" />
+
+        {/* Share */}
+        <button
+          onClick={() => {
+            const link = `${window.location.origin}/community/posts/${post.id}`;
+            if (navigator.share) {
+              navigator.share({
+                title: post.title || (isHi ? "भक्तिमय पोस्ट" : "Devotional Post"),
+                text: post.content ? post.content.substring(0, 100) + "..." : (isHi ? "सत्संग पोस्ट देखें" : "Check out this post on Divine Melodies Hub"),
+                url: link
+              }).catch((err) => {
+                if (err.name !== 'AbortError') {
+                  navigator.clipboard.writeText(link);
+                  toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
+                }
+              });
+            } else {
+              navigator.clipboard.writeText(link);
+              toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
+            }
+          }}
+          className="flex items-center gap-2 text-left transition-all active:scale-95 group"
+        >
+          <ExternalLink className="w-4 h-4 text-stone-400 group-hover:text-orange-400 transition-colors" />
+          <span className="text-[11px] font-bold text-stone-300 group-hover:text-stone-100 transition-colors">{isHi ? "साझा करें" : "Share"}</span>
         </button>
       </div>
 
       {/* ─── COLLAPSED COMMENTS PANEL ───────────────────────────── */}
       {isCommentsExpanded && (
-        <div className="mt-4 bg-orange-500/5 rounded-2xl p-4 border border-orange-500/10 space-y-4">
-          <div className="flex items-center justify-between border-b border-orange-500/5 pb-2">
-            <span className="text-xs font-bold text-stone-500">
+        <div className="mt-4 bg-[#120e0c] rounded-2xl p-4 border border-orange-500/5 space-y-4">
+          <div className="flex items-center justify-between border-b border-[#231b15] pb-2">
+            <span className="text-xs font-bold text-stone-400">
               {isHi ? "वार्तालाप" : "Discussion Thread"}
             </span>
           </div>
@@ -2353,48 +2539,49 @@ function PostCard({
           <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
             {isLoadingComments && comments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-stone-400">
-                <Loader2 className="w-5.5 h-5.5 animate-spin text-orange-500 mb-2" />
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-950/60 dark:text-amber-100/60">
+                <Loader2 className="w-5 h-5 animate-spin text-orange-500 mb-2" />
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
                   {isHi ? "टिप्पणियाँ लोड हो रही हैं..." : "Loading comments..."}
                 </span>
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-orange-500/10 rounded-xl bg-orange-500/[0.01]">
+              <div className="text-center py-6 border border-dashed border-[#231b15] rounded-xl bg-orange-500/[0.01]">
                 <p className="text-xs text-stone-400 font-medium">
                   {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें! 📿" : "No replies yet. Be the first to reply! 📿"}
                 </p>
               </div>
             ) : (
               comments.map(comment => (
-                <div key={comment.id} className="flex gap-2.5 text-xs items-start group">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-600 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
+                <div key={comment.id} className="flex gap-2.5 text-xs items-start group text-left">
+                  {/* Defensive, bulletproof avatar container */}
+                  <div className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-400 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
                     {comment.author?.avatar_url ? (
-                      <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full object-cover rounded-full" />
+                      <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
                     ) : (
                       comment.author?.display_name ? (
                         comment.author.display_name.slice(0, 2).toUpperCase()
                       ) : "DV"
                     )}
                   </div>
-                  <div className="flex-1 bg-stone-50/50 dark:bg-stone-900/60 border border-stone-200/40 dark:border-stone-800/80 p-3 rounded-2xl min-w-0 shadow-xs group-hover:border-orange-500/10 transition-colors">
+                  <div className="flex-1 bg-[#17120f] border border-[#231b15] p-3 rounded-2xl min-w-0 shadow-xs hover:border-orange-500/10 transition-colors">
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                      <span className="font-extrabold text-orange-950 dark:text-amber-100 flex items-center gap-1.5 flex-wrap">
+                      <span className="font-extrabold text-stone-100 flex items-center gap-1.5 flex-wrap">
                         {comment.author?.display_name || "Devotee"}
                         {comment.is_lyrics_submission && (
-                          <Badge variant="outline" className="text-[7.5px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
+                          <Badge variant="outline" className="text-[7px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
                             Lyrics Submission
                           </Badge>
                         )}
                       </span>
-                      <span className="text-[9px] font-semibold text-stone-400">{formatTime(comment.created_at)}</span>
+                      <span className="text-[8px] font-semibold text-stone-500">{formatTime(comment.created_at)}</span>
                     </div>
-                    <p className="text-stone-700 dark:text-stone-300 text-xs whitespace-pre-wrap leading-relaxed break-words font-medium">
+                    <p className="text-stone-300 text-xs whitespace-pre-wrap leading-relaxed break-words font-medium">
                       {comment.content}
                     </p>
                     {user?.id === comment.author_id && (
                       <button 
                         onClick={() => onDeleteComment(post.id, comment.id)}
-                        className="text-stone-400 dark:text-stone-500 hover:text-rose-600 font-bold text-[9px] mt-2 flex items-center gap-0.5 hover:underline transition-colors ml-auto"
+                        className="text-stone-500 hover:text-rose-500 font-bold text-[8px] mt-2 flex items-center gap-0.5 hover:underline transition-colors ml-auto"
                       >
                         <Trash2 className="w-3 h-3 inline" /> {isHi ? "हटाएं" : "Delete"}
                       </button>
@@ -2407,7 +2594,7 @@ function PostCard({
 
           {/* Comment input form */}
           {user ? (
-            <div className="space-y-2 pt-2 border-t border-orange-500/5">
+            <div className="space-y-2 pt-2 border-t border-[#231b15]">
               <div className="flex gap-2">
                 <textarea
                   rows={2}
@@ -2418,20 +2605,20 @@ function PostCard({
                       ? (isHi ? "भजन के बोल यहाँ लिखें..." : "Provide lyrics or details here...")
                       : (isHi ? "अपनी टिप्पणी यहाँ लिखें..." : "Write a response...")
                   }
-                  className="flex-1 text-xs rounded-xl border border-orange-500/10 p-2.5 bg-white dark:bg-stone-950 focus:outline-none focus:border-orange-500 resize-none"
+                  className="flex-1 text-xs rounded-xl border border-orange-500/10 p-2.5 bg-[#130f0c] text-stone-200 focus:outline-none focus:border-orange-500 resize-none"
                 />
                 <button
                   onClick={() => onAddComment(post.id)}
                   disabled={!newCommentText.trim()}
                   className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold p-3 rounded-xl flex items-center justify-center hover:scale-98 transition-all shrink-0 w-11 h-11 self-end"
                 >
-                  <Send className="w-4.5 h-4.5" />
+                  <Send className="w-4 h-4 text-white" />
                 </button>
               </div>
 
               {/* Special checkmark for Bhajan Request comments to submit as lyrics */}
               {post.type === 'bhajan_request' && post.request_status === 'open' && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-left">
                   <input 
                     type="checkbox" 
                     id={`lyrics-submit-check-${post.id}`}
@@ -2439,14 +2626,14 @@ function PostCard({
                     onChange={(e) => setCommentIsLyricsSubmit(e.target.checked)}
                     className="w-3.5 h-3.5 accent-orange-500"
                   />
-                  <label htmlFor={`lyrics-submit-check-${post.id}`} className="text-[10px] font-bold text-stone-500 cursor-pointer select-none">
+                  <label htmlFor={`lyrics-submit-check-${post.id}`} className="text-[10px] font-bold text-stone-400 cursor-pointer select-none">
                     Submit this comment as the Bhajan Lyrics (moves request to pending review)
                   </label>
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-[10px] text-stone-400 text-center mt-2">
+            <p className="text-[10px] text-stone-500 text-center mt-2">
               Please log in to participate in the satsang conversation.
             </p>
           )}

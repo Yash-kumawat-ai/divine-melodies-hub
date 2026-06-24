@@ -9,6 +9,7 @@ import {
   Pencil,
   Sparkles,
   UserPlus,
+  Bookmark,
 } from 'lucide-react';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -125,6 +126,7 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
 
             <nav className="flex flex-col gap-2 overflow-y-auto">
               <MenuRow to="/account/liked" icon={<Heart className="h-5 w-5" />} label={t('likedBhajans')} />
+              <MenuRow to="/account/saved" icon={<Bookmark className="h-5 w-5" />} label={t('savedPosts')} />
               <MenuRow to="/notifications" icon={<Bell className="h-5 w-5" />} label={t('notifications')} />
               <MenuRow to="/pricing" icon={<Sparkles className="h-5 w-5" />} label={t('ourSevaPlan')} />
               <MenuRow to="/account/support" icon={<HelpCircle className="h-5 w-5" />} label={t('helpSupport')} />

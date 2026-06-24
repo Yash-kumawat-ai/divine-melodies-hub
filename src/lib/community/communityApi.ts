@@ -67,6 +67,7 @@ export interface CommunityPost {
   author?: {
     display_name: string;
     avatar_url: string;
+    role?: string;
   };
   group_name?: string;
   reaction_count: number;
@@ -408,7 +409,7 @@ export const communityApi = {
         .from("community_posts")
         .select(`
           *,
-          user_profiles:author_id(display_name:name, avatar_url),
+          user_profiles:author_id(display_name:name, avatar_url, role),
           groups:group_id(name),
           post_reactions(user_id),
           post_comments(id),
@@ -466,7 +467,8 @@ export const communityApi = {
           ...p,
           author: p.user_profiles ? {
             display_name: p.user_profiles.display_name,
-            avatar_url: p.user_profiles.avatar_url || ""
+            avatar_url: p.user_profiles.avatar_url || "",
+            role: p.user_profiles.role || undefined
           } : undefined,
           group_name: p.groups?.name || undefined,
           reaction_count: reactions.length,
