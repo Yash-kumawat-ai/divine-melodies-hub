@@ -1,8 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const historyDir = "C:\\Users\\YASH\\AppData\\Roaming\\Code\\User\\History";
-
+const historyDir = "C:\\Users\\YASH\\AppData\\Roaming\\Code\User\\History";
 let found = [];
 
 function searchDir(dir) {
@@ -14,19 +13,29 @@ function searchDir(dir) {
       if (stat.isDirectory()) {
         searchDir(fullPath);
       } else {
-        if (stat.size > 50000 && stat.size < 200000) {
+        if (file === 'entries.json') {
           try {
-            // Read first 2000 characters
-            const fd = fs.openSync(fullPath, 'r');
-            const buffer = Buffer.alloc(2000);
-            fs.readSync(fd, buffer, 0, 2000, 0);
-            fs.closeSync(fd);
-            const text = buffer.toString('utf8');
-            if (text.includes('LIVE_WALLPAPERS_LIST')) {
-              console.log("Found LIVE_WALLPAPERS_LIST in history file: " + fullPath);
-              found.push({ path: fullPath, mtime: stat.mtime });
+            const content = fs.readFileSync(fullPath, 'utf8');
+            const data = JSON.parse(content);
+            if (data.resource && data.resource.toLowerCase().includes('blessingspage.tsx')) {
+              console.log("Found entries.json for BlessingsPage.tsx at: " + fullPath);
+              if (data.entries && data.entries.length > 0) {
+                data.entries.forEach(entry => {
+                  const entryFile = path.join(dir, entry.id);
+                  if (fs.existsSync(entryFile)) {
+                    const entryStat = fs.statSync(entryFile);
+                    found.push({
+                      path: entryFile,
+                      timestamp: entry.timestamp,
+                      size: entryStat.size
+                    });
+                  }
+                });
+              }
             }
-          } catch (e) {}
+          } catch (e) {
+            // ignore
+          }
         }
       }
     }
@@ -36,16 +45,17 @@ function searchDir(dir) {
 searchDir(historyDir);
 
 if (found.length > 0) {
-  found.sort((a, b) => b.mtime - a.mtime);
-  console.log("Found matches sorted by modification time:");
-  found.forEach(f => {
-    console.log(`${f.path} - Modified: ${f.mtime.toISOString()}`);
+  found.sort((a, b) => b.timestamp - a.timestamp);
+  console.log(`Found ${found.length} history entries:`);
+  found.forEach((f, idx) => {
+    console.log(`[${idx}] File: ${f.path} - Timestamp: ${new Date(f.timestamp).toISOString()} - Size: ${f.size} bytes`);
   });
-  // Copy the latest one to a recovered file
+
+  // copy the latest one
   const latest = found[0].path;
-  const outPath = "C:\\Users\\YASH\\.gemini\\antigravity-cli\\brain\\8a8afd24-3e9c-4df5-b10e-a36d101f5302\\scratch\\recovered_blessings_page.txt";
+  const outPath = path.join(__dirname, "src", "pages", "BlessingsPage.tsx");
   fs.copyFileSync(latest, outPath);
-  console.log(`Copied latest history file ${latest} to ${outPath}`);
+  console.log(`\nSUCCESS! Copied latest history entry (${latest}) directly to ${outPath}`);
 } else {
-  console.log("No matching files found in history.");
+  console.log("No history entries found.");
 }

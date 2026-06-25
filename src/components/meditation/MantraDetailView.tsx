@@ -595,12 +595,12 @@ export default function MantraDetailView({
             if ((osc as any).subOsc) {
               (osc as any).subOsc.stop();
             }
-          } catch (e) {}
+          } catch (e) { /* ignore audio stop error */ }
         }, 350);
       } catch (e) {
         try {
           osc.stop();
-        } catch (x) {}
+        } catch (x) { /* ignore fallback stop error */ }
       }
 
       oscillatorRef.current = null;

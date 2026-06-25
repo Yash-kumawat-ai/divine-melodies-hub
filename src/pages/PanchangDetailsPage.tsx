@@ -49,7 +49,7 @@ export default function PanchangDetailsPage() {
     const parseSingle = (part: string) => {
       const match = part.match(/(\d+):(\d+)\s*(AM|PM)/i);
       if (!match) return null;
-      let [_, hours, minutes, ampm] = match;
+      const [_, hours, minutes, ampm] = match;
       let h = parseInt(hours);
       if (ampm.toUpperCase() === 'PM' && h < 12) h += 12;
       if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;

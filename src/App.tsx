@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,7 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import SuspenseFallback from "./components/SuspenseFallback";
 import AppShell from "./components/layout/AppShell";
 import { AuthProvider } from "@/hooks/useAuth";
-import { LanguageProvider } from "@/hooks/useLanguage";
+import { LanguageProvider, useLanguage } from "@/hooks/useLanguage";
 import { AssistantContextProvider } from "@/hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "@/hooks/useAIModal";
 import { ThemeProvider } from "@/hooks/useTheme";
@@ -64,6 +64,19 @@ const JoinCommunityPage = lazy(() => import("./pages/JoinCommunityPage"));
 
 function AppContent() {
   const { isOpen } = useAIModal();
+  const { language } = useLanguage();
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-lang", language);
+    // Keep classList synchronized with lang-[locale]
+    const classes = Array.from(document.documentElement.classList);
+    classes.forEach(c => {
+      if (c.startsWith("lang-")) {
+        document.documentElement.classList.remove(c);
+      }
+    });
+    document.documentElement.classList.add(`lang-${language}`);
+  }, [language]);
 
   return (
     <>

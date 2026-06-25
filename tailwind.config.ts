@@ -15,10 +15,14 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
-        hindi: ['"Tiro Devanagari Hindi"', '"Noto Sans Devanagari"', 'serif'],
-        body: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
-        sans: ['"Faculty Glyphic"', '"Noto Sans Devanagari"', 'sans-serif'],
+        display: ['var(--font-display)', 'sans-serif'],
+        hindi: ['var(--font-hindi)', 'serif'],
+        body: ['var(--font-body)', 'sans-serif'],
+        sans: ['var(--font-sans)', 'sans-serif'],
+        'poster-title': ['var(--font-poster-title)', 'sans-serif'],
+        'poster-subtitle': ['var(--font-poster-subtitle)', 'sans-serif'],
+        'poster-quote': ['var(--font-poster-quote)', 'sans-serif'],
+        'poster-name': ['var(--font-poster-name)', 'sans-serif'],
       },
       fontSize: {
         'base': '18px',

@@ -28,6 +28,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { toast } from "sonner";
 import { playMeditationBell, playCompletionChime } from "@/lib/meditation/meditationBell";
+import { getFontFamily, getCanvasFont, wrapTextAndGetLines, fitTextToWidth, fitMultiLineText, getPosterTypography } from "@/utils/typography";
+
 
 // ─── LOCAL DEITY IMAGES IMPORTS ───────────────────────────────────
 import shreeRamImg from "./images/shree_ram_ultra_hd.webp";
@@ -47,11 +49,13 @@ import radhaKrishnaImg from "./images/radha_krishna_hd mayapur tv.webp";
 import krishnaMobileImg from "./images/krishna_mobile_wallpaper.webp";
 import shyamMandirImg from "./images/shyam_mandir_desktop_hd.webp";
 import litDiyaImg from "./images/lit_diya.png";
+import khatuShyamHdImg from "./images/khatu_shyam_hd.webp";
 
 // ─── SYNTHESIZED MEDITATIVE TANPURA DRONE ─────────────────────────
 class TempleDrone {
   private ctx: AudioContext | null = null;
   private oscs: OscillatorNode[] = [];
+
   private gain: GainNode | null = null;
 
   start() {
@@ -108,15 +112,15 @@ class TempleDrone {
         this.gain.gain.linearRampToValueAtTime(0, now + 0.8);
         setTimeout(() => {
           this.oscs.forEach(osc => {
-            try { osc.stop(); } catch(_) {}
+            try { osc.stop(); } catch(_) { /* ignore stop error */ }
           });
-          try { this.ctx?.close(); } catch(_) {}
+          try { this.ctx?.close(); } catch(_) { /* ignore close error */ }
           this.ctx = null;
           this.oscs = [];
           this.gain = null;
         }, 900);
       }
-    } catch(e) {}
+    } catch(e) { /* ignore top-level stop error */ }
   }
 }
 
@@ -261,6 +265,121 @@ const WEEKDAYS = [
   { dayNum: 4, label: "Thu", labelHi: "गुरु", deity: "Krishna" },
   { dayNum: 5, label: "Fri", labelHi: "शुक्र", deity: "Lakshmi" },
   { dayNum: 6, label: "Sat", labelHi: "शनि", deity: "Hanuman" },
+];
+
+export interface PosterTemplate {
+  id: string;
+  title: string;
+  titleHindi: string;
+  subtitle: string;
+  subtitleHindi: string;
+  category: "todays" | "festival" | "good_morning";
+  imageUrl: string;
+  photoPosition: {
+    x: number;
+    y: number;
+    radius: number;
+  };
+  namePosition: {
+    x: number;
+    y: number;
+  };
+  quote: string;
+  quoteHindi: string;
+}
+
+export const POSTER_TEMPLATES: PosterTemplate[] = [
+  {
+    id: "poster-shyam-1",
+    title: "Khatu Shyam Blessing",
+    titleHindi: "जय श्री श्याम",
+    subtitle: "Blessing",
+    subtitleHindi: "हारे का सहारा",
+    category: "todays",
+    imageUrl: khatuShyamHdImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Baba Shyam will bless your day",
+    quoteHindi: "बाबा श्याम की कृपा आप पर सदा बनी रहे"
+  },
+  {
+    id: "poster-hanuman-1",
+    title: "Hanuman Blessing",
+    titleHindi: "जय बजरंग बली",
+    subtitle: "Blessing",
+    subtitleHindi: "संकट मोचन",
+    category: "todays",
+    imageUrl: hanumanImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Lord Hanuman will protect you",
+    quoteHindi: "हनुमान जी आपके सभी संकट दूर करें"
+  },
+  {
+    id: "poster-krishna-1",
+    title: "Radhe Radhe Blessing",
+    titleHindi: "राधे राधे",
+    subtitle: "Blessing",
+    subtitleHindi: "राधे राधे",
+    category: "todays",
+    imageUrl: radhaKrishnaImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "May Radha Krishna bless you",
+    quoteHindi: "राधा कृष्ण का पावन आशीर्वाद"
+  },
+  {
+    id: "poster-morning-1",
+    title: "Surya Dev Morning",
+    titleHindi: "सुप्रभात सूर्य देव",
+    subtitle: "Morning",
+    subtitleHindi: "शुभ प्रभात",
+    category: "good_morning",
+    imageUrl: shreeRamImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Wishing you a positive and blessed morning",
+    quoteHindi: "ॐ सूर्याय नमः। आपका आज का दिन मंगलमय हो।"
+  },
+  {
+    id: "poster-fest-1",
+    title: "Janmashtami Special",
+    titleHindi: "जन्माष्टमी विशेष",
+    subtitle: "26 Aug",
+    subtitleHindi: "26 अगस्त",
+    category: "festival",
+    imageUrl: krishnaMobileImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Happy Janmashtami",
+    quoteHindi: "कृष्ण जन्माष्टमी की पावन शुभकामनाएं"
+  },
+  {
+    id: "poster-fest-2",
+    title: "Ganesh Chaturthi",
+    titleHindi: "गणेश चतुर्थी",
+    subtitle: "7 Sep",
+    subtitleHindi: "7 सितम्बर",
+    category: "festival",
+    imageUrl: ganeshImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Ganpati Bappa Morya",
+    quoteHindi: "गणपति बाप्पा मोरया"
+  },
+  {
+    id: "poster-fest-3",
+    title: "Navratri Special",
+    titleHindi: "नवरात्रि विशेष",
+    subtitle: "3 Oct",
+    subtitleHindi: "3 अक्टूबर",
+    category: "festival",
+    imageUrl: shivVerticalImg,
+    photoPosition: { x: 540, y: 1380, radius: 110 },
+    namePosition: { x: 540, y: 1560 },
+    quote: "Shubh Navratri",
+    quoteHindi: "नवरात्रि की हार्दिक शुभकामनाएं"
+  }
 ];
 
 const MoreIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -572,9 +691,23 @@ export default function BlessingsPage() {
     });
   }, [showPreviewModal, showLivePreviewModal, setSearchParams]);
 
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState<string>(() => {
+    return localStorage.getItem("hk_profile_name") || "";
+  });
   const [blessingType, setBlessingType] = useState<"self" | "parents" | "family" | "friends" | "universal">("self");
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [userPhoto, setUserPhoto] = useState<string | null>(() => {
+    return localStorage.getItem("hk_profile_photo") || null;
+  });
+  const [selectedPoster, setSelectedPoster] = useState<PosterTemplate | null>(null);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showSetupSheet, setShowSetupSheet] = useState(false);
+  const [compiledPosterUrl, setCompiledPosterUrl] = useState<string | null>(null);
+  const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<"all" | "todays" | "festival" | "good_morning" | "goodmorning" | "more">("all");
+  const [showPosterShareModal, setShowPosterShareModal] = useState(false);
+  const [tempName, setTempName] = useState("");
+  const [tempPhoto, setTempPhoto] = useState<string | null>(null);
+
   const [selectedTemplate, setSelectedTemplate] = useState<"golden" | "crimson" | "peacock" | "white">("golden");
   const [generationType, setGenerationType] = useState<"status" | "square">("status");
   const [savedBlessings, setSavedBlessings] = useState<string[]>([]);
@@ -599,6 +732,35 @@ export default function BlessingsPage() {
       return [];
     }
   });
+
+  useEffect(() => {
+    if (showSetupSheet) {
+      setTempName(userName);
+      setTempPhoto(userPhoto);
+    }
+  }, [showSetupSheet, userName, userPhoto]);
+
+  useEffect(() => {
+    localStorage.setItem("hk_profile_name", userName);
+  }, [userName]);
+
+  useEffect(() => {
+    if (userPhoto) {
+      localStorage.setItem("hk_profile_photo", userPhoto);
+    } else {
+      localStorage.removeItem("hk_profile_photo");
+    }
+  }, [userPhoto]);
+
+  useEffect(() => {
+    if (selectedPoster) {
+      compilePoster(selectedPoster, generationType)
+        .then((url) => setCompiledPosterUrl(url))
+        .catch((err) => console.error("Poster compile error", err));
+    } else {
+      setCompiledPosterUrl(null);
+    }
+  }, [selectedPoster, userName, userPhoto, generationType]);
 
   const toggleSaveWallpaper = (id: string) => {
     const isSaved = savedWallpapers.includes(id);
@@ -724,7 +886,7 @@ export default function BlessingsPage() {
     const body = hasDocument ? document.body : null;
     const docEl = hasDocument ? document.documentElement : null;
 
-    if (showPreviewModal || showLivePreviewModal || showPremiumTplModal) {
+    if (showPreviewModal || showLivePreviewModal || showPremiumTplModal || !!selectedPoster) {
       if (body) body.style.overflow = "hidden";
       if (docEl) docEl.style.overflow = "hidden";
     } else {
@@ -735,13 +897,13 @@ export default function BlessingsPage() {
       if (body) body.style.overflow = "";
       if (docEl) docEl.style.overflow = "";
     };
-  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal]);
+  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster]);
 
   // Wire modal visibility to app context to hide FAB Narad assistant
   useEffect(() => {
-    setBhajanModalOpen(!!(showPreviewModal || showLivePreviewModal || showPremiumTplModal));
+    setBhajanModalOpen(!!(showPreviewModal || showLivePreviewModal || showPremiumTplModal || selectedPoster));
     return () => setBhajanModalOpen(false);
-  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, setBhajanModalOpen]);
+  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster, setBhajanModalOpen]);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -774,7 +936,7 @@ export default function BlessingsPage() {
           setStreakCount(currentStreak > 0 ? currentStreak : 0);
         }
       }
-    } catch (_) {}
+    } catch (_) { /* ignore localstorage error */ }
 
     droneRef.current = new TempleDrone();
     return () => {
@@ -900,13 +1062,48 @@ export default function BlessingsPage() {
   // Core Canvas Rendering Engine
   const compileBlessingCard = (): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        toast.error("Graphics compiler not initialized.");
-        return reject("No canvas context");
+      (async () => {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          toast.error("Graphics compiler not initialized.");
+          return reject("No canvas context");
+        }
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("No 2d context");
+
+      // Load fonts using Font Loading API to guarantee exact layout matches
+      try {
+        if (language === 'hi' || language === 'mr') {
+          await document.fonts.load("bold 60px 'Tiro Devanagari Hindi'");
+          await document.fonts.load("bold 56px 'Noto Sans Devanagari'");
+          await document.fonts.load("normal 34px 'Noto Sans Devanagari'");
+          await document.fonts.load("bold 34px 'Noto Sans Devanagari'");
+        } else if (language === 'gu') {
+          await document.fonts.load("bold 60px 'Noto Sans Gujarati'");
+          await document.fonts.load("normal 34px 'Noto Sans Gujarati'");
+          await document.fonts.load("bold 34px 'Noto Sans Gujarati'");
+        } else if (language === 'bn') {
+          await document.fonts.load("bold 60px 'Noto Sans Bengali'");
+          await document.fonts.load("normal 34px 'Noto Sans Bengali'");
+          await document.fonts.load("bold 34px 'Noto Sans Bengali'");
+        } else if (language === 'ta') {
+          await document.fonts.load("bold 60px 'Noto Sans Tamil'");
+          await document.fonts.load("normal 34px 'Noto Sans Tamil'");
+          await document.fonts.load("bold 34px 'Noto Sans Tamil'");
+        } else {
+          await document.fonts.load("bold 60px 'Faculty Glyphic'");
+          await document.fonts.load("bold 56px 'Inter'");
+          await document.fonts.load("normal 34px 'Inter'");
+          await document.fonts.load("bold 34px 'Inter'");
+        }
+        await document.fonts.ready;
+      } catch (err) {
+        console.warn("Font loading API error, falling back:", err);
       }
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return reject("No 2d context");
+
+      // Configure anti-aliasing and sharpness
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
       const tpl = selectedTemplate;
       const aspect = generationType; // vertical/square
@@ -920,10 +1117,13 @@ export default function BlessingsPage() {
       ctx.fillStyle = "#120603";
       ctx.fillRect(0, 0, w, h);
 
-      // Load Deity Image
+      const isPoster = !!selectedPoster;
+      const bgImgSrc = isPoster ? selectedPoster.imageUrl : todayDarshan.imageUrl;
+
+      // Load Image
       const deityImg = new Image();
       deityImg.crossOrigin = "anonymous";
-      deityImg.src = todayDarshan.imageUrl;
+      deityImg.src = bgImgSrc;
       
       deityImg.onload = () => {
         const imageRatio = deityImg.width / deityImg.height;
@@ -945,161 +1145,330 @@ export default function BlessingsPage() {
 
         // Apply theme color gradients overlay
         const grad = ctx.createLinearGradient(0, h * 0.2, 0, h);
-        if (tpl === "crimson") {
-          grad.addColorStop(0, "rgba(22, 5, 8, 0.15)");
-          grad.addColorStop(0.6, "rgba(55, 10, 18, 0.82)");
-          grad.addColorStop(1, "rgba(24, 4, 8, 0.98)");
-        } else if (tpl === "peacock") {
-          grad.addColorStop(0, "rgba(2, 18, 16, 0.15)");
-          grad.addColorStop(0.6, "rgba(4, 44, 40, 0.84)");
-          grad.addColorStop(1, "rgba(2, 20, 18, 0.98)");
-        } else if (tpl === "white") {
-          grad.addColorStop(0, "rgba(255, 255, 255, 0.04)");
-          grad.addColorStop(0.55, "rgba(22, 28, 45, 0.78)");
-          grad.addColorStop(1, "rgba(10, 15, 30, 0.96)");
-        } else { // golden
-          grad.addColorStop(0, "rgba(18, 8, 4, 0.15)");
-          grad.addColorStop(0.5, "rgba(28, 12, 4, 0.82)");
-          grad.addColorStop(1, "rgba(15, 5, 2, 0.98)");
+        if (isPoster) {
+          // Dark overlay for posters so user name/photo stand out
+          grad.addColorStop(0, "rgba(10, 5, 2, 0.05)");
+          grad.addColorStop(0.5, "rgba(15, 6, 2, 0.35)");
+          grad.addColorStop(0.85, "rgba(15, 6, 2, 0.85)");
+          grad.addColorStop(1, "rgba(10, 3, 1, 0.98)");
+        } else {
+          if (tpl === "crimson") {
+            grad.addColorStop(0, "rgba(22, 5, 8, 0.15)");
+            grad.addColorStop(0.6, "rgba(55, 10, 18, 0.82)");
+            grad.addColorStop(1, "rgba(24, 4, 8, 0.98)");
+          } else if (tpl === "peacock") {
+            grad.addColorStop(0, "rgba(2, 18, 16, 0.15)");
+            grad.addColorStop(0.6, "rgba(4, 44, 40, 0.84)");
+            grad.addColorStop(1, "rgba(2, 20, 18, 0.98)");
+          } else if (tpl === "white") {
+            grad.addColorStop(0, "rgba(255, 255, 255, 0.04)");
+            grad.addColorStop(0.55, "rgba(22, 28, 45, 0.78)");
+            grad.addColorStop(1, "rgba(10, 15, 30, 0.96)");
+          } else { // golden
+            grad.addColorStop(0, "rgba(18, 8, 4, 0.15)");
+            grad.addColorStop(0.5, "rgba(28, 12, 4, 0.82)");
+            grad.addColorStop(1, "rgba(15, 5, 2, 0.98)");
+          }
         }
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
 
         // Draw Borders
         const borderPadding = aspect === "square" ? 22 : 36;
-        if (tpl === "golden") {
-          ctx.strokeStyle = "#fbbf24";
-          ctx.lineWidth = aspect === "square" ? 18 : 28;
-          ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
-          
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
-          drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
-        } else if (tpl === "crimson") {
-          ctx.strokeStyle = "#b91c1c"; // deep crimson
-          ctx.lineWidth = aspect === "square" ? 18 : 28;
-          ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
-          
-          ctx.strokeStyle = "#fbbf24";
-          ctx.lineWidth = 3;
-          ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
-          drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
-        } else if (tpl === "peacock") {
-          ctx.strokeStyle = "#0f766e"; // peacock teal
-          ctx.lineWidth = aspect === "square" ? 18 : 28;
-          ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
-          
-          ctx.strokeStyle = "#f59e0b";
-          ctx.lineWidth = 3;
-          ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
-          drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
-        } else if (tpl === "white") {
-          ctx.strokeStyle = "#94a3b8"; // clean silver
-          ctx.lineWidth = aspect === "square" ? 12 : 20;
-          ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
-          
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-          ctx.lineWidth = 2;
-          ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
-          drawCanvasCorners(ctx, w, h, borderPadding, "#cbd5e1");
+        if (!isPoster) {
+          if (tpl === "golden") {
+            ctx.strokeStyle = "#fbbf24";
+            ctx.lineWidth = aspect === "square" ? 18 : 28;
+            ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+            
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
+            drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
+          } else if (tpl === "crimson") {
+            ctx.strokeStyle = "#b91c1c"; // deep crimson
+            ctx.lineWidth = aspect === "square" ? 18 : 28;
+            ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+            
+            ctx.strokeStyle = "#fbbf24";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
+            drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
+          } else if (tpl === "peacock") {
+            ctx.strokeStyle = "#0f766e"; // peacock teal
+            ctx.lineWidth = aspect === "square" ? 18 : 28;
+            ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+            
+            ctx.strokeStyle = "#f59e0b";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
+            drawCanvasCorners(ctx, w, h, borderPadding, "#fbbf24");
+          } else if (tpl === "white") {
+            ctx.strokeStyle = "#94a3b8"; // clean silver
+            ctx.lineWidth = aspect === "square" ? 12 : 20;
+            ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+            
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(borderPadding, borderPadding, w - borderPadding * 2, h - borderPadding * 2);
+            drawCanvasCorners(ctx, w, h, borderPadding, "#cbd5e1");
+          }
+        } else {
+          // Minimal borders for poster layout
+          ctx.strokeStyle = "rgba(251, 191, 36, 0.2)";
+          ctx.lineWidth = 6;
+          ctx.strokeRect(3, 3, w - 6, h - 6);
         }
 
+        // Fetch poster typography layout settings
+        const posterTypography = getPosterTypography(language, aspect, isPoster);
+
         // Render Typography (Title Header)
+        const headerTitle = isPoster 
+          ? (isHi ? selectedPoster.titleHindi : selectedPoster.title)
+          : (isHi ? "🙏 आज का दिव्य दर्शन 🙏" : "🙏 Today's Daily Darshan 🙏");
+        const headerSub = isPoster
+          ? (isHi ? selectedPoster.subtitleHindi : selectedPoster.subtitle)
+          : (isHi ? `${todayDarshan.deityHindi} • ${todayDarshan.templeNameHindi}` : `${todayDarshan.deity} • ${todayDarshan.templeName}`);
+
+        // Configure high-contrast drop shadow for headers to ensure legibility
+        ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 3;
+
         ctx.textAlign = "center";
         ctx.fillStyle = "#ffffff";
-        ctx.font = `bold ${aspect === "square" ? "42px" : "48px"} serif`;
-        ctx.fillText(isHi ? "🙏 आज का दिव्य दर्शन 🙏" : "🙏 Today's Daily Darshan 🙏", w / 2, aspect === "square" ? 95 : 170);
+        ctx.font = `bold ${posterTypography.titleSize}px ${posterTypography.titleFont}`;
+        ctx.fillText(headerTitle, w / 2, aspect === "square" ? 95 : 170);
 
         ctx.fillStyle = tpl === "white" ? "#cbd5e1" : "#fbbf24";
-        ctx.font = `italic ${aspect === "square" ? "26px" : "32px"} Georgia, serif`;
-        const activeDeity = isHi ? todayDarshan.deityHindi : todayDarshan.deity;
-        const activeTemple = isHi ? todayDarshan.templeNameHindi : todayDarshan.templeName;
-        ctx.fillText(`${activeDeity} • ${activeTemple}`, w / 2, aspect === "square" ? 140 : 225);
+        ctx.font = `normal ${posterTypography.subtitleSize}px ${posterTypography.subtitleFont}`;
+        ctx.fillText(headerSub, w / 2, aspect === "square" ? 140 : 225);
 
-        // Devotee photo rendering or Om glyph symbol
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // Devotee photo rendering scale coordinates
+        const scaleY = aspect === "square" ? (1080 / 1920) : 1;
         const hasPhoto = !!userPhoto;
-        const radius = aspect === "square" ? 170 : 210; // avatar dimensions
-        const avatarSize = aspect === "square" ? 310 : 450;
-        const centerX = w / 2;
+        const radius = isPoster
+          ? selectedPoster.photoPosition.radius * 2
+          : (aspect === "square" ? 170 : 210);
+        const avatarSize = isPoster
+          ? selectedPoster.photoPosition.y * scaleY
+          : (aspect === "square" ? 310 : 450);
+        const centerX = isPoster ? selectedPoster.photoPosition.x : w / 2;
 
         const drawQuoteBlock = () => {
-          // Render Quote Content
-          ctx.textAlign = "center";
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `italic ${aspect === "square" ? "30px" : "36px"} Georgia, serif`;
-          
-          const rawQuote = isHi ? todayDarshan.quoteHindi : todayDarshan.quote;
-          const words = rawQuote.split(" ");
-          let currentLine = "";
-          const lines = [];
-          const maxLineWidth = w - 180;
-          const lineHeight = aspect === "square" ? 44 : 52;
+          const personalizedName = userName.trim() ? userName.trim() : (isHi ? "हरि भक्त" : "Devotee");
+          const bannerY = isPoster
+            ? selectedPoster.namePosition.y * scaleY
+            : (aspect === "square" ? 760 : 1240);
 
-          for (let i = 0; i < words.length; i++) {
-            const testLine = currentLine + words[i] + " ";
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxLineWidth && i > 0) {
-              lines.push(currentLine);
-              currentLine = words[i] + " ";
-            } else {
-              currentLine = testLine;
-            }
-          }
-          lines.push(currentLine);
+          if (isPoster) {
+            // Draw a beautiful glassmorphic devotee banner for posters
+            const isWhiteTheme = tpl === "white";
+            ctx.fillStyle = isWhiteTheme ? "rgba(15, 23, 42, 0.85)" : "rgba(12, 5, 2, 0.85)";
+            ctx.strokeStyle = isWhiteTheme ? "rgba(203, 213, 225, 0.5)" : "rgba(251, 191, 36, 0.5)";
+            ctx.lineWidth = 3;
+            ctx.textBaseline = "middle";
 
-          let startY = aspect === "square" ? 560 : 880;
-          lines.slice(0, 3).forEach((lineText) => {
-            ctx.fillText(lineText.trim(), w / 2, startY);
-            startY += lineHeight;
-          });
+            const resolvedFontString = fitTextToWidth(
+              ctx,
+              personalizedName,
+              w - 240, // maximum width limit
+              posterTypography.nameSize,
+              posterTypography.nameFont,
+              'bold'
+            );
+            ctx.font = resolvedFontString;
 
-          // Devotee Personalization Name Banner
-          let personalizedName = "";
-          const cleanedName = userName.trim();
-          
-          if (cleanedName) {
-            if (blessingType === "parents") {
-              personalizedName = isHi ? `${cleanedName} एवं माता-पिता हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Parents`;
-            } else if (blessingType === "family") {
-              personalizedName = isHi ? `${cleanedName} एवं सपरिवार हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Family`;
-            } else if (blessingType === "friends") {
-              personalizedName = isHi ? `${cleanedName} एवं मित्रों हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Friends`;
-            } else if (blessingType === "universal") {
-              personalizedName = isHi ? `सर्वे भवन्तु सुखिनः (द्वारा: ${cleanedName})` : `Peace & Blessings for All (by ${cleanedName})`;
-            } else {
-              personalizedName = isHi ? `${cleanedName} जी हेतु आशीर्वाद` : `Blessings for ${cleanedName}`;
-            }
+            const fontSizeMatch = resolvedFontString.match(/(\d+)px/);
+            const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : posterTypography.nameSize;
+
+            const nameWidth = ctx.measureText(personalizedName).width;
+            const bannerW = nameWidth + 80;
+            const bannerH = fontSize + 32;
+            const bannerX = w / 2 - bannerW / 2;
+            const rectY = bannerY - bannerH / 2;
+
+            // Clear shadow for banner background
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            ctx.beginPath();
+            ctx.roundRect(bannerX, rectY, bannerW, bannerH, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            // Set high-contrast text shadow for devotee name
+            ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 3;
+
+            ctx.fillStyle = isWhiteTheme ? "#ffffff" : "#fbbf24";
+            ctx.fillText(personalizedName, w / 2, bannerY);
+            
+            // Reset textBaseline and shadow
+            ctx.textBaseline = "alphabetic";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Render quote below name using fitMultiLineText
+            ctx.fillStyle = "#ffffff";
+            const rawQuote = isHi ? selectedPoster.quoteHindi : selectedPoster.quote;
+            const quoteFont = `normal ${posterTypography.quoteSize}px ${posterTypography.quoteFont}`;
+            const quoteCenterY = bannerY + (aspect === "square" ? 90 : 130);
+            
+            // Set text shadow for quote
+            ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
+
+            const quoteLines = fitMultiLineText(
+              ctx,
+              rawQuote,
+              w - 180,
+              quoteCenterY,
+              posterTypography.lineHeight,
+              language,
+              quoteFont,
+              2
+            );
+
+            quoteLines.forEach((line) => {
+              ctx.fillText(line.text, w / 2, line.y);
+            });
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
           } else {
-            if (blessingType === "parents") personalizedName = isHi ? "माता-पिता हेतु दिव्य आशीर्वाद" : "Divine Blessings for Parents";
-            else if (blessingType === "family") personalizedName = isHi ? "परिवार हेतु दिव्य आशीर्वाद" : "Divine Blessings for Family";
-            else if (blessingType === "friends") personalizedName = isHi ? "प्रिय मित्रों हेतु दिव्य आशीर्वाद" : "Divine Blessings for Friends";
-            else if (blessingType === "universal") personalizedName = isHi ? "सर्वे भवन्तु सुखिनः (विश्व शांति)" : "Peace & Blessings for All";
-            else personalizedName = isHi ? "हरि भक्त हेतु दिव्य आशीर्वाद" : "Divine Blessings for Devotee";
+            // Draw original quote block using fitMultiLineText
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#ffffff";
+            
+            // Set shadow for quote
+            ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 2;
+
+            const rawQuote = isHi ? todayDarshan.quoteHindi : todayDarshan.quote;
+            const quoteFont = `normal ${aspect === "square" ? 30 : 36}px ${posterTypography.quoteFont}`;
+            const quoteCenterY = aspect === "square" ? 620 : 980;
+            
+            const quoteLines = fitMultiLineText(
+              ctx,
+              rawQuote,
+              w - 180,
+              quoteCenterY,
+              aspect === "square" ? 44 : 52,
+              language,
+              quoteFont,
+              3
+            );
+
+            quoteLines.forEach((line) => {
+              ctx.fillText(line.text, w / 2, line.y);
+            });
+
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Devotee Personalization Name Banner
+            let bannerText = "";
+            const cleanedName = userName.trim();
+            if (cleanedName) {
+              if (blessingType === "parents") {
+                bannerText = isHi ? `${cleanedName} एवं माता-पिता हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Parents`;
+              } else if (blessingType === "family") {
+                bannerText = isHi ? `${cleanedName} एवं सपरिवार हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Family`;
+              } else if (blessingType === "friends") {
+                bannerText = isHi ? `${cleanedName} एवं मित्रों हेतु आशीर्वाद` : `Blessings for ${cleanedName} & Friends`;
+              } else if (blessingType === "universal") {
+                bannerText = isHi ? `सर्वे भवन्तु सुखिनः (द्वारा: ${cleanedName})` : `Peace & Blessings for All (by ${cleanedName})`;
+              } else {
+                bannerText = isHi ? `${cleanedName} जी हेतु आशीर्वाद` : `Blessings for ${cleanedName}`;
+              }
+            } else {
+              if (blessingType === "parents") bannerText = isHi ? "माता-पिता हेतु दिव्य आशीर्वाद" : "Divine Blessings for Parents";
+              else if (blessingType === "family") bannerText = isHi ? "परिवार हेतु दिव्य आशीर्वाद" : "Divine Blessings for Family";
+              else if (blessingType === "friends") bannerText = isHi ? "प्रिय मित्रों हेतु दिव्य आशीर्वाद" : "Divine Blessings for Friends";
+              else if (blessingType === "universal") bannerText = isHi ? "सर्वे भवन्तु सुखिनः (विश्व शांति)" : "Peace & Blessings for All";
+              else bannerText = isHi ? "हरि भक्त हेतु दिव्य आशीर्वाद" : "Divine Blessings for Devotee";
+            }
+
+            // Draw clean glassmorphic banner for devotee
+            const isWhiteTheme = tpl === "white";
+            ctx.fillStyle = isWhiteTheme ? "rgba(15, 23, 42, 0.85)" : "rgba(12, 5, 2, 0.85)";
+            ctx.strokeStyle = isWhiteTheme ? "rgba(203, 213, 225, 0.5)" : "rgba(251, 191, 36, 0.5)";
+            ctx.lineWidth = 3;
+            
+            // Limit name banner size using fitTextToWidth
+            const targetFontSize = aspect === "square" ? 34 : 40;
+            const resolvedFontString = fitTextToWidth(
+              ctx,
+              bannerText,
+              w - 240,
+              targetFontSize,
+              posterTypography.nameFont,
+              'bold'
+            );
+            ctx.font = resolvedFontString;
+
+            const fontSizeMatch = resolvedFontString.match(/(\d+)px/);
+            const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : targetFontSize;
+            
+            const textWidth = ctx.measureText(bannerText).width;
+            const rectWidth = textWidth + 80;
+            const bannerH = fontSize + 32;
+            const rectX = w / 2 - rectWidth / 2;
+            const rectY = bannerY - bannerH / 2;
+            
+            ctx.beginPath();
+            ctx.roundRect(rectX, rectY, rectWidth, bannerH, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            // Set high-contrast text shadow for devotee name
+            ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 3;
+
+            ctx.fillStyle = isWhiteTheme ? "#ffffff" : "#fbbf24";
+            ctx.textBaseline = "middle";
+            ctx.fillText(bannerText, w / 2, bannerY);
+
+            // Reset textBaseline and shadow
+            ctx.textBaseline = "alphabetic";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
           }
 
-          const bannerY = aspect === "square" ? 760 : 1240;
-          ctx.fillStyle = "rgba(251, 191, 36, 0.08)";
-          ctx.strokeStyle = "rgba(251, 191, 36, 0.25)";
-          ctx.lineWidth = 3;
-          ctx.font = `bold ${aspect === "square" ? "34px" : "40px"} serif`;
-          
-          const textWidth = ctx.measureText(personalizedName).width;
-          const rectWidth = Math.min(w - 200, textWidth + 80);
-          
-          ctx.beginPath();
-          // Draw rounded rectangle for text border banner
-          ctx.roundRect(w / 2 - rectWidth / 2, bannerY - 48, rectWidth, 76, 16);
-          ctx.fill();
-          ctx.stroke();
+          // Add clean watermark at bottom (slightly larger, shadow supported)
+          ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+          ctx.font = `bold ${aspect === "square" ? 22 : 26}px ${posterTypography.subtitleFont}`;
+          ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetY = 1;
+          ctx.fillText("✨ Created with Raghavam", w / 2, h - (aspect === "square" ? 60 : 100));
 
-          ctx.fillStyle = tpl === "white" ? "#e2e8f0" : "#fbbf24";
-          ctx.fillText(personalizedName, w / 2, bannerY + 4);
-
-          // Add clean watermark at bottom
-          ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-          ctx.font = `bold ${aspect === "square" ? "18px" : "24px"} sans-serif`;
-          ctx.fillText("✨ Created with Raghavam", w / 2, h - (aspect === "square" ? 50 : 100));
+          // Reset shadow
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetY = 0;
 
           // Complete Promise with png data url
           resolve(canvas.toDataURL("image/png"));
@@ -1148,20 +1517,305 @@ export default function BlessingsPage() {
           // Fallback glyph
           ctx.fillStyle = tpl === "white" ? "rgba(203, 213, 225, 0.12)" : "rgba(251, 191, 36, 0.12)";
           ctx.beginPath();
-          ctx.arc(centerX, avatarSize, 60, 0, Math.PI * 2);
+          ctx.arc(centerX, avatarSize, radius / 2, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.fillStyle = tpl === "white" ? "#e2e8f0" : "#fbbf24";
-          ctx.font = "bold 56px serif";
-          ctx.fillText("ॐ", centerX, avatarSize + 18);
+          ctx.font = getCanvasFont(language, aspect === "square" ? 42 : 56, 'heading', true);
+          ctx.fillText("ॐ", centerX, avatarSize + (aspect === "square" ? 14 : 18));
 
           drawQuoteBlock();
         }
       };
 
       deityImg.onerror = (err) => reject(err);
+      })().catch(reject);
     });
   };
+
+  const drawPlaceholderOm = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
+    ctx.fillStyle = "rgba(251, 191, 36, 0.15)";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = getCanvasFont(language, 80, 'heading', true);
+    ctx.textAlign = "center";
+    ctx.fillText("ॐ", x, y + 25);
+  };
+
+  const compilePoster = (poster: PosterTemplate, aspect: "status" | "square"): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      (async () => {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          toast.error("Graphics compiler not initialized.");
+          return reject("No canvas context");
+        }
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("No 2d context");
+
+      // Load fonts using Font Loading API to guarantee exact layout matches
+      try {
+        if (language === 'hi' || language === 'mr') {
+          await document.fonts.load("bold 60px 'Tiro Devanagari Hindi'");
+          await document.fonts.load("bold 56px 'Noto Sans Devanagari'");
+          await document.fonts.load("normal 34px 'Noto Sans Devanagari'");
+          await document.fonts.load("bold 34px 'Noto Sans Devanagari'");
+        } else if (language === 'gu') {
+          await document.fonts.load("bold 60px 'Noto Sans Gujarati'");
+          await document.fonts.load("normal 34px 'Noto Sans Gujarati'");
+          await document.fonts.load("bold 34px 'Noto Sans Gujarati'");
+        } else if (language === 'bn') {
+          await document.fonts.load("bold 60px 'Noto Sans Bengali'");
+          await document.fonts.load("normal 34px 'Noto Sans Bengali'");
+          await document.fonts.load("bold 34px 'Noto Sans Bengali'");
+        } else if (language === 'ta') {
+          await document.fonts.load("bold 60px 'Noto Sans Tamil'");
+          await document.fonts.load("normal 34px 'Noto Sans Tamil'");
+          await document.fonts.load("bold 34px 'Noto Sans Tamil'");
+        } else {
+          await document.fonts.load("bold 60px 'Faculty Glyphic'");
+          await document.fonts.load("bold 56px 'Inter'");
+          await document.fonts.load("normal 34px 'Inter'");
+          await document.fonts.load("bold 34px 'Inter'");
+        }
+        await document.fonts.ready;
+      } catch (err) {
+        console.warn("Font loading API error, falling back:", err);
+      }
+
+      // Configure anti-aliasing and sharpness
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      const w = 1080;
+      const h = aspect === "square" ? 1080 : 1920;
+      canvas.width = w;
+      canvas.height = h;
+
+      // Draw black background
+      ctx.fillStyle = "#0c0503";
+      ctx.fillRect(0, 0, w, h);
+
+      // Load Template Image
+      const templateImg = new Image();
+      templateImg.crossOrigin = "anonymous";
+      templateImg.src = poster.imageUrl;
+
+      templateImg.onload = () => {
+        // Draw template image with cover aspect ratio
+        const imageRatio = templateImg.width / templateImg.height;
+        const canvasRatio = w / h;
+        let drawWidth = w;
+        let drawHeight = h;
+        let drawX = 0;
+        let drawY = 0;
+
+        if (imageRatio > canvasRatio) {
+          drawWidth = h * imageRatio;
+          drawX = (w - drawWidth) / 2;
+        } else {
+          drawHeight = w / imageRatio;
+          drawY = (h - drawHeight) / 2;
+        }
+
+        ctx.drawImage(templateImg, drawX, drawY, drawWidth, drawHeight);
+
+        // If aspect is square, shift coordinates relative to crop centering
+        const photoX = poster.photoPosition.x;
+        let photoY = poster.photoPosition.y;
+        const nameX = poster.namePosition.x;
+        let nameY = poster.namePosition.y;
+
+        if (aspect === "square") {
+          const yOffset = 420;
+          photoY = Math.max(100, Math.min(980, photoY - yOffset));
+          nameY = Math.max(150, Math.min(1030, nameY - yOffset));
+        }
+
+        const radius = poster.photoPosition.radius;
+
+        const posterTypography = getPosterTypography(language, aspect, true);
+
+        const drawNameText = () => {
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const displayName = userName.trim() ? userName : (isHi ? "भक्त" : "Devotee");
+
+          // Fit text size dynamically using fitTextToWidth using posterTypography.nameSize
+          const resolvedFontString = fitTextToWidth(
+            ctx,
+            displayName,
+            w - 240, // max width limit for safety
+            posterTypography.nameSize,
+            posterTypography.nameFont,
+            'bold'
+          );
+          ctx.font = resolvedFontString;
+          
+          const fontSizeMatch = resolvedFontString.match(/(\d+)px/);
+          const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : posterTypography.nameSize;
+
+          const nameWidth = ctx.measureText(displayName).width;
+          const bannerW = nameWidth + 80;
+          const bannerH = fontSize + 32;
+          const bannerX = nameX - bannerW / 2;
+          const bannerY = nameY - bannerH / 2;
+
+          // Clear shadow for banner background
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Rich dark glassmorphic style
+          ctx.fillStyle = "rgba(12, 5, 2, 0.85)";
+          ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+          ctx.fill();
+          ctx.stroke();
+
+          // Set high-contrast text shadow for devotee name
+          ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 3;
+
+          ctx.fillStyle = "#fbbf24";
+          ctx.fillText(displayName, nameX, nameY);
+
+          // Reset textBaseline and shadow
+          ctx.textBaseline = "alphabetic";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Watermark - slightly larger and shadow supported
+          ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+          ctx.font = `bold 24px ${posterTypography.subtitleFont}`;
+          ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetY = 1;
+          ctx.fillText("✨ Created with Raghavam", w / 2, h - 60);
+
+          // Reset shadow
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetY = 0;
+
+          resolve(canvas.toDataURL("image/png"));
+        };
+
+        if (userPhoto) {
+          const avatarImg = new Image();
+          avatarImg.src = userPhoto;
+          avatarImg.onload = () => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(photoX, photoY, radius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            const avatarRatio = avatarImg.width / avatarImg.height;
+            let cropW = radius * 2;
+            let cropH = radius * 2;
+            let cropX = photoX - radius;
+            let cropY = photoY - radius;
+
+            if (avatarRatio > 1) {
+              cropW = radius * 2 * avatarRatio;
+              cropX = photoX - cropW / 2;
+            } else {
+              cropH = radius * 2 / avatarRatio;
+              cropY = photoY - cropH / 2;
+            }
+
+            ctx.drawImage(avatarImg, cropX, cropY, cropW, cropH);
+            ctx.restore();
+
+            ctx.strokeStyle = "#fbbf24";
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(photoX, photoY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            drawNameText();
+          };
+          avatarImg.onerror = () => {
+            drawPlaceholderOm(ctx, photoX, photoY, radius);
+            drawNameText();
+          };
+        } else {
+          drawPlaceholderOm(ctx, photoX, photoY, radius);
+          drawNameText();
+        }
+      };
+
+      templateImg.onerror = (err) => reject(err);
+      })().catch(reject);
+    });
+  };
+
+  const handleDownloadPoster = async () => {
+    if (!selectedPoster) return;
+    try {
+      toast.info(isHi ? "छवि तैयार की जा रही है..." : "Generating poster...");
+      const dataUrl = await compilePoster(selectedPoster, generationType);
+      
+      const link = document.createElement("a");
+      link.download = `${selectedPoster.title.replace(/\s+/g, "_")}_Personalized.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      saveBlessingToGallery(dataUrl);
+      completeTodaySadhana();
+      toast.success(isHi ? "पावन पोस्टर सेव हो गया!" : "Spiritual poster saved successfully!");
+    } catch (e) {
+      console.error(e);
+      toast.error(isHi ? "डाउनलोड करने में विफल" : "Failed to compile poster image.");
+    }
+  };
+
+  const handleSharePosterNative = async () => {
+    if (!selectedPoster) return;
+    try {
+      toast.info(isHi ? "साझा करने के लिए छवि तैयार हो रही है..." : "Compiling image to share...");
+      const dataUrl = await compilePoster(selectedPoster, generationType);
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${selectedPoster.title.replace(/\s+/g, "_")}.png`, { type: "image/png" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: isHi ? `${selectedPoster.titleHindi}` : `${selectedPoster.title}`,
+          text: isHi 
+            ? `राघवम् से प्राप्त करें आज का ${selectedPoster.titleHindi} पावन आशीर्वाद।` 
+            : `Receive today's divine ${selectedPoster.title} blessing from Raghavam.`
+        });
+        completeTodaySadhana();
+      } else {
+        await copyTextToClipboard(window.location.origin);
+        toast.info(isHi ? "लिंक कॉपी हो गया! पोस्टर डाउनलोड हो रहा है।" : "Sharing unsupported. Copying link & downloading image.");
+        handleDownloadPoster();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error(isHi ? "साझा करने में विफल" : "Failed to share poster.");
+    }
+  };
+
 
   const handleDownloadSadhana = async () => {
     if (isTemplatePremium(selectedTemplate)) {
@@ -1174,7 +1828,10 @@ export default function BlessingsPage() {
       const dataUrl = await compileBlessingCard();
       
       const link = document.createElement("a");
-      link.download = `${todayDarshan.deity.replace(/\\s+/g, "_")}_Daily_Blessing.png`;
+      const filename = selectedPoster
+        ? `${selectedPoster.title.replace(/\s+/g, "_")}_Personalized.png`
+        : `${todayDarshan.deity.replace(/\s+/g, "_")}_Daily_Blessing.png`;
+      link.download = filename;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
@@ -1257,7 +1914,7 @@ export default function BlessingsPage() {
       const updated = [dataUrl, ...savedBlessings].slice(0, 16);
       setSavedBlessings(updated);
       localStorage.setItem("hk_saved_blessings_v2", JSON.stringify(updated));
-    } catch (_) {}
+    } catch (_) { /* ignore localstorage error */ }
   };
 
   const handleWallpaperAction = (wp: DevotionalWallpaper) => {
@@ -1584,311 +2241,450 @@ export default function BlessingsPage() {
         {/* TAB 1: DIVINE BLESSINGS LETTER PATRA GENERATOR            */}
         {/* ========================================================= */}
         {activeTab === "maker" && (
-          <div className="w-full space-y-6 flex flex-col items-center animate-fade-in">
-            {/* Title Description */}
-            <div className="text-center">
-              <h2 className="font-serif text-base font-bold text-amber-400">
-                {isHi ? "दिव्य आशीर्वाद पत्र निर्माण" : "Create Divine Blessing Card"}
-              </h2>
-              <p className="text-xs text-amber-200/60 font-sans mt-1">
-                {isHi ? "स्वयं अथवा परिवार के लिए आज का पावन आशीर्वाद पत्र तैयार करें और व्हाट्सएप पर साझा करें" : "Personalize daily blessings and share sacred cards on your WhatsApp Status"}
-              </p>
-            </div>
-
-            {/* Config Card options layout */}
-            <div className="w-full bg-[#1b0d07]/40 border border-amber-950/30 rounded-3xl p-5 shadow-2xl flex flex-col gap-4">
-              
-              {/* Devotee Input */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-amber-200/50 uppercase tracking-widest font-sans font-black">
-                  {isHi ? "श्रद्धालु / भक्त का नाम" : "Devotee Name (Will appear on card)"}
-                </label>
-                <input
-                  type="text"
-                  placeholder={isHi ? "उदा. राजेश कुमार" : "e.g., Rajesh Kumar"}
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  className="bg-black/40 border border-amber-500/15 focus:border-amber-500/45 rounded-xl px-4 py-3 text-xs text-amber-100 focus:outline-none placeholder:text-amber-200/20 tracking-wide font-sans font-medium"
-                />
-              </div>
-
-              {/* Blessing Recipient target */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-amber-200/50 uppercase tracking-widest font-sans font-black">
-                  {isHi ? "आशीर्वाद किसके लिए है?" : "Who is this blessing for?"}
-                </label>
-                <div className="grid grid-cols-2 gap-1.5 font-sans text-xs">
-                  {[
-                    { key: "self", hi: "मेरे स्वयं हेतु", en: "Personal" },
-                    { key: "parents", hi: "माता-पिता हेतु", en: "For Parents" },
-                    { key: "family", hi: "सपरिवार हेतु", en: "For Family" },
-                    { key: "friends", hi: "मित्रों हेतु", en: "For Friends" },
-                    { key: "universal", hi: "सर्व कल्याण (सभी)", en: "Universal Peace" }
-                  ].map((opt) => (
-                    <button
-                      key={opt.key}
-                      onClick={() => setBlessingType(opt.key as any)}
-                      className={`py-2 px-3 rounded-xl border text-center transition-all truncate ${
-                        blessingType === opt.key 
-                          ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
-                          : "border-amber-500/10 bg-black/25 text-amber-200/60"
-                      }`}
-                    >
-                      {isHi ? opt.hi : opt.en}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Custom Image Avatar Attachment */}
-              <div className="flex items-center justify-between bg-black/25 border border-amber-950/20 rounded-2xl p-3 select-none">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 relative overflow-hidden">
-                    {userPhoto ? (
-                      <img src={userPhoto} alt="devotee avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <UserIcon className="w-5 h-5 opacity-70" />
-                    )}
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] text-amber-200/40 font-bold uppercase tracking-wider font-sans leading-none">
-                      Custom Avatar
-                    </span>
-                    <span className="text-xs text-amber-200 font-bold mt-1.5 leading-none">
-                      {userPhoto 
-                        ? (isHi ? "फ़ोटो सफलतापूर्वक संलग्न" : "Custom Photo Attached") 
-                        : (isHi ? "अपनी फोटो जोड़ें (वैकल्पिक)" : "Add your photo (optional)")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {userPhoto && (
-                    <button
-                      onClick={() => setUserPhoto(null)}
-                      className="px-2.5 py-1.5 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 text-[9px] uppercase tracking-widest font-sans font-black rounded-lg transition-all focus:outline-none"
-                    >
-                      {isHi ? "हटाएं" : "Remove"}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-1.5 border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 text-amber-400 text-[9px] uppercase tracking-widest font-sans font-black rounded-lg transition-all focus:outline-none"
+          <div className="w-full space-y-6 flex flex-col items-center animate-fade-in select-none">
+            {/* SCREEN 1: BROWSE FEED */}
+            <div className="w-full space-y-6 flex flex-col items-center animate-fade-in">
+                
+                {/* Good Morning Greeting Header */}
+                <div 
+                  className="w-full rounded-3xl p-5 text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 border border-amber-500/20 group/card"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(32,13,5,0.9) 0%, rgba(20,7,3,0.95) 50%, rgba(12,3,1,0.98) 100%)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.6)'
+                  }}
+                >
+                  {/* Glow orbs */}
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-pulse duration-4000" />
+                  <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-orange-600/8 rounded-full blur-3xl pointer-events-none" />
+                  
+                  {/* Avatar circle */}
+                  <div 
+                    onClick={() => setShowSetupSheet(true)}
+                    className="w-14 h-14 rounded-full border-2 border-amber-500/40 hover:border-amber-400 bg-stone-950/80 flex items-center justify-center overflow-hidden shrink-0 shadow-lg shadow-amber-500/10 transition-all hover:scale-105 active:scale-95 cursor-pointer relative group"
                   >
-                    {userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "चुनें" : "Upload")}
-                  </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                  />
-                </div>
-              </div>
+                    {userPhoto ? (
+                      <img src={userPhoto} alt="devotee" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    ) : (
+                      <span className="text-2xl font-serif text-amber-500/70">ॐ</span>
+                    )}
+                    <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                      <Camera className="w-3.5 h-3.5 text-amber-300" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col min-w-0 z-10">
+                    <span className="text-[9px] uppercase font-sans font-black text-amber-500/60 tracking-widest leading-none mb-1.5">
+                      {isHi ? "आज का आशीर्वाद" : "Today's Blessing"}
+                    </span>
+                    <h2 
+                      onClick={() => setShowSetupSheet(true)}
+                      className="font-serif text-base font-bold text-amber-100 leading-tight flex items-center gap-1.5 cursor-pointer hover:text-amber-200 transition-colors"
+                    >
+                      <span>{isHi ? "शुभ प्रभात," : "Jai Shri Ram 🙏"}</span> 
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 drop-shadow-sm font-black">
+                        {userName || (isHi ? "हरि भक्त" : "Devotee")}
+                      </span>
+                    </h2>
+                    <p className="text-[10px] text-amber-200/50 font-sans leading-tight mt-1">
+                      {isHi ? "ॐ नमः शिवाय। दिन मंगलमय हो ✨" : "May your day be filled with peace ✨"}
+                    </p>
+                  </div>
 
-              {/* Temple Border Themes selector */}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-amber-200/50 uppercase tracking-widest font-sans font-black">
-                  {isHi ? "मंदिर गर्भगृह बॉर्डर पैक (Themes)" : "Sacred Garbhagriha Border Themes"}
-                </label>
-                <div className="grid grid-cols-2 gap-2 font-sans text-[11px]">
+                  {/* Edit/Setup profile button */}
+                  <button
+                    onClick={() => setShowSetupSheet(true)}
+                    className="ml-auto shrink-0 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all z-10 flex items-center gap-1 active:scale-95 cursor-pointer"
+                  >
+                    <UserIcon className="w-3 h-3" />
+                    <span>{userName ? (isHi ? "बदलें" : "Edit") : (isHi ? "जोड़ें" : "Setup")}</span>
+                  </button>
+                </div>
+
+                {/* Featured Hero Card — Cinematic */}
+                {(() => {
+                  const heroPoster = POSTER_TEMPLATES.find(p => p.id === "poster-shyam-1") || POSTER_TEMPLATES[0];
+                  return (
+                    <div className="w-full rounded-[2rem] overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.7)] cursor-pointer group flex flex-col md:flex-row md:h-[380px]" style={{border: '1px solid rgba(245,158,11,0.18)'}} onClick={() => setSelectedPoster(heroPoster)}>
+                      {/* Left: Image Container */}
+                      <div className="w-full aspect-[3/4] md:aspect-auto md:w-1/2 md:h-full relative overflow-hidden shrink-0">
+                        <img src={heroPoster.imageUrl} alt={heroPoster.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
+                        
+                        {/* Top label */}
+                        <div className="absolute top-4 left-4 flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest font-sans" style={{background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24'}}>
+                            ✨ {isHi ? "आज का विशेष" : "Today's Featured"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right/Overlay: Details and action */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 md:relative md:inset-auto md:w-1/2 md:h-full md:p-8 flex flex-col justify-end md:justify-between hero-card-overlay">
+                        {/* Group devotee row & quote for better flex spacing on desktop */}
+                        <div className="flex flex-col text-left gap-1 md:gap-4">
+                          {/* Devotee row */}
+                          <div className="flex items-center gap-2.5 mb-2 md:mb-0">
+                            <div className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shrink-0" style={{border: '1.5px solid rgba(251,191,36,0.55)', boxShadow: '0 0 8px rgba(251,191,36,0.25)'}}>
+                              {userPhoto ? (
+                                <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-sm md:text-base font-serif text-amber-500/70">ॐ</span></div>
+                              )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-[9px] md:text-[10px] font-sans font-black text-amber-500/70 uppercase tracking-widest leading-none">{isHi ? "पावन आशीर्वाद पत्र" : "Sacred Blessing"}</span>
+                              <span className="text-xs md:text-sm font-serif font-black text-amber-300 truncate leading-tight drop-shadow mt-0.5">
+                                {userName || (isHi ? "हरि भक्त" : "Devotee")}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-[10px] md:text-xs font-serif italic text-amber-200/75 line-clamp-2 md:line-clamp-none leading-relaxed mb-4 md:mb-0">
+                            {isHi ? heroPoster.quoteHindi : heroPoster.quote}
+                          </p>
+                        </div>
+
+                        {/* Action row */}
+                        <div className="flex items-center justify-between gap-3 text-left">
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-serif text-sm md:text-base font-bold text-amber-200 leading-tight truncate">{isHi ? heroPoster.titleHindi : heroPoster.title}</span>
+                            <span className="text-[9px] md:text-[10px] font-sans text-amber-500/80 font-bold leading-none mt-1">{isHi ? "बाबा श्याम आशीर्वाद" : "Khatu Shyam Blessings"}</span>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedPoster(heroPoster); }}
+                            className="shrink-0 px-4 py-2.5 md:px-5 md:py-3 font-sans font-black text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center gap-1.5 cursor-pointer"
+                            style={{background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a0a02', boxShadow: '0 4px 16px rgba(245,158,11,0.35)'}}
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>{isHi ? "अपना बनाएं" : "Create Mine"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Categories Bar Row */}
+                <div className="w-full flex items-center justify-start md:justify-center gap-2.5 md:gap-4 overflow-x-auto py-1.5 scrollbar-none">
                   {[
-                    { key: "golden", hi: "गर्भगृह स्वर्ण (Free)", en: "Garbhagriha Gold", tier: "free" },
-                    { key: "white", hi: "सात्विक रजत (Free)", en: "Sattvik White", tier: "free" },
-                    { key: "crimson", hi: "काशी सिंदूरी (Devotee)", en: "Kashi Crimson", tier: "devotee" },
-                    { key: "peacock", hi: "वृंदावन मयूर (Mahabhakt)", en: "Vrindavan Peacock", tier: "mahabhakt" }
-                  ].map((tpl) => {
-                    const isLocked = isTemplatePremium(tpl.key);
+                    { key: "all", label: isHi ? "सभी" : "For You", emoji: "❤️" },
+                    { key: "todays", label: isHi ? "आज के" : "Today's", emoji: "🌅" },
+                    { key: "good_morning", label: isHi ? "सुप्रभात" : "Morning", emoji: "☀️" },
+                    { key: "festival", label: isHi ? "पर्व" : "Festival", emoji: "🎉" },
+                    { key: "more", label: isHi ? "और" : "More", emoji: "✨" }
+                  ].map((cat) => {
+                    const isActive = selectedCategory === cat.key;
                     return (
                       <button
-                        key={tpl.key}
-                        onClick={() => setSelectedTemplate(tpl.key as any)}
-                        className={`py-3 px-2 rounded-xl border text-center transition-all flex items-center justify-center gap-1 focus:outline-none ${
-                          selectedTemplate === tpl.key 
-                            ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
-                            : "border-amber-500/10 bg-black/25 text-amber-200/60"
-                        }`}
+                        key={cat.key}
+                        onClick={() => {
+                          if (cat.key === "more") {
+                            toast.info(isHi ? "शीघ्र ही और पोस्टर उपलब्ध होंगे!" : "More templates coming soon!");
+                          } else {
+                            setSelectedCategory(cat.key as any);
+                          }
+                        }}
+                        className="py-2 px-4 rounded-full font-sans text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 flex items-center gap-1.5 shrink-0 focus:outline-none cursor-pointer"
+                        style={isActive ? {
+                          background: 'linear-gradient(135deg, rgba(251,191,36,0.2) 0%, rgba(217,119,6,0.12) 100%)',
+                          border: '1px solid rgba(251,191,36,0.4)',
+                          color: '#fbbf24',
+                          boxShadow: '0 2px 12px rgba(251,191,36,0.15)'
+                        } : {
+                          background: 'rgba(0,0,0,0.3)',
+                          border: '1px solid rgba(120,60,10,0.15)',
+                          color: 'rgba(217,180,140,0.55)'
+                        }}
                       >
-                        {isLocked && <Lock className="w-3 h-3 text-amber-500/60" />}
-                        <span>{isHi ? tpl.hi : tpl.en}</span>
+                        <span className="text-xs">{cat.emoji}</span>
+                        <span>{cat.label}</span>
                       </button>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Aspect Ratio layout switcher */}
-              <div className="flex flex-col gap-1.5 border-t border-amber-950/20 pt-4">
-                <label className="text-[10px] text-amber-200/50 uppercase tracking-widest font-sans font-black flex items-center justify-between">
-                  <span>{isHi ? "शेयरिंग लेआउट आकार" : "Sharing Layout Ratio"}</span>
-                  <span className="text-amber-500 text-[8px] bg-amber-500/10 px-2 py-0.5 rounded-full font-black">
-                    {isHi ? "व्हाट्सएप स्टेटस हेतु अनुशंसित" : "Recommended for WhatsApp Status"}
-                  </span>
-                </label>
-                <div className="flex gap-2.5 font-sans text-xs">
-                  <button
-                    onClick={() => setGenerationType("status")}
-                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none ${
-                      generationType === "status" 
-                        ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
-                        : "border-amber-500/10 bg-black/25 text-amber-200/60"
-                    }`}
-                  >
-                    <Smartphone className="w-4 h-4" />
-                    <span>{isHi ? "स्टेटस (9:16)" : "Vertical Story (9:16)"}</span>
-                  </button>
-                  <button
-                    onClick={() => setGenerationType("square")}
-                    className={`flex-1 py-3 rounded-xl border transition-all flex items-center justify-center gap-1.5 focus:outline-none ${
-                      generationType === "square" 
-                        ? "border-amber-500 bg-amber-500/10 text-amber-400 font-black" 
-                        : "border-amber-500/10 bg-black/25 text-amber-200/60"
-                    }`}
-                  >
-                    <span>⬜</span>
-                    <span>{isHi ? "स्क्वायर (1:1)" : "Square Post (1:1)"}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-2 border-t border-amber-950/20 pt-4 mt-2">
-                <button
-                  onClick={handleShareSadhana}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-sans font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-md focus:outline-none"
-                >
-                  <Share2 className="w-4 h-4 text-black" />
-                  <span>{isHi ? "व्हाट्सएप पर शेयर" : "Share on WhatsApp"}</span>
-                </button>
-                <button
-                  onClick={handleDownloadSadhana}
-                  className="px-4.5 py-3.5 border border-amber-500/20 bg-black/20 hover:bg-amber-500/10 text-amber-300 font-sans font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none"
-                >
-                  <Download className="w-4 h-4 text-amber-450" />
-                </button>
-              </div>
-
-              <p className="text-[9px] font-sans text-amber-200/30 text-center tracking-wider">
-                {isHi ? "✨ आशीर्वाद पत्र के निचले हिस्से में सूक्ष्म वॉटरमार्क संलग्न रहेगा।" : "✨ A subtle watermark will be included at the bottom of the card."}
-              </p>
-            </div>
-
-            {/* Interactive Puja Seva Tray panel */}
-            <div className="w-full bg-gradient-to-b from-[#1b0a05] to-[#0e0402] border border-amber-950/25 rounded-3xl p-5 shadow-xl flex flex-col gap-4 text-center mt-3 select-none">
-              <div>
-                <h3 className="font-serif text-sm font-bold text-amber-400">
-                  {isHi ? "सजीव मंदिर सेवा (Virtual Puja Room)" : "Virtual Temple Room (Interactive)"}
-                </h3>
-                <p className="text-[10px] text-amber-200/40 font-sans leading-relaxed mt-1">
-                  {isHi ? "आरती करें, पुष्प वर्षा करें और तानपुरा भक्तिमय धुन के साथ ध्यान मग्न हों" : "Light the Diya, ring the temple bell, offer fresh flower showers, and listen to the meditation tanpura drone"}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-sans font-black uppercase tracking-wider text-amber-200">
-                {/* Bell */}
-                <button
-                  onClick={ringBell}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
-                    isBellRinging ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                  }`}
-                >
-                  <span className={`text-2xl leading-none ${isBellRinging ? "animate-bounce" : ""}`}>🔔</span>
-                  <span className="text-[9px]">{isHi ? "घंटी" : "Bell"}</span>
-                </button>
-
-                {/* Diya */}
-                <button
-                  onClick={toggleDiya}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 relative overflow-hidden ${
-                    isDiyaLit ? "bg-amber-500/15 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                  }`}
-                >
-                  <div className="w-7 h-7 relative flex items-center justify-center">
-                    {isDiyaLit ? (
-                      <>
-                        <span className="text-2xl leading-none z-10 animate-flame">🔥</span>
-                        <img src={litDiyaImg} alt="diya base" className="w-6 h-6 absolute bottom-0 object-contain z-0 opacity-80" />
-                      </>
-                    ) : (
-                      <span className="text-xl opacity-60 leading-none">🪔</span>
-                    )}
-                  </div>
-                  <span className="text-[9px]">{isHi ? "दीपक" : "Diya"}</span>
-                </button>
-
-                {/* Flower Shower */}
-                <button
-                  onClick={showerFlowers}
-                  className="p-3 border bg-black/20 border-amber-500/10 text-amber-300/80 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all hover:bg-amber-950/20 active:scale-90"
-                >
-                  <span className="text-2xl leading-none">🌸</span>
-                  <span className="text-[9px]">{isHi ? "पुष्प" : "Flowers"}</span>
-                </button>
-
-                {/* Tanpura loop */}
-                <button
-                  onClick={toggleAmbientTanpura}
-                  className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
-                    isAudioPlaying ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                  }`}
-                >
-                  <span className={`text-2xl leading-none ${isAudioPlaying ? "animate-pulse" : "opacity-60"}`}>🪈</span>
-                  <span className="text-[9px]">{isHi ? "तानपुरा" : "Tanpura"}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* साधना पंचांग Weekly Calendar Dashboard */}
-            <div className="w-full bg-[#1b0a05]/40 border border-amber-950/30 rounded-3xl p-5 shadow-2xl flex flex-col gap-3.5 select-none">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] uppercase font-sans font-black tracking-widest text-amber-200/50">
-                  {isHi ? "साधना पंचांग (Weekly Sadhana Calendar)" : "Sadhana Calendar (Weekly Progress)"}
-                </span>
-                <span className="text-[9px] text-amber-500 font-sans font-black uppercase">
-                  {isHi ? "नित्य साधना दर्शन सूत्र" : "Nitya Sadhana Streak"}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-7 gap-1.5 font-sans">
-                {WEEKDAYS.map((w) => {
-                  // Resolve dates
-                  const currentYear = new Date().getFullYear();
-                  const currentMonth = new Date().getMonth();
-                  const sundayOffset = new Date().getDate() - new Date().getDay();
-                  const targetDate = new Date(currentYear, currentMonth, sundayOffset + w.dayNum);
-                  const dateStr = targetDate.toISOString().split("T")[0];
+                {/* Section grids of templates */}
+                <div className="w-full space-y-7">
                   
-                  const isDone = completedDates.includes(dateStr);
-                  const isToday = dateStr === todayDateString;
-
-                  return (
-                    <div 
-                      key={w.dayNum} 
-                      className={`py-2 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
-                        isDone 
-                          ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-md"
-                          : isToday 
-                          ? "bg-black/40 border-amber-500/25 text-amber-300/90 shadow-inner scale-102"
-                          : "bg-black/20 border-amber-500/5 text-stone-500"
-                      }`}
-                    >
-                      <span className="text-[9px] font-black uppercase tracking-wider">{isHi ? w.labelHi : w.label}</span>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                        isDone ? "bg-amber-500 text-black shadow" : "bg-black/35 text-amber-200/40 border border-amber-500/10"
-                      }`}>
-                        {isDone ? "✓" : targetDate.getDate()}
+                  {/* Section 1: Today's Blessings */}
+                  {(selectedCategory === "all" || selectedCategory === "todays") && (
+                    <div className="space-y-3.5 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-500 text-xs">🌅</span>
+                        <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
+                          {isHi ? "आज के पावन आशीर्वाद पत्र" : "Today's Sacred Blessings"}
+                        </h3>
                       </div>
-                      <span className="text-[7.5px] font-black text-amber-500/60 leading-none truncate max-w-full">
-                        {isHi ? getDeityHindi(w.deity) : w.deity}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
+                        {POSTER_TEMPLATES.filter(p => p.category === "todays").map((tpl) => (
+                          <div
+                            key={tpl.id}
+                            onClick={() => setSelectedPoster(tpl)}
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                            style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                          >
+                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                              <img src={tpl.imageUrl} alt={tpl.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              {/* Gradient overlay */}
+                              <div className="absolute inset-0" style={{background: 'linear-gradient(to top, rgba(5,2,1,0.92) 0%, rgba(5,2,1,0.4) 40%, transparent 70%)'}} />
+                              {/* Personalized bottom row */}
+                              <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                    {userPhoto ? (
+                                      <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500/70 font-bold">ॐ</span></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
+                                    {userName || (isHi ? "हरि भक्त" : "Devotee")}
+                                  </span>
+                                </div>
+                                <p className="text-[7.5px] md:text-[8.5px] font-serif italic text-amber-200/65 line-clamp-2 leading-tight">
+                                  {isHi ? tpl.quoteHindi : tpl.quote}
+                                </p>
+                              </div>
+                              {/* Tap indicator */}
+                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                              </div>
+                            </div>
+                            <div className="px-2.5 py-2.5">
+                              <span className="font-serif text-[11px] md:text-xs font-bold text-amber-200 truncate block">
+                                {isHi ? tpl.titleHindi : tpl.title}
+                              </span>
+                              <span className="text-[8px] md:text-[9px] font-sans text-amber-500/70 font-bold uppercase tracking-wider block mt-0.5">
+                                {isHi ? tpl.subtitleHindi : tpl.subtitle}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Section 2: Festival Specials */}
+                  {(selectedCategory === "all" || selectedCategory === "festival") && (
+                    <div className="space-y-3.5 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-500 text-xs">🎉</span>
+                        <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
+                          {isHi ? "उत्सव एवं विशेष पर्व" : "Festival Special Blessings"}
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
+                        {POSTER_TEMPLATES.filter(p => p.category === "festival").map((tpl) => (
+                          <div
+                            key={tpl.id}
+                            onClick={() => setSelectedPoster(tpl)}
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                            style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                          >
+                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                              <img src={tpl.imageUrl} alt={tpl.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <div className="absolute inset-0" style={{background: 'linear-gradient(to top, rgba(5,2,1,0.92) 0%, rgba(5,2,1,0.4) 40%, transparent 70%)'}} />
+                              <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                    {userPhoto ? (
+                                      <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500/70 font-bold">ॐ</span></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
+                                    {userName || (isHi ? "हरि भक्त" : "Devotee")}
+                                  </span>
+                                </div>
+                                <p className="text-[7.5px] md:text-[8.5px] font-serif italic text-amber-200/65 line-clamp-2 leading-tight">
+                                  {isHi ? tpl.quoteHindi : tpl.quote}
+                                </p>
+                              </div>
+                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                              </div>
+                            </div>
+                            <div className="px-2.5 py-2.5">
+                              <span className="font-serif text-[11px] md:text-xs font-bold text-amber-200 truncate block">{isHi ? tpl.titleHindi : tpl.title}</span>
+                              <span className="text-[8px] md:text-[9px] font-sans text-amber-500/70 font-bold uppercase tracking-wider block mt-0.5">{isHi ? tpl.subtitleHindi : tpl.subtitle}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Section 3: Morning Specials */}
+                  {(selectedCategory === "all" || selectedCategory === "good_morning") && (
+                    <div className="space-y-3.5 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-amber-500 text-xs">☀️</span>
+                        <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
+                          {isHi ? "सुप्रभात दर्शन आशीर्वाद पत्र" : "Morning Special Blessings"}
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
+                        {POSTER_TEMPLATES.filter(p => p.category === "good_morning").map((tpl) => (
+                          <div
+                            key={tpl.id}
+                            onClick={() => setSelectedPoster(tpl)}
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                            style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                          >
+                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                              <img src={tpl.imageUrl} alt={tpl.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <div className="absolute inset-0" style={{background: 'linear-gradient(to top, rgba(5,2,1,0.92) 0%, rgba(5,2,1,0.4) 40%, transparent 70%)'}} />
+                              <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                    {userPhoto ? (
+                                      <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500/70 font-bold">ॐ</span></div>
+                                    )}
+                                  </div>
+                                  <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
+                                    {userName || (isHi ? "हरि भक्त" : "Devotee")}
+                                  </span>
+                                </div>
+                                <p className="text-[7.5px] md:text-[8.5px] font-serif italic text-amber-200/65 line-clamp-2 leading-tight">
+                                  {isHi ? tpl.quoteHindi : tpl.quote}
+                                </p>
+                              </div>
+                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                              </div>
+                            </div>
+                            <div className="px-2.5 py-2.5">
+                              <span className="font-serif text-[11px] md:text-xs font-bold text-amber-200 truncate block">{isHi ? tpl.titleHindi : tpl.title}</span>
+                              <span className="text-[8px] md:text-[9px] font-sans text-amber-500/70 font-bold uppercase tracking-wider block mt-0.5">{isHi ? tpl.subtitleHindi : tpl.subtitle}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Sadhana Calendar & Virtual Temple Room grouped side-by-side on desktop */}
+                <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 pt-4 space-y-6 md:space-y-0">
+                  {/* Interactive Puja Seva Tray panel */}
+                  <div className="w-full bg-gradient-to-b from-[#1b0a05] to-[#0e0402] border border-amber-950/25 rounded-3xl p-5 shadow-xl flex flex-col gap-4 text-center">
+                    <div>
+                      <h3 className="font-serif text-sm font-bold text-amber-400">
+                        {isHi ? "सजीव मंदिर सेवा (Virtual Puja Room)" : "Virtual Temple Room (Interactive)"}
+                      </h3>
+                      <p className="text-[10px] text-amber-200/40 font-sans leading-relaxed mt-1">
+                        {isHi ? "आरती करें, पुष्प वर्षा करें और तानपुरा भक्तिमय धुन के साथ ध्यान मग्न हों" : "Light the Diya, ring the temple bell, offer fresh flower showers, and listen to the meditation tanpura drone"}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-sans font-black uppercase tracking-wider text-amber-200">
+                      {/* Bell */}
+                      <button
+                        onClick={ringBell}
+                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
+                          isBellRinging ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
+                        }`}
+                      >
+                        <span className={`text-2xl leading-none ${isBellRinging ? "animate-bounce" : ""}`}>🔔</span>
+                        <span className="text-[9px]">{isHi ? "घंटी" : "Bell"}</span>
+                      </button>
+
+                      {/* Diya */}
+                      <button
+                        onClick={toggleDiya}
+                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 relative overflow-hidden ${
+                          isDiyaLit ? "bg-amber-500/15 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
+                        }`}
+                      >
+                        <div className="w-7 h-7 relative flex items-center justify-center">
+                          {isDiyaLit ? (
+                            <>
+                              <span className="text-2xl leading-none z-10 animate-flame">🔥</span>
+                              <img src={litDiyaImg} alt="diya base" className="w-6 h-6 absolute bottom-0 object-contain z-0 opacity-80" />
+                            </>
+                          ) : (
+                            <span className="text-xl opacity-60 leading-none">🪔</span>
+                          )}
+                        </div>
+                        <span className="text-[9px]">{isHi ? "दीपक" : "Diya"}</span>
+                      </button>
+
+                      {/* Flower Shower */}
+                      <button
+                        onClick={showerFlowers}
+                        className="p-3 border bg-black/20 border-amber-500/10 text-amber-300/80 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all hover:bg-amber-950/20 active:scale-90"
+                      >
+                        <span className="text-2xl leading-none">🌸</span>
+                        <span className="text-[9px]">{isHi ? "पुष्प" : "Flowers"}</span>
+                      </button>
+
+                      {/* Tanpura loop */}
+                      <button
+                        onClick={toggleAmbientTanpura}
+                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
+                          isAudioPlaying ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
+                        }`}
+                      >
+                        <span className={`text-2xl leading-none ${isAudioPlaying ? "animate-pulse" : "opacity-60"}`}>🪈</span>
+                        <span className="text-[9px]">{isHi ? "तानपुरा" : "Tanpura"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* साधना पंचांग Weekly Calendar Dashboard */}
+                  <div className="w-full bg-[#1b0a05]/40 border border-amber-950/30 rounded-3xl p-5 shadow-2xl flex flex-col gap-3.5 justify-between">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] uppercase font-sans font-black tracking-widest text-amber-200/50">
+                        {isHi ? "साधना पंचांग (Weekly Sadhana Calendar)" : "Sadhana Calendar (Weekly Progress)"}
+                      </span>
+                      <span className="text-[9px] text-amber-500 font-sans font-black uppercase">
+                        {isHi ? "नित्य साधना दर्शन सूत्र" : "Nitya Sadhana Streak"}
                       </span>
                     </div>
-                  );
-                })}
+
+                    <div className="grid grid-cols-7 gap-1.5 font-sans">
+                      {WEEKDAYS.map((w) => {
+                        const currentYear = new Date().getFullYear();
+                        const currentMonth = new Date().getMonth();
+                        const sundayOffset = new Date().getDate() - new Date().getDay();
+                        const targetDate = new Date(currentYear, currentMonth, sundayOffset + w.dayNum);
+                        const dateStr = targetDate.toISOString().split("T")[0];
+                        
+                        const isDone = completedDates.includes(dateStr);
+                        const isToday = dateStr === todayDateString;
+
+                        return (
+                          <div 
+                            key={w.dayNum} 
+                            className={`py-2 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
+                              isDone 
+                                ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-md"
+                                : isToday 
+                                ? "bg-black/40 border-amber-500/25 text-amber-300/90 shadow-inner scale-102"
+                                : "bg-black/20 border-amber-500/5 text-stone-500"
+                            }`}
+                          >
+                            <span className="text-[9px] font-black uppercase tracking-wider">{isHi ? w.labelHi : w.label}</span>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                              isDone ? "bg-amber-500 text-black shadow" : "bg-black/35 text-amber-200/40 border border-amber-500/10"
+                            }`}>
+                              {isDone ? "✓" : targetDate.getDate()}
+                            </div>
+                            <span className="text-[7.5px] font-black text-amber-500/60 leading-none truncate max-w-full">
+                              {isHi ? getDeityHindi(w.deity) : w.deity}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* ========================================================= */}
         {/* TAB 2: WALLPAPERS GALLERY WITH CATEGORIES & MOCKUPS       */}
@@ -2444,7 +3240,7 @@ export default function BlessingsPage() {
                               link.href = url;
                               link.click();
                             }
-                          } catch (_) {}
+                          } catch (_) { /* ignore share error */ }
                         }}
                         className="w-10 h-10 rounded-full bg-amber-500 text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-transform focus:outline-none"
                       >
@@ -2500,9 +3296,6 @@ export default function BlessingsPage() {
                     className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors cursor-pointer"
                   >
                     <Share2 className="w-4.5 h-4.5" />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors cursor-pointer">
-                    <MoreIcon className="w-4.5 h-4.5" />
                   </button>
                 </div>
               </div>
@@ -2644,9 +3437,6 @@ export default function BlessingsPage() {
                     className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors cursor-pointer"
                   >
                     <Share2 className="w-4.5 h-4.5" />
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-colors cursor-pointer">
-                    <MoreIcon className="w-4.5 h-4.5" />
                   </button>
                 </div>
               </div>
@@ -2941,6 +3731,497 @@ export default function BlessingsPage() {
             </>
           );
         })()}
+      </AnimatePresence>
+
+      {/* ─── SCREEN 3: FIRST-TIME SETUP BOTTOM SHEET ─── */}
+      <AnimatePresence>
+        {showSetupSheet && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSetupSheet(false)}
+              className="fixed inset-0 bg-black/75 z-[150] backdrop-blur-sm"
+            />
+
+            {/* Bottom Sheet Drawer Container */}
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 max-w-md mx-auto bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-t border-amber-500/30 rounded-t-[2.5rem] p-6 shadow-[0_-15px_40px_rgba(0,0,0,0.8)] z-[160] flex flex-col gap-6 pb-8 md:bottom-auto md:top-[25%] md:rounded-[2rem] md:border text-stone-200"
+            >
+              {/* Drag handle */}
+              <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto md:hidden" />
+
+              <div className="flex justify-between items-center">
+                <h3 className="font-serif text-lg font-black text-amber-400 uppercase tracking-widest">
+                  {isHi ? "प्रोफ़ाइल सेटअप" : "Create My Version"}
+                </h3>
+                <button
+                  onClick={() => setShowSetupSheet(false)}
+                  className="w-8 h-8 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 flex items-center justify-center text-amber-400 transition-colors"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+
+              {/* Upload Photo section */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative w-28 h-28 rounded-full border-2 border-amber-500/50 bg-stone-900/60 overflow-hidden flex items-center justify-center shadow-lg group">
+                  {tempPhoto ? (
+                    <img src={tempPhoto} alt="Preview avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-12 h-12 text-amber-500/30" />
+                  )}
+
+                  {/* Upload overlay trigger */}
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+                  >
+                    <Camera className="w-6 h-6 text-white" />
+                  </button>
+
+                  {/* Camera float overlay */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-amber-500 border border-stone-950 flex items-center justify-center text-stone-950 shadow active:scale-90 transition-transform cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span className="text-[10px] uppercase font-sans font-black text-amber-500/60 tracking-wider">
+                  {isHi ? "श्रद्धालु चित्र अपलोड करें" : "Upload Devotee Photo"}
+                </span>
+
+                {/* Hidden File Input */}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          setTempPhoto(event.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Name Input section */}
+              <div className="space-y-1.5 text-left">
+                <label className="text-[10px] uppercase font-sans font-black text-amber-500/60 tracking-wider">
+                  {isHi ? "आपका नाम" : "Your Name"}
+                </label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500/40">
+                    <UserIcon className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={30}
+                    placeholder={isHi ? "नाम दर्ज करें..." : "Enter your name..."}
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
+                    className="w-full bg-black/45 border border-amber-500/20 focus:border-amber-500/45 rounded-xl py-3 pl-11 pr-16 text-xs text-amber-100 placeholder:text-amber-200/20 focus:outline-none tracking-wide font-sans font-medium"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/45 font-bold">
+                    {tempName.length}/30
+                  </span>
+                </div>
+              </div>
+
+              {/* Submit CTA */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => {
+                    const finalName = tempName.trim();
+                    if (!finalName) {
+                      toast.error(isHi ? "कृपया अपना नाम दर्ज करें!" : "Please enter your name!");
+                      return;
+                    }
+                    if (!tempPhoto) {
+                      toast.error(isHi ? "कृपया एक पावन चित्र अपलोड करें!" : "Please upload profile photo!");
+                      return;
+                    }
+                    setUserName(finalName);
+                    setUserPhoto(tempPhoto);
+                    localStorage.setItem("hk_profile_name", finalName);
+                    localStorage.setItem("hk_profile_photo", tempPhoto);
+                    setShowSetupSheet(false);
+                    toast.success(isHi ? "प्रोफ़ाइल सफलतापूर्वक सहेज ली गई!" : "Profile details saved successfully!");
+                  }}
+                  disabled={!tempName.trim() || !tempPhoto}
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-stone-800 disabled:to-stone-900 disabled:text-stone-500 disabled:cursor-not-allowed text-stone-950 font-sans font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{isHi ? "प्रोफ़ाइल सहेजें" : "Save Profile"}</span>
+                </button>
+
+                <p className="text-[9.5px] font-sans text-emerald-400/80 flex items-center justify-center gap-1.5 leading-none">
+                  <span>🛡️</span>
+                  <span>{isHi ? "आपकी जानकारी पूर्णतः सुरक्षित है" : "Your profile is safe & secure"}</span>
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── POSTER STUDIO MODAL ─── */}
+      <AnimatePresence>
+        {selectedPoster && (
+          <>
+            {/* Backdrop with blurring, transition, and click to close */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
+              className="fixed inset-0 bg-black/85 backdrop-blur-xl z-[120]"
+            />
+
+            {/* Modal Container */}
+            <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                transition={{ type: "spring", damping: 26, stiffness: 210 }}
+                className="pointer-events-auto w-full max-w-md bg-gradient-to-b from-[#1b0a05] to-[#0a0301] border border-amber-500/20 rounded-[2.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden h-[90vh] text-stone-200 relative"
+              >
+                {/* Floating Close Button */}
+                <button
+                  onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
+                  className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-black/60 hover:bg-black/85 border border-amber-500/30 flex items-center justify-center text-amber-400 hover:text-amber-100 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+
+                {/* Upper Column: Canvas Preview Workspace (70-75% height) */}
+                <div className="flex-[7] min-h-0 w-full flex items-center justify-center p-6 relative bg-black/25">
+                  <span className="absolute top-4 left-4 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider font-sans bg-amber-500/15 border border-amber-500/30 text-amber-400 pointer-events-none select-none z-10">
+                    ⚡ LIVE PREVIEW
+                  </span>
+
+                  <div className="h-full w-full flex items-center justify-center relative transition-all duration-300">
+                    {compiledPosterUrl ? (
+                      <img 
+                        src={compiledPosterUrl} 
+                        alt="Personalized Preview" 
+                        className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] border border-amber-500/25 transition-all duration-300"
+                      />
+                    ) : (
+                      <div className="aspect-[9/16] h-[75%] rounded-2xl flex flex-col items-center justify-center gap-3 border border-amber-500/10 bg-[#120603]/80 text-[#ffe2b4]/50 shadow-[0_15px_40px_rgba(0,0,0,0.85)] px-6">
+                        <div className="w-7 h-7 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                        <span className="text-[8px] font-sans font-black uppercase tracking-widest text-center">
+                          {isHi ? "चित्र तैयार हो रहा है..." : "Compiling Preview..."}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Column: Control & Customization Center (25-30% height) */}
+                <div className="flex-[3] shrink-0 w-full bg-gradient-to-b from-[#130703] to-[#0a0301] border-t border-amber-500/15 p-5 md:p-6 flex flex-col justify-center gap-4 overflow-y-auto scrollbar-thin select-none">
+                  
+                  {/* Customize Details Fields or Summary Profile Badge */}
+                  {!showProfileEdit ? (
+                    <div className="flex items-center justify-between bg-black/30 border border-amber-500/10 rounded-2xl p-4 transition-all duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-11 h-11 rounded-full border-2 border-amber-500/40 bg-stone-900 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                          {userPhoto ? (
+                            <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-lg font-serif text-amber-500/60">ॐ</span>
+                          )}
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-widest block leading-none mb-1">
+                            {isHi ? "नाम और चित्र" : "Devotee Profile"}
+                          </span>
+                          <span className="font-serif text-sm font-bold text-amber-100">
+                            {userName.trim() ? userName.trim() : (isHi ? "हरि भक्त" : "Devotee")}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowProfileEdit(true)}
+                        className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                      >
+                        <UserIcon className="w-3.5 h-3.5" />
+                        <span>{isHi ? "प्रोफ़ाइल बदलें" : "Change Profile"}</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 bg-black/40 border border-amber-500/15 rounded-2xl p-4 transition-all duration-300">
+                      <div className="flex justify-between items-center pb-1 border-b border-amber-500/10">
+                        <span className="text-[8px] uppercase font-sans font-black text-amber-500/60 tracking-wider">
+                          {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
+                        </span>
+                      </div>
+                      
+                      {/* Name Input field */}
+                      <div className="space-y-1.5 text-left">
+                        <label className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-wider">
+                          {isHi ? "आपका नाम (देवभक्त नाम)" : "Your Name (Devotee Name)"}
+                        </label>
+                        <div className="relative">
+                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500/40">
+                            <UserIcon className="w-4 h-4" />
+                          </div>
+                          <input
+                            type="text"
+                            maxLength={30}
+                            placeholder={isHi ? "अपना नाम दर्ज करें..." : "Enter your name..."}
+                            value={userName}
+                            onChange={(e) => setUserName(e.target.value)}
+                            className="w-full bg-black/40 border border-amber-500/15 focus:border-amber-500/45 rounded-xl py-2.5 pl-10 pr-14 text-xs text-amber-100 placeholder:text-amber-200/25 focus:outline-none tracking-wide font-sans font-semibold transition-all"
+                          />
+                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/45 font-bold">
+                            {userName.length}/30
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Photo Upload field */}
+                      <div className="space-y-2 text-left">
+                        <label className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-wider block">
+                          {isHi ? "श्रद्धालु चित्र (Devotee Avatar)" : "Devotee Photo (Avatar)"}
+                        </label>
+                        
+                        <div className="flex items-center gap-3 bg-black/20 border border-amber-500/10 rounded-xl p-2.5">
+                          <div className="relative w-10 h-10 rounded-full border-2 border-amber-500/40 bg-stone-900 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
+                            {userPhoto ? (
+                              <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-lg font-serif text-amber-500/50">ॐ</span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => fileInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Camera className="w-3.5 h-3.5" />
+                              <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड" : "Upload")}</span>
+                            </button>
+                            
+                            {userPhoto && (
+                              <button
+                                onClick={() => setUserPhoto(null)}
+                                className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer"
+                              >
+                                {isHi ? "हटाएं" : "Remove"}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Hidden File Input */}
+                          <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  if (event.target?.result) {
+                                    setUserPhoto(event.target.result as string);
+                                    toast.success(isHi ? "फोटो सफलतापूर्वक अपलोड की गई!" : "Photo uploaded successfully!");
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setShowProfileEdit(false)}
+                        className="w-full py-2.5 mt-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-xl font-sans text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer text-center"
+                      >
+                        {isHi ? "प्रोफ़ाइल सहेजें" : "Save Profile Details"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Aspect Ratio Toggle */}
+                  <div className="space-y-2">
+                    <label className="text-[8px] uppercase font-sans font-black text-amber-500/60 tracking-wider block">
+                      {isHi ? "आकार (Aspect Ratio)" : "Size & Aspect Ratio"}
+                    </label>
+                    <div className="w-full p-1 flex items-center rounded-xl bg-black/40 border border-amber-500/10">
+                      <button
+                        onClick={() => setGenerationType("status")}
+                        className="flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all focus:outline-none cursor-pointer flex items-center justify-center gap-1.5"
+                        style={generationType === 'status' ? { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' } : { color: 'rgba(180,160,130,0.5)' }}
+                      >
+                        <Smartphone className="w-3 h-3" />
+                        <span>{isHi ? "स्टोरी (9:16)" : "Story (9:16)"}</span>
+                      </button>
+                      <button
+                        onClick={() => setGenerationType("square")}
+                        className="flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all focus:outline-none cursor-pointer flex items-center justify-center gap-1.5"
+                        style={generationType === 'square' ? { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' } : { color: 'rgba(180,160,130,0.5)' }}
+                      >
+                        <span className="text-xs leading-none">⬜</span>
+                        <span>{isHi ? "पोस्ट (1:1)" : "Post (1:1)"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button
+                      onClick={handleDownloadPoster}
+                      disabled={!compiledPosterUrl}
+                      className="py-3 font-sans font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
+                      style={{ border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.06)', color: '#fbbf24', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>{isHi ? "डाउनलोड" : "Download HD"}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowPosterShareModal(true)}
+                      disabled={!compiledPosterUrl}
+                      className="py-3 font-sans font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
+                      style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a0a02', boxShadow: '0 4px 16px rgba(245,158,11,0.35)' }}
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>{isHi ? "साझा करें" : "Share"}</span>
+                    </button>
+                  </div>
+
+                </div>
+
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── SCREEN 5: SHARE TARGET BOTTOM SHEET ─── */}
+      <AnimatePresence>
+        {showPosterShareModal && selectedPoster && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPosterShareModal(false)}
+              className="fixed inset-0 bg-black/75 z-[150] backdrop-blur-sm"
+            />
+
+            {/* Bottom Sheet Drawer Container */}
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 max-w-md mx-auto bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-t border-amber-500/30 rounded-t-[2.5rem] p-6 shadow-[0_-15px_40px_rgba(0,0,0,0.8)] z-[160] flex flex-col gap-5 pb-8 md:bottom-auto md:top-[30%] md:rounded-[2rem] md:border text-stone-200"
+            >
+              {/* Drag handle */}
+              <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto md:hidden" />
+
+              <div className="flex justify-between items-center">
+                <h3 className="font-serif text-base font-black text-amber-400 uppercase tracking-widest">
+                  {isHi ? "पोस्टर साझा करें" : "Share Your Poster"}
+                </h3>
+                <button
+                  onClick={() => setShowPosterShareModal(false)}
+                  className="w-8 h-8 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 flex items-center justify-center text-amber-400 transition-colors"
+                >
+                  <X className="w-4.5 h-4.5" />
+                </button>
+              </div>
+
+              {/* Social Channels Row */}
+              <div className="flex justify-around items-center py-4 px-2 select-none">
+                {/* WhatsApp */}
+                <button
+                  onClick={handleSharePosterNative}
+                  className="flex flex-col items-center gap-2 group cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shadow transition-transform group-hover:scale-105 active:scale-95">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.965C16.59 1.977 14.113.951 12.008.951c-5.442 0-9.866 4.372-9.87 9.802 0 1.714.463 3.39 1.337 4.888l-.99 3.613 3.762-.97zm10.967-7.416c-.365-.18-2.164-1.057-2.499-1.179-.333-.124-.577-.186-.819.177-.243.363-.938 1.179-1.15 1.423-.21.244-.422.271-.787.09-3.57-1.782-4.73-2.614-6.47-5.625-.455-.783.455-.726 1.3-2.399.143-.285.072-.533-.036-.713-.108-.18-.819-1.974-1.122-2.705-.296-.715-.597-.619-.819-.631-.213-.011-.456-.013-.7-.013-.243 0-.639.09-1.004.495-.365.407-1.393 1.343-1.393 3.275 0 1.931 1.402 3.8 1.605 4.07.203.27 2.76 4.17 6.67 5.86 2.44 1.05 3.96 1.1 5.36.89 1.25-.19 2.499-.95 2.85-1.9.35-.95.35-1.76.24-1.93-.11-.17-.4-.27-.765-.45z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[9px] font-sans font-bold tracking-wide text-stone-300">WhatsApp</span>
+                </button>
+
+                {/* Instagram */}
+                <button
+                  onClick={() => {
+                    toast.info(isHi ? "इंस्टाग्राम स्टोरी हेतु पोस्टर डाउनलोड हो रहा है!" : "Downloading poster for Instagram story!");
+                    handleDownloadPoster();
+                  }}
+                  className="flex flex-col items-center gap-2 group cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-pink-500/15 border border-pink-500/20 text-pink-400 flex items-center justify-center shadow transition-transform group-hover:scale-105 active:scale-95">
+                    <svg className="w-5.5 h-5.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[9px] font-sans font-bold tracking-wide text-stone-300">Instagram</span>
+                </button>
+
+                {/* Facebook */}
+                <button
+                  onClick={handleSharePosterNative}
+                  className="flex flex-col items-center gap-2 group cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600/15 border border-blue-600/20 text-blue-400 flex items-center justify-center shadow transition-transform group-hover:scale-105 active:scale-95">
+                    <svg className="w-5.5 h-5.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[9px] font-sans font-bold tracking-wide text-stone-300">Facebook</span>
+                </button>
+
+                {/* More */}
+                <button
+                  onClick={handleSharePosterNative}
+                  className="flex flex-col items-center gap-2 group cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-stone-500/15 border border-stone-500/20 text-stone-400 flex items-center justify-center shadow transition-transform group-hover:scale-105 active:scale-95">
+                    <MoreIcon className="w-5.5 h-5.5" />
+                  </div>
+                  <span className="text-[9px] font-sans font-bold tracking-wide text-stone-300">{isHi ? "अन्य" : "More"}</span>
+                </button>
+              </div>
+
+              {/* Direct Download CTA */}
+              <div className="w-full flex flex-col gap-2.5 mt-2">
+                <button
+                  onClick={handleDownloadPoster}
+                  className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-sans font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none shadow-md cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-stone-950" />
+                  <span>{isHi ? "पावन पोस्टर डाउनलोड करें" : "Download HD Poster"}</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
       </AnimatePresence>
 
     </div>

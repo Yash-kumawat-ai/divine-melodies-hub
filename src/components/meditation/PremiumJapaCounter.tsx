@@ -456,7 +456,7 @@ export default function PremiumJapaCounter({
       const combined = (hi + " " + en).toLowerCase();
       // Split on spaces / punctuation, remove very short tokens
       return combined
-        .replace(/[।|,\.!?॥]/g, " ")
+        .replace(/[।|,!?॥.]/g, " ")
         .split(/\s+/)
         .map((w) => w.trim())
         .filter((w) => w.length >= 2);
