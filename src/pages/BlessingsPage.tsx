@@ -2585,36 +2585,38 @@ export default function BlessingsPage() {
         {/* ========================================================= */}
         {activeTab === "wallpapers" && (
           <div className="w-full flex flex-col items-center animate-fade-in select-none">
-            
-            {/* Wallpaper category selector tab */}
+
+            {/* ── Static / Live toggle ── */}
             <div className="w-full max-w-xs mx-auto mb-7 px-4">
-              <div className="bg-[#120704]/40 p-1.5 rounded-full border border-amber-950/20 flex items-center shadow-lg">
+              <div className="p-1 rounded-full flex items-center shadow-lg" style={{background:"rgba(18,7,4,0.6)",border:"1px solid rgba(120,60,10,0.25)"}}>
                 <button
                   onClick={() => setWallpaperType("static")}
                   className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${
                     wallpaperType === "static"
-                      ? "bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] shadow-md font-black"
+                      ? "text-[#fbbf24] shadow-md"
                       : "text-amber-200/40 hover:text-amber-200/70"
                   }`}
+                  style={wallpaperType==="static"?{background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"}:{}}
                 >
                   <Smartphone className="w-3.5 h-3.5" />
-                  <span>{isHi ? "स्थिर (Static)" : "Static"}</span>
+                  <span>{isHi ? "स्थिर (STATIC)" : "Static"}</span>
                 </button>
                 <button
                   onClick={() => setWallpaperType("live")}
                   className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${
                     wallpaperType === "live"
-                      ? "bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] shadow-md font-black"
+                      ? "text-[#fbbf24] shadow-md"
                       : "text-amber-200/40 hover:text-amber-200/70"
                   }`}
+                  style={wallpaperType==="live"?{background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"}:{}}
                 >
                   <Flame className="w-3.5 h-3.5" />
-                  <span>{isHi ? "सजीव (Live)" : "Live"}</span>
+                  <span>{isHi ? "सजीव (LIVE)" : "Live"}</span>
                 </button>
               </div>
             </div>
 
-            {/* Search Input bar */}
+            {/* Search bar */}
             {isSearchOpen && (
               <div className="w-full max-w-md mx-auto px-1 mb-6 animate-fade-in">
                 <div className="relative">
@@ -2626,10 +2628,7 @@ export default function BlessingsPage() {
                     className="w-full bg-black/45 border border-amber-500/20 focus:border-amber-500/45 rounded-full py-3 pl-5 pr-11 text-xs text-amber-100 placeholder:text-amber-200/20 focus:outline-none tracking-wide font-sans font-medium"
                   />
                   {searchQuery ? (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-200 focus:outline-none"
-                    >
+                    <button onClick={() => setSearchQuery("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 hover:text-amber-200 focus:outline-none">
                       <X className="w-4 h-4" />
                     </button>
                   ) : (
@@ -2639,70 +2638,90 @@ export default function BlessingsPage() {
               </div>
             )}
 
-            {/* A. STATIC WALLPAPERS TAB */}
+            {/* ══════════════════════════════════════════ */}
+            {/* A. STATIC WALLPAPERS                      */}
+            {/* ══════════════════════════════════════════ */}
             {wallpaperType === "static" && (
-              <div className="w-full flex flex-col items-center space-y-9 animate-fade-in">
-                {/* Deity Filter chips */}
+              <div className="w-full flex flex-col items-center space-y-8 animate-fade-in">
+
+                {/* Deity chips */}
                 <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-3.5 px-1">
-                    <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 uppercase tracking-widest flex items-center gap-2">
-                      <span className="text-amber-500">🕉️</span>
+                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                      <span>🕉️</span>
                       {isHi ? "देवता चुनें" : "Choose Deity"}
                     </h3>
                     <button
                       onClick={() => setSelectedDeityFilter(null)}
-                      className="font-sans text-[10px] font-bold text-amber-500/80 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
+                      className="font-sans text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-0.5 active:scale-95 transition-all"
                     >
-                      <span>{isHi ? "सभी देखें" : "View All"}</span>
-                      <span>&gt;</span>
+                      {isHi ? "सभी देखें" : "View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
                     </button>
                   </div>
-
-                  <div className="flex items-center gap-6 overflow-x-auto pb-4 pt-1 scrollbar-none justify-start w-full scroll-smooth">
+                  <div className="flex items-start gap-5 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full">
                     {[
-                      { id: null, name: "सभी", nameEn: "All", isIcon: true, symbol: "🕉️", image: "" },
-                      { id: "Shiva", name: "शिव", nameEn: "Shiva", isIcon: false, symbol: "", image: shivWallpaperImg },
-                      { id: "Rama", name: "राम", nameEn: "Ram", isIcon: false, symbol: "", image: deityRamImg },
-                      { id: "Krishna", name: "कृष्ण", nameEn: "Krishna", isIcon: false, symbol: "", image: krishnaImg },
-                      { id: "Hanuman", name: "हनुमान", nameEn: "Hanuman", isIcon: false, symbol: "", image: hanumanImg },
-                      { id: "Radha", name: "राधा", nameEn: "Radha", isIcon: false, symbol: "", image: radhaKrishnaImg },
-                      { id: "Khatu Shyam", name: "श्याम", nameEn: "Shyam", isIcon: false, symbol: "", image: shyamMandirImg }
+                      { id: null,          name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
+                      { id:"Shiva",        name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
+                      { id:"Rama",         name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
+                      { id:"Krishna",      name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
+                      { id:"Hanuman",      name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"",   image:hanumanImg },
+                      { id:"Radha",        name:"राधा",   nameEn:"Radha",  isIcon:false, symbol:"",   image:radhaKrishnaImg },
+                      { id:"Khatu Shyam",  name:"श्याम",  nameEn:"Shyam",  isIcon:false, symbol:"",   image:shyamMandirImg },
                     ].map((deity) => {
                       const isActive = selectedDeityFilter === deity.id;
-                      const hasImg = !deity.isIcon;
                       return (
                         <button
                           key={deity.id ?? "all"}
                           onClick={() => setSelectedDeityFilter(deity.id)}
-                          className="flex flex-col items-center gap-2 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-all active:scale-95 shrink-0 group"
+                          className="flex flex-col items-center gap-2 outline-none focus:outline-none transition-all active:scale-95 shrink-0"
                         >
-                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 ${
-                            hasImg ? "rounded-full" : "rounded-2xl"
-                          } ${
-                            isActive 
-                              ? "border-amber-400 scale-105 shadow-[0_0_0_2px_#120704,0_0_0_3.5px_#f59e0b]"
-                              : hasImg 
-                              ? "border-amber-950/40 bg-[#1b0a05] hover:border-amber-500/30"
-                              : "border-amber-950/30 bg-[#1b0a05] text-amber-500/70 hover:border-amber-500/30"
-                          }`}>
-                            {deity.isIcon ? (
-                              <span className={`text-lg transition-transform group-hover:scale-110 ${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
-                                {deity.symbol}
-                              </span>
-                            ) : (
-                              <img src={deity.image} alt={deity.nameEn} className="w-full h-full object-cover rounded-full pointer-events-none" />
-                            )}
+                          {/* Ring wrapper */}
+                          <div style={{
+                            width:54, height:54, borderRadius:"50%",
+                            padding: isActive ? 2.5 : 0,
+                            background: isActive ? "linear-gradient(135deg,#f59e0b,#fbbf24,#d97706)" : "transparent",
+                            transition:"all 0.25s ease",
+                            position:"relative",
+                          }}>
+                            <div style={{
+                              width:"100%", height:"100%", borderRadius:"50%",
+                              overflow:"hidden", background:"#1b0a05",
+                              border: isActive ? "2px solid #0d0502" : "2px solid rgba(120,60,10,0.35)",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              boxShadow: isActive ? "0 0 18px rgba(251,191,36,0.5)" : "0 2px 8px rgba(0,0,0,0.5)",
+                              transition:"all 0.25s ease",
+                            }}>
+                              {deity.isIcon ? (
+                                <span style={{fontSize:22, filter: isActive ? "drop-shadow(0 0 5px #fbbf24)" : "none"}}>{deity.symbol}</span>
+                              ) : (
+                                <img src={deity.image} alt={deity.nameEn}
+                                  style={{width:"100%",height:"100%",objectFit:"cover",
+                                    transform: isActive ? "scale(1.08)" : "scale(1)",
+                                    transition:"transform 0.3s ease"}}
+                                />
+                              )}
+                            </div>
+                            {/* Checkmark badge */}
                             {isActive && (
-                              <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full border border-[#0d0502] flex items-center justify-center shadow-md z-10">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-2.5 h-2.5">
-                                  <polyline points="20 6 9 17 4 12" />
+                              <span style={{
+                                position:"absolute", bottom:-2, right:-2,
+                                width:18, height:18, borderRadius:"50%",
+                                background:"linear-gradient(135deg,#f59e0b,#fbbf24)",
+                                border:"2px solid #0d0502",
+                                display:"flex", alignItems:"center", justifyContent:"center",
+                                boxShadow:"0 1px 4px rgba(0,0,0,0.5)", zIndex:10,
+                              }}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" style={{width:10,height:10}}>
+                                  <polyline points="20 6 9 17 4 12"/>
                                 </svg>
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold tracking-wide transition-colors ${
-                            isActive ? "text-amber-400 font-extrabold" : "text-stone-400 group-hover:text-stone-200"
-                          }`}>
+                          <span style={{
+                            fontSize:10, fontWeight: isActive ? 800 : 600,
+                            color: isActive ? "#fbbf24" : "rgba(161,120,80,0.65)",
+                            transition:"color 0.2s", letterSpacing:"0.03em", lineHeight:1,
+                          }}>
                             {isHi ? deity.name : deity.nameEn}
                           </span>
                         </button>
@@ -2711,118 +2730,129 @@ export default function BlessingsPage() {
                   </div>
                 </div>
 
-                {/* Recommended static wallpaper (shows only when no filters) */}
+                {/* Today's pick hero */}
                 {!selectedDeityFilter && !searchQuery && (
                   <div className="w-full flex flex-col">
-                    <div className="flex items-center justify-between w-full mb-3.5 px-1">
-                      <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 uppercase tracking-widest flex items-center gap-2">
-                        <span className="text-amber-500">✨</span>
-                        {isHi ? "आज का दिव्य वॉलपेपर" : "Today's Divine Recommendation"}
+                    <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                      <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                        <span>✨</span>
+                        {isHi ? "आज का दिव्य वॉलपेपर" : "Today's Divine Wallpaper"}
                       </h3>
                       <button
                         onClick={() => {
-                          const tomorrowIdx = (todayDay + 1) % 7;
-                          const tomorrowDeity = WEEKDAYS[tomorrowIdx].deity;
-                          toast.info(isHi ? `कल का पावन दर्शन: ${getDeityHindi(tomorrowDeity)}` : `Tomorrow's Blessing: ${tomorrowDeity}`);
+                          const tomorrowIdx=(todayDay+1)%7;
+                          toast.info(isHi ? `कल का पावन दर्शन: ${getDeityHindi(WEEKDAYS[tomorrowIdx].deity)}` : `Tomorrow's Blessing: ${WEEKDAYS[tomorrowIdx].deity}`);
                         }}
-                        className="font-sans text-[10px] font-bold text-amber-500/80 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
+                        className="font-sans text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
                       >
-                        <Volume2 className="w-3.5 h-3.5 text-amber-500" />
+                        <Volume2 className="w-3.5 h-3.5"/>
                         <span>{isHi ? "कल देखें" : "See Tomorrow"}</span>
                       </button>
                     </div>
-
-                    <div className="w-full bg-[#1b0d07]/40 border border-amber-950/20 rounded-2xl p-2.5 relative flex flex-col group overflow-hidden shadow-2xl">
-                      <div className="w-full aspect-[16/9] rounded-xl overflow-hidden relative">
-                        <img 
-                          src={shivWallpaperImg} 
-                          alt="Today's Recommended Wallpaper" 
-                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700 pointer-events-none" 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 text-left">
-                          <div className="flex justify-between items-end w-full">
-                            <div>
-                              <h4 className="font-serif text-base sm:text-lg font-bold text-amber-100">
-                                {isHi ? "महादेव ध्यान" : "Mahadev Meditation"}
-                              </h4>
-                              <p className="text-[11px] font-sans text-amber-200/60 mt-1 font-semibold">
-                                {isHi ? "शिव ही सत्य है, शिव ही अनंत है।" : "Shiva is the truth, Shiva is infinite."}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                const targetWp = WALLPAPERS_LIST.find(wp => wp.id === "wp-shiva-3") || WALLPAPERS_LIST[2];
-                                handleWallpaperAction(targetWp);
-                              }}
-                              className="px-4 py-2 bg-white text-black hover:bg-amber-100 rounded-full font-sans text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 shadow-lg shadow-black/40"
-                            >
-                              <Download className="w-3.5 h-3.5 text-black" />
-                              <span>{isHi ? "डाउनलोड" : "Download"}</span>
-                            </button>
+                    <div
+                      className="w-full rounded-2xl overflow-hidden relative cursor-pointer group"
+                      style={{border:"1px solid rgba(251,191,36,0.15)",boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}
+                      onClick={() => handleWallpaperAction(WALLPAPERS_LIST.find(wp=>wp.id==="wp-shiva-3")||WALLPAPERS_LIST[0])}
+                    >
+                      <div className="w-full aspect-[16/9] relative overflow-hidden">
+                        <img src={shivWallpaperImg} alt="Today's Wallpaper"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 pointer-events-none"/>
+                        <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(5,2,1,0.95) 0%,rgba(5,2,1,0.5) 35%,rgba(5,2,1,0.08) 65%,transparent 100%)"}}/>
+                        <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between">
+                          <div className="flex flex-col gap-1 text-left">
+                            <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.8)",letterSpacing:"0.18em",textTransform:"uppercase"}}>♱ {isHi?"शिव • महादेव":"Shiva • Mahadev"}</span>
+                            <h4 className="font-serif text-base font-bold text-amber-100 leading-tight">{isHi?"महादेव ध्यान":"Mahadev Meditation"}</h4>
+                            <p style={{fontSize:10,color:"rgba(253,230,138,0.5)",fontStyle:"italic"}}>{isHi?"शिव ही सत्य है, शिव ही अनंत है।":"Shiva is the truth, Shiva is infinite."}</p>
                           </div>
+                          <button
+                            onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(WALLPAPERS_LIST.find(wp=>wp.id==="wp-shiva-3")||WALLPAPERS_LIST[0]);}}
+                            style={{width:40,height:40,borderRadius:"50%",background:"rgba(251,191,36,0.15)",border:"1.5px solid rgba(251,191,36,0.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:16,height:16}}>
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7 10 12 15 17 10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Popular Wallpaper Grid list */}
+                {/* Popular wallpaper grid */}
                 <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-4 px-1">
-                    <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 uppercase tracking-widest flex items-center gap-2">
-                      <span className="text-amber-500">🔥</span>
+                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                      <span>🔥</span>
                       {isHi ? "लोकप्रिय वॉलपेपर" : "Popular Wallpapers"}
                     </h3>
-                    <span className="text-[10px] font-bold font-sans text-amber-200/30">
-                      {filteredWallpapers.length} {isHi ? "परिणाम" : "items"}
+                    <span style={{fontSize:10,fontWeight:700,color:"rgba(251,191,36,0.4)"}}>
+                      {filteredWallpapers.length} {isHi?"परिणाम":"items"}
                     </span>
                   </div>
 
                   {filteredWallpapers.length === 0 ? (
                     <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
                       <span>📭</span>
-                      <span>{isHi ? "कोई वॉलपेपर नहीं मिला।" : "No wallpapers found matching query."}</span>
+                      <span>{isHi ? "कोई वॉलपेपर नहीं मिला।" : "No wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
                       {filteredWallpapers.map((wp) => (
                         <div
                           key={wp.id}
-                          className="bg-stone-950/20 border border-amber-955/15 rounded-2xl p-1.5 relative flex flex-col group overflow-hidden cursor-pointer hover:border-amber-500/30 active:scale-[0.98] transition-all"
+                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300"
+                          style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
                           onClick={() => handleWallpaperAction(wp)}
                         >
-                          <div className="w-full aspect-[2/3] rounded-xl overflow-hidden relative">
-                            <img 
-                              src={wp.imageUrl} 
-                              alt={wp.name} 
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" 
-                            />
-                            
-                            {/* Overlay detail label */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3 text-left">
-                              <span className="text-[7px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none">
-                                {wp.deity}
+                          <div className="w-full aspect-[9/16] relative">
+                            <img src={wp.imageUrl} alt={wp.name}
+                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 pointer-events-none"/>
+                            {/* Cinematic gradient */}
+                            <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(4,1,0,0.93) 0%,rgba(4,1,0,0.55) 30%,rgba(4,1,0,0.1) 65%,transparent 100%)"}}/>
+
+                            {/* Tier badge */}
+                            <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full"
+                              style={{fontSize:8,fontWeight:900,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",
+                                background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.22),rgba(217,119,6,0.18))":"rgba(0,0,0,0.45)",
+                                border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.2)",
+                                color:"#fbbf24"}}>
+                              {wp.tier === "premium" ? "👑 Pro" : "Free"}
+                            </div>
+
+                            {/* Bottom text — always visible */}
+                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left" style={{paddingRight:46}}>
+                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.75)",textTransform:"uppercase",letterSpacing:"0.14em",lineHeight:1}}>
+                                ♱ {isHi
+                                  ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
+                                  : wp.deity}
                               </span>
-                              <h4 className="font-serif text-[11px] font-bold text-white mt-1 leading-tight truncate">
+                              <h4 style={{fontFamily:"serif",fontSize:12,fontWeight:700,color:"rgba(254,243,199,0.95)",lineHeight:1.25}} className="line-clamp-1">
                                 {isHi ? wp.nameHindi : wp.name}
                               </h4>
                             </div>
 
-                            {/* Download Action Float Trigger */}
+                            {/* Download button */}
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleWallpaperAction(wp);
+                              onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
+                              className="absolute bottom-3 right-3 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-10"
+                              style={{width:36,height:36,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                              onMouseEnter={e=>{
+                                (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
+                                (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
                               }}
-                              className="absolute bottom-2.5 right-2.5 w-10 h-10 rounded-full bg-black/60 hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-600 border border-amber-500/35 hover:border-amber-400 text-amber-400 hover:text-black flex items-center justify-center shadow-lg hover:shadow-[0_0_14px_rgba(245,158,11,0.5)] active:scale-90 transition-all duration-300 focus:outline-none z-10"
+                              onMouseLeave={e=>{
+                                (e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.55)";
+                                (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";
+                              }}
                             >
-                              <Download className="w-4.5 h-4.5 transition-colors" />
+                              <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:14,height:14}}>
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                              </svg>
                             </button>
-
-                            {/* Free Tag Label */}
-                            <span className="absolute top-2 right-2 text-[8px] font-sans font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24]">
-                              {wp.tier}
-                            </span>
                           </div>
                         </div>
                       ))}
@@ -2830,98 +2860,75 @@ export default function BlessingsPage() {
                   )}
                 </div>
 
-                {/* Call Out banner */}
-                <div className="w-full bg-gradient-to-r from-amber-500/10 via-amber-500/15 to-orange-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-center justify-between shadow-xl mt-4 select-none">
+                {/* Premium upsell banner */}
+                <div className="w-full rounded-2xl p-5 flex items-center justify-between shadow-xl"
+                  style={{background:"linear-gradient(135deg,rgba(251,191,36,0.08),rgba(217,119,6,0.12),rgba(251,191,36,0.06))",border:"1px solid rgba(251,191,36,0.2)"}}>
                   <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-black shadow-md shrink-0">
-                      <Sparkles className="w-6 h-6 text-black fill-current animate-pulse" />
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-black shadow-md shrink-0">
+                      <Sparkles className="w-5 h-5 text-black fill-current animate-pulse"/>
                     </div>
                     <div className="text-left">
-                      <h4 className="font-serif text-sm font-bold text-amber-200">
-                        {isHi ? "महाभक्त प्रीमियम कलेक्शन" : "Mahabhakt Premium Collection"}
-                      </h4>
-                      <p className="text-[10px] font-sans text-amber-200/60 mt-0.5 font-semibold leading-none">
-                        108+ Exclusive Wallpapers
-                      </p>
-                      <p className="text-[9px] font-sans text-amber-200/40 mt-1.5 leading-none">
-                        {isHi ? "एचडी गुणवत्ता • विज्ञापन-मुक्त • प्रीमियम अनुभव" : "HD Quality • Ad-Free • Premium Experience"}
-                      </p>
+                      <h4 className="font-serif text-sm font-bold text-amber-200">{isHi?"महाभक्त प्रीमियम":"Mahabhakt Premium"}</h4>
+                      <p className="text-[10px] font-sans text-amber-200/55 mt-0.5 font-semibold">108+ Exclusive Wallpapers</p>
+                      <p className="text-[9px] font-sans text-amber-200/35 mt-1">{isHi?"एचडी • विज्ञापन-मुक्त • प्रीमियम":"HD Quality • Ad-Free • Premium"}</p>
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate("/pricing")}
-                    className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-black font-sans text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-md shrink-0 cursor-pointer"
+                    onClick={()=>navigate("/pricing")}
+                    className="px-4 py-2.5 font-sans text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-md shrink-0 cursor-pointer"
+                    style={{background:"linear-gradient(135deg,#f59e0b,#d97706)",color:"#1a0a02"}}
                   >
-                    <span>{isHi ? "एक्सप्लोर करें" : "Explore Now"}</span>
-                    <span className="font-bold">→</span>
+                    <span>{isHi?"देखें":"Explore"}</span><span>→</span>
                   </button>
                 </div>
               </div>
             )}
 
-            {/* B. LIVE WALLPAPERS TAB */}
+            {/* ══════════════════════════════════════════ */}
+            {/* B. LIVE WALLPAPERS                        */}
+            {/* ══════════════════════════════════════════ */}
             {wallpaperType === "live" && (
-              <div className="w-full flex flex-col items-center space-y-9 animate-fade-in">
-                {/* Categories Live Deity filter */}
+              <div className="w-full flex flex-col items-center space-y-8 animate-fade-in">
+
+                {/* Live Deity chips */}
                 <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-3.5 px-1">
-                    <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 tracking-widest uppercase flex items-center gap-2">
-                      <span className="text-amber-500">🕉️</span>
-                      {isHi ? "सजीव देवता दर्शन" : "Live Deity Categories"}
+                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                      <span>🕉️</span>
+                      {isHi ? "सजीव देवता दर्शन" : "Live Deity Feed"}
                     </h3>
-                    <button
-                      onClick={() => setSelectedDeityFilter(null)}
-                      className="font-sans text-[10px] font-bold text-amber-500/80 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
-                    >
-                      <span>{isHi ? "सभी देखें" : "View All"}</span>
-                      <span>&gt;</span>
+                    <button onClick={()=>setSelectedDeityFilter(null)} className="font-sans text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-0.5 active:scale-95 transition-all">
+                      {isHi?"सभी देखें":"View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
                     </button>
                   </div>
-
-                  <div className="flex items-center gap-6 overflow-x-auto pb-4 pt-1 scrollbar-none justify-start w-full scroll-smooth">
+                  <div className="flex items-start gap-5 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full">
                     {[
-                      { id: null, name: "सभी", nameEn: "All", isIcon: true, symbol: "🕉️", image: "" },
-                      { id: "Shiva", name: "शिव", nameEn: "Shiva", isIcon: false, symbol: "", image: shivWallpaperImg },
-                      { id: "Rama", name: "राम", nameEn: "Ram", isIcon: false, symbol: "", image: deityRamImg },
-                      { id: "Krishna", name: "कृष्ण", nameEn: "Krishna", isIcon: false, symbol: "", image: krishnaImg },
-                      { id: "Hanuman", name: "हनुमान", nameEn: "Hanuman", isIcon: false, symbol: "", image: hanumanImg }
+                      { id:null,     name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
+                      { id:"Shiva",  name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
+                      { id:"Rama",   name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
+                      { id:"Krishna",name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
+                      { id:"Hanuman",name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"",   image:hanumanImg },
                     ].map((deity) => {
                       const isActive = selectedDeityFilter === deity.id;
-                      const hasImg = !deity.isIcon;
                       return (
-                        <button
-                          key={deity.id ?? "all"}
-                          onClick={() => setSelectedDeityFilter(deity.id)}
-                          className="flex flex-col items-center gap-2 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 transition-all active:scale-95 shrink-0 group"
-                        >
-                          <div className={`w-12 h-12 relative transition-all duration-300 flex items-center justify-center border-2 ${
-                            hasImg ? "rounded-full" : "rounded-2xl"
-                          } ${
-                            isActive 
-                              ? "border-amber-400 scale-105 shadow-[0_0_0_2px_#120704,0_0_0_3.5px_#f59e0b]"
-                              : hasImg 
-                              ? "border-amber-950/40 bg-[#1b0a05] hover:border-amber-500/30"
-                              : "border-amber-950/30 bg-[#1b0a05] text-amber-500/70 hover:border-amber-500/30"
-                          }`}>
-                            {deity.isIcon ? (
-                              <span className={`text-lg transition-transform group-hover:scale-110 ${isActive ? "text-amber-300" : "text-amber-500/60 font-black"}`}>
-                                {deity.symbol}
-                              </span>
-                            ) : (
-                              <img src={deity.image} alt={deity.nameEn} className="w-full h-full object-cover rounded-full pointer-events-none" />
-                            )}
+                        <button key={deity.id??"all"} onClick={()=>setSelectedDeityFilter(deity.id)}
+                          className="flex flex-col items-center gap-2 outline-none focus:outline-none transition-all active:scale-95 shrink-0">
+                          <div style={{width:54,height:54,borderRadius:"50%",padding:isActive?2.5:0,background:isActive?"linear-gradient(135deg,#f59e0b,#fbbf24,#d97706)":"transparent",transition:"all 0.25s ease",position:"relative"}}>
+                            <div style={{width:"100%",height:"100%",borderRadius:"50%",overflow:"hidden",background:"#1b0a05",border:isActive?"2px solid #0d0502":"2px solid rgba(120,60,10,0.35)",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:isActive?"0 0 18px rgba(251,191,36,0.5)":"0 2px 8px rgba(0,0,0,0.5)",transition:"all 0.25s ease"}}>
+                              {deity.isIcon ? (
+                                <span style={{fontSize:22,filter:isActive?"drop-shadow(0 0 5px #fbbf24)":"none"}}>{deity.symbol}</span>
+                              ) : (
+                                <img src={deity.image} alt={deity.nameEn} style={{width:"100%",height:"100%",objectFit:"cover",transform:isActive?"scale(1.08)":"scale(1)",transition:"transform 0.3s ease"}}/>
+                              )}
+                            </div>
                             {isActive && (
-                              <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full border border-[#0d0502] flex items-center justify-center shadow-md z-10">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-2.5 h-2.5">
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
+                              <span style={{position:"absolute",bottom:-2,right:-2,width:18,height:18,borderRadius:"50%",background:"linear-gradient(135deg,#f59e0b,#fbbf24)",border:"2px solid #0d0502",display:"flex",alignItems:"center",justifyContent:"center",zIndex:10}}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" style={{width:10,height:10}}><polyline points="20 6 9 17 4 12"/></svg>
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold tracking-wide transition-colors ${
-                            isActive ? "text-amber-400 font-extrabold" : "text-stone-400 group-hover:text-stone-200"
-                          }`}>
-                            {isHi ? deity.name : deity.nameEn}
+                          <span style={{fontSize:10,fontWeight:isActive?800:600,color:isActive?"#fbbf24":"rgba(161,120,80,0.65)",transition:"color 0.2s",letterSpacing:"0.03em",lineHeight:1}}>
+                            {isHi?deity.name:deity.nameEn}
                           </span>
                         </button>
                       );
@@ -2929,139 +2936,102 @@ export default function BlessingsPage() {
                   </div>
                 </div>
 
-                {/* Today's Recommended Live Leela */}
+                {/* Today's live recommendation */}
                 {!selectedDeityFilter && !searchQuery && (
                   <div className="w-full flex flex-col">
-                    <div className="flex items-center justify-between w-full mb-3.5 px-1">
-                      <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 tracking-widest uppercase flex items-center gap-2">
-                        <span className="text-amber-500">🌌</span>
-                        {isHi ? "आज की दिव्य सजीव लीला" : "Today's Living Darshan recommendation"}
+                    <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                      <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                        <span>🌌</span>
+                        {isHi?"आज की दिव्य सजीव लीला":"Today's Living Darshan"}
                       </h3>
-                      <span className="text-[9px] font-sans text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full font-black animate-pulse">
-                        {isHi ? "सक्रिय तानपुरा धुन" : "Tanpura Drone Active"}
-                      </span>
+                      <span className="text-[9px] font-sans text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full font-black animate-pulse">{isHi?"लाइव":"Live"}</span>
                     </div>
-
-                    <div className="w-full bg-gradient-to-b from-[#211009] to-[#0f0604] border border-[#fbbf24]/20 rounded-2xl p-2.5 relative flex flex-col group overflow-hidden shadow-2xl">
-                      <div className="w-full aspect-[16/9] rounded-xl overflow-hidden relative">
-                        {/* Interactive glow effect */}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_70%)] animate-pulse" style={{ animationDuration: '4s' }} />
-                        <img 
-                          src={radhaKrishnaImg} 
-                          alt="Vrindavan Leela Live Recommendation" 
-                          className="w-full h-full object-cover scale-102 animate-pulse pointer-events-none" 
-                          style={{ animationDuration: '6s' }}
-                        />
-
-                        {/* Floating live particle overlay */}
-                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                          <div className="absolute top-[-10px] left-[20%] text-xs opacity-50 animate-bounce">🌸</div>
-                          <div className="absolute top-[-5px] left-[50%] text-xs opacity-40 animate-bounce" style={{ animationDelay: '1.2s' }}>🌼</div>
-                          <div className="absolute top-[-15px] left-[80%] text-xs opacity-60 animate-bounce" style={{ animationDelay: '0.6s' }}>🌸</div>
+                    <div className="w-full rounded-2xl overflow-hidden relative cursor-pointer group"
+                      style={{border:"1px solid rgba(251,191,36,0.15)",boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}
+                      onClick={()=>handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0])}>
+                      <div className="w-full aspect-[16/9] relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_70%)] animate-pulse z-10" style={{animationDuration:"4s"}}/>
+                        <img src={radhaKrishnaImg} alt="Vrindavan Leela"
+                          className="w-full h-full object-cover scale-[1.02] group-hover:scale-[1.07] transition-transform duration-700 pointer-events-none"/>
+                        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                          <div className="absolute top-2 left-[20%] text-sm opacity-40 animate-bounce">🌸</div>
+                          <div className="absolute top-3 left-[55%] text-sm opacity-30 animate-bounce" style={{animationDelay:"1.2s"}}>🌼</div>
+                          <div className="absolute top-1 left-[80%] text-sm opacity-45 animate-bounce" style={{animationDelay:"0.6s"}}>🌸</div>
                         </div>
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-5 text-left">
-                          <div className="flex justify-between items-end w-full">
-                            <div>
-                              <span className="text-[8px] font-sans font-black text-amber-400 uppercase tracking-widest px-2 py-0.5 rounded bg-black/60 border border-amber-500/20 mb-2 inline-block">
-                                Vrindavan Live
-                              </span>
-                              <h4 className="font-serif text-base sm:text-lg font-bold text-amber-100">
-                                {isHi ? "राधा-कृष्ण दिव्य रास" : "Radha-Krishna Divine Raas"}
-                              </h4>
-                              <p className="text-[11px] font-sans text-amber-200/60 mt-1 font-semibold">
-                                {isHi ? "पुष्प वर्षा एवं दिव्य आभा मंडल के साथ..." : "With slow shower of divine petals and aura glow..."}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0])}
-                              className="px-4 py-2 bg-white text-black hover:bg-amber-100 rounded-full font-sans text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5 shadow-lg shadow-black/40"
-                            >
-                              <Sparkles className="w-3.5 h-3.5 text-black fill-current animate-spin" style={{ animationDuration: '3s' }} />
-                              <span>{isHi ? "सजीव प्रीव्यू" : "Preview Live"}</span>
-                            </button>
+                        <div className="absolute inset-0 z-10" style={{background:"linear-gradient(to top,rgba(5,2,1,0.95) 0%,rgba(5,2,1,0.5) 35%,rgba(5,2,1,0.08) 65%,transparent 100%)"}}/>
+                        <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between z-20">
+                          <div className="flex flex-col gap-1 text-left">
+                            <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.75)",textTransform:"uppercase",letterSpacing:"0.18em"}}>Vrindavan Live</span>
+                            <h4 className="font-serif text-base font-bold text-amber-100 leading-tight">{isHi?"राधा-कृष्ण दिव्य रास":"Radha-Krishna Divine Raas"}</h4>
+                            <p style={{fontSize:10,color:"rgba(253,230,138,0.5)",fontStyle:"italic"}}>{isHi?"पुष्प वर्षा एवं दिव्य आभा के साथ...":"With divine petals & aura glow..."}</p>
                           </div>
+                          <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0]);}}
+                            className="shrink-0 px-4 py-2 rounded-full font-sans text-[10px] font-black uppercase tracking-wide flex items-center gap-1.5 transition-all active:scale-95"
+                            style={{background:"rgba(255,255,255,0.92)",color:"#0d0502",boxShadow:"0 4px 14px rgba(0,0,0,0.4)"}}>
+                            <Sparkles className="w-3.5 h-3.5 fill-current animate-spin" style={{animationDuration:"3s"}}/>
+                            <span>{isHi?"प्रीव्यू":"Preview"}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Live Backdrops Grid list */}
+                {/* Live gallery grid */}
                 <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-4 px-1">
-                    <h3 className="font-serif text-xs sm:text-sm font-black text-amber-100 uppercase tracking-widest flex items-center gap-2">
-                      <span className="text-amber-500">🎬</span>
-                      {isHi ? "सजीव वॉलपेपर गैलरी" : "Living Darshan Feed"}
+                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
+                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
+                      <span>🎬</span>
+                      {isHi?"सजीव वॉलपेपर गैलरी":"Living Darshan Feed"}
                     </h3>
-                    <span className="text-[10px] font-bold font-sans text-amber-200/30">
-                      {filteredLiveWallpapers.length} {isHi ? "लाइव वॉलपेपर" : "Live backdrops"}
+                    <span style={{fontSize:10,fontWeight:700,color:"rgba(251,191,36,0.4)"}}>
+                      {filteredLiveWallpapers.length} {isHi?"लाइव":"live"}
                     </span>
                   </div>
-
                   {filteredLiveWallpapers.length === 0 ? (
                     <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
-                      <span>📭</span>
-                      <span>{isHi ? "कोई लाइव वॉलपेपर नहीं मिला।" : "No live wallpapers found matching query."}</span>
+                      <span>📭</span><span>{isHi?"कोई लाइव वॉलपेपर नहीं मिला।":"No live wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
                       {filteredLiveWallpapers.map((wp) => (
-                        <div
-                          key={wp.id}
-                          className="bg-stone-950/20 border border-amber-955/15 rounded-2xl p-1.5 relative flex flex-col group overflow-hidden cursor-pointer hover:border-amber-500/30 active:scale-[0.98] transition-all"
-                          onClick={() => handleLiveWallpaperAction(wp)}
-                        >
-                          <div className="w-full aspect-[2/3] rounded-xl overflow-hidden relative">
-                            {/* Live effects preview */}
-                            {wp.effect === "aura" && (
-                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{ animationDuration: '2.5s' }} />
-                            )}
-                            {wp.effect === "shimmer" && (
-                              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 bg-[length:200%_200%] animate-shimmer" style={{ animationDuration: '2.5s' }} />
-                            )}
-                            {wp.effect === "flame" && (
-                              <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{ animationDuration: '1.5s' }} />
-                            )}
-
-                            <img 
-                              src={wp.thumbnailUrl} 
-                              alt={wp.name} 
-                              className="w-full h-full object-cover scale-102 group-hover:scale-106 transition-transform duration-500 pointer-events-none" 
-                            />
-                            
-                            {/* Motion Tag */}
-                            <div className="absolute top-2.5 left-2.5 z-10 flex gap-1">
-                              <span className="text-[7px] font-sans font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-black/60 border border-amber-500/20 text-amber-400">
-                                {wp.effect}
-                              </span>
+                        <div key={wp.id}
+                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300"
+                          style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
+                          onClick={()=>handleLiveWallpaperAction(wp)}>
+                          <div className="w-full aspect-[9/16] relative">
+                            {wp.effect==="aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
+                            {wp.effect==="shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
+                            {wp.effect==="flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
+                            <img src={wp.thumbnailUrl} alt={wp.name}
+                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 pointer-events-none"/>
+                            <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(4,1,0,0.93) 0%,rgba(4,1,0,0.55) 30%,rgba(4,1,0,0.1) 65%,transparent 100%)"}}/>
+                            {/* Effect tag */}
+                            <div className="absolute top-2.5 left-2.5 z-10">
+                              <span style={{fontSize:7,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.1em",padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",border:"1px solid rgba(251,191,36,0.25)",color:"#fbbf24"}}>{wp.effect}</span>
                             </div>
-
-                            {/* Details overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3 text-left z-10">
-                              <span className="text-[7px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none">
-                                {wp.deity}
+                            {/* Tier */}
+                            <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
+                              style={{fontSize:8,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(251,191,36,0.2)",color:"#fbbf24"}}>
+                              {wp.tier==="premium"?"👑 Pro":"Free"}
+                            </div>
+                            {/* Bottom text always visible */}
+                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left z-10" style={{paddingRight:44}}>
+                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.75)",textTransform:"uppercase",letterSpacing:"0.14em",lineHeight:1}}>
+                                ♱ {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
                               </span>
-                              <h4 className="font-serif text-[11px] font-bold text-white mt-1 leading-tight truncate">
-                                {isHi ? wp.nameHindi : wp.name}
+                              <h4 style={{fontFamily:"serif",fontSize:12,fontWeight:700,color:"rgba(254,243,199,0.95)",lineHeight:1.25}} className="line-clamp-1">
+                                {isHi?wp.nameHindi:wp.name}
                               </h4>
                             </div>
-
-                            {/* Download Action button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleLiveWallpaperAction(wp);
-                              }}
-                              className="absolute bottom-2.5 right-2.5 w-10 h-10 rounded-full bg-black/60 hover:bg-gradient-to-r hover:from-amber-500 hover:to-amber-600 border border-amber-500/35 hover:border-amber-400 text-amber-400 hover:text-black flex items-center justify-center shadow-lg hover:shadow-[0_0_14px_rgba(245,158,11,0.5)] active:scale-90 transition-all duration-300 focus:outline-none z-20"
-                            >
-                              <Sparkles className="w-4.5 h-4.5 fill-current transition-colors" />
+                            {/* Action button */}
+                            <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
+                              className="absolute bottom-3 right-3 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20"
+                              style={{width:36,height:36,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                              onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";}}
+                              onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.55)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";}}>
+                              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
                             </button>
-
-                            {/* Tier Tag label */}
-                            <span className="absolute top-2 right-2 text-[8px] font-sans font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/30 text-[#fbbf24] z-10">
-                              {wp.tier}
-                            </span>
                           </div>
                         </div>
                       ))}
@@ -3069,15 +3039,14 @@ export default function BlessingsPage() {
                   )}
                 </div>
 
-                {/* Help tip card */}
-                <div className="w-full bg-[#1b0d07]/40 border border-amber-950/20 rounded-2xl p-4 flex flex-col items-center gap-2 select-none">
-                  <span className="text-xs text-amber-400">
-                    💡 {isHi ? "सजीव वॉलपेपर कैसे लगाएं?" : "How to Apply Live Wallpapers?"}
-                  </span>
-                  <p className="text-[9px] font-sans text-amber-200/50 text-center tracking-wide leading-relaxed max-w-md">
-                    {isHi 
-                      ? "सजीव वॉलपेपर डाउनलोड करने पर आपको एक एचडी मोशन जिफ/वेबपी प्राप्त होगी। आप इसे किसी भी तृतीय-पक्ष लाइव वॉलपेपर लॉन्चर की सहायता से अपने एंड्रॉइड या आईओएस लॉकस्क्रीन पर सेट कर सकते हैं।" 
-                      : "Downloading a live wallpaper grants you an HD motion webp/gif file. You can apply it directly to your lock screen using any standard live wallpaper settings on Android or iOS."}
+                {/* How-to tip */}
+                <div className="w-full rounded-2xl p-4 flex flex-col items-center gap-2"
+                  style={{background:"rgba(27,13,7,0.4)",border:"1px solid rgba(120,60,10,0.2)"}}>
+                  <span className="text-xs text-amber-400">💡 {isHi?"सजीव वॉलपेपर कैसे लगाएं?":"How to Apply Live Wallpapers?"}</span>
+                  <p className="text-[9px] font-sans text-amber-200/45 text-center tracking-wide leading-relaxed max-w-md">
+                    {isHi
+                      ? "सजीव वॉलपेपर डाउनलोड करने पर एचडी मोशन जिफ/वेबपी प्राप्त होगी। किसी भी लाइव वॉलपेपर लॉन्चर की सहायता से इसे अपने लॉकस्क्रीन पर सेट करें।"
+                      : "Downloading a live wallpaper grants you an HD motion webp/gif. Apply it to your lock screen using any live wallpaper settings on Android or iOS."}
                   </p>
                 </div>
               </div>
