@@ -3881,10 +3881,9 @@ export default function BlessingsPage() {
                   />
 
                   {/* ── Profile row overlaid on poster bottom ── */}
-                  {!showProfileEdit && (
-                    <div
-                      className="absolute inset-x-0 bottom-0 px-5 pb-5 flex items-center justify-between"
-                    >
+                  <div
+                    className="absolute inset-x-0 bottom-0 px-5 pb-5 flex items-center justify-between"
+                  >
                       {/* Avatar + name */}
                       <div className="flex items-center gap-3">
                         <div
@@ -3933,118 +3932,12 @@ export default function BlessingsPage() {
                         <UserIcon className="w-3.5 h-3.5" />
                         <span>{isHi ? "प्रोफाइल बदलें" : "Edit Profile"}</span>
                       </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
 
-                {/* ── Edit Profile Panel (slides up when editing) ── */}
-                {showProfileEdit && (
-                  <div
-                    className="absolute inset-x-0 bottom-0 z-30"
-                    style={{
-                      background: "linear-gradient(180deg, rgba(10,2,0,0.0) 0%, rgba(10,2,0,0.98) 12%)",
-                      borderTop: "1px solid rgba(251,191,36,0.12)",
-                      padding: "20px 20px 20px",
-                    }}
-                  >
-                    <div className="flex justify-between items-center mb-4">
-                      <span style={{ fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.6)" }}>
-                        {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
-                      </span>
-                      <button onClick={() => setShowProfileEdit(false)} style={{ color: "rgba(251,191,36,0.5)", cursor: "pointer" }}>
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Name input */}
-                    <div className="space-y-1.5 mb-4">
-                      <label style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.5)", display: "block" }}>
-                        {isHi ? "आपका नाम" : "Your Name"}
-                      </label>
-                      <div className="relative">
-                        <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/40" />
-                        <input
-                          type="text"
-                          maxLength={30}
-                          placeholder={isHi ? "अपना नाम दर्ज करें..." : "Enter your name..."}
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
-                          className="w-full focus:outline-none tracking-wide"
-                          style={{
-                            background: "rgba(0,0,0,0.5)",
-                            border: "1px solid rgba(251,191,36,0.2)",
-                            borderRadius: 12,
-                            padding: "11px 48px 11px 40px",
-                            fontSize: 13,
-                            fontFamily: "sans-serif",
-                            fontWeight: 600,
-                            color: "#fef3c7",
-                          }}
-                        />
-                        <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 9, color: "rgba(251,191,36,0.4)", fontWeight: 700 }}>
-                          {userName.length}/30
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Photo upload */}
-                    <div className="mb-4">
-                      <label style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.5)", display: "block", marginBottom: 8 }}>
-                        {isHi ? "श्रद्धालु चित्र" : "Devotee Photo"}
-                      </label>
-                      <div className="flex items-center gap-3" style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(251,191,36,0.12)", borderRadius: 12, padding: "10px 14px" }}>
-                        <div style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid rgba(251,191,36,0.4)", background: "#1b0a05", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          {userPhoto ? <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontFamily: "serif", color: "rgba(251,191,36,0.5)", fontSize: 18 }}>ॐ</span>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-                            style={{ padding: "6px 12px", borderRadius: 9, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }}
-                          >
-                            <Camera className="w-3.5 h-3.5" />
-                            <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड" : "Upload")}</span>
-                          </button>
-                          {userPhoto && (
-                            <button
-                              onClick={() => setUserPhoto(null)}
-                              className="active:scale-95 transition-all cursor-pointer"
-                              style={{ padding: "6px 12px", borderRadius: 9, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase" }}
-                            >
-                              {isHi ? "हटाएं" : "Remove"}
-                            </button>
-                          )}
-                        </div>
-                        <input type="file" ref={fileInputRef} accept="image/*" className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                if (event.target?.result) {
-                                  setUserPhoto(event.target.result as string);
-                                  toast.success(isHi ? "फोटो अपलोड हो गई!" : "Photo uploaded!");
-                                }
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setShowProfileEdit(false)}
-                      className="w-full active:scale-[0.98] transition-all cursor-pointer"
-                      style={{ padding: "11px", borderRadius: 12, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em" }}
-                    >
-                      {isHi ? "सहेजें ✓" : "Save ✓"}
-                    </button>
-                  </div>
-                )}
 
                 {/* ── Bottom action bar ── */}
-                {!showProfileEdit && (
+                {(
                   <div
                     style={{
                       background: "rgba(8,2,0,0.98)",
@@ -4107,6 +4000,145 @@ export default function BlessingsPage() {
                 )}
               </motion.div>
             </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ─── PROFILE EDIT BOTTOM SHEET ─── */}
+      <AnimatePresence>
+        {showProfileEdit && selectedPoster && (
+          <>
+            {/* Dim backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowProfileEdit(false)}
+              className="fixed inset-0 z-[155]"
+              style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 260 }}
+              className="fixed inset-x-0 bottom-0 z-[160] pointer-events-auto"
+              style={{
+                background: "linear-gradient(180deg, #120603 0%, #0a0200 100%)",
+                borderTop: "1px solid rgba(251,191,36,0.25)",
+                borderRadius: "28px 28px 0 0",
+                padding: "8px 20px 32px",
+                boxShadow: "0 -20px 60px rgba(0,0,0,0.8)",
+              }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-2 pb-4">
+                <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(251,191,36,0.25)" }} />
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between mb-5">
+                <span style={{ fontSize: 14, fontFamily: "serif", fontWeight: 800, color: "#fef3c7", letterSpacing: "0.02em" }}>
+                  {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
+                </span>
+                <button
+                  onClick={() => setShowProfileEdit(false)}
+                  className="flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+                  style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24" }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Name input */}
+              <div className="mb-5">
+                <label style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.55)", display: "block", marginBottom: 8 }}>
+                  {isHi ? "आपका नाम" : "Your Name"}
+                </label>
+                <div className="relative">
+                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/40" />
+                  <input
+                    type="text"
+                    maxLength={30}
+                    placeholder={isHi ? "अपना नाम दर्ज करें..." : "Enter your name..."}
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    autoFocus
+                    className="w-full focus:outline-none tracking-wide"
+                    style={{
+                      background: "rgba(0,0,0,0.5)",
+                      border: "1px solid rgba(251,191,36,0.25)",
+                      borderRadius: 14,
+                      padding: "13px 48px 13px 40px",
+                      fontSize: 15,
+                      fontFamily: "serif",
+                      fontWeight: 600,
+                      color: "#fef3c7",
+                    }}
+                  />
+                  <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 9, color: "rgba(251,191,36,0.35)", fontWeight: 700 }}>
+                    {userName.length}/30
+                  </span>
+                </div>
+              </div>
+
+              {/* Photo upload */}
+              <div className="mb-6">
+                <label style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.55)", display: "block", marginBottom: 8 }}>
+                  {isHi ? "श्रद्धालु चित्र" : "Devotee Photo"}
+                </label>
+                <div className="flex items-center gap-3" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(251,191,36,0.15)", borderRadius: 14, padding: "12px 14px" }}>
+                  <div style={{ width: 46, height: 46, borderRadius: "50%", border: "2px solid rgba(251,191,36,0.45)", background: "#1b0a05", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 10px rgba(251,191,36,0.2)" }}>
+                    {userPhoto ? <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontFamily: "serif", color: "rgba(251,191,36,0.55)", fontSize: 20 }}>ॐ</span>}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                      style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                    >
+                      <Camera className="w-4 h-4" />
+                      <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड करें" : "Upload Photo")}</span>
+                    </button>
+                    {userPhoto && (
+                      <button
+                        onClick={() => setUserPhoto(null)}
+                        className="active:scale-95 transition-all cursor-pointer"
+                        style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase" }}
+                      >
+                        {isHi ? "हटाएं" : "Remove"}
+                      </button>
+                    )}
+                  </div>
+                  <input type="file" ref={fileInputRef} accept="image/*" className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (event.target?.result) {
+                            setUserPhoto(event.target.result as string);
+                            toast.success(isHi ? "फोटो अपलोड हो गई!" : "Photo uploaded!");
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Save button */}
+              <button
+                onClick={() => setShowProfileEdit(false)}
+                className="w-full active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+                style={{ padding: "15px", borderRadius: 16, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#1a0500", fontSize: 14, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", boxShadow: "0 4px 20px rgba(245,158,11,0.35)" }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}><polyline points="20 6 9 17 4 12"/></svg>
+                <span>{isHi ? "सहेजें" : "Save Profile"}</span>
+              </button>
+            </motion.div>
           </>
         )}
       </AnimatePresence>
