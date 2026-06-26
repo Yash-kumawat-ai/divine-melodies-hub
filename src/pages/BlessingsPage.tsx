@@ -3802,238 +3802,314 @@ export default function BlessingsPage() {
       <AnimatePresence>
         {selectedPoster && (
           <>
-            {/* Backdrop with blurring, transition, and click to close */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-              className="fixed inset-0 bg-black/85 backdrop-blur-xl z-[120]"
+              className="fixed inset-0 bg-black/90 backdrop-blur-2xl z-[120]"
             />
 
-            {/* Modal Container */}
-            <div className="fixed inset-0 z-[130] flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
+            {/* Full-screen modal */}
+            <div className="fixed inset-0 z-[130] flex items-center justify-center pointer-events-none">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                initial={{ opacity: 0, scale: 0.93, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                transition={{ type: "spring", damping: 26, stiffness: 210 }}
-                className="pointer-events-auto w-full max-w-md bg-gradient-to-b from-[#1b0a05] to-[#0a0301] border border-amber-500/20 rounded-[2.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden h-[90vh] text-stone-200 relative"
+                exit={{ opacity: 0, scale: 0.93, y: 20 }}
+                transition={{ type: "spring", damping: 28, stiffness: 220 }}
+                className="pointer-events-auto relative w-full max-w-sm flex flex-col"
+                style={{
+                  height: "calc(100dvh - 24px)",
+                  maxHeight: 820,
+                  background: "#0a0200",
+                  borderRadius: 32,
+                  overflow: "hidden",
+                  boxShadow: "0 30px 80px rgba(0,0,0,0.97)",
+                  border: "1px solid rgba(251,191,36,0.18)",
+                }}
               >
-                {/* Floating Close Button */}
+                {/* ── Close button ── */}
                 <button
                   onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-                  className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-black/60 hover:bg-black/85 border border-amber-500/30 flex items-center justify-center text-amber-400 hover:text-amber-100 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg"
+                  className="absolute top-4 right-4 z-50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  style={{
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.65)",
+                    border: "1px solid rgba(251,191,36,0.35)",
+                    color: "#fbbf24",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.6)",
+                  }}
                 >
-                  <X className="w-4.5 h-4.5" />
+                  <X className="w-4 h-4" />
                 </button>
 
-                {/* Upper Column: Canvas Preview Workspace (70-75% height) */}
-                <div className="flex-[7] min-h-0 w-full flex items-center justify-center p-6 relative bg-black/25">
-                  <span className="absolute top-4 left-4 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider font-sans bg-amber-500/15 border border-amber-500/30 text-amber-400 pointer-events-none select-none z-10">
-                    ⚡ LIVE PREVIEW
-                  </span>
-
-                  <div className="h-full w-full flex items-center justify-center relative transition-all duration-300">
-                    {compiledPosterUrl ? (
-                      <img 
-                        src={compiledPosterUrl} 
-                        alt="Personalized Preview" 
-                        className="max-h-full max-w-full h-auto w-auto object-contain rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] border border-amber-500/25 transition-all duration-300"
-                      />
-                    ) : (
-                      <div className="aspect-[9/16] h-[75%] rounded-2xl flex flex-col items-center justify-center gap-3 border border-amber-500/10 bg-[#120603]/80 text-[#ffe2b4]/50 shadow-[0_15px_40px_rgba(0,0,0,0.85)] px-6">
-                        <div className="w-7 h-7 rounded-full border-2 border-t-amber-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
-                        <span className="text-[8px] font-sans font-black uppercase tracking-widest text-center">
-                          {isHi ? "चित्र तैयार हो रहा है..." : "Compiling Preview..."}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Bottom Column: Control & Customization Center (25-30% height) */}
-                <div className="flex-[3] shrink-0 w-full bg-gradient-to-b from-[#130703] to-[#0a0301] border-t border-amber-500/15 p-5 md:p-6 flex flex-col justify-center gap-4 overflow-y-auto scrollbar-thin select-none">
-                  
-                  {/* Customize Details Fields or Summary Profile Badge */}
-                  {!showProfileEdit ? (
-                    <div className="flex items-center justify-between bg-black/30 border border-amber-500/10 rounded-2xl p-4 transition-all duration-300">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-11 h-11 rounded-full border-2 border-amber-500/40 bg-stone-900 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
-                          {userPhoto ? (
-                            <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-lg font-serif text-amber-500/60">ॐ</span>
-                          )}
-                        </div>
-                        <div className="text-left">
-                          <span className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-widest block leading-none mb-1">
-                            {isHi ? "नाम और चित्र" : "Devotee Profile"}
-                          </span>
-                          <span className="font-serif text-sm font-bold text-amber-100">
-                            {userName.trim() ? userName.trim() : (isHi ? "हरि भक्त" : "Devotee")}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <button
-                        onClick={() => setShowProfileEdit(true)}
-                        className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                      >
-                        <UserIcon className="w-3.5 h-3.5" />
-                        <span>{isHi ? "प्रोफ़ाइल बदलें" : "Change Profile"}</span>
-                      </button>
-                    </div>
+                {/* ── POSTER IMAGE (fills most of the screen) ── */}
+                <div className="flex-1 min-h-0 relative overflow-hidden">
+                  {compiledPosterUrl ? (
+                    <img
+                      src={compiledPosterUrl}
+                      alt="Personalized Poster"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
                   ) : (
-                    <div className="space-y-4 bg-black/40 border border-amber-500/15 rounded-2xl p-4 transition-all duration-300">
-                      <div className="flex justify-between items-center pb-1 border-b border-amber-500/10">
-                        <span className="text-[8px] uppercase font-sans font-black text-amber-500/60 tracking-wider">
-                          {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
-                        </span>
-                      </div>
-                      
-                      {/* Name Input field */}
-                      <div className="space-y-1.5 text-left">
-                        <label className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-wider">
-                          {isHi ? "आपका नाम (देवभक्त नाम)" : "Your Name (Devotee Name)"}
-                        </label>
-                        <div className="relative">
-                          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500/40">
-                            <UserIcon className="w-4 h-4" />
-                          </div>
-                          <input
-                            type="text"
-                            maxLength={30}
-                            placeholder={isHi ? "अपना नाम दर्ज करें..." : "Enter your name..."}
-                            value={userName}
-                            onChange={(e) => setUserName(e.target.value)}
-                            className="w-full bg-black/40 border border-amber-500/15 focus:border-amber-500/45 rounded-xl py-2.5 pl-10 pr-14 text-xs text-amber-100 placeholder:text-amber-200/25 focus:outline-none tracking-wide font-sans font-semibold transition-all"
-                          />
-                          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/45 font-bold">
-                            {userName.length}/30
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Photo Upload field */}
-                      <div className="space-y-2 text-left">
-                        <label className="text-[8px] uppercase font-sans font-black text-amber-500/50 tracking-wider block">
-                          {isHi ? "श्रद्धालु चित्र (Devotee Avatar)" : "Devotee Photo (Avatar)"}
-                        </label>
-                        
-                        <div className="flex items-center gap-3 bg-black/20 border border-amber-500/10 rounded-xl p-2.5">
-                          <div className="relative w-10 h-10 rounded-full border-2 border-amber-500/40 bg-stone-900 overflow-hidden flex items-center justify-center shadow-inner shrink-0">
-                            {userPhoto ? (
-                              <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-lg font-serif text-amber-500/50">ॐ</span>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => fileInputRef.current?.click()}
-                              className="px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Camera className="w-3.5 h-3.5" />
-                              <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड" : "Upload")}</span>
-                            </button>
-                            
-                            {userPhoto && (
-                              <button
-                                onClick={() => setUserPhoto(null)}
-                                className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 rounded-lg font-sans text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer"
-                              >
-                                {isHi ? "हटाएं" : "Remove"}
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Hidden File Input */}
-                          <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  if (event.target?.result) {
-                                    setUserPhoto(event.target.result as string);
-                                    toast.success(isHi ? "फोटो सफलतापूर्वक अपलोड की गई!" : "Photo uploaded successfully!");
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setShowProfileEdit(false)}
-                        className="w-full py-2.5 mt-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 rounded-xl font-sans text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer text-center"
-                      >
-                        {isHi ? "प्रोफ़ाइल सहेजें" : "Save Profile Details"}
-                      </button>
+                    <div
+                      className="w-full h-full flex flex-col items-center justify-center gap-4"
+                      style={{ background: "linear-gradient(180deg,#1a0804,#0a0200)" }}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-full border-[3px] border-t-amber-400 border-r-transparent border-b-transparent border-l-transparent animate-spin"
+                      />
+                      <span className="text-[11px] font-sans font-black uppercase tracking-widest text-amber-400/70">
+                        {isHi ? "पोस्टर तैयार हो रहा है..." : "Compiling poster..."}
+                      </span>
                     </div>
                   )}
 
-                  {/* Aspect Ratio Toggle */}
-                  <div className="space-y-2">
-                    <label className="text-[8px] uppercase font-sans font-black text-amber-500/60 tracking-wider block">
-                      {isHi ? "आकार (Aspect Ratio)" : "Size & Aspect Ratio"}
-                    </label>
-                    <div className="w-full p-1 flex items-center rounded-xl bg-black/40 border border-amber-500/10">
+                  {/* Dark gradient at bottom so text stays readable */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 pointer-events-none"
+                    style={{
+                      height: "38%",
+                      background: "linear-gradient(to top, rgba(5,1,0,0.98) 0%, rgba(5,1,0,0.7) 50%, transparent 100%)",
+                    }}
+                  />
+
+                  {/* ── Profile row overlaid on poster bottom ── */}
+                  {!showProfileEdit && (
+                    <div
+                      className="absolute inset-x-0 bottom-0 px-5 pb-5 flex items-center justify-between"
+                    >
+                      {/* Avatar + name */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          style={{
+                            width: 46, height: 46, borderRadius: "50%",
+                            border: "2.5px solid rgba(251,191,36,0.6)",
+                            background: "#1b0a05",
+                            overflow: "hidden",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            boxShadow: "0 0 14px rgba(251,191,36,0.3)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {userPhoto ? (
+                            <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: 20, fontFamily: "serif", color: "rgba(251,191,36,0.65)" }}>ॐ</span>
+                          )}
+                        </div>
+                        <div className="flex flex-col text-left">
+                          <span style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(251,191,36,0.55)", lineHeight: 1, marginBottom: 3 }}>
+                            {isHi ? "नाम और चित्र" : "Devotee Profile"}
+                          </span>
+                          <span style={{ fontSize: 16, fontFamily: "serif", fontWeight: 700, color: "#fef3c7", lineHeight: 1 }}>
+                            {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Edit profile button */}
                       <button
-                        onClick={() => setGenerationType("status")}
-                        className="flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all focus:outline-none cursor-pointer flex items-center justify-center gap-1.5"
-                        style={generationType === 'status' ? { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' } : { color: 'rgba(180,160,130,0.5)' }}
+                        onClick={() => setShowProfileEdit(true)}
+                        className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                        style={{
+                          padding: "8px 14px",
+                          borderRadius: 12,
+                          background: "rgba(251,191,36,0.1)",
+                          border: "1px solid rgba(251,191,36,0.35)",
+                          color: "#fbbf24",
+                          fontSize: 10,
+                          fontFamily: "sans-serif",
+                          fontWeight: 900,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                        }}
                       >
-                        <Smartphone className="w-3 h-3" />
-                        <span>{isHi ? "स्टोरी (9:16)" : "Story (9:16)"}</span>
-                      </button>
-                      <button
-                        onClick={() => setGenerationType("square")}
-                        className="flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all focus:outline-none cursor-pointer flex items-center justify-center gap-1.5"
-                        style={generationType === 'square' ? { background: 'rgba(251,191,36,0.12)', color: '#fbbf24' } : { color: 'rgba(180,160,130,0.5)' }}
-                      >
-                        <span className="text-xs leading-none">⬜</span>
-                        <span>{isHi ? "पोस्ट (1:1)" : "Post (1:1)"}</span>
+                        <UserIcon className="w-3.5 h-3.5" />
+                        <span>{isHi ? "प्रोफाइल बदलें" : "Edit Profile"}</span>
                       </button>
                     </div>
-                  </div>
+                  )}
+                </div>
 
-                  {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-3 pt-1">
+                {/* ── Edit Profile Panel (slides up when editing) ── */}
+                {showProfileEdit && (
+                  <div
+                    className="absolute inset-x-0 bottom-0 z-30"
+                    style={{
+                      background: "linear-gradient(180deg, rgba(10,2,0,0.0) 0%, rgba(10,2,0,0.98) 12%)",
+                      borderTop: "1px solid rgba(251,191,36,0.12)",
+                      padding: "20px 20px 20px",
+                    }}
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <span style={{ fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.6)" }}>
+                        {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
+                      </span>
+                      <button onClick={() => setShowProfileEdit(false)} style={{ color: "rgba(251,191,36,0.5)", cursor: "pointer" }}>
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Name input */}
+                    <div className="space-y-1.5 mb-4">
+                      <label style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.5)", display: "block" }}>
+                        {isHi ? "आपका नाम" : "Your Name"}
+                      </label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/40" />
+                        <input
+                          type="text"
+                          maxLength={30}
+                          placeholder={isHi ? "अपना नाम दर्ज करें..." : "Enter your name..."}
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          className="w-full focus:outline-none tracking-wide"
+                          style={{
+                            background: "rgba(0,0,0,0.5)",
+                            border: "1px solid rgba(251,191,36,0.2)",
+                            borderRadius: 12,
+                            padding: "11px 48px 11px 40px",
+                            fontSize: 13,
+                            fontFamily: "sans-serif",
+                            fontWeight: 600,
+                            color: "#fef3c7",
+                          }}
+                        />
+                        <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 9, color: "rgba(251,191,36,0.4)", fontWeight: 700 }}>
+                          {userName.length}/30
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Photo upload */}
+                    <div className="mb-4">
+                      <label style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(251,191,36,0.5)", display: "block", marginBottom: 8 }}>
+                        {isHi ? "श्रद्धालु चित्र" : "Devotee Photo"}
+                      </label>
+                      <div className="flex items-center gap-3" style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(251,191,36,0.12)", borderRadius: 12, padding: "10px 14px" }}>
+                        <div style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid rgba(251,191,36,0.4)", background: "#1b0a05", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          {userPhoto ? <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontFamily: "serif", color: "rgba(251,191,36,0.5)", fontSize: 18 }}>ॐ</span>}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                            style={{ padding: "6px 12px", borderRadius: 9, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड" : "Upload")}</span>
+                          </button>
+                          {userPhoto && (
+                            <button
+                              onClick={() => setUserPhoto(null)}
+                              className="active:scale-95 transition-all cursor-pointer"
+                              style={{ padding: "6px 12px", borderRadius: 9, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase" }}
+                            >
+                              {isHi ? "हटाएं" : "Remove"}
+                            </button>
+                          )}
+                        </div>
+                        <input type="file" ref={fileInputRef} accept="image/*" className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                if (event.target?.result) {
+                                  setUserPhoto(event.target.result as string);
+                                  toast.success(isHi ? "फोटो अपलोड हो गई!" : "Photo uploaded!");
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setShowProfileEdit(false)}
+                      className="w-full active:scale-[0.98] transition-all cursor-pointer"
+                      style={{ padding: "11px", borderRadius: 12, background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em" }}
+                    >
+                      {isHi ? "सहेजें ✓" : "Save ✓"}
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Bottom action bar ── */}
+                {!showProfileEdit && (
+                  <div
+                    style={{
+                      background: "rgba(8,2,0,0.98)",
+                      borderTop: "1px solid rgba(251,191,36,0.12)",
+                      padding: "14px 16px 18px",
+                      display: "flex",
+                      gap: 10,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {/* Download */}
                     <button
                       onClick={handleDownloadPoster}
                       disabled={!compiledPosterUrl}
-                      className="py-3 font-sans font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
-                      style={{ border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(251,191,36,0.06)', color: '#fbbf24', boxShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+                      className="flex-1 flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-50"
+                      style={{
+                        padding: "14px 0",
+                        borderRadius: 16,
+                        background: "rgba(251,191,36,0.08)",
+                        border: "1.5px solid rgba(251,191,36,0.35)",
+                        color: "#fbbf24",
+                        fontSize: 13,
+                        fontFamily: "sans-serif",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                      }}
                     >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>{isHi ? "डाउनलोड" : "Download HD"}</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      <span>{isHi ? "डाउनलोड" : "Download"}</span>
                     </button>
+
+                    {/* Share */}
                     <button
                       onClick={() => setShowPosterShareModal(true)}
                       disabled={!compiledPosterUrl}
-                      className="py-3 font-sans font-black text-[9px] uppercase tracking-widest rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
-                      style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a0a02', boxShadow: '0 4px 16px rgba(245,158,11,0.35)' }}
+                      className="flex-[1.4] flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-50"
+                      style={{
+                        padding: "14px 0",
+                        borderRadius: 16,
+                        background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                        color: "#1a0500",
+                        fontSize: 13,
+                        fontFamily: "sans-serif",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        boxShadow: "0 4px 20px rgba(245,158,11,0.45)",
+                      }}
                     >
-                      <Share2 className="w-3.5 h-3.5" />
+                      <Share2 className="w-[18px] h-[18px]" />
                       <span>{isHi ? "साझा करें" : "Share"}</span>
                     </button>
                   </div>
-
-                </div>
-
+                )}
               </motion.div>
             </div>
           </>
         )}
+      </AnimatePresence>
       </AnimatePresence>
 
       {/* ─── SCREEN 5: SHARE TARGET BOTTOM SHEET ─── */}
