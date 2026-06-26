@@ -3039,11 +3039,11 @@ export default function BlessingsPage() {
                       <span>{isHi ? "कोई वॉलपेपर नहीं मिला।" : "No wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
+                    <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
                       {filteredWallpapers.map((wp) => (
                         <div
                           key={wp.id}
-                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300"
+                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300 shrink-0 snap-start w-[130px] sm:w-[150px] md:w-[170px]"
                           style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
                           onClick={() => handleWallpaperAction(wp)}
                         >
@@ -3063,8 +3063,8 @@ export default function BlessingsPage() {
                             </div>
 
                             {/* Bottom text — always visible */}
-                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left" style={{paddingRight:46}}>
-                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:"uppercase",letterSpacing:isHi?"normal":"0.14em",lineHeight:1}}>
+                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left" style={{paddingRight:38}}>
+                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:isHi?"normal":"uppercase",letterSpacing:isHi?"normal":"0.14em",lineHeight:1}}>
                                 ♱ {isHi
                                   ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
                                   : wp.deity}
@@ -3077,8 +3077,8 @@ export default function BlessingsPage() {
                             {/* Download button */}
                             <button
                               onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
-                              className="absolute bottom-3 right-3 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-10"
-                              style={{width:36,height:36,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                              className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-10"
+                              style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
                               onMouseEnter={e=>{
                                 (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
                                 (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
@@ -3088,7 +3088,7 @@ export default function BlessingsPage() {
                                 (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";
                               }}
                             >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:14,height:14}}>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
@@ -3234,10 +3234,10 @@ export default function BlessingsPage() {
                       <span>📭</span><span>{isHi?"कोई लाइव वॉलपेपर नहीं मिला।":"No live wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
+                    <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
                       {filteredLiveWallpapers.map((wp) => (
                         <div key={wp.id}
-                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300"
+                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300 shrink-0 snap-start w-[130px] sm:w-[150px] md:w-[170px]"
                           style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
                           onClick={()=>handleLiveWallpaperAction(wp)}>
                           <div className="w-full aspect-[9/16] relative">
@@ -3257,7 +3257,7 @@ export default function BlessingsPage() {
                               {wp.tier==="premium"?"👑 Pro":"Free"}
                             </div>
                             {/* Bottom text always visible */}
-                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left z-10" style={{paddingRight:44}}>
+                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left z-10" style={{paddingRight:38}}>
                               <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:"uppercase",letterSpacing:isHi?"normal":"0.14em",lineHeight:1}}>
                                 ♱ {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
                               </span>
@@ -3267,8 +3267,8 @@ export default function BlessingsPage() {
                             </div>
                             {/* Action button */}
                             <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
-                              className="absolute bottom-3 right-3 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20"
-                              style={{width:36,height:36,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                              className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20"
+                              style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
                               onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";}}
                               onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.55)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";}}>
                               <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
