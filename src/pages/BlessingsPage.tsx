@@ -4110,7 +4110,6 @@ export default function BlessingsPage() {
           </>
         )}
       </AnimatePresence>
-      </AnimatePresence>
 
       {/* ─── SCREEN 5: SHARE TARGET BOTTOM SHEET ─── */}
       <AnimatePresence>
