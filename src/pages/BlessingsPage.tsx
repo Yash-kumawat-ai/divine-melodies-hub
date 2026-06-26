@@ -397,6 +397,74 @@ const CustomDownloadIcon = ({ className = "w-5 h-5" }: { className?: string }) =
   </svg>
 );
 
+// ─── POSTER LIKE BUTTON ────────────────────────────────────────────
+const PosterLikeButton = ({ posterId }: { posterId: string }) => {
+  const [liked, setLiked] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('hk_liked_posters') || '[]').includes(posterId); }
+    catch { return false; }
+  });
+  const [burst, setBurst] = React.useState(false);
+  const [floatParticles, setFloatParticles] = React.useState<{id:number;x:number;y:number}[]>([]);
+
+  const toggle = () => {
+    const next = !liked;
+    setLiked(next);
+    if (next) {
+      setBurst(true);
+      setTimeout(() => setBurst(false), 600);
+      // Floating hearts
+      const particles = Array.from({length:6},(_,i)=>({ id:Date.now()+i, x:(Math.random()-0.5)*60, y:-(20+Math.random()*40) }));
+      setFloatParticles(particles);
+      setTimeout(()=>setFloatParticles([]), 900);
+    }
+    try {
+      const stored: string[] = JSON.parse(localStorage.getItem('hk_liked_posters') || '[]');
+      const updated = next ? [...stored, posterId] : stored.filter(id => id !== posterId);
+      localStorage.setItem('hk_liked_posters', JSON.stringify(updated));
+    } catch {}
+  };
+
+  return (
+    <div className="relative flex flex-col items-center" style={{userSelect:'none'}}>
+      {/* Floating heart particles */}
+      {floatParticles.map(p => (
+        <span key={p.id} style={{
+          position:'absolute', pointerEvents:'none',
+          fontSize:14, color:'#f43f5e', opacity:0,
+          transform:`translate(${p.x}px, ${p.y}px)`,
+          animation:'hk-float-heart 0.85s ease-out forwards',
+          top:'50%', left:'50%', marginLeft:-7, marginTop:-7,
+        }}>❤️</span>
+      ))}
+      <button
+        onClick={toggle}
+        className="flex flex-col items-center gap-1 cursor-pointer focus:outline-none active:scale-90 transition-transform duration-150"
+        style={{background:'none',border:'none',padding:'6px 10px'}}
+      >
+        <span style={{
+          fontSize: 26,
+          display: 'block',
+          filter: liked ? 'drop-shadow(0 0 6px rgba(244,63,94,0.7))' : 'none',
+          transform: burst ? 'scale(1.45)' : 'scale(1)',
+          transition: 'transform 0.25s cubic-bezier(0.34,1.7,0.64,1), filter 0.2s',
+        }}>{liked ? '❤️' : '🤍'}</span>
+        <span style={{
+          fontSize: 9, fontFamily:'sans-serif', fontWeight:900,
+          textTransform:'uppercase', letterSpacing:'0.1em',
+          color: liked ? '#f43f5e' : 'rgba(251,191,36,0.4)',
+          transition: 'color 0.2s',
+        }}>{liked ? (localStorage.getItem('hk_lang')==='hi' ? 'पसंद' : 'Liked') : (localStorage.getItem('hk_lang')==='hi' ? 'पसंद' : 'Like')}</span>
+      </button>
+      <style>{`
+        @keyframes hk-float-heart {
+          0%   { opacity:1; transform:translate(var(--tx,0px), 0px) scale(1); }
+          100% { opacity:0; transform:translate(var(--tx,0px), -50px) scale(0.5); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
 // ─── LIVE WALLPAPERS PARTICLE OVERLAYS ────────────────────────────
 const PetalsOverlay = () => {
   return (
@@ -3808,166 +3876,154 @@ export default function BlessingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-              className="fixed inset-0 bg-black/90 backdrop-blur-2xl z-[120]"
+              className="fixed inset-0 bg-black/92 backdrop-blur-2xl z-[120]"
             />
 
-            {/* Full-screen modal */}
-            <div className="fixed inset-0 z-[130] flex items-center justify-center pointer-events-none">
+            {/* Modal */}
+            <div className="fixed inset-0 z-[130] flex items-end justify-center pointer-events-none sm:items-center sm:pb-0 pb-0">
               <motion.div
-                initial={{ opacity: 0, scale: 0.93, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.93, y: 20 }}
-                transition={{ type: "spring", damping: 28, stiffness: 220 }}
-                className="pointer-events-auto relative w-full max-w-sm flex flex-col"
+                initial={{ opacity: 0, y: 60 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 60 }}
+                transition={{ type: "spring", damping: 30, stiffness: 240 }}
+                className="pointer-events-auto w-full max-w-sm flex flex-col"
                 style={{
-                  height: "calc(100dvh - 24px)",
-                  maxHeight: 820,
-                  background: "#0a0200",
-                  borderRadius: 32,
+                  height: "100dvh",
+                  maxHeight: 860,
+                  background: "#08010000",
                   overflow: "hidden",
-                  boxShadow: "0 30px 80px rgba(0,0,0,0.97)",
-                  border: "1px solid rgba(251,191,36,0.18)",
                 }}
               >
-                {/* ── Close button ── */}
-                <button
-                  onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-                  className="absolute top-4 right-4 z-50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                  style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: "rgba(0,0,0,0.65)",
-                    border: "1px solid rgba(251,191,36,0.35)",
-                    color: "#fbbf24",
-                    boxShadow: "0 2px 12px rgba(0,0,0,0.6)",
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                {/* ── TOP: Close + Poster card ── */}
+                <div className="flex-1 min-h-0 flex flex-col items-center justify-end px-4 pt-10 pb-3 relative">
+                  {/* Close button — top right */}
+                  <button
+                    onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
+                    className="absolute top-5 right-5 z-50 flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    style={{
+                      width: 36, height: 36, borderRadius: "50%",
+                      background: "rgba(0,0,0,0.7)",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      color: "#fff",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
 
-                {/* ── POSTER IMAGE (fills most of the screen) ── */}
-                <div className="flex-1 min-h-0 relative overflow-hidden">
-                  {compiledPosterUrl ? (
-                    <img
-                      src={compiledPosterUrl}
-                      alt="Personalized Poster"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="w-full h-full flex flex-col items-center justify-center gap-4"
-                      style={{ background: "linear-gradient(180deg,#1a0804,#0a0200)" }}
-                    >
-                      <div
-                        className="w-10 h-10 rounded-full border-[3px] border-t-amber-400 border-r-transparent border-b-transparent border-l-transparent animate-spin"
+                  {/* Poster card — contained, doesn't overflow */}
+                  <div
+                    className="w-full relative rounded-2xl overflow-hidden"
+                    style={{
+                      aspectRatio: "9/16",
+                      maxHeight: "calc(100dvh - 220px)",
+                      maxWidth: 340,
+                      boxShadow: "0 20px 60px rgba(0,0,0,0.9), 0 0 0 1px rgba(251,191,36,0.18)",
+                      background: "#120603",
+                    }}
+                  >
+                    {compiledPosterUrl ? (
+                      <img
+                        src={compiledPosterUrl}
+                        alt="Personalized Poster"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
                       />
-                      <span className="text-[11px] font-sans font-black uppercase tracking-widest text-amber-400/70">
-                        {isHi ? "पोस्टर तैयार हो रहा है..." : "Compiling poster..."}
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-4"
+                        style={{ background: "linear-gradient(180deg,#1a0804,#0a0200)" }}>
+                        <div className="w-10 h-10 rounded-full border-[3px] border-t-amber-400 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                        <span className="text-[11px] font-sans font-black uppercase tracking-widest text-amber-400/70">
+                          {isHi ? "पोस्टर तैयार हो रहा है..." : "Compiling poster..."}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* LIVE PREVIEW badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest font-sans"
+                        style={{ background: "rgba(0,0,0,0.55)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24" }}>
+                        ⚡ Live Preview
                       </span>
                     </div>
-                  )}
-
-                  {/* Dark gradient at bottom so text stays readable */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 pointer-events-none"
-                    style={{
-                      height: "38%",
-                      background: "linear-gradient(to top, rgba(5,1,0,0.98) 0%, rgba(5,1,0,0.7) 50%, transparent 100%)",
-                    }}
-                  />
-
-                  {/* ── Profile row overlaid on poster bottom ── */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 px-5 pb-5 flex items-center justify-between"
-                  >
-                      {/* Avatar + name */}
-                      <div className="flex items-center gap-3">
-                        <div
-                          style={{
-                            width: 46, height: 46, borderRadius: "50%",
-                            border: "2.5px solid rgba(251,191,36,0.6)",
-                            background: "#1b0a05",
-                            overflow: "hidden",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            boxShadow: "0 0 14px rgba(251,191,36,0.3)",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {userPhoto ? (
-                            <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          ) : (
-                            <span style={{ fontSize: 20, fontFamily: "serif", color: "rgba(251,191,36,0.65)" }}>ॐ</span>
-                          )}
-                        </div>
-                        <div className="flex flex-col text-left">
-                          <span style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(251,191,36,0.55)", lineHeight: 1, marginBottom: 3 }}>
-                            {isHi ? "नाम और चित्र" : "Devotee Profile"}
-                          </span>
-                          <span style={{ fontSize: 16, fontFamily: "serif", fontWeight: 700, color: "#fef3c7", lineHeight: 1 }}>
-                            {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
-                          </span>
-                        </div>
-                      </div>
-                      {/* Edit profile button */}
-                      <button
-                        onClick={() => setShowProfileEdit(true)}
-                        className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-                        style={{
-                          padding: "8px 14px",
-                          borderRadius: 12,
-                          background: "rgba(251,191,36,0.1)",
-                          border: "1px solid rgba(251,191,36,0.35)",
-                          color: "#fbbf24",
-                          fontSize: 10,
-                          fontFamily: "sans-serif",
-                          fontWeight: 900,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.1em",
-                        }}
-                      >
-                        <UserIcon className="w-3.5 h-3.5" />
-                        <span>{isHi ? "प्रोफाइल बदलें" : "Edit Profile"}</span>
-                      </button>
                   </div>
                 </div>
 
+                {/* ── BOTTOM: Separate control container ── */}
+                <div
+                  className="shrink-0 w-full flex flex-col gap-0"
+                  style={{
+                    background: "linear-gradient(180deg, rgba(8,2,0,0.0) 0%, #0c0300 12%)",
+                  }}
+                >
+                  {/* Profile row + Like button */}
+                  <div className="flex items-center justify-between px-5 pt-3 pb-3">
+                    {/* Left: Avatar + name + edit */}
+                    <button
+                      onClick={() => setShowProfileEdit(true)}
+                      className="flex items-center gap-3 active:scale-95 transition-all cursor-pointer group"
+                    >
+                      <div style={{
+                        width: 44, height: 44, borderRadius: "50%",
+                        border: "2.5px solid rgba(251,191,36,0.55)",
+                        background: "#1b0a05",
+                        overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        boxShadow: "0 0 12px rgba(251,191,36,0.25)",
+                        flexShrink: 0,
+                        transition: "box-shadow 0.2s",
+                      }}>
+                        {userPhoto ? (
+                          <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <span style={{ fontSize: 18, fontFamily: "serif", color: "rgba(251,191,36,0.6)" }}>ॐ</span>
+                        )}
+                      </div>
+                      <div className="flex flex-col text-left">
+                        <span style={{ fontSize: 8, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.16em", color: "rgba(251,191,36,0.5)", lineHeight: 1, marginBottom: 3 }}>
+                          {isHi ? "नाम और चित्र" : "Devotee"}
+                        </span>
+                        <span style={{ fontSize: 15, fontFamily: "serif", fontWeight: 700, color: "#fef3c7", lineHeight: 1 }}>
+                          {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
+                        </span>
+                        <span style={{ fontSize: 8, fontFamily: "sans-serif", fontWeight: 700, color: "rgba(251,191,36,0.4)", marginTop: 2, letterSpacing: "0.06em" }}>
+                          {isHi ? "बदलने के लिए टैप करें" : "Tap to edit"}
+                        </span>
+                      </div>
+                    </button>
 
-                {/* ── Bottom action bar ── */}
-                {(
-                  <div
-                    style={{
-                      background: "rgba(8,2,0,0.98)",
-                      borderTop: "1px solid rgba(251,191,36,0.12)",
-                      padding: "14px 16px 18px",
-                      display: "flex",
-                      gap: 10,
-                      flexShrink: 0,
-                    }}
-                  >
+                    {/* Right: Like button */}
+                    <PosterLikeButton posterId={selectedPoster.id} />
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(251,191,36,0.15), transparent)", margin: "0 20px" }} />
+
+                  {/* Action buttons row */}
+                  <div className="flex items-center gap-3 px-4 pt-3 pb-6">
                     {/* Download */}
                     <button
                       onClick={handleDownloadPoster}
                       disabled={!compiledPosterUrl}
-                      className="flex-1 flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-40"
                       style={{
-                        padding: "14px 0",
+                        padding: "13px 0",
                         borderRadius: 16,
-                        background: "rgba(251,191,36,0.08)",
-                        border: "1.5px solid rgba(251,191,36,0.35)",
+                        background: "rgba(251,191,36,0.07)",
+                        border: "1.5px solid rgba(251,191,36,0.3)",
                         color: "#fbbf24",
-                        fontSize: 13,
+                        fontSize: 12,
                         fontFamily: "sans-serif",
                         fontWeight: 900,
                         textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                        letterSpacing: "0.06em",
                       }}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 17, height: 17 }}>
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                         <polyline points="7 10 12 15 17 10"/>
                         <line x1="12" y1="15" x2="12" y2="3"/>
@@ -3979,25 +4035,25 @@ export default function BlessingsPage() {
                     <button
                       onClick={() => setShowPosterShareModal(true)}
                       disabled={!compiledPosterUrl}
-                      className="flex-[1.4] flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-50"
+                      className="flex-[1.5] flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-40"
                       style={{
-                        padding: "14px 0",
+                        padding: "13px 0",
                         borderRadius: 16,
                         background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                         color: "#1a0500",
-                        fontSize: 13,
+                        fontSize: 12,
                         fontFamily: "sans-serif",
                         fontWeight: 900,
                         textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                        boxShadow: "0 4px 20px rgba(245,158,11,0.45)",
+                        letterSpacing: "0.06em",
+                        boxShadow: "0 4px 20px rgba(245,158,11,0.4)",
                       }}
                     >
-                      <Share2 className="w-[18px] h-[18px]" />
+                      <Share2 className="w-[17px] h-[17px]" />
                       <span>{isHi ? "साझा करें" : "Share"}</span>
                     </button>
                   </div>
-                )}
+                </div>
               </motion.div>
             </div>
           </>
