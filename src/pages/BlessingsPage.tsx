@@ -216,19 +216,20 @@ interface DevotionalWallpaper {
   nameHindi: string;
   imageUrl: string;
   tier: "free" | "devotee" | "mahabhakt";
+  category: "todays" | "festival" | "suprabhat" | "quotes";
 }
 
 const WALLPAPERS_LIST: DevotionalWallpaper[] = [
-  { id: "wp-shiva-1", deity: "Shiva", name: "Kashi Vishwanath Jyotirlinga", nameHindi: "काशी विश्वनाथ ज्योतिर्लिंग", imageUrl: kashiVishwanathImg, tier: "free" },
-  { id: "wp-shiva-2", deity: "Shiva", name: "Shiv Temple Darshan", nameHindi: "शिव मंदिर दर्शन", imageUrl: shivTempleHdImg, tier: "free" },
-  { id: "wp-shiva-3", deity: "Shiva", name: "Meditating Shiva", nameHindi: "ध्यानमग्न शिव", imageUrl: shivWallpaperImg, tier: "free" },
-  { id: "wp-ram-1", deity: "Rama", name: "Shree Ram Darshan", nameHindi: "श्री राम दर्शन", imageUrl: deityRamImg, tier: "free" },
-  { id: "wp-ram-2", deity: "Rama", name: "Shree Ram Darbar HD", nameHindi: "श्री राम दरबार एचडी", imageUrl: shreeRamImg, tier: "free" },
-  { id: "wp-krishna-1", deity: "Krishna", name: "Banke Bihari Devotion", nameHindi: "बांके बिहारी भक्ति", imageUrl: krishnaImg, tier: "free" },
-  { id: "wp-krishna-2", deity: "Krishna", name: "Radha Krishna Mayapur", nameHindi: "राधा कृष्ण मायापुर", imageUrl: radhaKrishnaImg, tier: "free" },
-  { id: "wp-krishna-3", deity: "Krishna", name: "Krishna Mobile Wallpaper", nameHindi: "कृष्ण मोबाइल वॉलपेपर", imageUrl: krishnaMobileImg, tier: "free" },
-  { id: "wp-hanuman-1", deity: "Hanuman", name: "Hanumanji HD Portrait", nameHindi: "हनुमानजी एचडी पोर्ट्रेट", imageUrl: hanumanImg, tier: "free" },
-  { id: "wp-shyam-1", deity: "Khatu Shyam", name: "Shyam Mandir Desktop", nameHindi: "श्याम मंदिर डेस्कटॉप", imageUrl: shyamMandirImg, tier: "free" }
+  { id: "wp-shiva-1", deity: "Shiva", name: "Kashi Vishwanath Jyotirlinga", nameHindi: "काशी विश्वनाथ ज्योतिर्लिंग", imageUrl: kashiVishwanathImg, tier: "free", category: "todays" },
+  { id: "wp-shiva-2", deity: "Shiva", name: "Shiv Temple Darshan", nameHindi: "शिव मंदिर दर्शन", imageUrl: shivTempleHdImg, tier: "free", category: "todays" },
+  { id: "wp-shiva-3", deity: "Shiva", name: "Meditating Shiva", nameHindi: "ध्यानमग्न शिव", imageUrl: shivWallpaperImg, tier: "free", category: "todays" },
+  { id: "wp-ram-1", deity: "Rama", name: "Shree Ram Darshan", nameHindi: "श्री राम दर्शन", imageUrl: deityRamImg, tier: "free", category: "todays" },
+  { id: "wp-ram-2", deity: "Rama", name: "Shree Ram Darbar HD", nameHindi: "श्री राम दरबार एचडी", imageUrl: shreeRamImg, tier: "free", category: "festival" },
+  { id: "wp-krishna-1", deity: "Krishna", name: "Banke Bihari Devotion", nameHindi: "बांके बिहारी भक्ति", imageUrl: krishnaImg, tier: "free", category: "festival" },
+  { id: "wp-krishna-2", deity: "Krishna", name: "Radha Krishna Mayapur", nameHindi: "राधा कृष्ण मायापुर", imageUrl: radhaKrishnaImg, tier: "free", category: "suprabhat" },
+  { id: "wp-krishna-3", deity: "Krishna", name: "Krishna Mobile Wallpaper", nameHindi: "कृष्ण मोबाइल वॉलपेपर", imageUrl: krishnaMobileImg, tier: "free", category: "quotes" },
+  { id: "wp-hanuman-1", deity: "Hanuman", name: "Hanumanji HD Portrait", nameHindi: "हनुमानजी एचडी पोर्ट्रेट", imageUrl: hanumanImg, tier: "free", category: "suprabhat" },
+  { id: "wp-shyam-1", deity: "Khatu Shyam", name: "Shyam Mandir Desktop", nameHindi: "श्याम मंदिर डेस्कटॉप", imageUrl: shyamMandirImg, tier: "free", category: "quotes" }
 ];
 
 interface DevotionalLiveWallpaper {
@@ -239,14 +240,22 @@ interface DevotionalLiveWallpaper {
   thumbnailUrl: string;
   effect: "petals" | "aura" | "flame" | "shimmer";
   tier: "free" | "devotee" | "mahabhakt";
+  category: "todays" | "festival" | "suprabhat" | "quotes";
 }
 
 const LIVE_WALLPAPERS_LIST: DevotionalLiveWallpaper[] = [
-  { id: "live-krishna-1", deity: "Krishna", name: "Vrindavan Raas Leela", nameHindi: "वृंदावन रास लीला सजीव", thumbnailUrl: radhaKrishnaImg, effect: "petals", tier: "free" },
-  { id: "live-shiva-1", deity: "Shiva", name: "Kailash Meditating Shiva", nameHindi: "कैलाश ध्यानमग्न शिव सजीव", thumbnailUrl: shivWallpaperImg, effect: "aura", tier: "free" },
-  { id: "live-ram-1", deity: "Rama", name: "Ayodhya Mandir Deepotsav", nameHindi: "अयोध्या मंदिर दीपोत्सव सजीव", thumbnailUrl: deityRamImg, effect: "flame", tier: "free" },
-  { id: "live-hanuman-1", deity: "Hanuman", name: "Anjaneya Shaurya Darshan", nameHindi: "आंजनेय शौर्य दर्शन सजीव", thumbnailUrl: hanumanImg, effect: "shimmer", tier: "free" }
+  { id: "live-krishna-1", deity: "Krishna", name: "Vrindavan Raas Leela", nameHindi: "वृंदावन रास लीला सजीव", thumbnailUrl: radhaKrishnaImg, effect: "petals", tier: "free", category: "festival" },
+  { id: "live-shiva-1", deity: "Shiva", name: "Kailash Meditating Shiva", nameHindi: "कैलाश ध्यानमग्न शिव सजीव", thumbnailUrl: shivWallpaperImg, effect: "aura", tier: "free", category: "todays" },
+  { id: "live-ram-1", deity: "Rama", name: "Ayodhya Mandir Deepotsav", nameHindi: "अयोध्या मंदिर दीपोत्सव सजीव", thumbnailUrl: deityRamImg, effect: "flame", tier: "free", category: "festival" },
+  { id: "live-hanuman-1", deity: "Hanuman", name: "Anjaneya Shaurya Darshan", nameHindi: "आंजनेय शौर्य दर्शन सजीव", thumbnailUrl: hanumanImg, effect: "shimmer", tier: "free", category: "todays" }
 ];
+
+const WALLPAPER_SECTIONS = [
+  { key: "todays", name: "Today's Specials", nameHindi: "आज के विशेष", icon: "✨" },
+  { key: "festival", name: "Festival Specials", nameHindi: "उत्सव पावन वॉलपेपर", icon: "🎉" },
+  { key: "suprabhat", name: "Suprabhat / Morning", nameHindi: "सुप्रभात पावन स्मरण", icon: "☀️" },
+  { key: "quotes", name: "Mantras & Quotes", nameHindi: "मंत्र और दिव्य सुविचार", icon: "📜" }
+] as const;
 
 interface Petal {
   id: number;
@@ -872,6 +881,14 @@ export default function BlessingsPage() {
     }
   });
 
+  const [likedWallpaperIds, setLikedWallpaperIds] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('hk_liked_wallpapers') || '[]');
+    } catch (_) {
+      return [];
+    }
+  });
+
   const toggleLike = React.useCallback((posterId: string) => {
     setLikedPosterIds(prev => {
       const next = prev.includes(posterId)
@@ -884,10 +901,23 @@ export default function BlessingsPage() {
     });
   }, []);
 
+  const toggleLikeWallpaper = React.useCallback((wpId: string) => {
+    setLikedWallpaperIds(prev => {
+      const next = prev.includes(wpId)
+        ? prev.filter(id => id !== wpId)
+        : [...prev, wpId];
+      try {
+        localStorage.setItem('hk_liked_wallpapers', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (activeTab === "saved") {
       try {
         setLikedPosterIds(JSON.parse(localStorage.getItem('hk_liked_posters') || '[]'));
+        setLikedWallpaperIds(JSON.parse(localStorage.getItem('hk_liked_wallpapers') || '[]'));
       } catch (_) {}
     }
   }, [activeTab, selectedPoster]);
@@ -895,6 +925,12 @@ export default function BlessingsPage() {
   const likedPosters = React.useMemo(() => {
     return POSTER_TEMPLATES.filter(tpl => likedPosterIds.includes(tpl.id));
   }, [likedPosterIds]);
+
+  const likedWallpapers = React.useMemo(() => {
+    const staticLiked = WALLPAPERS_LIST.filter(wp => likedWallpaperIds.includes(wp.id));
+    const liveLiked = LIVE_WALLPAPERS_LIST.filter(wp => likedWallpaperIds.includes(wp.id));
+    return { staticLiked, liveLiked };
+  }, [likedWallpaperIds]);
 
   useEffect(() => {
     if (showSetupSheet) {
@@ -2669,10 +2705,6 @@ export default function BlessingsPage() {
                                   {isHi ? tpl.quoteHindi : tpl.quote}
                                 </p>
                               </div>
-                              {/* Tap indicator */}
-                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
-                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                              </div>
                               {/* Like Button Overlay */}
                               <div className="absolute top-2.5 left-2.5 z-30">
                                 <PosterLikeButton
@@ -2733,9 +2765,6 @@ export default function BlessingsPage() {
                                   {isHi ? tpl.quoteHindi : tpl.quote}
                                 </p>
                               </div>
-                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
-                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                              </div>
                               {/* Like Button Overlay */}
                               <div className="absolute top-2.5 left-2.5 z-30">
                                 <PosterLikeButton
@@ -2791,9 +2820,6 @@ export default function BlessingsPage() {
                                 <p className="text-[7.5px] md:text-[8.5px] font-serif italic text-amber-200 line-clamp-2 leading-tight font-medium">
                                   {isHi ? tpl.quoteHindi : tpl.quote}
                                 </p>
-                              </div>
-                              <div className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.4)'}}>
-                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                               </div>
                               {/* Like Button Overlay */}
                               <div className="absolute top-2.5 left-2.5 z-30">
@@ -2899,7 +2925,7 @@ export default function BlessingsPage() {
                       {isHi ? "सभी देखें" : "View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
                     </button>
                   </div>
-                  <div className="flex items-start gap-5 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full">
+                  <div className="flex items-start gap-5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
                     {[
                       { id: null,          name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
                       { id:"Shiva",        name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
@@ -2971,133 +2997,104 @@ export default function BlessingsPage() {
                   </div>
                 </div>
 
-                {/* Today's pick hero */}
-                {!selectedDeityFilter && !searchQuery && (
-                  <div className="w-full flex flex-col">
-                    <div className="flex items-center justify-between w-full mb-4 px-0.5">
-                      <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
-                        <span>✨</span>
-                        {isHi ? "आज का दिव्य वॉलपेपर" : "Today's Divine Wallpaper"}
-                      </h3>
-                      <button
-                        onClick={() => {
-                          const tomorrowIdx=(todayDay+1)%7;
-                          toast.info(isHi ? `कल का पावन दर्शन: ${getDeityHindi(WEEKDAYS[tomorrowIdx].deity)}` : `Tomorrow's Blessing: ${WEEKDAYS[tomorrowIdx].deity}`);
-                        }}
-                        className="font-sans text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 active:scale-95 transition-all"
-                      >
-                        <Volume2 className="w-3.5 h-3.5"/>
-                        <span>{isHi ? "कल देखें" : "See Tomorrow"}</span>
-                      </button>
-                    </div>
-                    <div
-                      className="w-full rounded-2xl overflow-hidden relative cursor-pointer group"
-                      style={{border:"1px solid rgba(251,191,36,0.15)",boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}
-                      onClick={() => handleWallpaperAction(WALLPAPERS_LIST.find(wp=>wp.id==="wp-shiva-3")||WALLPAPERS_LIST[0])}
-                    >
-                      <div className="w-full aspect-[16/9] relative overflow-hidden">
-                        <img src={shivWallpaperImg} alt="Today's Wallpaper"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 pointer-events-none"/>
-                        <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(5,2,1,0.95) 0%,rgba(5,2,1,0.5) 35%,rgba(5,2,1,0.08) 65%,transparent 100%)"}}/>
-                        <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between">
-                          <div className="flex flex-col gap-1 text-left">
-                            <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.8)",letterSpacing:isHi?"normal":"0.18em",textTransform:"uppercase"}}>♱ {isHi?"शिव • महादेव":"Shiva • Mahadev"}</span>
-                            <h4 className="font-serif text-base font-bold text-amber-100 leading-tight">{isHi?"महादेव ध्यान":"Mahadev Meditation"}</h4>
-                            <p style={{fontSize:10,color:"rgba(253,230,138,0.85)",fontStyle:"italic"}}>{isHi?"शिव ही सत्य है, शिव ही अनंत है।":"Shiva is the truth, Shiva is infinite."}</p>
-                          </div>
-                          <button
-                            onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(WALLPAPERS_LIST.find(wp=>wp.id==="wp-shiva-3")||WALLPAPERS_LIST[0]);}}
-                            style={{width:40,height:40,borderRadius:"50%",background:"rgba(251,191,36,0.15)",border:"1.5px solid rgba(251,191,36,0.5)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:16,height:16}}>
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                              <polyline points="7 10 12 15 17 10"/>
-                              <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* Popular wallpaper grid */}
-                <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
-                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
-                      <span>🔥</span>
-                      {isHi ? "लोकप्रिय वॉलपेपर" : "Popular Wallpapers"}
-                    </h3>
-                    <span style={{fontSize:10,fontWeight:700,color:"rgba(251,191,36,0.8)"}}>
-                      {filteredWallpapers.length} {isHi?"परिणाम":"items"}
-                    </span>
-                  </div>
-
+                {/* Wallpaper Sections */}
+                <div className="w-full flex flex-col space-y-8">
                   {filteredWallpapers.length === 0 ? (
                     <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
                       <span>📭</span>
                       <span>{isHi ? "कोई वॉलपेपर नहीं मिला।" : "No wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
-                      {filteredWallpapers.map((wp) => (
-                        <div
-                          key={wp.id}
-                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300 shrink-0 snap-start w-[130px] sm:w-[150px] md:w-[170px]"
-                          style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
-                          onClick={() => handleWallpaperAction(wp)}
-                        >
-                          <div className="w-full aspect-[9/16] relative">
-                            <img src={wp.imageUrl} alt={wp.name}
-                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 pointer-events-none"/>
-                            {/* Cinematic gradient */}
-                            <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(4,1,0,0.93) 0%,rgba(4,1,0,0.55) 30%,rgba(4,1,0,0.1) 65%,transparent 100%)"}}/>
+                    WALLPAPER_SECTIONS.map((sec) => {
+                      const sectionItems = filteredWallpapers.filter(wp => wp.category === sec.key);
+                      if (sectionItems.length === 0) return null;
 
-                            {/* Tier badge */}
-                            <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full"
-                              style={{fontSize:8,fontWeight:900,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",
-                                background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.22),rgba(217,119,6,0.18))":"rgba(0,0,0,0.45)",
-                                border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.2)",
-                                color:"#fbbf24"}}>
-                              {wp.tier === "premium" ? "👑 Pro" : "Free"}
+                      return (
+                        <div key={sec.key} className="w-full space-y-3.5 text-left mb-6">
+                          <div className="flex items-center justify-between w-full mb-2 px-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-amber-500 text-xs">{sec.icon}</span>
+                              <h3 className={`font-serif text-xs font-black uppercase text-amber-400 ${isHi ? '' : 'tracking-widest'}`}>
+                                {isHi ? sec.nameHindi : sec.name}
+                              </h3>
                             </div>
+                          </div>
 
-                            {/* Bottom text — always visible */}
-                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left" style={{paddingRight:38}}>
-                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:isHi?"normal":"uppercase",letterSpacing:isHi?"normal":"0.14em",lineHeight:1}}>
-                                ♱ {isHi
-                                  ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
-                                  : wp.deity}
-                              </span>
-                              <h4 style={{fontFamily:"serif",fontSize:12,fontWeight:700,color:"rgba(254,243,199,0.95)",lineHeight:1.25}} className="line-clamp-1">
-                                {isHi ? wp.nameHindi : wp.name}
-                              </h4>
-                            </div>
+                          <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory justify-start px-1">
+                            {sectionItems.map((wp) => (
+                              <div
+                                key={wp.id}
+                                className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                                style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                                onClick={() => handleWallpaperAction(wp)}
+                              >
+                                <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                                  <img src={wp.imageUrl} alt={wp.name}
+                                    className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
+                                  {/* Cinematic gradient */}
+                                  <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
 
-                            {/* Download button */}
-                            <button
-                              onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
-                              className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-10"
-                              style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
-                              onMouseEnter={e=>{
-                                (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
-                                (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
-                              }}
-                              onMouseLeave={e=>{
-                                (e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.55)";
-                                (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";
-                              }}
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                              </svg>
-                            </button>
+                                  {/* Like Button Overlay */}
+                                  <div className="absolute top-2.5 left-2.5 z-30">
+                                    <PosterLikeButton
+                                      posterId={wp.id}
+                                      isLiked={likedWallpaperIds.includes(wp.id)}
+                                      onToggle={() => toggleLikeWallpaper(wp.id)}
+                                    />
+                                  </div>
+
+                                  {/* Tier badge */}
+                                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
+                                    style={{fontSize:8,fontWeight:900,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",
+                                      background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
+                                      border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
+                                      color:"#fbbf24",
+                                      backdropFilter:"blur(2px)"}}>
+                                    {wp.tier === "premium" ? "👑 Pro" : "Free"}
+                                  </div>
+
+                                  {/* Download button */}
+                                  <button
+                                    onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
+                                    className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-15 shadow-md"
+                                    style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                                    onMouseEnter={e=>{
+                                      (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
+                                      (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
+                                      (e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";
+                                    }}
+                                    onMouseLeave={e=>{
+                                      (e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";
+                                      (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";
+                                      (e.currentTarget as HTMLButtonElement).style.boxShadow="none";
+                                    }}
+                                  >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
+                                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                      <polyline points="7 10 12 15 17 10"/>
+                                      <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                  </button>
+                                </div>
+
+                                {/* Details footer outside card image wrapper */}
+                                <div className="px-2.5 py-2.5 text-left">
+                                  <span className="inline-block bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black text-amber-300 tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]">
+                                    {isHi
+                                      ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
+                                      : wp.deity}
+                                  </span>
+                                  <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color:"rgba(255,251,235,0.95)",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
+                                    {isHi ? wp.nameHindi : wp.name}
+                                  </h4>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })
                   )}
                 </div>
 
@@ -3142,7 +3139,7 @@ export default function BlessingsPage() {
                       {isHi?"सभी देखें":"View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
                     </button>
                   </div>
-                  <div className="flex items-start gap-5 overflow-x-auto pb-2 pt-0.5 scrollbar-none w-full">
+                  <div className="flex items-start gap-5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
                     {[
                       { id:null,     name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
                       { id:"Shiva",  name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
@@ -3218,65 +3215,91 @@ export default function BlessingsPage() {
                   </div>
                 )}
 
-                {/* Live gallery grid */}
-                <div className="w-full flex flex-col">
-                  <div className="flex items-center justify-between w-full mb-4 px-0.5">
-                    <h3 className="font-serif text-sm font-black text-amber-100 flex items-center gap-2">
-                      <span>🎬</span>
-                      {isHi?"सजीव वॉलपेपर गैलरी":"Living Darshan Feed"}
-                    </h3>
-                    <span style={{fontSize:10,fontWeight:700,color:"rgba(251,191,36,0.8)"}}>
-                      {filteredLiveWallpapers.length} {isHi?"लाइव":"live"}
-                    </span>
-                  </div>
+                {/* Live gallery sections */}
+                <div className="w-full flex flex-col space-y-8">
                   {filteredLiveWallpapers.length === 0 ? (
                     <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
                       <span>📭</span><span>{isHi?"कोई लाइव वॉलपेपर नहीं मिला।":"No live wallpapers found."}</span>
                     </div>
                   ) : (
-                    <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
-                      {filteredLiveWallpapers.map((wp) => (
-                        <div key={wp.id}
-                          className="relative rounded-[18px] overflow-hidden cursor-pointer group active:scale-[0.97] transition-all duration-300 shrink-0 snap-start w-[130px] sm:w-[150px] md:w-[170px]"
-                          style={{boxShadow:"0 6px 28px rgba(0,0,0,0.65)",border:"1px solid rgba(120,60,10,0.2)"}}
-                          onClick={()=>handleLiveWallpaperAction(wp)}>
-                          <div className="w-full aspect-[9/16] relative">
-                            {wp.effect==="aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
-                            {wp.effect==="shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
-                            {wp.effect==="flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
-                            <img src={wp.thumbnailUrl} alt={wp.name}
-                              className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 pointer-events-none"/>
-                            <div className="absolute inset-0" style={{background:"linear-gradient(to top,rgba(4,1,0,0.93) 0%,rgba(4,1,0,0.55) 30%,rgba(4,1,0,0.1) 65%,transparent 100%)"}}/>
-                            {/* Effect tag */}
-                            <div className="absolute top-2.5 left-2.5 z-10">
-                              <span style={{fontSize:7,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.1em",padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",border:"1px solid rgba(251,191,36,0.25)",color:"#fbbf24"}}>{wp.effect}</span>
+                    WALLPAPER_SECTIONS.map((sec) => {
+                      const sectionItems = filteredLiveWallpapers.filter(wp => wp.category === sec.key);
+                      if (sectionItems.length === 0) return null;
+
+                      return (
+                        <div key={sec.key} className="w-full space-y-3.5 text-left mb-6">
+                          <div className="flex items-center justify-between w-full mb-2 px-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-amber-500 text-xs">🎬 {sec.icon}</span>
+                              <h3 className={`font-serif text-xs font-black uppercase text-amber-400 ${isHi ? '' : 'tracking-widest'}`}>
+                                {isHi ? `${sec.nameHindi} (सजीव)` : `${sec.name} (Live)`}
+                              </h3>
                             </div>
-                            {/* Tier */}
-                            <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
-                              style={{fontSize:8,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",background:"rgba(0,0,0,0.45)",border:"1px solid rgba(251,191,36,0.2)",color:"#fbbf24"}}>
-                              {wp.tier==="premium"?"👑 Pro":"Free"}
-                            </div>
-                            {/* Bottom text always visible */}
-                            <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-0.5 text-left z-10" style={{paddingRight:38}}>
-                              <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:"uppercase",letterSpacing:isHi?"normal":"0.14em",lineHeight:1}}>
-                                ♱ {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
-                              </span>
-                              <h4 style={{fontFamily:"serif",fontSize:12,fontWeight:700,color:"rgba(254,243,199,0.95)",lineHeight:1.25}} className="line-clamp-1">
-                                {isHi?wp.nameHindi:wp.name}
-                              </h4>
-                            </div>
-                            {/* Action button */}
-                            <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
-                              className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20"
-                              style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.55)",border:"1.5px solid rgba(251,191,36,0.4)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
-                              onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";}}
-                              onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.55)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.4)";}}>
-                              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
-                            </button>
+                          </div>
+
+                          <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory justify-start px-1">
+                            {sectionItems.map((wp) => (
+                              <div key={wp.id}
+                                className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                                style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                                onClick={()=>handleLiveWallpaperAction(wp)}>
+                                <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                                  {wp.effect==="aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
+                                  {wp.effect==="shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
+                                  {wp.effect==="flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
+                                  <img src={wp.thumbnailUrl} alt={wp.name}
+                                    className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
+                                  <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
+                                  
+                                  {/* Like Button Overlay */}
+                                  <div className="absolute top-2.5 left-2.5 z-30">
+                                    <PosterLikeButton
+                                      posterId={wp.id}
+                                      isLiked={likedWallpaperIds.includes(wp.id)}
+                                      onToggle={() => toggleLikeWallpaper(wp.id)}
+                                    />
+                                  </div>
+
+                                  {/* Effect tag */}
+                                  <div className="absolute top-[42px] left-2.5 z-10">
+                                    <span style={{fontSize:7,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.1em",padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",border:"1px solid rgba(251,191,36,0.25)",color:"#fbbf24"}}>{wp.effect}</span>
+                                  </div>
+                                  
+                                  {/* Tier */}
+                                  <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
+                                    style={{fontSize:8,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",
+                                      background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
+                                      border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
+                                      color:"#fbbf24",
+                                      backdropFilter:"blur(2px)"}}>
+                                    {wp.tier==="premium"?"👑 Pro":"Free"}
+                                  </div>
+
+                                  {/* Action button */}
+                                  <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
+                                    className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20 shadow-md"
+                                    style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                                    onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";(e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";}}
+                                    onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";(e.currentTarget as HTMLButtonElement).style.boxShadow="none";}}>
+                                    <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
+                                  </button>
+                                </div>
+
+                                {/* Details footer outside card image wrapper */}
+                                <div className="px-2.5 py-2.5 text-left">
+                                  <span className="inline-block bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black text-amber-300 tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]">
+                                    {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
+                                  </span>
+                                  <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color:"rgba(255,251,235,0.95)",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
+                                    {isHi?wp.nameHindi:wp.name}
+                                  </h4>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })
                   )}
                 </div>
 
@@ -3332,7 +3355,7 @@ export default function BlessingsPage() {
                 }`}
               >
                 <span>{isHi ? "पसंदीदा" : "Liked"}</span>
-                <span className="text-[10px] opacity-75">({likedPosters.length})</span>
+                <span className="text-[10px] opacity-75">({likedPosters.length + likedWallpaperIds.length})</span>
               </button>
             </div>
 
@@ -3392,61 +3415,225 @@ export default function BlessingsPage() {
 
             {/* B. LIKED DESIGNS GALLERY SECTION */}
             {savedSubTab === "liked" && (
-              likedPosters.length === 0 ? (
+              likedPosters.length === 0 && likedWallpapers.staticLiked.length === 0 && likedWallpapers.liveLiked.length === 0 ? (
                 <div className="w-full border border-dashed border-amber-900/30 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3">
-                  <Heart className="w-8 h-8 text-amber-500/30" />
-                  <p className="text-xs text-amber-200/85 font-sans leading-relaxed">
+                  <Heart className="w-8 h-8 text-amber-500/30 animate-pulse" />
+                  <p className="text-xs text-amber-200/85 font-sans leading-relaxed whitespace-pre-line">
                     {isHi 
-                      ? "पसंदीदा डिज़ाइन्स सूची अभी खाली है।\nपोस्टर बनाते समय दिल ❤️ आइकन दबाकर सहेजें।" 
-                      : "Your liked templates list is empty. Mark templates with ❤️ to see them here."}
+                      ? "पसंदीदा सूची अभी खाली है।\nपोस्टर या वॉलपेपर को ❤️ आइकन दबाकर पसंदीदा बनाएं।" 
+                      : "Your liked list is empty. Mark posters or wallpapers with ❤️ to see them here."}
                   </p>
                   <button
                     onClick={() => setActiveTab("maker")}
                     className={`px-4 py-2 border border-amber-500/20 hover:bg-amber-500/10 text-amber-300 font-sans font-black text-[10px] uppercase rounded-lg transition-all active:scale-95 cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
                   >
-                    {isHi ? "पोस्टर गैलरी देखें" : "Explore Templates"}
+                    {isHi ? "पोस्टर गैलरी देखें" : "Explore Posters"}
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
-                  {likedPosters.map((tpl) => (
-                    <div
-                      key={tpl.id}
-                      onClick={() => setSelectedPoster(tpl)}
-                      className="bg-[#1b0d07]/40 border border-amber-500/10 hover:border-amber-500/35 rounded-2xl p-2 cursor-pointer group active:scale-[0.97] transition-all duration-300"
-                      style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.5)" }}
-                    >
-                      <div className="w-full aspect-[9/16] relative rounded-xl overflow-hidden mb-2">
-                        <img
-                          src={tpl.imageUrl}
-                          alt={isHi ? tpl.titleHindi : tpl.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
-                        />
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <span style={{ fontSize: 10, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }} className="px-3 py-1.5 bg-[#fbbf24] text-stone-950 rounded-lg font-sans">
-                            {isHi ? "बनाएं" : "Customize"}
-                          </span>
-                        </div>
-                        {/* Like Button Overlay */}
-                        <div className="absolute top-2.5 left-2.5 z-30">
-                          <PosterLikeButton
-                            posterId={tpl.id}
-                            isLiked={likedPosterIds.includes(tpl.id)}
-                            onToggle={() => toggleLike(tpl.id)}
-                          />
-                        </div>
-                      </div>
-                      <div className="text-left px-1">
-                        <h4 className="font-serif text-[11px] font-bold text-amber-100 leading-tight truncate">
-                          {isHi ? tpl.titleHindi : tpl.title}
-                        </h4>
-                        <span style={{ fontSize: 8, color: "rgba(251,191,36,0.85)", fontWeight: 700, textTransform: "uppercase", letterSpacing: isHi ? "normal" : "0.04em", display: "block", marginTop: 2 }}>
-                          {tpl.category}
-                        </span>
+                <div className="w-full space-y-8 text-left">
+                  {/* 1. Liked Posters */}
+                  {likedPosters.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-serif text-xs font-black uppercase text-amber-400 flex items-center gap-2 border-b border-amber-500/20 pb-2 tracking-wider">
+                        <span>✨</span>
+                        {isHi ? "पसंदीदा पोस्टर" : "Liked Posters"}
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
+                        {likedPosters.map((tpl) => (
+                          <div
+                            key={tpl.id}
+                            onClick={() => setSelectedPoster(tpl)}
+                            className="bg-[#1b0d07]/40 border border-amber-500/10 hover:border-amber-500/35 rounded-2xl p-2 cursor-pointer group active:scale-[0.97] transition-all duration-300"
+                            style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.5)" }}
+                          >
+                            <div className="w-full aspect-[9/16] relative rounded-xl overflow-hidden mb-2">
+                              <img
+                                src={tpl.imageUrl}
+                                alt={isHi ? tpl.titleHindi : tpl.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                              />
+                              {/* Hover Overlay */}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span style={{ fontSize: 10, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }} className="px-3 py-1.5 bg-[#fbbf24] text-stone-950 rounded-lg font-sans">
+                                  {isHi ? "बनाएं" : "Customize"}
+                                </span>
+                              </div>
+                              {/* Like Button Overlay */}
+                              <div className="absolute top-2.5 left-2.5 z-30">
+                                <PosterLikeButton
+                                  posterId={tpl.id}
+                                  isLiked={likedPosterIds.includes(tpl.id)}
+                                  onToggle={() => toggleLike(tpl.id)}
+                                />
+                              </div>
+                            </div>
+                            <div className="text-left px-1">
+                              <h4 className="font-serif text-[11px] font-bold text-amber-100 leading-tight truncate">
+                                {isHi ? tpl.titleHindi : tpl.title}
+                              </h4>
+                              <span style={{ fontSize: 8, color: "rgba(251,191,36,0.85)", fontWeight: 700, textTransform: "uppercase", letterSpacing: isHi ? "normal" : "0.04em", display: "block", marginTop: 2 }}>
+                                {tpl.category}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* 2. Liked Static Wallpapers */}
+                  {likedWallpapers.staticLiked.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-serif text-xs font-black uppercase text-amber-400 flex items-center gap-2 border-b border-amber-500/20 pb-2 tracking-wider">
+                        <span>📱</span>
+                        {isHi ? "पसंदीदा वॉलपेपर" : "Liked Wallpapers"}
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
+                        {likedWallpapers.staticLiked.map((wp) => (
+                          <div
+                            key={wp.id}
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
+                            style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                            onClick={() => handleWallpaperAction(wp)}
+                          >
+                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                              <img src={wp.imageUrl} alt={wp.name}
+                                className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
+                              {/* Cinematic gradient */}
+                              <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
+
+                              {/* Like Button Overlay */}
+                              <div className="absolute top-2.5 left-2.5 z-30">
+                                <PosterLikeButton
+                                  posterId={wp.id}
+                                  isLiked={likedWallpaperIds.includes(wp.id)}
+                                  onToggle={() => toggleLikeWallpaper(wp.id)}
+                                />
+                              </div>
+
+                              {/* Tier badge */}
+                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
+                                style={{fontSize:8,fontWeight:900,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",
+                                  background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
+                                  border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
+                                  color:"#fbbf24",
+                                  backdropFilter:"blur(2px)"}}>
+                                {wp.tier === "premium" ? "👑 Pro" : "Free"}
+                              </div>
+
+                              {/* Download button */}
+                              <button
+                                onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
+                                className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-15 shadow-md"
+                                style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                                onMouseEnter={e=>{
+                                  (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
+                                  (e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";
+                                }}
+                                onMouseLeave={e=>{
+                                  (e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";
+                                  (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";
+                                  (e.currentTarget as HTMLButtonElement).style.boxShadow="none";
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                  <polyline points="7 10 12 15 17 10"/>
+                                  <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                              </button>
+                            </div>
+
+                            {/* Bottom text */}
+                            <div className="px-2.5 py-2.5 text-left">
+                              <span className="inline-block bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black text-amber-300 tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]">
+                                {isHi
+                                  ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
+                                  : wp.deity}
+                              </span>
+                              <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color:"rgba(255,251,235,0.95)",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
+                                {isHi ? wp.nameHindi : wp.name}
+                              </h4>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. Liked Live Wallpapers */}
+                  {likedWallpapers.liveLiked.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-serif text-xs font-black uppercase text-amber-400 flex items-center gap-2 border-b border-amber-500/20 pb-2 tracking-wider">
+                        <span>🎬</span>
+                        {isHi ? "पसंदीदा सजीव वॉलपेपर" : "Liked Live Wallpapers"}
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
+                        {likedWallpapers.liveLiked.map((wp) => (
+                          <div
+                            key={wp.id}
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
+                            style={{background: 'rgba(15,7,3,0.7)', border: '1px solid rgba(120,60,10,0.25)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)'}}
+                            onClick={() => handleWallpaperAction(wp)}
+                          >
+                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
+                              {wp.effect==="aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
+                              {wp.effect==="shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
+                              {wp.effect==="flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
+                              <img src={wp.thumbnailUrl} alt={wp.name}
+                                className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
+                              <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
+                              
+                              {/* Like Button Overlay */}
+                              <div className="absolute top-2.5 left-2.5 z-30">
+                                <PosterLikeButton
+                                  posterId={wp.id}
+                                  isLiked={likedWallpaperIds.includes(wp.id)}
+                                  onToggle={() => toggleLikeWallpaper(wp.id)}
+                                />
+                              </div>
+
+                              {/* Effect tag */}
+                              <div className="absolute top-[42px] left-2.5 z-10">
+                                <span style={{fontSize:7,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.1em",padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",border:"1px solid rgba(251,191,36,0.25)",color:"#fbbf24"}}>{wp.effect}</span>
+                              </div>
+
+                              {/* Tier badge */}
+                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
+                                style={{fontSize:8,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",
+                                  background:wp.tier==="premium"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
+                                  border:wp.tier==="premium"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
+                                  color:"#fbbf24",
+                                  backdropFilter:"blur(2px)"}}>
+                                {wp.tier === "premium" ? "👑 Pro" : "Free"}
+                              </div>
+
+                              {/* Action button */}
+                              <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
+                                className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20 shadow-md"
+                                style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
+                                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";(e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";}}
+                                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";(e.currentTarget as HTMLButtonElement).style.boxShadow="none";}}>
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
+                              </button>
+                            </div>
+
+                            {/* Bottom text */}
+                            <div className="px-2.5 py-2.5 text-left">
+                              <span className="inline-block bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black text-amber-300 tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]">
+                                {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
+                              </span>
+                              <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color:"rgba(255,251,235,0.95)",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
+                                {isHi?wp.nameHindi:wp.name}
+                              </h4>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             )}
