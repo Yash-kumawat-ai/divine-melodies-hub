@@ -291,9 +291,9 @@ export interface PosterTemplate {
 export const POSTER_TEMPLATES: PosterTemplate[] = [
   {
     id: "poster-shyam-1",
-    title: "Khatu Shyam Blessing",
+    title: "Khatu Shyam Poster",
     titleHindi: "जय श्री श्याम",
-    subtitle: "Blessing",
+    subtitle: "Poster",
     subtitleHindi: "हारे का सहारा",
     category: "todays",
     imageUrl: khatuShyamHdImg,
@@ -304,9 +304,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
   },
   {
     id: "poster-hanuman-1",
-    title: "Hanuman Blessing",
+    title: "Hanuman Poster",
     titleHindi: "जय बजरंग बली",
-    subtitle: "Blessing",
+    subtitle: "Poster",
     subtitleHindi: "संकट मोचन",
     category: "todays",
     imageUrl: hanumanImg,
@@ -317,9 +317,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
   },
   {
     id: "poster-krishna-1",
-    title: "Radhe Radhe Blessing",
+    title: "Radhe Radhe Poster",
     titleHindi: "राधे राधे",
-    subtitle: "Blessing",
+    subtitle: "Poster",
     subtitleHindi: "राधे राधे",
     category: "todays",
     imageUrl: radhaKrishnaImg,
@@ -1824,13 +1824,13 @@ export default function BlessingsPage() {
     }
 
     try {
-      toast.info(isHi ? "छवि तैयार की जा रही है..." : "Generating blessing card...");
+      toast.info(isHi ? "छवि तैयार की जा रही है..." : "Generating poster...");
       const dataUrl = await compileBlessingCard();
       
       const link = document.createElement("a");
       const filename = selectedPoster
         ? `${selectedPoster.title.replace(/\s+/g, "_")}_Personalized.png`
-        : `${todayDarshan.deity.replace(/\s+/g, "_")}_Daily_Blessing.png`;
+        : `${todayDarshan.deity.replace(/\s+/g, "_")}_Daily_Poster.png`;
       link.download = filename;
       link.href = dataUrl;
       document.body.appendChild(link);
@@ -1839,7 +1839,7 @@ export default function BlessingsPage() {
 
       saveBlessingToGallery(dataUrl);
       completeTodaySadhana();
-      toast.success(isHi ? "आशीर्वाद कार्ड गैलरी में सेव हो गया!" : "Blessing downloaded & saved locally!");
+      toast.success(isHi ? "पोस्टर गैलरी में सेव हो गया!" : "Poster downloaded & saved locally!");
     } catch (e) {
       console.error(e);
       toast.error(isHi ? "डाउनलोड करने में विफल" : "Failed to compile image.");
@@ -2207,7 +2207,7 @@ export default function BlessingsPage() {
             }`}
           >
             <span>✨</span>
-            <span>{isHi ? "आशीर्वाद पत्र" : "Blessing Patra"}</span>
+            <span>{isHi ? "पोस्टर" : "Posters"}</span>
           </button>
           <button
             onClick={() => setActiveTab("wallpapers")}
@@ -2331,7 +2331,7 @@ export default function BlessingsPage() {
                               )}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className="text-[9px] md:text-[10px] font-sans font-black text-amber-500/70 uppercase tracking-widest leading-none">{isHi ? "पावन आशीर्वाद पत्र" : "Sacred Blessing"}</span>
+                              <span className="text-[9px] md:text-[10px] font-sans font-black text-amber-500/70 uppercase tracking-widest leading-none">{isHi ? "पावन पोस्टर" : "Sacred Poster"}</span>
                               <span className="text-xs md:text-sm font-serif font-black text-amber-300 truncate leading-tight drop-shadow mt-0.5">
                                 {userName || (isHi ? "हरि भक्त" : "Devotee")}
                               </span>
@@ -2411,7 +2411,7 @@ export default function BlessingsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-xs">🌅</span>
                         <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
-                          {isHi ? "आज के पावन आशीर्वाद पत्र" : "Today's Sacred Blessings"}
+                          {isHi ? "आज के पावन पोस्टर" : "Today's Sacred Posters"}
                         </h3>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
@@ -2469,7 +2469,7 @@ export default function BlessingsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-xs">🎉</span>
                         <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
-                          {isHi ? "उत्सव एवं विशेष पर्व" : "Festival Special Blessings"}
+                          {isHi ? "उत्सव एवं विशेष पर्व पोस्टर" : "Festival Special Posters"}
                         </h3>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
@@ -2520,7 +2520,7 @@ export default function BlessingsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-xs">☀️</span>
                         <h3 className="font-serif text-xs font-black uppercase tracking-widest text-amber-400">
-                          {isHi ? "सुप्रभात दर्शन आशीर्वाद पत्र" : "Morning Special Blessings"}
+                          {isHi ? "सुप्रभात दर्शन पोस्टर" : "Morning Special Posters"}
                         </h3>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 md:gap-5">
@@ -2567,121 +2567,7 @@ export default function BlessingsPage() {
 
                 </div>
 
-                {/* Sadhana Calendar & Virtual Temple Room grouped side-by-side on desktop */}
-                <div className="w-full flex flex-col md:grid md:grid-cols-2 gap-6 pt-4 space-y-6 md:space-y-0">
-                  {/* Interactive Puja Seva Tray panel */}
-                  <div className="w-full bg-gradient-to-b from-[#1b0a05] to-[#0e0402] border border-amber-950/25 rounded-3xl p-5 shadow-xl flex flex-col gap-4 text-center">
-                    <div>
-                      <h3 className="font-serif text-sm font-bold text-amber-400">
-                        {isHi ? "सजीव मंदिर सेवा (Virtual Puja Room)" : "Virtual Temple Room (Interactive)"}
-                      </h3>
-                      <p className="text-[10px] text-amber-200/40 font-sans leading-relaxed mt-1">
-                        {isHi ? "आरती करें, पुष्प वर्षा करें और तानपुरा भक्तिमय धुन के साथ ध्यान मग्न हों" : "Light the Diya, ring the temple bell, offer fresh flower showers, and listen to the meditation tanpura drone"}
-                      </p>
-                    </div>
 
-                    <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-sans font-black uppercase tracking-wider text-amber-200">
-                      {/* Bell */}
-                      <button
-                        onClick={ringBell}
-                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
-                          isBellRinging ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                        }`}
-                      >
-                        <span className={`text-2xl leading-none ${isBellRinging ? "animate-bounce" : ""}`}>🔔</span>
-                        <span className="text-[9px]">{isHi ? "घंटी" : "Bell"}</span>
-                      </button>
-
-                      {/* Diya */}
-                      <button
-                        onClick={toggleDiya}
-                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 relative overflow-hidden ${
-                          isDiyaLit ? "bg-amber-500/15 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                        }`}
-                      >
-                        <div className="w-7 h-7 relative flex items-center justify-center">
-                          {isDiyaLit ? (
-                            <>
-                              <span className="text-2xl leading-none z-10 animate-flame">🔥</span>
-                              <img src={litDiyaImg} alt="diya base" className="w-6 h-6 absolute bottom-0 object-contain z-0 opacity-80" />
-                            </>
-                          ) : (
-                            <span className="text-xl opacity-60 leading-none">🪔</span>
-                          )}
-                        </div>
-                        <span className="text-[9px]">{isHi ? "दीपक" : "Diya"}</span>
-                      </button>
-
-                      {/* Flower Shower */}
-                      <button
-                        onClick={showerFlowers}
-                        className="p-3 border bg-black/20 border-amber-500/10 text-amber-300/80 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all hover:bg-amber-950/20 active:scale-90"
-                      >
-                        <span className="text-2xl leading-none">🌸</span>
-                        <span className="text-[9px]">{isHi ? "पुष्प" : "Flowers"}</span>
-                      </button>
-
-                      {/* Tanpura loop */}
-                      <button
-                        onClick={toggleAmbientTanpura}
-                        className={`p-3 border rounded-2xl flex flex-col items-center justify-center gap-2 transition-all active:scale-90 ${
-                          isAudioPlaying ? "bg-amber-500/10 border-amber-500 text-amber-400" : "bg-black/20 border-amber-500/10 text-amber-300/80 hover:bg-amber-950/20"
-                        }`}
-                      >
-                        <span className={`text-2xl leading-none ${isAudioPlaying ? "animate-pulse" : "opacity-60"}`}>🪈</span>
-                        <span className="text-[9px]">{isHi ? "तानपुरा" : "Tanpura"}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* साधना पंचांग Weekly Calendar Dashboard */}
-                  <div className="w-full bg-[#1b0a05]/40 border border-amber-950/30 rounded-3xl p-5 shadow-2xl flex flex-col gap-3.5 justify-between">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] uppercase font-sans font-black tracking-widest text-amber-200/50">
-                        {isHi ? "साधना पंचांग (Weekly Sadhana Calendar)" : "Sadhana Calendar (Weekly Progress)"}
-                      </span>
-                      <span className="text-[9px] text-amber-500 font-sans font-black uppercase">
-                        {isHi ? "नित्य साधना दर्शन सूत्र" : "Nitya Sadhana Streak"}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-7 gap-1.5 font-sans">
-                      {WEEKDAYS.map((w) => {
-                        const currentYear = new Date().getFullYear();
-                        const currentMonth = new Date().getMonth();
-                        const sundayOffset = new Date().getDate() - new Date().getDay();
-                        const targetDate = new Date(currentYear, currentMonth, sundayOffset + w.dayNum);
-                        const dateStr = targetDate.toISOString().split("T")[0];
-                        
-                        const isDone = completedDates.includes(dateStr);
-                        const isToday = dateStr === todayDateString;
-
-                        return (
-                          <div 
-                            key={w.dayNum} 
-                            className={`py-2 border rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${
-                              isDone 
-                                ? "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-md"
-                                : isToday 
-                                ? "bg-black/40 border-amber-500/25 text-amber-300/90 shadow-inner scale-102"
-                                : "bg-black/20 border-amber-500/5 text-stone-500"
-                            }`}
-                          >
-                            <span className="text-[9px] font-black uppercase tracking-wider">{isHi ? w.labelHi : w.label}</span>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                              isDone ? "bg-amber-500 text-black shadow" : "bg-black/35 text-amber-200/40 border border-amber-500/10"
-                            }`}>
-                              {isDone ? "✓" : targetDate.getDate()}
-                            </div>
-                            <span className="text-[7.5px] font-black text-amber-500/60 leading-none truncate max-w-full">
-                              {isHi ? getDeityHindi(w.deity) : w.deity}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -3198,7 +3084,7 @@ export default function BlessingsPage() {
                 {isHi ? "मेरी पावन साधना गैलरी" : "My Sadhana Diary"}
               </h2>
               <p className="text-xs text-amber-200/60 font-sans mt-1">
-                {isHi ? "आपके द्वारा पूर्व में सहेजे गए दैनिक आशीर्वाद पत्र" : "Revisit your personalized cards saved on this device"}
+                {isHi ? "आपके द्वारा पूर्व में सहेजे गए दैनिक पोस्टर" : "Revisit your personalized posters saved on this device"}
               </p>
             </div>
 
@@ -3206,13 +3092,13 @@ export default function BlessingsPage() {
               <div className="w-full border border-dashed border-amber-900/30 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3">
                 <BookOpen className="w-8 h-8 text-amber-500/30" />
                 <p className="text-xs text-amber-200/40 font-sans">
-                  {isHi ? "अभी तक कोई आशीर्वाद पत्र संग्रहित नहीं है।" : "Your spiritual diary is empty."}
+                  {isHi ? "अभी तक कोई पोस्टर संग्रहित नहीं है।" : "Your saved posters diary is empty."}
                 </p>
                 <button
                   onClick={() => setActiveTab("maker")}
                   className="px-4 py-2 border border-amber-500/20 hover:bg-amber-500/10 text-amber-300 font-sans font-black text-[10px] uppercase tracking-widest rounded-lg transition-all active:scale-95"
                 >
-                  {isHi ? "आशीर्वाद पत्र बनाएं" : "Create Blessing Now"}
+                  {isHi ? "पोस्टर बनाएं" : "Create Poster Now"}
                 </button>
               </div>
             ) : (
