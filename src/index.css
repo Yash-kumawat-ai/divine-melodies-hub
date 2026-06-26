@@ -783,3 +783,10 @@ button.w-\[90\%\].h-14.bg-gradient-to-r.from-amber-500.via-orange-500.to-red-650
 }
 
 }
+
+
+button.absolute.top-4.right-4.z-50.flex.items-center.justify-center.cursor-pointer {
+    margin-top: 25px;
+    margin-right: 10px;
+}
+
