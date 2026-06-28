@@ -21,6 +21,8 @@ interface HeroSectionProps {
   };
 }
 
+
+
 export function HeroSection({ stats }: HeroSectionProps) { 
   const navigate = useNavigate(); 
   const { language } = useLanguage();
@@ -62,69 +64,35 @@ export function HeroSection({ stats }: HeroSectionProps) {
           />
         </picture>
 
-        {/* Dark gradient behind text for readability — left side heavy */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/90" />
-        <div
-          className="absolute inset-0 hidden md:block"
-          style={{
-            background: 'linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 55%, rgba(0,0,0,0.05) 100%)'
-          }}
-        />
+        {/* Dark gradient behind text for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/95" />
       </div> 
 
       {/* HERO CONTENT — left-aligned on desktop, centered on mobile */}
       <div className="relative z-10 flex flex-col items-center md:items-start justify-start flex-1 px-4 md:px-12 lg:px-20 pt-8 md:pt-12 pb-2 text-center md:text-left max-w-5xl md:max-w-none"> 
 
-        {/* HARE KRISHNA accent */}
-        <motion.div 
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-3 mb-3"
-        > 
-          <span className="h-[1px] w-10 bg-gradient-to-r from-transparent to-amber-400" /> 
-          <p className="text-amber-300 text-[10px] md:text-xs font-bold tracking-[0.35em] uppercase drop-shadow-md">
-            {isHi ? 'हरे कृष्ण' : 'Hare Krishna'}
-          </p> 
-          <span className="h-[1px] w-10 bg-gradient-to-l from-transparent to-amber-400" /> 
-        </motion.div> 
 
-        {/* Main heading */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="text-white font-display font-bold leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]"
-          style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', maxWidth: '850px' }}
-        > 
-          {isHi ? 'दिव्य संगीत खोजें' : 'Discover Divine Music'}
-        </motion.h1> 
 
-        {/* Spiritual accent */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-amber-400 text-2xl my-2 drop-shadow-md select-none"
-        >
-          🪷
-        </motion.div>
-
-        {/* Subtitle */}
+        {/* 3. SATSANG • BHAJAN • SADHANA */}
         <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-amber-100/90 text-sm md:text-lg tracking-[0.2em] font-light drop-shadow-md mb-5"
-        > 
-          {isHi ? '— भक्ति के हर क्षण के लिए —' : '— FOR EVERY MOMENT OF BHAKTI —'}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65, duration: 0.8 }}
+          className="text-amber-200/90 text-[10px] sm:text-xs tracking-[0.25em] sm:tracking-[0.35em] font-extrabold uppercase select-none text-center md:text-left mb-6 flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2.5 w-full"
+          style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}
+        >
+          <span>{isHi ? 'सत्संग' : 'SATSANG'}</span>
+          <span className="text-amber-500 font-extrabold select-none">•</span>
+          <span>{isHi ? 'भजन' : 'BHAJAN'}</span>
+          <span className="text-amber-500 font-extrabold select-none">•</span>
+          <span>{isHi ? 'साधना' : 'SADHANA'}</span>
         </motion.p>
 
         {/* Trust stats pills */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.75 }}
           className="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-6"
         >
           {[
@@ -134,7 +102,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           ].map((stat) => (
             <span
               key={stat.label}
-              className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/15 rounded-full px-3.5 py-1.5 text-xs font-semibold text-white/90 shadow-sm"
+              className="inline-flex items-center gap-1.5 bg-black/45 backdrop-blur-md border border-white/10 rounded-full px-3.5 py-1.5 text-[10px] sm:text-xs font-semibold text-white/95 shadow-sm"
             >
               <span className="text-amber-400 font-bold">{stat.value}</span>
               <span className="text-white/60">{stat.label}</span>
@@ -146,13 +114,13 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <motion.div 
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.85 }}
+          transition={{ delay: 0.9 }}
           className="flex gap-3 flex-wrap justify-center md:justify-start"
         > 
-          {/* PRIMARY */}
+
           <button 
             onClick={() => navigate('/all-bhajans')} 
-            className="group flex items-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-bold px-7 py-3 rounded-full shadow-[0_8px_24px_-6px_rgba(249,115,22,0.55)] transition-all duration-300 text-sm md:text-base"
+            className="group flex items-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-bold px-7 py-3 rounded-full shadow-[0_8px_24px_-6px_rgba(249,115,22,0.55)] transition-all duration-300 text-sm md:text-base cursor-pointer"
           > 
             <Play className="w-4 h-4 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
             {isHi ? 'भजन खोजें' : 'Explore Bhajans'}
@@ -161,7 +129,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           {/* SECONDARY — transparent ghost style */}
           <button 
             onClick={() => navigate('/japa-counter')} 
-            className="group flex items-center gap-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 hover:border-white/50 active:scale-95 text-white font-semibold px-7 py-3 rounded-full transition-all duration-300 text-sm md:text-base"
+            className="group flex items-center gap-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 hover:border-white/50 active:scale-95 text-white font-semibold px-7 py-3 rounded-full transition-all duration-300 text-sm md:text-base cursor-pointer"
           > 
             🧿 {isHi ? 'जाप शुरू करें' : 'Start Chanting'}
           </button>

@@ -32,7 +32,121 @@
     <meta name="twitter:image" content="/mandala-logo.png" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Premium Centered Splash Screen Loader (renders before React mounts) -->
+      <div id="loading-splash" style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: 'Inter', system-ui, sans-serif; transition: opacity 0.4s ease; opacity: 1;">
+        
+        <!-- Subtle floating background shimmer particles -->
+        <div id="splash-particles" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1;"></div>
+
+        <!-- Main Content Wrapper -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 10; animation: splash-pulse 2.5s infinite ease-in-out;">
+          <img id="splash-logo" src="/brand-logo.svg" alt="Raghavam Logo" style="width: 250px; height: 250px; object-fit: contain; filter: drop-shadow(0 8px 24px rgba(0,0,0,0.18));" />
+        </div>
+
+        <!-- Circular glowing dot ring with lotus center -->
+        <div style="position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-top: 30px; z-index: 10;">
+          <!-- Soft golden glow behind loader -->
+          <div style="position: absolute; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(251,191,36,0.28) 0%, rgba(251,191,36,0) 70%); filter: blur(6px); pointer-events: none; z-index: -1;"></div>
+          
+          <!-- Circular ring of glowing dots -->
+          <svg width="130" height="130" viewBox="0 0 100 100" style="animation: spin-clockwise 3s linear infinite; filter: drop-shadow(0 0 8px rgba(251,191,36,0.6));">
+            <circle cx="90" cy="50" r="3.2" fill="#fbbf24" opacity="1.0" />
+            <circle cx="84.64" cy="70" r="3.2" fill="#fbbf24" opacity="0.91" />
+            <circle cx="70" cy="84.64" r="3.2" fill="#fbbf24" opacity="0.83" />
+            <circle cx="50" cy="90" r="3.2" fill="#fbbf24" opacity="0.75" />
+            <circle cx="30" cy="84.64" r="3.2" fill="#fbbf24" opacity="0.66" />
+            <circle cx="15.36" cy="70" r="3.2" fill="#fbbf24" opacity="0.58" />
+            <circle cx="10" cy="50" r="3.2" fill="#fbbf24" opacity="0.5" />
+            <circle cx="15.36" cy="30" r="3.2" fill="#fbbf24" opacity="0.41" />
+            <circle cx="30" cy="15.36" r="3.2" fill="#fbbf24" opacity="0.33" />
+            <circle cx="50" cy="10" r="3.2" fill="#fbbf24" opacity="0.25" />
+            <circle cx="70" cy="15.36" r="3.2" fill="#fbbf24" opacity="0.16" />
+            <circle cx="84.64" cy="30" r="3.2" fill="#fbbf24" opacity="0.08" />
+          </svg>
+
+          <!-- Lotus flower icon in the center -->
+          <img src="/lotus-flower-icon.svg" style="position: absolute; width: 56px; height: 56px; top: 37px; left: 37px; object-fit: contain; animation: lotus-pulse 3s ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(251,191,36,0.45));" />
+        </div>
+
+        <style>
+          #loading-splash {
+            background-image: url('/splash-bg-mobile.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+          }
+          @media (min-width: 768px) {
+            #loading-splash {
+              background-image: url('/splash-bg-desktop.webp');
+            }
+          }
+          @keyframes splash-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.96; }
+            50% { transform: scale(1.015); opacity: 1; }
+          }
+          @keyframes spin-clockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes lotus-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.85; filter: drop-shadow(0 0 4px rgba(251,191,36,0.3)); }
+            50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 10px rgba(251,191,36,0.65)); }
+          }
+          @keyframes float-particle {
+            0% {
+              transform: translateY(0) translateX(0);
+              opacity: 0;
+            }
+            10% {
+              opacity: 0.6;
+            }
+            90% {
+              opacity: 0.6;
+            }
+            100% {
+              transform: translateY(-130px) translateX(25px);
+              opacity: 0;
+            }
+          }
+        </style>
+        <script>
+          (function() {
+            // Apply language changes
+            var lang = localStorage.getItem('app_language') || 'hi';
+            var isEn = lang !== 'hi';
+            if (isEn) {
+              var logoEl = document.getElementById('splash-logo');
+              if (logoEl) logoEl.src = '/brand-logo-en.svg';
+            }
+
+            // Create background particles
+            var container = document.getElementById('splash-particles');
+            var particleCount = 20;
+            for (var i = 0; i < particleCount; i++) {
+              var p = document.createElement('div');
+              p.style.position = 'absolute';
+              p.style.width = (Math.random() * 4 + 2) + 'px';
+              p.style.height = p.style.width;
+              p.style.borderRadius = '50%';
+              p.style.background = 'rgba(251, 191, 36, ' + (Math.random() * 0.35 + 0.15) + ')';
+              p.style.left = (Math.random() * 100) + '%';
+              p.style.top = (Math.random() * 80 + 20) + '%';
+              p.style.filter = 'blur(1px)';
+              p.style.boxShadow = '0 0 6px rgba(251, 191, 36, 0.4)';
+              
+              var duration = (Math.random() * 8 + 6); // 6s to 14s
+              var delay = (Math.random() * -12); // offset start
+              
+              p.style.animation = 'float-particle ' + duration + 's linear infinite';
+              p.style.animationDelay = delay + 's';
+              
+              container.appendChild(p);
+            }
+          })();
+        </script>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

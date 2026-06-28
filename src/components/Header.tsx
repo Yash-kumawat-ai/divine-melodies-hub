@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AnimatedBrandLogo } from './AnimatedBrandLogo';
 import {
   CalendarDays,
   Camera,
@@ -137,24 +138,19 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
-      <div className="header-container container mx-auto px-4 flex items-center justify-between h-14">
+      <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
         <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {showBack && (
             <span className="inline-flex md:hidden">
               <MobileBackButton />
             </span>
           )}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0 min-w-0">
-            <img
-              src="/brand-logo.webp"
-              alt="Raghavam"
-              className="w-7 h-7 md:w-8 md:h-8 object-contain shrink-0"
-              width={32}
-              height={32}
-            />
-            <span className="font-display text-sm md:text-base font-bold text-foreground hidden sm:inline whitespace-nowrap truncate">
-              Raghavam
-            </span>
+          <Link 
+            to="/" 
+            className="flex items-center flex-shrink-0 min-w-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 z-10"
+            style={{ height: '44px', display: 'flex', alignItems: 'center' }}
+          >
+            <AnimatedBrandLogo height={40} />
           </Link>
         </div>
 
@@ -164,11 +160,11 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="relative flex h-10 min-w-10 items-center justify-center gap-0.5 rounded-full border border-primary/20 bg-card/80 px-2 shadow-sm transition-colors active:scale-95"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95 cursor-pointer"
                 aria-label={t('language')}
               >
                 <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
-                <span className="text-[10px] font-bold uppercase leading-none text-primary">
+                <span className="absolute -bottom-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[8px] font-bold uppercase leading-none text-primary-foreground border border-background shadow-sm">
                   {language}
                 </span>
               </button>

@@ -241,36 +241,49 @@ export default function Home() {
 
             <div className="relative flex flex-col md:flex-row items-stretch">
 
-              {/* ── Hanuman Ji Image ── — blended into card via gradient mask */}
+              {/* ── Hanuman Ji Image ── — blended into card via blurred backdrop + crisp center */}
               <div
-                className="flex-shrink-0 w-full md:w-[260px] lg:w-[300px] relative overflow-hidden"
+                className="flex-shrink-0 w-full md:w-[260px] lg:w-[300px] relative overflow-hidden bg-stone-950 flex items-center justify-center border-b md:border-b-0 md:border-r border-amber-500/10"
                 style={{ minHeight: '220px' }}
               >
+                {/* Blurred backdrop copy to fill left and right bars */}
+                <img
+                  src={hanumanImg}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover select-none opacity-30 blur-md scale-110 pointer-events-none"
+                  draggable={false}
+                />
+                
+                {/* Crisp centered Hanuman portrait */}
                 <img
                   src={hanumanImg}
                   alt="Hanumanji"
-                  className="absolute bottom-0 left-1/2 md:left-0 -translate-x-1/2 md:translate-x-0 h-full w-auto max-w-none object-cover object-top select-none opacity-85 filter brightness-[0.6] contrast-[1.15] saturate-[0.95]"
+                  className="relative mx-auto h-full w-auto max-w-full object-contain select-none opacity-90 filter brightness-[0.75] contrast-[1.1] saturate-[0.95] drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] z-10"
                   draggable={false}
                   style={{ maxHeight: '380px' }}
                 />
-                {/* Overlays to blend image into the container */}
+
+                {/* Overlays to blend image container with the card background */}
                 {/* Top fade */}
-                <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#110804] to-transparent pointer-events-none" />
+                <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#110804] to-transparent pointer-events-none z-20" />
                 {/* Bottom fade */}
-                <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#1c0f06] to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#1c0f06] to-transparent pointer-events-none z-20" />
                 {/* Left fade */}
-                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#110804] to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#110804] to-transparent pointer-events-none z-20" />
                 {/* Right fade */}
-                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#1c0f06] to-transparent pointer-events-none" />
+                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#1c0f06] to-transparent pointer-events-none z-20" />
               </div>
 
               {/* ── Content ── */}
-              <div className="flex-1 px-5 pb-6 pt-4 md:pt-7 md:pr-8 flex flex-col gap-4">
+              <div className="flex-1 px-5 pb-7 pt-5 md:pt-8 md:pr-8 flex flex-col gap-4.5 text-left">
 
                 {/* Live online badge */}
                 <div className="flex items-center gap-2 self-start">
-                  <span className="inline-flex items-center gap-1.5 bg-black/40 border border-green-500/30 text-green-400 text-[11px] font-bold px-3 py-1 rounded-full">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500/15 via-green-500/5 to-transparent border border-emerald-500/25 text-emerald-400 text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-[0_2px_12px_rgba(16,185,129,0.1)] tracking-wide backdrop-blur-xs select-none">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
                     {isHi
                       ? `${onlineCount.toLocaleString('hi')} भक्त ऑनलाइन`
                       : `${onlineCount.toLocaleString()} ${onlineCount === 1 ? 'devotee' : 'devotees'} online`}
@@ -279,17 +292,19 @@ export default function Home() {
 
                 {/* Heading */}
                 <div>
-                  <h2 className="font-display text-[24px] md:text-[32px] lg:text-[36px] font-extrabold leading-tight text-amber-100">
+                  <h2 className="font-display text-[26px] md:text-[34px] lg:text-[38px] font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300">
                     {isHi ? 'हमारे ' : 'Join Our '}
-                    <span className="text-amber-400">{isHi ? 'हनुमान भक्त' : 'Hanuman Bhakt'}</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 font-extrabold drop-shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
+                      {isHi ? 'हनुमान भक्त' : 'Hanuman Bhakt'}
+                    </span>
                     {isHi ? ' समुदाय से जुड़ें' : ' Community'}
                   </h2>
-                  <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex items-center gap-2 mt-2">
                     <span className="flex-1 max-w-[50px] h-[1px] bg-gradient-to-r from-transparent to-amber-500/40" />
-                    <span className="text-amber-500 text-sm">🌸</span>
+                    <span className="text-amber-500 text-sm animate-pulse">🌸</span>
                     <span className="flex-1 max-w-[50px] h-[1px] bg-gradient-to-l from-transparent to-amber-500/40" />
                   </div>
-                  <p className="text-amber-200/60 text-[12px] md:text-[13px] mt-2 leading-relaxed max-w-sm">
+                  <p className="text-amber-100/70 text-[13px] md:text-[14px] mt-2.5 leading-relaxed max-w-md font-medium tracking-wide">
                     {isHi
                       ? 'भक्तों से जुड़ें, साथ जाप करें, चुनौतियों में भाग लें और भक्ति में आगे बढ़ें।'
                       : 'Connect with devotees, chant together, join challenges and grow in devotion.'}
@@ -297,7 +312,7 @@ export default function Home() {
                 </div>
 
                 {/* 4 feature pills */}
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-2.5">
                   {[
                     { icon: Sun, label: isHi ? 'दैनिक\nप्रेरणा' : 'Daily\nInspiration' },
                     { icon: Trophy, label: isHi ? 'भक्ति\nचुनौती' : 'Bhakti\nChallenges' },
@@ -308,51 +323,62 @@ export default function Home() {
                       key={i}
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
+                      whileHover={{ scale: 1.04, y: -2, border: '1px solid rgba(245,158,11,0.45)' }}
                       viewport={{ once: true }}
-                      transition={{ delay: 0.08 + i * 0.07 }}
-                      className="flex flex-col items-center gap-1.5 bg-white/5 border border-amber-500/15 rounded-2xl py-3 px-1"
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      className="flex flex-col items-center justify-center gap-2 bg-[#1b1008]/40 border border-amber-500/10 rounded-2xl py-3.5 px-1.5 cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)] transition-all duration-200"
                     >
-                      <item.icon className="w-5 h-5 text-amber-400" />
-                      <span className="text-[10px] font-semibold text-amber-200/70 text-center leading-tight whitespace-pre-line">{item.label}</span>
+                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 transition-colors border border-amber-500/10">
+                        <item.icon className="w-4.5 h-4.5 text-amber-400 filter drop-shadow-[0_2px_4px_rgba(245,158,11,0.2)]" />
+                      </div>
+                      <span className="text-[9px] font-black text-amber-200/80 uppercase tracking-widest text-center leading-tight whitespace-pre-line">{item.label}</span>
                     </motion.div>
                   ))}
                 </div>
 
                 {/* Dynamic stats row + CTA */}
-                <div className="flex flex-col sm:flex-row items-stretch gap-3">
+                <div className="flex flex-col lg:flex-row items-stretch gap-3.5 mt-2">
                   {/* Stats */}
-                  <div className="flex-1 flex items-center justify-around bg-white/[0.04] border border-amber-500/15 rounded-2xl px-3 py-3 gap-1">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-[13px] font-extrabold text-amber-300 leading-none tabular-nums">
+                  <div className="flex-1 flex items-center justify-around bg-stone-950/80 border border-amber-500/10 rounded-2xl px-4 py-3.5 gap-1.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                        <Users className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
                           {communityStats.members.toLocaleString()}
                         </p>
-                        <p className="text-[9px] text-amber-200/40 font-medium mt-0.5">{isHi ? 'सदस्य' : 'Members'}</p>
+                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'सदस्य' : 'Members'}</p>
                       </div>
                     </div>
                     <div className="w-px h-8 bg-amber-500/15" />
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-400 text-sm flex-shrink-0">📿</span>
-                      <div>
-                        <p className="text-[13px] font-extrabold text-amber-300 leading-none tabular-nums">
+                    
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                        <span className="text-amber-400 text-xs flex-shrink-0 leading-none">📿</span>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
                           {communityStats.totalJaps >= 10000000
                             ? `${(communityStats.totalJaps / 10000000).toFixed(1)} Cr`
                             : communityStats.totalJaps >= 100000
                             ? `${(communityStats.totalJaps / 100000).toFixed(1)} L`
                             : communityStats.totalJaps.toLocaleString()}
                         </p>
-                        <p className="text-[9px] text-amber-200/40 font-medium mt-0.5">{isHi ? 'नाम जाप' : 'Naam Japs'}</p>
+                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'नाम जाप' : 'Naam Japs'}</p>
                       </div>
                     </div>
                     <div className="w-px h-8 bg-amber-500/15" />
-                    <div className="flex items-center gap-2">
-                      <span className="text-amber-400 text-sm flex-shrink-0">🔥</span>
-                      <div>
-                        <p className="text-[13px] font-extrabold text-amber-300 leading-none tabular-nums">
+                    
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                        <span className="text-amber-400 text-xs flex-shrink-0 leading-none">🔥</span>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
                           {communityStats.todayParticipants.toLocaleString()}
                         </p>
-                        <p className="text-[9px] text-amber-200/40 font-medium mt-0.5">{isHi ? 'आज सक्रिय' : 'Today Active'}</p>
+                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'आज सक्रिय' : 'Today Active'}</p>
                       </div>
                     </div>
                   </div>
@@ -360,24 +386,23 @@ export default function Home() {
                   {/* CTA */}
                   <Link
                     to="/community"
-                    className="flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-[14px] text-black transition-all hover:scale-[1.03] active:scale-95"
+                    className="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-sans font-black text-xs uppercase tracking-widest text-stone-950 transition-all hover:scale-[1.03] active:scale-95 border border-amber-400/20 shadow-[0_4px_24px_rgba(234,88,12,0.35)]"
                     style={{
                       background: 'linear-gradient(135deg, #f5a623 0%, #e67c00 100%)',
-                      boxShadow: '0 4px 20px rgba(220,140,0,0.4)',
                     }}
                   >
                     <span>🪷</span>
-                    {isHi ? 'समुदाय में शामिल हों' : 'Join Community'}
-                    <ArrowRight className="w-4 h-4" />
+                    <span>{isHi ? 'समुदाय में शामिल हों' : 'Join Community'}</span>
+                    <ArrowRight className="w-4 h-4 text-stone-950" />
                   </Link>
                 </div>
 
                 {/* Trust badges */}
-                <div className="flex items-center justify-center gap-3 text-[10px] text-amber-200/30 font-medium">
-                  <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3" />{isHi ? 'सुरक्षित' : 'Safe'}</span>
-                  <span>•</span>
+                <div className="flex items-center justify-center gap-3 text-[10px] text-amber-200/35 font-bold uppercase tracking-widest select-none">
+                  <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-amber-500/70" />{isHi ? 'सुरक्षित' : 'Safe'}</span>
+                  <span className="text-amber-500/40">•</span>
                   <span>{isHi ? 'सकारात्मक' : 'Positive'}</span>
-                  <span>•</span>
+                  <span className="text-amber-500/40">•</span>
                   <span>{isHi ? 'आध्यात्मिक' : 'Spiritual'}</span>
                 </div>
               </div>

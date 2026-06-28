@@ -790,3 +790,9 @@ button.absolute.top-4.right-4.z-50.flex.items-center.justify-center.cursor-point
     margin-right: 10px;
 }
 
+
+img.w-10.h-10.md\:w-8.md\:h-8.object-contain.shrink-0.transition-all.duration-300
+ {
+    height: 50px;
+    width: 150px;
+}

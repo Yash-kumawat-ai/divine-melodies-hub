@@ -29,7 +29,7 @@ import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { toast } from "sonner";
 import { playMeditationBell, playCompletionChime } from "@/lib/meditation/meditationBell";
 import { getFontFamily, getCanvasFont, wrapTextAndGetLines, fitTextToWidth, fitMultiLineText, getPosterTypography } from "@/utils/typography";
-
+import { ImageCropModal } from "@/components/ImageCropModal";
 
 // ─── LOCAL DEITY IMAGES IMPORTS ───────────────────────────────────
 import shreeRamImg from "./images/shree_ram_ultra_hd.webp";
@@ -740,6 +740,57 @@ const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: stri
   );
 };
 
+const compressAndResizeImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (!event.target?.result) {
+        reject(new Error("File read error"));
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Canvas context error"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL("image/jpeg", 0.7);
+        resolve(compressed);
+      };
+      img.onerror = () => {
+        reject(new Error("Image load error"));
+      };
+      img.src = event.target.result as string;
+    };
+    reader.onerror = () => {
+      reject(new Error("FileReader error"));
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function BlessingsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -841,6 +892,9 @@ export default function BlessingsPage() {
   const [showPosterShareModal, setShowPosterShareModal] = useState(false);
   const [tempName, setTempName] = useState("");
   const [tempPhoto, setTempPhoto] = useState<string | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<'temp' | 'user'>('temp');
 
   const [selectedTemplate, setSelectedTemplate] = useState<"golden" | "crimson" | "peacock" | "white">("golden");
   const [generationType, setGenerationType] = useState<"status" | "square">("status");
@@ -940,12 +994,20 @@ export default function BlessingsPage() {
   }, [showSetupSheet, userName, userPhoto]);
 
   useEffect(() => {
-    localStorage.setItem("hk_profile_name", userName);
+    try {
+      localStorage.setItem("hk_profile_name", userName);
+    } catch (err) {
+      console.error("Failed to save profile name to localStorage", err);
+    }
   }, [userName]);
 
   useEffect(() => {
     if (userPhoto) {
-      localStorage.setItem("hk_profile_photo", userPhoto);
+      try {
+        localStorage.setItem("hk_profile_photo", userPhoto);
+      } catch (err) {
+        console.error("Failed to save profile photo to localStorage", err);
+      }
     } else {
       localStorage.removeItem("hk_profile_photo");
     }
@@ -1169,6 +1231,7 @@ export default function BlessingsPage() {
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const profileEditFileInputRef = useRef<HTMLInputElement | null>(null);
   const droneRef = useRef<TempleDrone | null>(null);
 
   // Initial load
@@ -3187,21 +3250,34 @@ export default function BlessingsPage() {
                     <div className="w-full rounded-2xl overflow-hidden relative cursor-pointer group"
                       style={{border:"1px solid rgba(251,191,36,0.15)",boxShadow:"0 8px 40px rgba(0,0,0,0.7)"}}
                       onClick={()=>handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0])}>
-                      <div className="w-full aspect-[16/9] relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_70%)] animate-pulse z-10" style={{animationDuration:"4s"}}/>
-                        <img src={radhaKrishnaImg} alt="Vrindavan Leela"
-                          className="w-full h-full object-cover scale-[1.02] group-hover:scale-[1.07] transition-transform duration-700 pointer-events-none"/>
-                        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+                      <div className="w-full aspect-[16/9] relative overflow-hidden flex items-center justify-center bg-black/60">
+                        {/* Blurred background backup */}
+                        <img src={radhaKrishnaImg} alt=""
+                          className="absolute inset-0 w-full h-full object-cover filter blur-md opacity-35 scale-110 pointer-events-none" />
+                        
+                        {/* Central portrait wallpaper image (Fully seen!) */}
+                        <div className="h-full aspect-[9/16] relative z-10 overflow-hidden shadow-2xl">
+                          <img src={radhaKrishnaImg} alt="Vrindavan Leela"
+                            className="w-full h-full object-cover scale-[1.02] group-hover:scale-[1.07] transition-transform duration-700 pointer-events-none"/>
+                        </div>
+                        
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.1)_0%,transparent_75%)] animate-pulse z-10" style={{animationDuration:"4s"}}/>
+                        
+                        <div className="absolute inset-0 pointer-events-none z-12 overflow-hidden">
                           <div className="absolute top-2 left-[20%] text-sm opacity-40 animate-bounce">🌸</div>
                           <div className="absolute top-3 left-[55%] text-sm opacity-30 animate-bounce" style={{animationDelay:"1.2s"}}>🌼</div>
                           <div className="absolute top-1 left-[80%] text-sm opacity-45 animate-bounce" style={{animationDelay:"0.6s"}}>🌸</div>
                         </div>
-                        <div className="absolute inset-0 z-10" style={{background:"linear-gradient(to top,rgba(5,2,1,0.95) 0%,rgba(5,2,1,0.5) 35%,rgba(5,2,1,0.08) 65%,transparent 100%)"}}/>
+                        <div className="absolute inset-0 z-15" style={{background:"linear-gradient(to top,rgba(5,2,1,0.96) 0%,rgba(5,2,1,0.45) 40%,transparent 100%)"}}/>
                         <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between z-20">
-                          <div className="flex flex-col gap-1 text-left">
-                            <span style={{fontSize:8,fontWeight:900,color:"rgba(251,191,36,0.95)",textTransform:"uppercase",letterSpacing:isHi?"normal":"0.18em"}}>Vrindavan Live</span>
-                            <h4 className="font-serif text-base font-bold text-amber-100 leading-tight">{isHi?"राधा-कृष्ण दिव्य रास":"Radha-Krishna Divine Raas"}</h4>
-                            <p style={{fontSize:10,color:"rgba(253,230,138,0.85)",fontStyle:"italic"}}>{isHi?"पुष्प वर्षा एवं दिव्य आभा के साथ...":"With divine petals & aura glow..."}</p>
+                          <div className="flex flex-col gap-1.5 text-left">
+                            <span className="inline-block px-2 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[7px] font-sans font-black text-amber-300 tracking-wider w-fit leading-none mb-0.5 uppercase shadow-sm">
+                              Vrindavan Live
+                            </span>
+                            <h4 className="font-serif text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-100 leading-tight">
+                              {isHi?"राधा-कृष्ण दिव्य रास":"Radha-Krishna Divine Raas"}
+                            </h4>
+                            <p style={{fontSize:9}} className="text-amber-200/75 italic">{isHi?"पुष्प वर्षा एवं दिव्य आभा के साथ...":"With divine petals & aura glow..."}</p>
                           </div>
                           <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0]);}}
                             className={`shrink-0 px-4 py-2 rounded-full font-sans text-[10px] font-black uppercase flex items-center gap-1.5 transition-all active:scale-95 ${isHi ? '' : 'tracking-wide'}`}
@@ -3707,7 +3783,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
-                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 md:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
                   >
                     {/* Card close button (cross button inside card, top left) */}
                     <button
@@ -3724,10 +3800,20 @@ export default function BlessingsPage() {
                     <div className="w-[55%] flex flex-col justify-between self-stretch pt-7 md:pt-5 pb-1 gap-2 md:gap-3.5 select-none text-left">
                       <div className="space-y-3.5 md:space-y-5">
                         {/* Header title */}
-                        <div className="space-y-1">
-                          <h2 className="text-base md:text-2xl font-black font-hindi text-amber-100 leading-tight">
+                        <div className="space-y-2">
+                          <span className="inline-block px-2 py-0.5 bg-amber-500/10 border border-amber-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
+                            {isHi
+                              ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
+                              : wp.deity}
+                          </span>
+                          <h2 className="text-base md:text-2xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 leading-tight">
                             {isHi ? wp.nameHindi : wp.name}
                           </h2>
+                          <p className="text-[9px] md:text-xs font-sans text-amber-200/60 font-medium leading-normal">
+                            {isHi 
+                              ? `रागघवम् गैलरी का पावन ${wp.tier === "premium" ? "प्रीमियम" : "मुफ़्त"} वॉलपेपर`
+                              : `Sacred ${wp.tier === "premium" ? "Premium" : "Free"} mobile wallpaper from Raghavam gallery`}
+                          </p>
                         </div>
 
                         {/* Toggle Pills Selection (Home screen vs Lock screen) - Segmented Control */}
@@ -3787,7 +3873,7 @@ export default function BlessingsPage() {
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
                     >
-                      <div className="absolute -top-24 md:-top-40 z-30 transition-transform active:scale-[0.98]">
+                      <div className="absolute -top-12 md:-top-20 z-30 transition-transform active:scale-[0.98]">
                         <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
                       </div>
                     </div>
@@ -3874,7 +3960,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
-                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 md:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
                   >
                     {/* Card close button (cross button inside card, top left) */}
                     <button
@@ -3891,13 +3977,25 @@ export default function BlessingsPage() {
                     <div className="w-[55%] flex flex-col justify-between self-stretch pt-7 md:pt-5 pb-1 gap-2 md:gap-3.5 select-none text-left">
                       <div className="space-y-3.5 md:space-y-5">
                         {/* Header title */}
-                        <div className="space-y-1">
-                          <h2 className="text-base md:text-2xl font-black font-hindi text-amber-100 leading-tight flex items-center gap-2">
-                            <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-                            <span className="px-1 py-0.5 rounded bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[7px] md:text-[9px] font-sans font-bold uppercase tracking-wider leading-none">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="inline-block px-2 py-0.5 bg-amber-500/15 border border-amber-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
+                              {isHi
+                                ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity)
+                                : wp.deity}
+                            </span>
+                            <span className="inline-block px-2 py-0.5 bg-orange-500/15 border border-orange-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-orange-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
                               {wp.effect}
                             </span>
+                          </div>
+                          <h2 className="text-base md:text-2xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 leading-tight">
+                            {isHi ? wp.nameHindi : wp.name}
                           </h2>
+                          <p className="text-[9px] md:text-xs font-sans text-amber-200/60 font-medium leading-normal">
+                            {isHi 
+                              ? `रागघवम् गैलरी का पावन सजीव ${wp.tier === "premium" ? "प्रीमियम" : "मुफ़्त"} वॉलपेपर`
+                              : `Sacred ${wp.tier === "premium" ? "Premium" : "Free"} live wallpaper from Raghavam gallery`}
+                          </p>
                         </div>
 
                         {/* Toggle Pills Selection - Segmented Control */}
@@ -3957,7 +4055,7 @@ export default function BlessingsPage() {
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
                     >
-                      <div className="absolute -top-24 md:-top-40 z-30 transition-transform active:scale-[0.98]">
+                      <div className="absolute -top-12 md:-top-20 z-30 transition-transform active:scale-[0.98]">
                         <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
                       </div>
                     </div>
@@ -4218,7 +4316,13 @@ export default function BlessingsPage() {
 
                   {/* Upload overlay trigger */}
                   <button 
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                      fileInputRef.current?.click();
+                    }}
                     className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
                   >
                     <Camera className="w-6 h-6 text-white" />
@@ -4226,7 +4330,13 @@ export default function BlessingsPage() {
 
                   {/* Camera float overlay */}
                   <button
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = "";
+                      }
+                      fileInputRef.current?.click();
+                    }}
                     className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-amber-500 border border-stone-950 flex items-center justify-center text-stone-950 shadow active:scale-90 transition-transform cursor-pointer"
                   >
                     <Camera className="w-3.5 h-3.5" />
@@ -4248,7 +4358,9 @@ export default function BlessingsPage() {
                       const reader = new FileReader();
                       reader.onload = (event) => {
                         if (event.target?.result) {
-                          setTempPhoto(event.target.result as string);
+                          setCropImageSrc(event.target.result as string);
+                          setCropTarget('temp');
+                          setCropModalOpen(true);
                         }
                       };
                       reader.readAsDataURL(file);
@@ -4295,8 +4407,12 @@ export default function BlessingsPage() {
                     }
                     setUserName(finalName);
                     setUserPhoto(tempPhoto);
-                    localStorage.setItem("hk_profile_name", finalName);
-                    localStorage.setItem("hk_profile_photo", tempPhoto);
+                    try {
+                      localStorage.setItem("hk_profile_name", finalName);
+                      localStorage.setItem("hk_profile_photo", tempPhoto);
+                    } catch (err) {
+                      console.error("Failed to save profile details to localStorage", err);
+                    }
                     setShowSetupSheet(false);
                     toast.success(isHi ? "प्रोफ़ाइल सफलतापूर्वक सहेज ली गई!" : "Profile details saved successfully!");
                   }}
@@ -4751,7 +4867,13 @@ export default function BlessingsPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (profileEditFileInputRef.current) {
+                          profileEditFileInputRef.current.value = "";
+                        }
+                        profileEditFileInputRef.current?.click();
+                      }}
                       className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
                       style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }}
                     >
@@ -4768,15 +4890,16 @@ export default function BlessingsPage() {
                       </button>
                     )}
                   </div>
-                  <input type="file" ref={fileInputRef} accept="image/*" className="hidden"
+                  <input type="file" ref={profileEditFileInputRef} accept="image/*" className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
                         const reader = new FileReader();
                         reader.onload = (event) => {
                           if (event.target?.result) {
-                            setUserPhoto(event.target.result as string);
-                            toast.success(isHi ? "फोटो अपलोड हो गई!" : "Photo uploaded!");
+                            setCropImageSrc(event.target.result as string);
+                            setCropTarget('user');
+                            setCropModalOpen(true);
                           }
                         };
                         reader.readAsDataURL(file);
@@ -4906,6 +5029,26 @@ export default function BlessingsPage() {
           </>
         )}
       </AnimatePresence>
+
+      <ImageCropModal
+        isOpen={cropModalOpen}
+        imageSrc={cropImageSrc}
+        onClose={() => {
+          setCropModalOpen(false);
+          setCropImageSrc(null);
+        }}
+        isHi={isHi}
+        onCropComplete={(croppedBase64) => {
+          setCropModalOpen(false);
+          setCropImageSrc(null);
+          if (cropTarget === 'temp') {
+            setTempPhoto(croppedBase64);
+          } else {
+            setUserPhoto(croppedBase64);
+            toast.success(isHi ? "फोटो अपलोड हो गई!" : "Photo uploaded!");
+          }
+        }}
+      />
 
     </div>
   );

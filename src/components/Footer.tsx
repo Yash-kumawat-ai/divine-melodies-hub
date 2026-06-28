@@ -171,9 +171,10 @@ export default function Footer() {
           <div className="text-center md:text-left">
             <Link to="/" className="flex items-center justify-center md:justify-start gap-3 mb-4 group">
               <img 
-                src="/brand-logo.webp" 
+                src={language === 'hi' ? "/brand-logo.svg" : "/brand-logo-en.svg"} 
                 alt="Raghavam Logo" 
-                className="w-12 h-12 object-contain transition-transform group-hover:rotate-12 duration-300 filter drop-shadow-[0_0_8px_rgba(217,119,6,0.2)]" 
+                className="w-12 h-12 object-contain transition-transform group-hover:rotate-12 duration-300" 
+                style={{ filter: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(217,119,6,0.25))' }}
                 width={48} 
                 height={48} 
               />
