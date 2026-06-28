@@ -16,7 +16,7 @@ const BANNERS = [
   { id: 1, title: "Bhajan Sangrah", image: bhajanSangrahBanner, href: "/all-bhajans" },
   { id: 2, title: "Divine Wallpapers", image: devWallpaperBanner, href: "/wallpaper" },
   { id: 3, title: "Live Wallpapers", image: liveWallpaperBanner, href: "/wallpaper" },
-  { id: 4, title: "Poster Maker", image: posterBanner, href: "/kirtan-ai" },
+  { id: 4, title: "Poster Maker", image: posterBanner, href: "/poster-maker" },
   { id: 5, title: "God Darshan", image: darshanBanner, href: "/wallpaper" },
   { id: 6, title: "Panchang", image: panchangBanner, href: "/panchang" },
   { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/community" },

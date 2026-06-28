@@ -60,6 +60,7 @@ const WallpaperPage = lazy(() => import("./pages/BlessingsPage"));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const JoinCommunityPage = lazy(() => import("./pages/JoinCommunityPage"));
+const PosterMakerPage = lazy(() => import("./pages/PosterMakerPage"));
 
 
 function AppContent() {
@@ -225,6 +226,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/poster-maker" element={<PosterMakerPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

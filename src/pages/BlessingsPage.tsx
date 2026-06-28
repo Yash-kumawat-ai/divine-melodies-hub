@@ -20,7 +20,11 @@ import {
   BookOpen,
   Search,
   Check,
-  Lightbulb
+  Lightbulb,
+  RotateCcw,
+  Move,
+  Maximize2,
+  RotateCw
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -30,6 +34,7 @@ import { toast } from "sonner";
 import { playMeditationBell, playCompletionChime } from "@/lib/meditation/meditationBell";
 import { getFontFamily, getCanvasFont, wrapTextAndGetLines, fitTextToWidth, fitMultiLineText, getPosterTypography } from "@/utils/typography";
 import { ImageCropModal } from "@/components/ImageCropModal";
+import { cn } from "@/lib/utils";
 
 // ─── LOCAL DEITY IMAGES IMPORTS ───────────────────────────────────
 import shreeRamImg from "./images/shree_ram_ultra_hd.webp";
@@ -295,6 +300,8 @@ export interface PosterTemplate {
   };
   quote: string;
   quoteHindi: string;
+  allowShapeChange?: boolean;
+  defaultShape?: "circle" | "square" | "rounded-square" | "oval";
 }
 
 export const POSTER_TEMPLATES: PosterTemplate[] = [
@@ -309,7 +316,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Baba Shyam will bless your day",
-    quoteHindi: "बाबा श्याम की कृपा आप पर सदा बनी रहे"
+    quoteHindi: "बाबा श्याम की कृपा आप पर सदा बनी रहे",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-hanuman-1",
@@ -322,7 +331,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Lord Hanuman will protect you",
-    quoteHindi: "हनुमान जी आपके सभी संकट दूर करें"
+    quoteHindi: "हनुमान जी आपके सभी संकट दूर करें",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-krishna-1",
@@ -335,7 +346,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "May Radha Krishna bless you",
-    quoteHindi: "राधा कृष्ण का पावन आशीर्वाद"
+    quoteHindi: "राधा कृष्ण का पावन आशीर्वाद",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-morning-1",
@@ -348,7 +361,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Wishing you a positive and blessed morning",
-    quoteHindi: "ॐ सूर्याय नमः। आपका आज का दिन मंगलमय हो।"
+    quoteHindi: "ॐ सूर्याय नमः। आपका आज का दिन मंगलमय हो।",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-fest-1",
@@ -361,7 +376,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Happy Janmashtami",
-    quoteHindi: "कृष्ण जन्माष्टमी की पावन शुभकामनाएं"
+    quoteHindi: "कृष्ण जन्माष्टमी की पावन शुभकामनाएं",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-fest-2",
@@ -374,7 +391,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Ganpati Bappa Morya",
-    quoteHindi: "गणपति बाप्पा मोरया"
+    quoteHindi: "गणपति बाप्पा मोरया",
+    allowShapeChange: true,
+    defaultShape: "circle"
   },
   {
     id: "poster-fest-3",
@@ -387,7 +406,9 @@ export const POSTER_TEMPLATES: PosterTemplate[] = [
     photoPosition: { x: 540, y: 1380, radius: 110 },
     namePosition: { x: 540, y: 1560 },
     quote: "Shubh Navratri",
-    quoteHindi: "नवरात्रि की हार्दिक शुभकामनाएं"
+    quoteHindi: "नवरात्रि की हार्दिक शुभकामनाएं",
+    allowShapeChange: true,
+    defaultShape: "circle"
   }
 ];
 
@@ -522,6 +543,755 @@ const PosterLikeButton = ({
     </div>
   );
 };
+
+// Subcomponent: Dedicated Devotee Poster Editor (New Flow mockup)
+interface BlessingsPosterEditorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  poster: PosterTemplate;
+  userPhoto: string;
+  initialZoom: number;
+  initialFrameScale: number;
+  initialOffsetX: number;
+  initialOffsetY: number;
+  initialShape: "circle" | "square" | "rounded-square" | "oval";
+  initialRotation?: number;
+  onSave: (settings: { zoom: number; frameScale: number; offsetX: number; offsetY: number; shape: "circle" | "square" | "rounded-square" | "oval"; rotation: number }) => void;
+  language: string;
+}
+
+function BlessingsPosterEditor({
+  isOpen,
+  onClose,
+  poster,
+  userPhoto,
+  initialZoom,
+  initialFrameScale,
+  initialOffsetX,
+  initialOffsetY,
+  initialShape,
+  initialRotation = 0,
+  onSave,
+  language
+}: BlessingsPosterEditorProps) {
+  const isHi = language === "hi";
+  
+  // State variables for editor values
+  const [shape, setShape] = useState(initialShape);
+  const [frameScale, setFrameScale] = useState(initialFrameScale);
+  const [offsetX, setOffsetX] = useState(initialOffsetX);
+  const [offsetY, setOffsetY] = useState(initialOffsetY);
+  const [photoZoom, setPhotoZoom] = useState(initialZoom);
+  const [photoOffsetX, setPhotoOffsetX] = useState(0);
+  const [photoOffsetY, setPhotoOffsetY] = useState(0);
+  const [rotation, setRotation] = useState(initialRotation);
+  
+  const [activeTab, setActiveTab] = useState<"shape" | "move" | "resize" | "rotate" | "reset">("shape");
+  const [bgLoaded, setBgLoaded] = useState(false);
+  const [userLoaded, setUserLoaded] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isPointerDown = useRef(false);
+  const activePointerId = useRef<number | null>(null);
+  
+  // Interaction action state: tl, tr, bl, br (corners), rot (rotate), move-frame, move-photo, none
+  const activeAction = useRef<"tl" | "tr" | "bl" | "br" | "rot" | "move-frame" | "move-photo" | "none">("none");
+  const dragStartX = useRef(0);
+  const dragStartY = useRef(0);
+  const touchStartDist = useRef(0);
+
+  // Initial values before a drag action starts
+  const dragStartValues = useRef({
+    ox: 0, oy: 0,
+    pox: 0, poy: 0,
+    fs: 1.0,
+    rot: 0,
+    r: 100
+  });
+
+  const bgImgRef = useRef<HTMLImageElement | null>(null);
+  const userImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Sync state values when modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      setShape(initialShape);
+      setFrameScale(initialFrameScale);
+      setOffsetX(initialOffsetX);
+      setOffsetY(initialOffsetY);
+      setPhotoZoom(initialZoom);
+      setPhotoOffsetX(0);
+      setPhotoOffsetY(0);
+      setRotation(initialRotation);
+      setActiveTab("shape");
+      activePointerId.current = null;
+      isPointerDown.current = false;
+      activeAction.current = "none";
+    }
+  }, [isOpen, initialZoom, initialFrameScale, initialOffsetX, initialOffsetY, initialShape, initialRotation]);
+
+  // Load resources
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setBgLoaded(false);
+    setUserLoaded(false);
+
+    const bg = new Image();
+    bg.crossOrigin = "anonymous";
+    bg.src = poster.imageUrl;
+    bg.onload = () => {
+      bgImgRef.current = bg;
+      setBgLoaded(true);
+    };
+
+    const user = new Image();
+    user.src = userPhoto;
+    user.onload = () => {
+      userImgRef.current = user;
+      setUserLoaded(true);
+    };
+  }, [poster, userPhoto, isOpen]);
+
+  // Point rotation helper
+  const rotatePoint = (x: number, y: number, cx: number, cy: number, angleRad: number) => {
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+    const dx = x - cx;
+    const dy = y - cy;
+    return {
+      x: cx + dx * cos - dy * sin,
+      y: cy + dx * sin + dy * cos
+    };
+  };
+
+  // Paint loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !bgImgRef.current || !userImgRef.current) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const w = bgImgRef.current.naturalWidth || 1080;
+    const h = bgImgRef.current.naturalHeight || 1920;
+    canvas.width = w;
+    canvas.height = h;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    // 1. Draw Background
+    ctx.drawImage(bgImgRef.current, 0, 0, w, h);
+
+    // 2. Draw Devotee Photo Layer
+    const photoX = poster.photoPosition.x + offsetX;
+    const photoY = poster.photoPosition.y + offsetY;
+    const radius = poster.photoPosition.radius * frameScale;
+
+    ctx.save();
+    // Translate and rotate around the shape center
+    ctx.translate(photoX, photoY);
+    ctx.rotate(rotation);
+
+    ctx.beginPath();
+    if (shape === "circle") {
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    } else if (shape === "square") {
+      ctx.rect(-radius, -radius, radius * 2, radius * 2);
+    } else if (shape === "rounded-square") {
+      const r = radius * 2 * 0.15;
+      ctx.roundRect(-radius, -radius, radius * 2, radius * 2, r);
+    } else if (shape === "oval") {
+      ctx.ellipse(0, 0, radius, radius * 1.33, 0, 0, Math.PI * 2);
+    }
+    ctx.closePath();
+    ctx.clip();
+
+    const targetW = radius * 2;
+    const targetH = radius * 2;
+    const baseScale = Math.max(targetW / userImgRef.current.width, targetH / userImgRef.current.height);
+    const DW = userImgRef.current.width * baseScale * photoZoom;
+    const DH = userImgRef.current.height * baseScale * photoZoom;
+    // Apply devotee photo pan offsets in the local rotated space
+    const drawX = -DW / 2 + photoOffsetX;
+    const drawY = -DH / 2 + photoOffsetY;
+
+    ctx.drawImage(userImgRef.current, drawX, drawY, DW, DH);
+    ctx.restore();
+
+    // 3. Gold border outline
+    ctx.save();
+    ctx.translate(photoX, photoY);
+    ctx.rotate(rotation);
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    if (shape === "circle") {
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    } else if (shape === "square") {
+      ctx.rect(-radius, -radius, radius * 2, radius * 2);
+    } else if (shape === "rounded-square") {
+      const r = radius * 2 * 0.15;
+      ctx.roundRect(-radius, -radius, radius * 2, radius * 2, r);
+    } else if (shape === "oval") {
+      ctx.ellipse(0, 0, radius, radius * 1.33, 0, 0, Math.PI * 2);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. Rectangular dashed border outline (Corner handles guide box)
+    ctx.save();
+    ctx.translate(photoX, photoY);
+    ctx.rotate(rotation);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(-radius, -radius, radius * 2, radius * 2);
+    ctx.restore();
+
+    // 5. Draw rotate handle connector line
+    const topCenter = rotatePoint(photoX, photoY - radius, photoX, photoY, rotation);
+    const rotHandle = rotatePoint(photoX, photoY - radius - 45, photoX, photoY, rotation);
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(topCenter.x, topCenter.y);
+    ctx.lineTo(rotHandle.x, rotHandle.y);
+    ctx.stroke();
+
+    // 6. Draw rotate handle dot (gold icon circle)
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(rotHandle.x, rotHandle.y, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 7. Draw corner handles (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
+    const corners = [
+      rotatePoint(photoX - radius, photoY - radius, photoX, photoY, rotation), // TL
+      rotatePoint(photoX + radius, photoY - radius, photoX, photoY, rotation), // TR
+      rotatePoint(photoX - radius, photoY + radius, photoX, photoY, rotation), // BL
+      rotatePoint(photoX + radius, photoY + radius, photoX, photoY, rotation)  // BR
+    ];
+
+    corners.forEach(pt => {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#fbbf24";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+  }, [bgLoaded, userLoaded, shape, frameScale, offsetX, offsetY, photoZoom, photoOffsetX, photoOffsetY, rotation, poster]);
+
+  // Pointer gesture down
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (activePointerId.current !== null) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.setPointerCapture(e.pointerId);
+    activePointerId.current = e.pointerId;
+    isPointerDown.current = true;
+
+    // Convert screen coordinates to canvas space
+    const rect = canvas.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+    dragStartX.current = clickX;
+    dragStartY.current = clickY;
+
+    // Current coordinates
+    const photoX = poster.photoPosition.x + offsetX;
+    const photoY = poster.photoPosition.y + offsetY;
+    const radius = poster.photoPosition.radius * frameScale;
+
+    // Detect click targets
+    const rotHandle = rotatePoint(photoX, photoY - radius - 45, photoX, photoY, rotation);
+    const corners = {
+      tl: rotatePoint(photoX - radius, photoY - radius, photoX, photoY, rotation),
+      tr: rotatePoint(photoX + radius, photoY - radius, photoX, photoY, rotation),
+      bl: rotatePoint(photoX - radius, photoY + radius, photoX, photoY, rotation),
+      br: rotatePoint(photoX + radius, photoY + radius, photoX, photoY, rotation)
+    };
+
+    // Store starting values for delta calculations
+    dragStartValues.current = {
+      ox: offsetX, oy: offsetY,
+      pox: photoOffsetX, poy: photoOffsetY,
+      fs: frameScale,
+      rot: rotation,
+      r: radius
+    };
+
+    // Check rotate handle
+    if (Math.hypot(clickX - rotHandle.x, clickY - rotHandle.y) < 32) {
+      activeAction.current = "rot";
+      return;
+    }
+    // Check corner handles
+    if (Math.hypot(clickX - corners.tl.x, clickY - corners.tl.y) < 32) { activeAction.current = "tl"; return; }
+    if (Math.hypot(clickX - corners.tr.x, clickY - corners.tr.y) < 32) { activeAction.current = "tr"; return; }
+    if (Math.hypot(clickX - corners.bl.x, clickY - corners.bl.y) < 32) { activeAction.current = "bl"; return; }
+    if (Math.hypot(clickX - corners.br.x, clickY - corners.br.y) < 32) { activeAction.current = "br"; return; }
+
+    // Check shape body
+    const distToCenter = Math.hypot(clickX - photoX, clickY - photoY);
+    if (distToCenter < radius) {
+      // If template is fixed, always drag the photo inside. 
+      // If flexible: move-shape in Move tab, move-photo-inside in Shape/Resize tabs
+      if (!poster.allowShapeChange) {
+        activeAction.current = "move-photo";
+      } else if (activeTab === "move") {
+        activeAction.current = "move-frame";
+      } else {
+        activeAction.current = "move-photo";
+      }
+    } else {
+      activeAction.current = "none";
+    }
+  };
+
+  // Pointer gesture move
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isPointerDown.current || e.pointerId !== activePointerId.current || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+    const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+    const photoX = poster.photoPosition.x + offsetX;
+    const photoY = poster.photoPosition.y + offsetY;
+    const baseRadius = poster.photoPosition.radius;
+
+    const dx = clickX - dragStartX.current;
+    const dy = clickY - dragStartY.current;
+
+    const action = activeAction.current;
+    const startVal = dragStartValues.current;
+
+    if (action === "move-frame") {
+      // Reposition circle frame center
+      setOffsetX(startVal.ox + dx);
+      setOffsetY(startVal.oy + dy);
+    } else if (action === "move-photo") {
+      // Pan photo inside shape
+      setPhotoOffsetX(startVal.pox + dx);
+      setPhotoOffsetY(startVal.poy + dy);
+    } else if (action === "rot") {
+      // Calculate angle from center to current pointer
+      const angle = Math.atan2(clickY - photoY, clickX - photoX);
+      // Offset by +PI/2 because rotate handle is at top center (-PI/2)
+      setRotation(angle + Math.PI / 2);
+    } else if (["tl", "tr", "bl", "br"].includes(action)) {
+      // Resize frame radius based on distance from center
+      const currentDist = Math.hypot(clickX - photoX, clickY - photoY);
+      // Ratio of new distance relative to base corner distance
+      const newRadius = currentDist / Math.sqrt(2);
+      const newScale = newRadius / baseRadius;
+      setFrameScale(Math.max(0.4, Math.min(2.5, newScale)));
+    }
+  };
+
+  // Pointer gesture up
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (e.pointerId === activePointerId.current) {
+      isPointerDown.current = false;
+      activePointerId.current = null;
+      activeAction.current = "none";
+      canvasRef.current?.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  // Wheel zoom
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    const delta = -e.deltaY * 0.001;
+    if (activeTab === "resize" || !poster.allowShapeChange) {
+      setPhotoZoom(prev => Math.max(0.8, Math.min(3.0, prev + delta)));
+    } else {
+      setFrameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
+    }
+  };
+
+  // Pinch zoom (Mobile)
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 2) {
+      const dist = Math.sqrt(
+        Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
+        Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
+      );
+      touchStartDist.current = dist;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 2 && touchStartDist.current > 0) {
+      e.preventDefault();
+      const dist = Math.sqrt(
+        Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
+        Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
+      );
+      const ratio = dist / touchStartDist.current;
+      const zoomDelta = (ratio - 1) * 0.35;
+      
+      if (activeTab === "resize" || !poster.allowShapeChange) {
+        setPhotoZoom(prev => Math.max(0.8, Math.min(3.0, prev * (1 + zoomDelta))));
+      } else {
+        setFrameScale(prev => Math.max(0.5, Math.min(2.5, prev * (1 + zoomDelta))));
+      }
+      touchStartDist.current = dist;
+    }
+  };
+
+  const handleResetAll = () => {
+    setShape(poster.defaultShape || "circle");
+    setFrameScale(1.0);
+    setOffsetX(0);
+    setOffsetY(0);
+    setPhotoZoom(1.0);
+    setPhotoOffsetX(0);
+    setPhotoOffsetY(0);
+    setRotation(0);
+  };
+
+  // Double tap to reset photo
+  const lastTap = useRef(0);
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      setPhotoZoom(1.0);
+      setPhotoOffsetX(0);
+      setPhotoOffsetY(0);
+    }
+    lastTap.current = now;
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[250] flex flex-col bg-[#070200] text-stone-200 select-none">
+      
+      {/* ─── 1. TOP BAR ─── */}
+      <div className="h-14 border-b border-white/5 bg-[#0a0200] flex items-center justify-between px-4 shrink-0">
+        <button 
+          onClick={onClose}
+          className="w-10 h-10 rounded-full flex items-center justify-center text-stone-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        <span className="font-sans font-black text-sm uppercase tracking-widest text-stone-300">
+          {isHi ? "एडिट करें" : "Edit Poster"}
+        </span>
+        <button 
+          onClick={() => onSave({ zoom: photoZoom, frameScale, offsetX, offsetY, shape, rotation })}
+          className="px-5 py-1.5 rounded-lg bg-[#e8960a] hover:bg-[#c97c04] text-[#1a0500] font-sans font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all cursor-pointer"
+        >
+          {isHi ? "पूरा करें" : "Done"}
+        </button>
+      </div>
+
+      {/* ─── 2. MIDDLE VIEWPORT ─── */}
+      <div className="flex-1 min-h-0 flex items-center justify-center p-4 bg-black/40 relative">
+        {(!bgLoaded || !userLoaded) && (
+          <div className="absolute inset-0 flex items-center justify-center bg-stone-950/80 z-10">
+            <div className="w-8 h-8 rounded-full border-2 border-brand-saffron border-t-transparent animate-spin" />
+          </div>
+        )}
+        <div 
+          onClick={handleDoubleTap}
+          className="h-full w-auto max-h-full max-w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative"
+          style={{ aspectRatio: "9/16", touchAction: "none" }}
+        >
+          <canvas
+            ref={canvasRef}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onWheel={handleWheel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            className="w-full h-full block bg-[#0c0503] cursor-grab select-none"
+          />
+        </div>
+      </div>
+
+      {/* ─── 3. BOTTOM PANEL ─── */}
+      <div className="border-t border-white/5 bg-[#0a0200] shrink-0">
+        
+        {/* TAB LIST BAR */}
+        <div className="grid grid-cols-5 border-b border-white/5">
+          {[
+            { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
+            { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-4 h-4" /> },
+            { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
+            { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
+            { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
+          ].map(tab => {
+            const isTabActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  if (tab.id === "reset") {
+                    handleResetAll();
+                  } else {
+                    setActiveTab(tab.id as any);
+                  }
+                }}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1.5 py-3 border-b-2 text-[10px] font-sans font-black uppercase tracking-widest transition-all cursor-pointer",
+                  isTabActive
+                    ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                    : "border-transparent text-stone-400 hover:text-stone-200"
+                )}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ACTIVE PANEL CONTENT */}
+        <div className="p-5 space-y-4 min-h-[170px] bg-[#0c0300]">
+          
+          {/* shape panel */}
+          {activeTab === "shape" && (
+            <div className="space-y-4">
+              {poster.allowShapeChange ? (
+                <div className="space-y-2">
+                  <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-left">
+                    {isHi ? "आकार चुनें" : "Shape Options"}
+                  </span>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: "circle", label: isHi ? "गोल" : "Circle" },
+                      { id: "square", label: isHi ? "चौकोर" : "Square" },
+                      { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
+                      { id: "oval", label: isHi ? "ओवल" : "Oval" },
+                    ].map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => setShape(s.id as any)}
+                        className={cn(
+                          "py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                          shape === s.id
+                            ? "bg-amber-500/15 border-amber-500 text-amber-300"
+                            : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                        )}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="py-2 text-stone-400 text-xs font-semibold italic text-center">
+                  {isHi ? "इस थीम का आकार लॉक है" : "Shape is locked for this template."}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* move panel (fine nudge arrow keys) */}
+          {activeTab === "move" && (
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-center mb-1">
+                {isHi ? "पोजीशन फाइन-ट्यूनिंग" : "Fine-Tune Position"}
+              </span>
+              <div className="flex flex-col items-center gap-1.5">
+                <button 
+                  onClick={() => setOffsetY(prev => prev - 2)}
+                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                >
+                  ▲
+                </button>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setOffsetX(prev => prev - 2)}
+                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                  >
+                    ◀
+                  </button>
+                  <button 
+                    onClick={() => { setOffsetX(0); setOffsetY(0); }}
+                    className="px-2.5 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-stone-300 font-black uppercase tracking-wider border border-white/5 cursor-pointer"
+                  >
+                    Center
+                  </button>
+                  <button 
+                    onClick={() => setOffsetX(prev => prev + 2)}
+                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                  >
+                    ▶
+                  </button>
+                </div>
+                <button 
+                  onClick={() => setOffsetY(prev => prev + 2)}
+                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                >
+                  ▼
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* resize panel */}
+          {activeTab === "resize" && (
+            <div className="space-y-4">
+              {poster.allowShapeChange && (
+                <div className="space-y-1 text-left">
+                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
+                    <span className="font-sans text-amber-400">{frameScale.toFixed(2)}x</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setFrameScale(prev => Math.max(0.4, prev - 0.05))}
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="range"
+                      min="0.4"
+                      max="2.5"
+                      step="0.05"
+                      value={frameScale}
+                      onChange={(e) => setFrameScale(parseFloat(e.target.value))}
+                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                    />
+                    <button
+                      onClick={() => setFrameScale(prev => Math.min(2.5, prev + 0.05))}
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1 text-left">
+                <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                  <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
+                  <span className="font-sans text-amber-400">{photoZoom.toFixed(2)}x</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setPhotoZoom(prev => Math.max(0.8, prev - 0.05))}
+                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="range"
+                    min="0.8"
+                    max="3.0"
+                    step="0.05"
+                    value={photoZoom}
+                    onChange={(e) => setPhotoZoom(parseFloat(e.target.value))}
+                    className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                  />
+                  <button
+                    onClick={() => setPhotoZoom(prev => Math.min(3.0, prev + 0.05))}
+                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* rotate panel */}
+          {activeTab === "rotate" && (
+            <div className="space-y-3 text-left">
+              <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                <span>{isHi ? "फ्रेम रोटेशन" : "Frame Rotation"}</span>
+                <span className="font-sans text-amber-400">{Math.round((rotation * 180) / Math.PI)}°</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setRotation(prev => prev - (5 * Math.PI) / 180)}
+                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                >
+                  ↺
+                </button>
+                <input
+                  type="range"
+                  min={-Math.PI}
+                  max={Math.PI}
+                  step={0.05}
+                  value={rotation}
+                  onChange={(e) => setRotation(parseFloat(e.target.value))}
+                  className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                />
+                <button
+                  onClick={() => setRotation(prev => prev + (5 * Math.PI) / 180)}
+                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                >
+                  ↻
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Adjust Photo Inside Helper Row */}
+          <div className="border-t border-white/5 pt-3.5 space-y-2">
+            <span className="text-[9px] text-stone-500 font-black uppercase tracking-wider block text-left">
+              {isHi ? "फोटो एडजस्ट करें" : "Adjust Photo Inside"}
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
+                  {isHi ? "ड्रैग करें" : "Drag to Move"}
+                </span>
+              </div>
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
+                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
+                  {isHi ? "पिंच ज़ूम" : "Pinch to Zoom"}
+                </span>
+              </div>
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-2 2-2-2M9 6l2-2 2 2M11 4v16"/></svg>
+                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
+                  {isHi ? "डबल टैप रीसेट" : "Double Tap Reset"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Reset All Button */}
+          <button
+            onClick={handleResetAll}
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[10px] font-black text-amber-400 border border-amber-500/20 transition-all active:scale-98 cursor-pointer select-none"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>{isHi ? "सब कुछ रीसेट करें" : "Reset All Settings"}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Subcomponent: Mini Circle Helper Icon for shape tab
+const CircleIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <circle cx="12" cy="12" r="9" />
+  </svg>
+);
 
 // ─── LIVE WALLPAPERS PARTICLE OVERLAYS ────────────────────────────
 const PetalsOverlay = () => {
@@ -892,6 +1662,21 @@ export default function BlessingsPage() {
   const [showPosterShareModal, setShowPosterShareModal] = useState(false);
   const [tempName, setTempName] = useState("");
   const [tempPhoto, setTempPhoto] = useState<string | null>(null);
+  const [posterZoom, setPosterZoom] = useState<number>(1.0);
+  const [posterFrameScale, setPosterFrameScale] = useState<number>(1.0);
+  const [posterOffsetX, setPosterOffsetX] = useState<number>(0);
+  const [posterOffsetY, setPosterOffsetY] = useState<number>(0);
+  const [posterShape, setPosterShape] = useState<"circle" | "square" | "rounded-square" | "oval">("circle");
+  const [posterRotation, setPosterRotation] = useState<number>(0);
+  const [isEditingPhoto, setIsEditingPhoto] = useState<boolean>(false);
+  const [showEditorModal, setShowEditorModal] = useState<boolean>(false);
+  const [posterActiveTab, setPosterActiveTab] = useState<"shape" | "move" | "resize" | "rotate" | "reset">("shape");
+  const [posterNameOffsetX, setPosterNameOffsetX] = useState<number>(0);
+  const [posterNameOffsetY, setPosterNameOffsetY] = useState<number>(0);
+  const [posterNameScale, setPosterNameScale] = useState<number>(1.0);
+  const [posterNameRotation, setPosterNameRotation] = useState<number>(0);
+  const [posterNameShape, setPosterNameShape] = useState<"circle" | "square" | "rounded-square" | "oval">("rounded-square");
+  const [editingElement, setEditingElement] = useState<"photo" | "name">("photo");
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<'temp' | 'user'>('temp');
@@ -1021,7 +1806,17 @@ export default function BlessingsPage() {
     } else {
       setCompiledPosterUrl(null);
     }
-  }, [selectedPoster, userName, userPhoto, generationType]);
+  }, [selectedPoster, userName, userPhoto, generationType, posterZoom, posterOffsetX, posterOffsetY, posterShape]);
+
+  useEffect(() => {
+    if (selectedPoster) {
+      const defaultShape = selectedPoster.defaultShape || "circle";
+      setPosterShape(defaultShape);
+      setPosterZoom(1.0);
+      setPosterOffsetX(0);
+      setPosterOffsetY(0);
+    }
+  }, [selectedPoster]);
 
   // Synchronize vertical scrolling with selected poster template inside the modal
   useEffect(() => {
@@ -1970,12 +2765,22 @@ export default function BlessingsPage() {
         const posterTypography = getPosterTypography(language, aspect, true);
 
         const drawNameText = () => {
+          ctx.save();
+          
+          const finalNameX = nameX + posterNameOffsetX;
+          const finalNameY = nameY + posterNameOffsetY;
+          
+          // Translate, rotate, and scale around the name banner center
+          ctx.translate(finalNameX, finalNameY);
+          ctx.rotate(posterNameRotation);
+          ctx.scale(posterNameScale, posterNameScale);
+          
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
           const displayName = userName.trim() ? userName : (isHi ? "भक्त" : "Devotee");
 
-          // Fit text size dynamically using fitTextToWidth using posterTypography.nameSize
+          // Fit text size dynamically using fitTextToWidth
           const resolvedFontString = fitTextToWidth(
             ctx,
             displayName,
@@ -1992,8 +2797,8 @@ export default function BlessingsPage() {
           const nameWidth = ctx.measureText(displayName).width;
           const bannerW = nameWidth + 80;
           const bannerH = fontSize + 32;
-          const bannerX = nameX - bannerW / 2;
-          const bannerY = nameY - bannerH / 2;
+          const bannerX = -bannerW / 2;
+          const bannerY = -bannerH / 2;
 
           // Clear shadow for banner background
           ctx.shadowBlur = 0;
@@ -2005,7 +2810,16 @@ export default function BlessingsPage() {
           ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
           ctx.lineWidth = 3;
           ctx.beginPath();
-          ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+          
+          // Custom corner radius based on posterNameShape setting
+          const nameRadius = 
+            posterNameShape === "circle" || posterNameShape === "oval"
+              ? bannerH / 2 // perfect capsule
+              : posterNameShape === "square"
+              ? 0
+              : 16; // rounded-square
+              
+          ctx.roundRect(bannerX, bannerY, bannerW, bannerH, nameRadius);
           ctx.fill();
           ctx.stroke();
 
@@ -2016,61 +2830,93 @@ export default function BlessingsPage() {
           ctx.shadowOffsetY = 3;
 
           ctx.fillStyle = "#fbbf24";
-          ctx.fillText(displayName, nameX, nameY);
+          // Draw text centered at translated 0,0 origin
+          ctx.fillText(displayName, 0, 0);
 
-          // Reset textBaseline and shadow
-          ctx.textBaseline = "alphabetic";
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
+          ctx.restore();
 
           // Watermark - slightly larger and shadow supported
+          ctx.save();
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
           ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
           ctx.font = `bold 24px ${posterTypography.subtitleFont}`;
           ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
           ctx.shadowBlur = 4;
           ctx.shadowOffsetY = 1;
           ctx.fillText("✨ Created with Raghavam", w / 2, h - 60);
-
-          // Reset shadow
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetY = 0;
+          ctx.restore();
 
           resolve(canvas.toDataURL("image/png"));
         };
 
         if (userPhoto) {
           const avatarImg = new Image();
+          avatarImg.crossOrigin = "anonymous";
           avatarImg.src = userPhoto;
           avatarImg.onload = () => {
             ctx.save();
+            
+            const isFlexible = poster.allowShapeChange;
+            const finalCX = isFlexible ? (photoX + posterOffsetX) : photoX;
+            const finalCY = isFlexible ? (photoY + posterOffsetY) : photoY;
+            const finalRadius = isFlexible ? (radius * posterFrameScale) : radius;
+
+            // Translate and rotate around the shape center
+            ctx.translate(finalCX, finalCY);
+            ctx.rotate(posterRotation);
+
+            // Mask clip shape
             ctx.beginPath();
-            ctx.arc(photoX, photoY, radius, 0, Math.PI * 2);
+            if (posterShape === "circle") {
+              ctx.arc(0, 0, finalRadius, 0, Math.PI * 2);
+            } else if (posterShape === "square") {
+              ctx.rect(-finalRadius, -finalRadius, finalRadius * 2, finalRadius * 2);
+            } else if (posterShape === "rounded-square") {
+              const r = finalRadius * 2 * 0.15;
+              ctx.roundRect(-finalRadius, -finalRadius, finalRadius * 2, finalRadius * 2, r);
+            } else if (posterShape === "oval") {
+              ctx.ellipse(0, 0, finalRadius, finalRadius * 1.33, 0, 0, Math.PI * 2);
+            }
             ctx.closePath();
             ctx.clip();
 
-            const avatarRatio = avatarImg.width / avatarImg.height;
-            let cropW = radius * 2;
-            let cropH = radius * 2;
-            let cropX = photoX - radius;
-            let cropY = photoY - radius;
+            const targetW = finalRadius * 2;
+            const targetH = finalRadius * 2;
 
-            if (avatarRatio > 1) {
-              cropW = radius * 2 * avatarRatio;
-              cropX = photoX - cropW / 2;
-            } else {
-              cropH = radius * 2 / avatarRatio;
-              cropY = photoY - cropH / 2;
-            }
+            const userZoom = posterZoom;
+            const userOffsetX = isFlexible ? 0 : posterOffsetX;
+            const userOffsetY = isFlexible ? 0 : posterOffsetY;
 
-            ctx.drawImage(avatarImg, cropX, cropY, cropW, cropH);
+            const baseScale = Math.max(targetW / avatarImg.width, targetH / avatarImg.height);
+            const DW = avatarImg.width * baseScale * userZoom;
+            const DH = avatarImg.height * baseScale * userZoom;
+            const drawX = -DW / 2 + userOffsetX;
+            const drawY = -DH / 2 + userOffsetY;
+
+            ctx.drawImage(avatarImg, drawX, drawY, DW, DH);
             ctx.restore();
 
+            // Gold border matching active shape
+            ctx.save();
+            ctx.translate(finalCX, finalCY);
+            ctx.rotate(posterRotation);
             ctx.strokeStyle = "#fbbf24";
             ctx.lineWidth = 6;
             ctx.beginPath();
-            ctx.arc(photoX, photoY, radius, 0, Math.PI * 2);
+            if (posterShape === "circle") {
+              ctx.arc(0, 0, finalRadius, 0, Math.PI * 2);
+            } else if (posterShape === "square") {
+              ctx.rect(-finalRadius, -finalRadius, finalRadius * 2, finalRadius * 2);
+            } else if (posterShape === "rounded-square") {
+              const r = finalRadius * 2 * 0.15;
+              ctx.roundRect(-finalRadius, -finalRadius, finalRadius * 2, finalRadius * 2, r);
+            } else if (posterShape === "oval") {
+              ctx.ellipse(0, 0, finalRadius, finalRadius * 1.33, 0, 0, Math.PI * 2);
+            }
+            ctx.closePath();
             ctx.stroke();
+            ctx.restore();
 
             drawNameText();
           };
@@ -4488,7 +5334,7 @@ export default function BlessingsPage() {
                   <div
                     ref={posterScrollContainerRef}
                     onScroll={handlePosterScroll}
-                    className="w-full flex flex-col overflow-y-auto snap-y snap-mandatory scrollbar-none gap-0"
+                    className={`w-full flex flex-col snap-y snap-mandatory scrollbar-none gap-0 ${isEditingPhoto ? "overflow-y-hidden touch-none" : "overflow-y-auto"}`}
                     style={{
                       height: "calc(100dvh - 190px)",
                       maxHeight: "calc(100dvh - 190px)",
@@ -4500,12 +5346,16 @@ export default function BlessingsPage() {
                       const isActive = selectedPoster.id === tpl.id;
                       
                       // Calculate relative coordinate percentages matching 1080x1920 canvas
-                      const photoLeft = `${(tpl.photoPosition.x / 1080) * 100}%`;
-                      const photoTop = `${(tpl.photoPosition.y / 1920) * 100}%`;
-                      const avatarWidthPercent = `${((tpl.photoPosition.radius * 2) / 1080) * 100}%`;
-                      
-                      const nameLeft = `${(tpl.namePosition.x / 1080) * 100}%`;
-                      const nameTop = `${(tpl.namePosition.y / 1920) * 100}%`;
+                      const isFlexible = tpl.allowShapeChange;
+                      const CX_tpl = isFlexible ? (tpl.photoPosition.x + (isActive ? posterOffsetX : 0)) : tpl.photoPosition.x;
+                      const CY_tpl = isFlexible ? (tpl.photoPosition.y + (isActive ? posterOffsetY : 0)) : tpl.photoPosition.y;
+                      const R_tpl = isFlexible ? (tpl.photoPosition.radius * (isActive ? posterFrameScale : 1.0)) : tpl.photoPosition.radius;
+
+                      const photoLeft = `${(CX_tpl / 1080) * 100}%`;
+                      const photoTop = `${(CY_tpl / 1920) * 100}%`;
+                      const avatarWidthPercent = `${((R_tpl * 2) / 1080) * 100}%`;
+                      const nameLeft = `${((tpl.namePosition.x + (isActive ? posterNameOffsetX : 0)) / 1080) * 100}%`;
+                      const nameTop = `${((tpl.namePosition.y + (isActive ? posterNameOffsetY : 0)) / 1920) * 100}%`;
 
                       return (
                         <div
@@ -4549,58 +5399,208 @@ export default function BlessingsPage() {
                             />
 
                             {/* Live CSS Avatar Overlay (Instant, no flickering, no image swapping!) */}
-                            <div
-                              className="absolute overflow-hidden flex items-center justify-center"
-                              style={{
-                                left: photoLeft,
-                                top: photoTop,
-                                width: avatarWidthPercent,
-                                aspectRatio: "1/1",
-                                transform: "translate(-50%, -50%)",
-                                borderRadius: "50%",
-                                border: "1.5px solid #fbbf24",
-                                background: "#1b0a05",
-                                boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
-                              }}
-                            >
-                              {userPhoto ? (
-                                <img 
-                                  src={userPhoto} 
-                                  alt="devotee" 
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }} 
-                                  className="pointer-events-none"
-                                />
-                              ) : (
-                                <span style={{ fontSize: "min(3.5vw, 22px)", fontFamily: "serif", color: "#fbbf24", fontWeight: "bold" }}>ॐ</span>
-                              )}
-                            </div>
+                            {(() => {
+                              const shapeForTpl = isActive ? posterShape : (tpl.defaultShape || "circle");
+                              const zoomForTpl = isActive ? posterZoom : 1.0;
+                              const offsetXForTpl = isActive ? posterOffsetX : 0;
+                              const offsetYForTpl = isActive ? posterOffsetY : 0;
+
+                              const computedBorderRadius = 
+                                shapeForTpl === "circle" || shapeForTpl === "oval"
+                                  ? "50%"
+                                  : shapeForTpl === "square"
+                                  ? "0px"
+                                  : "15%"; // rounded-square
+
+                              const isEditable = isActive && isEditingPhoto;
+                              const isPhotoSelected = isEditable && editingElement === "photo";
+
+                              return (
+                                <div
+                                  className={`absolute overflow-hidden flex items-center justify-center ${isEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
+                                  style={{
+                                    left: photoLeft,
+                                    top: photoTop,
+                                    width: avatarWidthPercent,
+                                    aspectRatio: shapeForTpl === "oval" ? "3/4" : "1/1",
+                                    transform: `translate(-50%, -50%) rotate(${isActive ? posterRotation : 0}rad)`,
+                                    borderRadius: computedBorderRadius,
+                                    border: isPhotoSelected 
+                                      ? "2px dashed #fbbf24" 
+                                      : isEditable 
+                                      ? "1.5px dashed rgba(251, 191, 36, 0.4)" 
+                                      : "1.5px solid #fbbf24",
+                                    background: "#1b0a05",
+                                    boxShadow: isPhotoSelected 
+                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
+                                      : "0 4px 12px rgba(0,0,0,0.6)",
+                                  }}
+                                  // Drag handlers for in-place frame movement
+                                  onPointerDown={isEditable ? (e) => {
+                                    e.stopPropagation();
+                                    setEditingElement("photo");
+                                    e.currentTarget.setPointerCapture(e.pointerId);
+                                    (e.currentTarget as any)._dragStart = {
+                                      x: e.clientX,
+                                      y: e.clientY,
+                                      ox: posterOffsetX,
+                                      oy: posterOffsetY
+                                    };
+                                  } : undefined}
+                                  onPointerMove={isEditable ? (e) => {
+                                    const data = (e.currentTarget as any)._dragStart;
+                                    if (!data) return;
+                                    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                    if (!rect) return;
+                                    // Scale mouse/touch move delta values to match the 1080px canvas coordinates
+                                    const scale = 1080 / rect.width;
+                                    const dx = (e.clientX - data.x) * scale;
+                                    const dy = (e.clientY - data.y) * scale;
+                                    setPosterOffsetX(data.ox + dx);
+                                    setPosterOffsetY(data.oy + dy);
+                                  } : undefined}
+                                  onPointerUp={isEditable ? (e) => {
+                                    delete (e.currentTarget as any)._dragStart;
+                                    e.currentTarget.releasePointerCapture(e.pointerId);
+                                  } : undefined}
+                                  onPointerCancel={isEditable ? (e) => {
+                                    delete (e.currentTarget as any)._dragStart;
+                                    e.currentTarget.releasePointerCapture(e.pointerId);
+                                  } : undefined}
+                                  // Mouse wheel scale adjustments
+                                  onWheel={isEditable ? (e) => {
+                                    e.preventDefault();
+                                    const delta = -e.deltaY * 0.001;
+                                    if (tpl.allowShapeChange) {
+                                      setPosterFrameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
+                                    } else {
+                                      setPosterZoom(prev => Math.max(0.8, Math.min(3.0, prev + delta)));
+                                    }
+                                  } : undefined}
+                                >
+                                  {userPhoto ? (
+                                    <img 
+                                      src={userPhoto} 
+                                      alt="devotee" 
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "cover",
+                                        transform: isFlexible 
+                                          ? `scale(${zoomForTpl})` 
+                                          : `scale(${zoomForTpl}) translate(${(offsetXForTpl / (tpl.photoPosition.radius * 2)) * 100}%, ${(offsetYForTpl / (tpl.photoPosition.radius * 2)) * 100}%)`,
+                                        transformOrigin: "center center",
+                                      }} 
+                                      className="pointer-events-none"
+                                    />
+                                  ) : (
+                                    <span style={{ fontSize: "min(3.5vw, 22px)", fontFamily: "serif", color: "#fbbf24", fontWeight: "bold" }}>ॐ</span>
+                                  )}
+
+                                  {/* White handle dots on the frame edges matching image-1782636742188.png */}
+                                  {isEditable && (
+                                    <>
+                                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
+                                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
+                                      <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
+                                      <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
 
                             {/* Live CSS Name Banner Overlay */}
-                            <div
-                              className="absolute flex items-center justify-center whitespace-nowrap"
-                              style={{
-                                left: nameLeft,
-                                top: nameTop,
-                                transform: "translate(-50%, -50%)",
-                                background: "rgba(12, 5, 2, 0.85)",
-                                border: "1.5px solid rgba(251, 191, 36, 0.5)",
-                                borderRadius: "12px",
-                                padding: "4px min(4vw, 16px)",
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.7)",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  fontFamily: "serif",
-                                  fontWeight: 800,
-                                  color: "#fbbf24",
-                                  fontSize: "min(3.2vw, 16px)",
-                                  letterSpacing: isHi ? "normal" : "0.02em",
-                                }}
-                              >
-                                {userName.trim() ? userName : (isHi ? "भक्त" : "Devotee")}
-                              </span>
-                            </div>
+                            {(() => {
+                              const isNameEditable = isActive && isEditingPhoto;
+                              const isNameSelected = isNameEditable && editingElement === "name";
+
+                              const computedNameBorderRadius = 
+                                (isActive ? posterNameShape : "rounded-square") === "circle" || (isActive ? posterNameShape : "rounded-square") === "oval"
+                                  ? "999px"
+                                  : (isActive ? posterNameShape : "rounded-square") === "square"
+                                  ? "0px"
+                                  : "12px";
+
+                              return (
+                                <div
+                                  className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
+                                  style={{
+                                    left: nameLeft,
+                                    top: nameTop,
+                                    transform: `translate(-50%, -50%) scale(${isActive ? posterNameScale : 1.0}) rotate(${isActive ? posterNameRotation : 0}rad)`,
+                                    background: "rgba(12, 5, 2, 0.85)",
+                                    border: isNameSelected 
+                                      ? "2px dashed #fbbf24" 
+                                      : isNameEditable
+                                      ? "1.5px dashed rgba(251, 191, 36, 0.5)"
+                                      : "1.5px solid rgba(251, 191, 36, 0.5)",
+                                    borderRadius: computedNameBorderRadius,
+                                    padding: "4px min(4vw, 16px)",
+                                    boxShadow: isNameSelected
+                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
+                                      : "0 6px 16px rgba(0,0,0,0.7)",
+                                    transition: "border 0.2s, box-shadow 0.2s",
+                                  }}
+                                  onPointerDown={isNameEditable ? (e) => {
+                                    e.stopPropagation();
+                                    setEditingElement("name");
+                                    e.currentTarget.setPointerCapture(e.pointerId);
+                                    (e.currentTarget as any)._dragStart = {
+                                      x: e.clientX,
+                                      y: e.clientY,
+                                      ox: posterNameOffsetX,
+                                      oy: posterNameOffsetY
+                                    };
+                                  } : undefined}
+                                  onPointerMove={isNameEditable ? (e) => {
+                                    const data = (e.currentTarget as any)._dragStart;
+                                    if (!data) return;
+                                    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                    if (!rect) return;
+                                    const scale = 1080 / rect.width;
+                                    const dx = (e.clientX - data.x) * scale;
+                                    const dy = (e.clientY - data.y) * scale;
+                                    setPosterNameOffsetX(data.ox + dx);
+                                    setPosterNameOffsetY(data.oy + dy);
+                                  } : undefined}
+                                  onPointerUp={isNameEditable ? (e) => {
+                                    delete (e.currentTarget as any)._dragStart;
+                                    e.currentTarget.releasePointerCapture(e.pointerId);
+                                  } : undefined}
+                                  onPointerCancel={isNameEditable ? (e) => {
+                                    delete (e.currentTarget as any)._dragStart;
+                                    e.currentTarget.releasePointerCapture(e.pointerId);
+                                  } : undefined}
+                                  onWheel={isNameSelected ? (e) => {
+                                    e.preventDefault();
+                                    const delta = -e.deltaY * 0.001;
+                                    setPosterNameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
+                                  } : undefined}
+                                >
+                                  <span
+                                    style={{
+                                      fontFamily: "serif",
+                                      fontWeight: 800,
+                                      color: "#fbbf24",
+                                      fontSize: "min(3.2vw, 16px)",
+                                      letterSpacing: isHi ? "normal" : "0.02em",
+                                    }}
+                                  >
+                                    {userName.trim() ? userName : (isHi ? "भक्त" : "Devotee")}
+                                  </span>
+
+                                  {isNameSelected && (
+                                    <>
+                                      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
+                                      <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
+                                      <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
+                                      <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
@@ -4673,103 +5673,558 @@ export default function BlessingsPage() {
                   className="shrink-0 w-full flex flex-col"
                   style={{ background: "#0c0300", paddingTop: 0 }}
                 >
-                  {/* Profile row + compact like */}
-                  <div className="flex items-center justify-between" style={{ padding: "10px 16px 8px" }}>
-                    {/* Left: Avatar + name + edit */}
-                    <button
-                      onClick={() => setShowProfileEdit(true)}
-                      className="flex items-center cursor-pointer"
-                      style={{ gap: 10, transition: "opacity 0.2s", background: "none", border: "none", padding: 0 }}
-                      onMouseEnter={e => (e.currentTarget.style.opacity="0.8")}
-                      onMouseLeave={e => (e.currentTarget.style.opacity="1")}
-                    >
-                      {/* Avatar — 56px, 1px gold ring */}
-                      <div style={{
-                        width: 56, height: 56, borderRadius: "50%",
-                        border: "1px solid rgba(251,191,36,0.5)",
-                        background: "#1b0a05",
-                        overflow: "hidden",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                      }}>
-                        {userPhoto ? (
-                          <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <span style={{ fontSize: 20, fontFamily: "serif", color: "rgba(251,191,36,0.55)" }}>ॐ</span>
+                  {isEditingPhoto ? (
+                    <div className="flex flex-col w-full bg-[#0c0300]" style={{ paddingTop: 0 }}>
+                      
+                      {/* 1. TITLE / INDICATOR ROW */}
+                      <div className="flex justify-between items-center px-4 py-3 border-b border-white/5">
+                        <div className="flex flex-col text-left">
+                          <span style={{ fontSize: 13, fontFamily: "serif", fontWeight: 800, color: "#fbbf24", letterSpacing: "0.02em" }}>
+                            {isHi ? "तस्वीर और नाम एडजस्ट करें" : "Adjust Photo & Name"}
+                          </span>
+                          <span style={{ fontSize: 9, fontFamily: "sans-serif", color: "rgba(255,255,255,0.4)" }}>
+                            {isHi ? "लेयर चुनें और उंगली से ड्रैग करें" : "Select layer and drag directly"}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setPosterZoom(1.0);
+                            setPosterFrameScale(1.0);
+                            setPosterOffsetX(0);
+                            setPosterOffsetY(0);
+                            setPosterShape(selectedPoster.defaultShape || "circle");
+                            setPosterRotation(0);
+                            setPosterNameOffsetX(0);
+                            setPosterNameOffsetY(0);
+                            setPosterNameScale(1.0);
+                            setPosterNameRotation(0);
+                            setPosterNameShape("rounded-square");
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-sans font-bold text-amber-300 uppercase tracking-wider hover:bg-white/10 active:scale-95 transition-all"
+                        >
+                          🔄 {isHi ? "रीसेट" : "Reset"}
+                        </button>
+                      </div>
+
+                      {/* 2. LAYER SELECTOR (Photo vs Name toggle) */}
+                      <div className="grid grid-cols-2 gap-1.5 px-4 py-2 border-b border-white/5 bg-[#0a0200]">
+                        <button
+                          onClick={() => setEditingElement("photo")}
+                          className={cn(
+                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            editingElement === "photo"
+                              ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10"
+                              : "bg-white/5 hover:bg-white/10 text-stone-300"
+                          )}
+                        >
+                          📷 {isHi ? "तस्वीर (Photo)" : "Photo Layer"}
+                        </button>
+                        <button
+                          onClick={() => setEditingElement("name")}
+                          className={cn(
+                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            editingElement === "name"
+                              ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10"
+                              : "bg-white/5 hover:bg-white/10 text-stone-300"
+                          )}
+                        >
+                          ✍️ {isHi ? "नाम (Name)" : "Name Layer"}
+                        </button>
+                      </div>
+
+                      {/* 3. TAB LIST BAR */}
+                      <div className="grid grid-cols-5 border-b border-white/5 bg-[#0a0200]">
+                        {[
+                          { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
+                          { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-3.5 h-3.5" /> },
+                          { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-3.5 h-3.5" /> },
+                          { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-3.5 h-3.5" /> },
+                          { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-3.5 h-3.5" /> }
+                        ].map(tab => {
+                          const isTabActive = posterActiveTab === tab.id;
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => {
+                                if (tab.id === "reset") {
+                                  if (editingElement === "photo") {
+                                    setPosterZoom(1.0);
+                                    setPosterFrameScale(1.0);
+                                    setPosterOffsetX(0);
+                                    setPosterOffsetY(0);
+                                    setPosterShape(selectedPoster.defaultShape || "circle");
+                                    setPosterRotation(0);
+                                  } else {
+                                    setPosterNameOffsetX(0);
+                                    setPosterNameOffsetY(0);
+                                    setPosterNameScale(1.0);
+                                    setPosterNameRotation(0);
+                                    setPosterNameShape("rounded-square");
+                                  }
+                                } else {
+                                  setPosterActiveTab(tab.id as any);
+                                }
+                              }}
+                              className={cn(
+                                "flex flex-col items-center justify-center gap-1 py-2.5 border-b-2 text-[9px] font-sans font-black uppercase tracking-wider transition-all cursor-pointer",
+                                isTabActive
+                                  ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                                  : "border-transparent text-stone-400 hover:text-stone-200"
+                              )}
+                            >
+                              {tab.icon}
+                              <span>{tab.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* 4. ACTIVE PANEL CONTENT */}
+                      <div className="p-4 space-y-4 bg-[#0c0300]">
+                        
+                        {/* Real-time name text editor */}
+                        {editingElement === "name" && (
+                          <div className="space-y-1 text-left border-b border-white/5 pb-3">
+                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
+                              {isHi ? "नाम बदलें" : "Edit Name Text"}
+                            </span>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                maxLength={30}
+                                placeholder={isHi ? "अपना नाम लिखें..." : "Type your name..."}
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
+                                className="w-full bg-black/45 border border-amber-500/20 focus:border-amber-500/45 rounded-xl py-2 px-3 text-xs text-amber-100 placeholder:text-amber-200/40 focus:outline-none tracking-wide font-sans font-medium"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/80 font-bold">
+                                {userName.length}/30
+                              </span>
+                            </div>
+                          </div>
                         )}
+                        
+                        {/* shape panel */}
+                        {posterActiveTab === "shape" && (
+                          <div className="space-y-3">
+                            {editingElement === "photo" ? (
+                              <div className="space-y-1.5 text-left">
+                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
+                                  {isHi ? "फोटो का आकार चुनें" : "Select Photo Shape"}
+                                </span>
+                                <div className="grid grid-cols-4 gap-1.5">
+                                  {[
+                                    { id: "circle", label: isHi ? "गोल" : "Circle" },
+                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
+                                    { id: "oval", label: isHi ? "ओवल" : "Oval" },
+                                  ].map((s) => (
+                                    <button
+                                      key={s.id}
+                                      onClick={() => setPosterShape(s.id as any)}
+                                      className={cn(
+                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                                        posterShape === s.id
+                                          ? "bg-amber-500/15 border-amber-500 text-amber-300"
+                                          : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                                      )}
+                                    >
+                                      {s.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5 text-left">
+                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
+                                  {isHi ? "नाम पट्टी का आकार चुनें" : "Select Name Plate Shape"}
+                                </span>
+                                <div className="grid grid-cols-4 gap-1.5">
+                                  {[
+                                    { id: "circle", label: isHi ? "कैप्सूल" : "Capsule" },
+                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
+                                    { id: "oval", label: isHi ? "अंडाकार" : "Oval" },
+                                  ].map((s) => (
+                                    <button
+                                      key={s.id}
+                                      onClick={() => setPosterNameShape(s.id as any)}
+                                      className={cn(
+                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                                        posterNameShape === s.id
+                                          ? "bg-amber-500/15 border-amber-500 text-amber-300"
+                                          : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                                      )}
+                                    >
+                                      {s.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* move panel (fine nudge arrows) */}
+                        {posterActiveTab === "move" && (
+                          <div className="flex flex-col items-center gap-1.5">
+                            <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider block text-center mb-0.5">
+                              {isHi ? `${editingElement === "photo" ? "फोटो" : "नाम"} पोजीशन फाइन-ट्यूनिंग` : `Fine-Tune ${editingElement === "photo" ? "Photo" : "Name"} Position`}
+                            </span>
+                            <div className="flex flex-col items-center gap-1">
+                              <button 
+                                onClick={() => {
+                                  if (editingElement === "photo") setPosterOffsetY(prev => prev - 2);
+                                  else setPosterNameOffsetY(prev => prev - 2);
+                                }}
+                                className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                              >
+                                ▲
+                              </button>
+                              <div className="flex gap-3">
+                                <button 
+                                  onClick={() => {
+                                    if (editingElement === "photo") setPosterOffsetX(prev => prev - 2);
+                                    else setPosterNameOffsetX(prev => prev - 2);
+                                  }}
+                                  className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                >
+                                  ◀
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    if (editingElement === "photo") {
+                                      setPosterOffsetX(0);
+                                      setPosterOffsetY(0);
+                                    } else {
+                                      setPosterNameOffsetX(0);
+                                      setPosterNameOffsetY(0);
+                                    }
+                                  }}
+                                  className="px-2 h-7 rounded-lg bg-white/5 flex items-center justify-center text-[9px] text-stone-300 font-black uppercase tracking-wider border border-white/5 cursor-pointer"
+                                >
+                                  Center
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    if (editingElement === "photo") setPosterOffsetX(prev => prev + 2);
+                                    else setPosterNameOffsetX(prev => prev + 2);
+                                  }}
+                                  className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                >
+                                  ▶
+                                </button>
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  if (editingElement === "photo") setPosterOffsetY(prev => prev + 2);
+                                  else setPosterNameOffsetY(prev => prev + 2);
+                                }}
+                                className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                              >
+                                ▼
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* resize panel */}
+                        {posterActiveTab === "resize" && (
+                          <div className="space-y-3">
+                            {editingElement === "photo" ? (
+                              <>
+                                <div className="space-y-1 text-left">
+                                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
+                                    <span className="font-sans text-amber-400">{posterFrameScale.toFixed(2)}x</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button
+                                      onClick={() => setPosterFrameScale(prev => Math.max(0.5, prev - 0.05))}
+                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    >
+                                      -
+                                    </button>
+                                    <input
+                                      type="range"
+                                      min="0.5"
+                                      max="2.5"
+                                      step="0.05"
+                                      value={posterFrameScale}
+                                      onChange={(e) => setPosterFrameScale(parseFloat(e.target.value))}
+                                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                    />
+                                    <button
+                                      onClick={() => setPosterFrameScale(prev => Math.min(2.5, prev + 0.05))}
+                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1 text-left">
+                                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                    <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
+                                    <span className="font-sans text-amber-400">{posterZoom.toFixed(2)}x</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button
+                                      onClick={() => setPosterZoom(prev => Math.max(0.8, prev - 0.05))}
+                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    >
+                                      -
+                                    </button>
+                                    <input
+                                      type="range"
+                                      min="0.8"
+                                      max="3.0"
+                                      step="0.05"
+                                      value={posterZoom}
+                                      onChange={(e) => setPosterZoom(parseFloat(e.target.value))}
+                                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                    />
+                                    <button
+                                      onClick={() => setPosterZoom(prev => Math.min(3.0, prev + 0.05))}
+                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <div className="space-y-1 text-left">
+                                <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                  <span>{isHi ? "नाम का आकार बदलें" : "Adjust Name Scale"}</span>
+                                  <span className="font-sans text-amber-400">{posterNameScale.toFixed(2)}x</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    onClick={() => setPosterNameScale(prev => Math.max(0.5, prev - 0.05))}
+                                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                  >
+                                    -
+                                  </button>
+                                  <input
+                                    type="range"
+                                    min="0.5"
+                                    max="2.5"
+                                    step="0.05"
+                                    value={posterNameScale}
+                                    onChange={(e) => setPosterNameScale(parseFloat(e.target.value))}
+                                    className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                  />
+                                  <button
+                                    onClick={() => setPosterNameScale(prev => Math.min(2.5, prev + 0.05))}
+                                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* rotate panel */}
+                        {posterActiveTab === "rotate" && (
+                          <div className="space-y-2.5 text-left">
+                            <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                              <span>{isHi ? `${editingElement === "photo" ? "फ्रेम" : "नाम"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Name"} Rotation`}</span>
+                              <span className="font-sans text-amber-400">
+                                {Math.round(((editingElement === "photo" ? posterRotation : posterNameRotation) * 180) / Math.PI)}°
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => {
+                                  if (editingElement === "photo") setPosterRotation(prev => prev - (5 * Math.PI) / 180);
+                                  else setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
+                                }}
+                                className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                              >
+                                ↺
+                              </button>
+                              <input
+                                type="range"
+                                min={-Math.PI}
+                                max={Math.PI}
+                                step={0.05}
+                                value={editingElement === "photo" ? posterRotation : posterNameRotation}
+                                onChange={(e) => {
+                                  if (editingElement === "photo") setPosterRotation(parseFloat(e.target.value));
+                                  else setPosterNameRotation(parseFloat(e.target.value));
+                                }}
+                                className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                              />
+                              <button
+                                onClick={() => {
+                                  if (editingElement === "photo") setPosterRotation(prev => prev + (5 * Math.PI) / 180);
+                                  else setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
+                                }}
+                                className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                              >
+                                ↻
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action buttons done / cancel */}
+                        <div className="flex gap-2 pt-2 border-t border-white/5">
+                          <button
+                            onClick={() => {
+                              setIsEditingPhoto(false);
+                            }}
+                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-stone-300 uppercase tracking-wider cursor-pointer"
+                          >
+                            {isHi ? "रद्द करें" : "Cancel"}
+                          </button>
+                          <button
+                            onClick={async () => {
+                              setIsEditingPhoto(false);
+                              if (selectedPoster) {
+                                try {
+                                  const url = await compilePoster(selectedPoster, generationType);
+                                  setCompiledPosterUrl(url);
+                                } catch (err) {
+                                  console.error("Error updating compiler poster:", err);
+                                }
+                              }
+                            }}
+                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/10 cursor-pointer"
+                          >
+                            {isHi ? "पूर्ण (Done)" : "Done"}
+                          </button>
+                        </div>
+
                       </div>
-                      <div className="flex flex-col text-left">
-                        <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(255,200,120,0.85)", lineHeight: 1, marginBottom: 4, letterSpacing: "0.04em" }}>
-                          {isHi ? "श्रद्धालु" : "Devotee"}
-                        </span>
-                        <span style={{ fontSize: 16, fontFamily: "serif", fontWeight: 800, color: "#fef3c7", lineHeight: 1.1, letterSpacing: isHi ? "normal" : "0.01em" }}>
-                          {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
-                        </span>
-                        <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(251,191,36,0.85)", marginTop: 3 }}>
-                          {isHi ? "बदलने के लिए टैप करें ›" : "Tap to edit ›"}
-                        </span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Profile row + compact like */}
+                      <div className="flex items-center justify-between" style={{ padding: "10px 16px 8px" }}>
+                        {/* Left: Avatar + name + edit */}
+                        <button
+                          onClick={() => setShowProfileEdit(true)}
+                          className="flex items-center cursor-pointer"
+                          style={{ gap: 10, transition: "opacity 0.2s", background: "none", border: "none", padding: 0 }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity="0.8")}
+                          onMouseLeave={e => (e.currentTarget.style.opacity="1")}
+                        >
+                          {/* Avatar — 56px, 1px gold ring */}
+                          <div style={{
+                            width: 56, height: 56, borderRadius: "50%",
+                            border: "1px solid rgba(251,191,36,0.5)",
+                            background: "#1b0a05",
+                            overflow: "hidden",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}>
+                            {userPhoto ? (
+                              <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            ) : (
+                              <span style={{ fontSize: 20, fontFamily: "serif", color: "rgba(251,191,36,0.55)" }}>ॐ</span>
+                            )}
+                          </div>
+                          <div className="flex flex-col text-left">
+                            <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(255,200,120,0.85)", lineHeight: 1, marginBottom: 4, letterSpacing: "0.04em" }}>
+                              {isHi ? "श्रद्धालु" : "Devotee"}
+                            </span>
+                            <span style={{ fontSize: 16, fontFamily: "serif", fontWeight: 800, color: "#fef3c7", lineHeight: 1.1, letterSpacing: isHi ? "normal" : "0.01em" }}>
+                              {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
+                            </span>
+                            <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(251,191,36,0.85)", marginTop: 3 }}>
+                              {isHi ? "बदलने के लिए टैप करें ›" : "Tap to edit ›"}
+                            </span>
+                          </div>
+                        </button>
                       </div>
-                    </button>
-                  </div>
 
-                  {/* Hairline divider */}
-                  <div style={{ height: "0.5px", background: "rgba(255,255,255,0.06)", margin: "0 16px 8px" }} />
+                      {userPhoto && (
+                        <div style={{ padding: "0 16px 8px" }}>
+                          <button
+                            onClick={() => setIsEditingPhoto(true)}
+                            className="w-full flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:scale-[1.01] active:scale-98"
+                            style={{
+                              height: 40,
+                              borderRadius: 14,
+                              background: "rgba(251,191,36,0.1)",
+                              border: "1px solid rgba(251,191,36,0.3)",
+                              color: "#fbbf24",
+                              fontSize: 12,
+                              fontFamily: "sans-serif",
+                              fontWeight: 700,
+                              letterSpacing: "0.02em",
+                              transition: "all 0.2s",
+                            }}
+                          >
+                            🎨 {isHi ? "पोस्टर एडिट करें" : "Edit That Poster"}
+                          </button>
+                        </div>
+                      )}
 
-                  {/* Action buttons row — equal height, 18px radius */}
-                  <div className="flex items-stretch gap-2" style={{ padding: "0 16px 20px" }}>
-                    {/* Download — outlined secondary */}
-                    <button
-                      onClick={handleDownloadPoster}
-                      disabled={!compiledPosterUrl}
-                      className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-                      style={{
-                        height: 48,
-                        borderRadius: 18,
-                        background: "transparent",
-                        border: "1.5px solid rgba(251,191,36,0.28)",
-                        color: "rgba(251,191,36,0.85)",
-                        fontSize: 12,
-                        fontFamily: "sans-serif",
-                        fontWeight: 700,
-                        letterSpacing: "0.04em",
-                        transition: "transform 0.2s ease, opacity 0.2s",
-                      }}
-                      onMouseDown={e => (e.currentTarget.style.transform="scale(0.98)")}
-                      onMouseUp={e => (e.currentTarget.style.transform="scale(1)")}
-                      onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                      <span>{!compiledPosterUrl ? (isHi ? "तैयार हो रहा है..." : "Preparing...") : (isHi ? "डाउनलोड" : "Download")}</span>
-                    </button>
+                      {/* Hairline divider */}
+                      <div style={{ height: "0.5px", background: "rgba(255,255,255,0.06)", margin: "0 16px 8px" }} />
 
-                    {/* Share — filled primary */}
-                    <button
-                      onClick={() => setShowPosterShareModal(true)}
-                      disabled={!compiledPosterUrl}
-                      className="flex-[1.4] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-                      style={{
-                        height: 48,
-                        borderRadius: 18,
-                        background: "linear-gradient(135deg, #e8960a 0%, #c97c04 100%)",
-                        color: "#1a0500",
-                        fontSize: 13,
-                        fontFamily: "sans-serif",
-                        fontWeight: 800,
-                        letterSpacing: "0.02em",
-                        transition: "transform 0.2s ease",
-                      }}
-                      onMouseDown={e => (e.currentTarget.style.transform="scale(0.98)")}
-                      onMouseUp={e => (e.currentTarget.style.transform="scale(1)")}
-                      onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
-                    >
-                      <Share2 className="w-4 h-4" />
-                      <span>{isHi ? "साझा करें" : "Share"}</span>
-                    </button>
-                  </div>
+                      {/* Action buttons row — equal height, 18px radius */}
+                      <div className="flex items-stretch gap-2" style={{ padding: "0 16px 20px" }}>
+                        {/* Download — outlined secondary */}
+                        <button
+                          onClick={handleDownloadPoster}
+                          disabled={!compiledPosterUrl}
+                          className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                          style={{
+                            height: 48,
+                            borderRadius: 18,
+                            background: "transparent",
+                            border: "1.5px solid rgba(251,191,36,0.28)",
+                            color: "rgba(251,191,36,0.85)",
+                            fontSize: 12,
+                            fontFamily: "sans-serif",
+                            fontWeight: 700,
+                            letterSpacing: "0.04em",
+                            transition: "transform 0.2s ease, opacity 0.2s",
+                          }}
+                          onMouseDown={e => (e.currentTarget.style.transform="scale(0.98)")}
+                          onMouseUp={e => (e.currentTarget.style.transform="scale(1)")}
+                          onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}>
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          <span>{!compiledPosterUrl ? (isHi ? "तैयार हो रहा है..." : "Preparing...") : (isHi ? "डाउनलोड" : "Download")}</span>
+                        </button>
+
+                        {/* Share — filled primary */}
+                        <button
+                          onClick={() => setShowPosterShareModal(true)}
+                          disabled={!compiledPosterUrl}
+                          className="flex-[1.4] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                          style={{
+                            height: 48,
+                            borderRadius: 18,
+                            background: "linear-gradient(135deg, #e8960a 0%, #c97c04 100%)",
+                            color: "#1a0500",
+                            fontSize: 13,
+                            fontFamily: "sans-serif",
+                            fontWeight: 800,
+                            letterSpacing: "0.02em",
+                            transition: "transform 0.2s ease",
+                          }}
+                          onMouseDown={e => (e.currentTarget.style.transform="scale(0.98)")}
+                          onMouseUp={e => (e.currentTarget.style.transform="scale(1)")}
+                          onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                        >
+                          <Share2 className="w-4 h-4" />
+                          <span>{isHi ? "साझा करें" : "Share"}</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </motion.div>
             </div>
@@ -4923,6 +6378,8 @@ export default function BlessingsPage() {
         )}
       </AnimatePresence>
 
+
+
       {/* ─── SCREEN 5: SHARE TARGET BOTTOM SHEET ─── */}
       <AnimatePresence>
         {showPosterShareModal && selectedPoster && (
@@ -5049,6 +6506,41 @@ export default function BlessingsPage() {
           }
         }}
       />
+
+      {showEditorModal && selectedPoster && userPhoto && (
+        <BlessingsPosterEditor
+          isOpen={showEditorModal}
+          onClose={() => setShowEditorModal(false)}
+          poster={selectedPoster}
+          userPhoto={userPhoto}
+          initialZoom={posterZoom}
+          initialFrameScale={posterFrameScale}
+          initialOffsetX={posterOffsetX}
+          initialOffsetY={posterOffsetY}
+          initialShape={posterShape}
+          initialRotation={posterRotation}
+          onSave={async ({ zoom, frameScale, offsetX, offsetY, shape, rotation }) => {
+            setPosterZoom(zoom);
+            setPosterFrameScale(frameScale);
+            setPosterOffsetX(offsetX);
+            setPosterOffsetY(offsetY);
+            setPosterShape(shape);
+            setPosterRotation(rotation);
+            setShowEditorModal(false);
+            
+            // Recompile poster URL in background
+            if (selectedPoster) {
+              try {
+                const url = await compilePoster(selectedPoster, generationType);
+                setCompiledPosterUrl(url);
+              } catch (err) {
+                console.error("Error updating compiler poster:", err);
+              }
+            }
+          }}
+          language={language}
+        />
+      )}
 
     </div>
   );
