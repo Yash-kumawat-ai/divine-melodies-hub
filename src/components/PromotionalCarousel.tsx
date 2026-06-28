@@ -161,7 +161,7 @@ export function PromotionalCarousel() {
               key={banner.id}
               onClick={(e) => handleBannerClick(banner.href, e)}
               className={cn(
-                "absolute top-0 left-1/2 rounded-[28px] overflow-hidden bg-stone-950/40 shadow-xl border border-border/5 aspect-[16/9] w-[var(--slide-width)] h-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                "absolute top-0 left-1/2 rounded-[28px] overflow-hidden bg-stone-950/40 shadow-xl border border-border/5 aspect-[16/9] w-[var(--slide-width)] h-full transition-all duration-700",
                 isActive 
                   ? "scale-100 opacity-100 z-10 shadow-black/40 border-amber-500/10" 
                   : "scale-95 opacity-85 z-0 shadow-black/20"
@@ -170,6 +170,7 @@ export function PromotionalCarousel() {
                 transform: `translate3d(calc(-50% + ${offset} * (var(--slide-width) + var(--slide-gap)) + ${dragOffset}px), 0, 0)`,
                 visibility: isVisible ? 'visible' : 'hidden',
                 pointerEvents: isVisible ? 'auto' : 'none',
+                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
               <img 
@@ -197,11 +198,14 @@ export function PromotionalCarousel() {
               onClick={() => setCurrentIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={cn(
-                "h-2 rounded-full transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer",
+                "h-2 rounded-full transition-all duration-500 cursor-pointer",
                 isActive 
                   ? "bg-brand-saffron w-7 shadow-[0_0_10px_rgba(249,115,22,0.35)]" 
                   : "bg-muted-foreground/35 hover:bg-muted-foreground/60 w-2"
               )}
+              style={{
+                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
             />
           );
         })}
