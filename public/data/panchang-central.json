@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-27",
+  "date": "2026-06-28",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Triodasi",
-  "tithi_number": 13,
-  "nakshatra": "Anuradha - 2",
-  "yoga": "Sadhya",
-  "karana": "Kaulava",
-  "paksha": "Shukla",
+  "tithi": "Chaturdasi",
+  "tithi_number": 0,
+  "nakshatra": "Jyesta - 2",
+  "yoga": "Subha",
+  "karana": "Garija",
+  "paksha": "Krishna",
   "sunrise": "05:38 AM",
   "sunset": "06:55 PM",
-  "rahu_kaal": "08:57 AM - 10:37 AM",
+  "rahu_kaal": "05:15 PM - 06:55 PM",
   "brahma_muhurat": "04:02 AM - 04:50 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-06-27T06:58:14+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-06-28T07:03:16+05:30"
 }
