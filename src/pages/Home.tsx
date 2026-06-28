@@ -5,6 +5,7 @@ import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landm
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { HeroSection } from '@/components/HeroSection';
+import { PromotionalCarousel } from '@/components/PromotionalCarousel';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
@@ -216,6 +217,9 @@ export default function Home() {
       />
 
       <HeroSection stats={stats} />
+
+      {/* Promotional Banner Carousel */}
+      <PromotionalCarousel />
 
       {/* ── Hanuman Bhakt Community Banner Card (Dark Mode) ── */}
       <section className="px-4 py-6 md:py-10">
