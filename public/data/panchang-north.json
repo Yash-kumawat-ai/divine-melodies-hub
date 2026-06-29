@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-28",
+  "date": "2026-06-29",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Chaturdasi",
-  "tithi_number": 0,
-  "nakshatra": "Jyesta - 2",
-  "yoga": "Subha",
-  "karana": "Garija",
-  "paksha": "Krishna",
+  "tithi": "Poornima",
+  "tithi_number": 15,
+  "nakshatra": "Moola - 1",
+  "yoga": "Sukla",
+  "karana": "Visti",
+  "paksha": "Shukla",
   "sunrise": "05:30 AM",
   "sunset": "07:18 PM",
-  "rahu_kaal": "05:34 PM - 07:18 PM",
+  "rahu_kaal": "07:14 AM - 08:57 AM",
   "brahma_muhurat": "03:54 AM - 04:42 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-06-28T07:03:16+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-06-29T07:05:29+05:30"
 }
