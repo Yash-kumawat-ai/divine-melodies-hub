@@ -290,7 +290,7 @@ export default function Header() {
           </Link>
 
           {/* Search */}
-          <Link to="/search?q=" className="text-muted-foreground hover:text-primary transition-colors p-1.5 shrink-0 ml-0.5">
+          <Link to="/search" className="text-muted-foreground hover:text-primary transition-colors p-1.5 shrink-0 ml-0.5">
             <Search className="w-4 h-4" />
           </Link>
           {/* Theme toggle */}

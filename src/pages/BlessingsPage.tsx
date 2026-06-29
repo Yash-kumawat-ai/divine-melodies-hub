@@ -35,12 +35,8 @@ import { playMeditationBell, playCompletionChime } from "@/lib/meditation/medita
 import { getFontFamily, getCanvasFont, wrapTextAndGetLines, fitTextToWidth, fitMultiLineText, getPosterTypography } from "@/utils/typography";
 import { ImageCropModal } from "@/components/ImageCropModal";
 import { cn } from "@/lib/utils";
-import type { DailyDarshan, DevotionalWallpaper, DevotionalLiveWallpaper, Petal, PosterTemplate, BlessingsPosterEditorProps } from "./Blessings/types";
-import { DAILY_DARSHANS, WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST, WALLPAPER_SECTIONS, WEEKDAYS, POSTER_TEMPLATES } from "./Blessings/constants";
-import { MoreIcon, CustomDownloadIcon, CircleIcon } from "./Blessings/components/Icons";
-import { PosterLikeButton } from "./Blessings/components/PosterLikeButton";
-import { PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay } from "./Blessings/components/Overlays";
-import { PhoneFrame } from "./Blessings/components/PhoneFrame";
+import type { DailyDarshan, DevotionalWallpaper, DevotionalLiveWallpaper, Petal, PosterTemplate, BlessingsPosterEditorProps } from "./Blessings";
+import { DAILY_DARSHANS, WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST, WALLPAPER_SECTIONS, WEEKDAYS, POSTER_TEMPLATES, MoreIcon, CustomDownloadIcon, CircleIcon, PosterLikeButton, WallpaperLikeButton, PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay, PhoneFrame } from "./Blessings";
 
 // ─── LOCAL IMAGES STILL USED DIRECTLY IN THIS FILE ────────────────
 import litDiyaImg from "./images/lit_diya.png";
@@ -1059,15 +1055,7 @@ export default function BlessingsPage() {
   const [hasScrolledPosterToInitial, setHasScrolledPosterToInitial] = useState(false);
   const [showScrollHint, setShowScrollHint] = useState(false);
 
-  // Saved wallpapers in local collection
-  const [savedWallpapers, setSavedWallpapers] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem("hk_saved_wallpapers");
-      return stored ? JSON.parse(stored) : [];
-    } catch (_) {
-      return [];
-    }
-  });
+
 
   const [savedSubTab, setSavedSubTab] = useState<"posters" | "liked">("posters");
   const [likedPosterIds, setLikedPosterIds] = useState<string[]>(() => {
@@ -1085,7 +1073,6 @@ export default function BlessingsPage() {
       return [];
     }
   });
-
   const toggleLike = React.useCallback((posterId: string) => {
     setLikedPosterIds(prev => {
       const next = prev.includes(posterId)
@@ -1239,17 +1226,17 @@ export default function BlessingsPage() {
   };
 
   const toggleSaveWallpaper = (id: string) => {
-    const isSaved = savedWallpapers.includes(id);
+    const isSaved = likedWallpaperIds.includes(id);
     let updated;
     if (isSaved) {
-      updated = savedWallpapers.filter(wId => wId !== id);
-      toast.success(isHi ? "संग्रह से हटा दिया गया!" : "Removed from collection!");
+      updated = likedWallpaperIds.filter(wId => wId !== id);
+      toast.success(isHi ? "पसंदीदा से हटा दिया गया!" : "Removed from favorites!");
     } else {
-      updated = [...savedWallpapers, id];
-      toast.success(isHi ? "संग्रह में सहेजा गया!" : "Saved to collection!");
+      updated = [...likedWallpaperIds, id];
+      toast.success(isHi ? "पसंदीदा में जोड़ा गया!" : "Added to favorites!");
     }
-    setSavedWallpapers(updated);
-    localStorage.setItem("hk_saved_wallpapers", JSON.stringify(updated));
+    setLikedWallpaperIds(updated);
+    localStorage.setItem("hk_liked_wallpapers", JSON.stringify(updated));
   };
 
   // Search filtering logic
@@ -3302,12 +3289,13 @@ export default function BlessingsPage() {
                                   {/* Cinematic gradient */}
                                   <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
 
-                                  {/* Like Button Overlay */}
-                                  <div className="absolute top-2.5 left-2.5 z-30">
-                                    <PosterLikeButton
-                                      posterId={wp.id}
+                                  {/* Like Button Overlay at bottom-left */}
+                                  <div className="absolute bottom-2.5 left-2.5 z-30">
+                                    <WallpaperLikeButton
+                                      wpId={wp.id}
                                       isLiked={likedWallpaperIds.includes(wp.id)}
                                       onToggle={() => toggleLikeWallpaper(wp.id)}
+                                      likesCount={likedWallpaperIds.includes(wp.id) ? 1 : 0}
                                     />
                                   </div>
 
@@ -3531,12 +3519,13 @@ export default function BlessingsPage() {
                                     className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
                                   <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
                                   
-                                  {/* Like Button Overlay */}
-                                  <div className="absolute top-2.5 left-2.5 z-30">
-                                    <PosterLikeButton
-                                      posterId={wp.id}
+                                  {/* Like Button Overlay at bottom-left */}
+                                  <div className="absolute bottom-2.5 left-2.5 z-30">
+                                    <WallpaperLikeButton
+                                      wpId={wp.id}
                                       isLiked={likedWallpaperIds.includes(wp.id)}
                                       onToggle={() => toggleLikeWallpaper(wp.id)}
+                                      likesCount={likedWallpaperIds.includes(wp.id) ? 1 : 0}
                                     />
                                   </div>
 
@@ -4061,9 +4050,9 @@ export default function BlessingsPage() {
                           onClick={() => toggleSaveWallpaper(wp.id)}
                           className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
                         >
-                          <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                           <span>
-                            {savedWallpapers.includes(wp.id) 
+                            {likedWallpaperIds.includes(wp.id) 
                               ? (isHi ? "सहेजा गया" : "Saved") 
                               : (isHi ? "सहेजें" : "Save")}
                           </span>
@@ -4243,9 +4232,9 @@ export default function BlessingsPage() {
                           onClick={() => toggleSaveWallpaper(wp.id)}
                           className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
                         >
-                          <Heart className={`w-4 h-4 ${savedWallpapers.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
                           <span>
-                            {savedWallpapers.includes(wp.id) 
+                            {likedWallpaperIds.includes(wp.id) 
                               ? (isHi ? "सहेजा गया" : "Saved") 
                               : (isHi ? "सहेजें" : "Save")}
                           </span>

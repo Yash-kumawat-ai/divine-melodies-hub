@@ -216,10 +216,10 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      <HeroSection stats={stats} />
-
-      {/* Promotional Banner Carousel */}
+      {/* Promotional Banner Carousel (Now at the top of the screen) */}
       <PromotionalCarousel />
+
+      <HeroSection stats={stats} />
 
       {/* ── Hanuman Bhakt Community Banner Card (Dark Mode) ── */}
       <section className="px-4 py-6 md:py-10">

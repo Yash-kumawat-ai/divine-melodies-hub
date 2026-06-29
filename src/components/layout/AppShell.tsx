@@ -13,7 +13,8 @@ export default function AppShell() {
   const isLeaderboard = pathname === "/leaderboard";
   const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
   const isWallpaperPage = pathname === "/wallpaper";
-  const hideHeader = isFullScreenApp || isWallpaperPage;
+  const isSearchPage = pathname === "/search";
+  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage;
 
   const isAdminRoute = pathname.startsWith("/admin");
   const isAccountRoute = pathname.startsWith("/account");

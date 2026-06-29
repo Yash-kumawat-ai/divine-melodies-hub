@@ -33,13 +33,13 @@ export function PromotionalCarousel() {
   const isPointerDown = useRef(false);
   const numBanners = BANNERS.length;
 
-  // Auto-slide interval (5 seconds)
+  // Auto-slide interval (8 seconds)
   useEffect(() => {
     if (isHovering || isDragging) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % numBanners);
-    }, 5000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [isHovering, isDragging, numBanners]);
@@ -92,7 +92,7 @@ export function PromotionalCarousel() {
 
   return (
     <div 
-      className="w-full select-none relative overflow-hidden py-6 md:py-10 bg-background/20"
+      className="w-full select-none relative overflow-hidden pt-4 pb-8 md:pt-6 md:pb-12 bg-background/20 mb-6 md:mb-10"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
         setIsHovering(false);
@@ -106,29 +106,29 @@ export function PromotionalCarousel() {
       {/* Styled slide container heights based on 16:9 aspect ratio */}
       <style dangerouslySetInnerHTML={{__html: `
         .carousel-track-container {
-          --slide-width: 280px;
-          --slide-gap: 12px;
-          height: 157.5px; /* height corresponding to 16:9 ratio of 280px */
+          --slide-width: 320px;
+          --slide-gap: 16px;
+          height: 180px; /* height corresponding to 16:9 ratio of 320px */
         }
         @media (min-width: 640px) {
           .carousel-track-container {
-            --slide-width: 360px;
-            --slide-gap: 16px;
-            height: 202.5px; /* 360 * 9 / 16 */
+            --slide-width: 400px;
+            --slide-gap: 20px;
+            height: 225px; /* 400 * 9 / 16 */
           }
         }
         @media (min-width: 768px) {
           .carousel-track-container {
-            --slide-width: 440px;
-            --slide-gap: 20px;
-            height: 247.5px; /* 440 * 9 / 16 */
+            --slide-width: 520px;
+            --slide-gap: 24px;
+            height: 292.5px; /* 520 * 9 / 16 */
           }
         }
         @media (min-width: 1024px) {
           .carousel-track-container {
-            --slide-width: 500px;
-            --slide-gap: 24px;
-            height: 281.25px; /* 500 * 9 / 16 */
+            --slide-width: 600px;
+            --slide-gap: 28px;
+            height: 337.5px; /* 600 * 9 / 16 */
           }
         }
       `}} />

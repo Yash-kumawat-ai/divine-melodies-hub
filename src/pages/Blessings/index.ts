@@ -8,5 +8,6 @@ export { DAILY_DARSHANS, WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST, WALLPAPER_SECTIO
 
 export { MoreIcon, CustomDownloadIcon, CircleIcon } from "./components/Icons";
 export { PosterLikeButton } from "./components/PosterLikeButton";
+export { WallpaperLikeButton } from "./components/WallpaperLikeButton";
 export { PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay } from "./components/Overlays";
 export { PhoneFrame } from "./components/PhoneFrame";

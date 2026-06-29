@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'; 
-import { Play, Music2, Users, Heart, ChevronDown } from 'lucide-react'; 
+import { Play, Music2, Users, Heart, ChevronDown, Search, X } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useState } from 'react';
 
 // Import images from src/pages/images
 import krishnaMain from '@/pages/images/krishna main.webp';
@@ -27,6 +28,14 @@ export function HeroSection({ stats }: HeroSectionProps) {
   const navigate = useNavigate(); 
   const { language } = useLanguage();
   const isHi = language === 'hi';
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const bhajansCount = stats ? stats.bhajans : 10000;
   const japCount = 24000000; // 2.4 Cr Jap Count
@@ -108,6 +117,25 @@ export function HeroSection({ stats }: HeroSectionProps) {
               <span className="text-white/60">{stat.label}</span>
             </span>
           ))}
+        </motion.div>
+
+        {/* Search Bar — Opens dedicated search page directly on focus/click */}
+        <motion.div
+          onClick={() => navigate('/search')}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.82 }}
+          className="w-full max-w-sm sm:max-w-md mx-auto md:mx-0 mb-5 relative shrink-0 cursor-pointer"
+        >
+          <div className="relative flex items-center bg-black/45 backdrop-blur-xl border border-white/15 hover:border-amber-500/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all duration-300">
+            <Search className="absolute left-4.5 text-amber-400 w-4 h-4 md:w-[18px] md:h-[18px] shrink-0" />
+            <input
+              type="text"
+              readOnly
+              placeholder={isHi ? "भजन, कीर्तन या कलाकार खोजें..." : "Search bhajans, kirtans or singers..."}
+              className="w-full bg-transparent pl-12 pr-12 py-3 md:py-3.5 rounded-full text-xs md:text-sm text-white placeholder:text-white/40 focus:outline-none font-sans font-medium tracking-wide cursor-pointer"
+            />
+          </div>
         </motion.div>
 
         {/* CTA Buttons — primary + secondary hierarchy */}

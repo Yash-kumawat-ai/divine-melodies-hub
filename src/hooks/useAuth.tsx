@@ -42,7 +42,12 @@ type AuthContextValue = {
   refreshMfaAssurance: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+const AUTH_CONTEXT_KEY = Symbol.for('app.auth_context');
+const AuthContext = (globalThis as any)[AUTH_CONTEXT_KEY] || (() => {
+  const ctx = createContext<AuthContextValue | null>(null);
+  (globalThis as any)[AUTH_CONTEXT_KEY] = ctx;
+  return ctx;
+})();
 
 const ADMIN_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 
@@ -126,8 +131,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
+      if (error) {
+        console.warn("Session recovery failed, clearing stale auth data:", error.message);
+        // Wipe local storage to prevent future refresh token failures on reload
+        supabase.auth.signOut().catch(() => {});
+      }
       setUser(session?.user ?? null);
       if (session?.user) {
         void fetchUserProfile(session.user.id);
