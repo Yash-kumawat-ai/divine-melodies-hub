@@ -33,8 +33,8 @@ import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { useLanguage } from "@/hooks/useLanguage";
 import { searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 import { useLikedBhajans } from "@/hooks/useLikedBhajans";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { WALLPAPERS_LIST, POSTER_TEMPLATES } from "@/pages/Blessings/constants";
 
 interface UserBhajan {
   id: string;
@@ -363,6 +363,54 @@ export default function SearchPage() {
   const categories = ["सभी", "भजन", "आरती", "मंत्र", "चालीसा", "कीर्तन", "वॉलपेपर", "पोस्टर"];
   const [activeCategory, setActiveCategory] = useState("सभी");
 
+  // Dynamic wallpapers list for selected deity
+  const deityWallpapers = useMemo(() => {
+    if (!selectedDeityItem) return [];
+    
+    // Find all static wallpapers matching this deity name
+    const matches = WALLPAPERS_LIST.filter(w => 
+      w.deity.toLowerCase() === selectedDeityItem.name.toLowerCase() ||
+      selectedDeityItem.name.toLowerCase().includes(w.deity.toLowerCase()) ||
+      w.deity.toLowerCase().includes(selectedDeityItem.name.toLowerCase())
+    );
+    
+    // If no matching wallpapers are found, fallback to generating mock wallpapers from the deity profile image
+    if (matches.length === 0) {
+      return [1, 2, 3].map(num => ({
+        id: `mock-wp-${selectedDeityItem.id}-${num}`,
+        name: `${selectedDeityItem.name} Wallpaper ${num}`,
+        nameHindi: `${selectedDeityItem.nameHindi || selectedDeityItem.name} वॉलपेपर ${num}`,
+        imageUrl: selectedDeityItem.imageUrl || "",
+      }));
+    }
+    
+    return matches;
+  }, [selectedDeityItem]);
+
+  // Dynamic posters list for selected deity
+  const deityPosters = useMemo(() => {
+    if (!selectedDeityItem) return [];
+    
+    // Find all poster templates matching this deity name
+    const matches = POSTER_TEMPLATES.filter(p => 
+      p.title.toLowerCase().includes(selectedDeityItem.name.toLowerCase()) ||
+      selectedDeityItem.name.toLowerCase().includes(p.title.toLowerCase()) ||
+      (p.titleHindi && p.titleHindi.includes(selectedDeityItem.nameHindi || ""))
+    );
+    
+    // If no matching posters are found, fallback to generating mock posters from the deity profile image
+    if (matches.length === 0) {
+      return [1, 2, 3].map(num => ({
+        id: `mock-poster-${selectedDeityItem.id}-${num}`,
+        title: `${selectedDeityItem.name} Poster ${num}`,
+        titleHindi: `${selectedDeityItem.nameHindi || selectedDeityItem.name} पोस्टर ${num}`,
+        imageUrl: selectedDeityItem.imageUrl || "",
+      }));
+    }
+    
+    return matches;
+  }, [selectedDeityItem]);
+
   const categoryFilteredBhajans = useMemo(() => {
     if (activeCategory === "सभी") return deityBhajans;
     if (activeCategory === "भजन") return bhajanCategoryMap.bhajan;
@@ -424,8 +472,8 @@ export default function SearchPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           
-          <div className="flex-1 relative flex items-center bg-muted/65 dark:bg-muted/30 border border-border/40 hover:border-primary/20 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/10 rounded-full transition-all duration-300">
-            <SearchIcon className="absolute left-4 text-muted-foreground w-4.5 h-4.5 shrink-0" />
+          <div className="flex-1 relative flex items-center bg-white dark:bg-muted/40 border border-stone-200 dark:border-white/10 hover:border-amber-500/30 focus-within:border-amber-500/60 focus-within:ring-2 focus-within:ring-amber-500/10 rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300">
+            <SearchIcon className="absolute left-4 text-amber-500 w-4.5 h-4.5 shrink-0" />
             <input
               type="text"
               value={activeMode === 'bhajans' ? query : youtubeQuery}
@@ -441,9 +489,10 @@ export default function SearchPage() {
                   ? (language === 'hi' ? 'भजन, कीर्तन या कलाकार खोजें...' : 'Search bhajans, artists or tags...')
                   : (language === 'hi' ? 'यूट्यूब पर भजन खोजें...' : 'Search bhajans on YouTube...')
               }
-              className="w-full bg-transparent pl-11 pr-12 py-2.5 rounded-full text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none font-sans font-medium tracking-wide border-none"
+              className="w-full bg-transparent pl-11 pr-28 py-3 rounded-2xl text-xs md:text-sm text-stone-700 dark:text-foreground placeholder:text-stone-400 dark:placeholder:text-muted-foreground/50 focus:outline-none font-sans font-semibold tracking-wide border-none"
               autoFocus
             />
+            {/* Clear Button */}
             {query || youtubeQuery ? (
               <button
                 type="button"
@@ -451,24 +500,32 @@ export default function SearchPage() {
                   setQuery("");
                   setYoutubeQuery("");
                 }}
-                className="absolute right-12 text-muted-foreground/60 hover:text-foreground transition-colors focus:outline-none cursor-pointer"
+                className="absolute right-20 text-stone-400 hover:text-stone-600 dark:hover:text-white transition-colors focus:outline-none cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             ) : null}
             
-            <button
-              type="button"
-              onClick={startSpeechRecognition}
-              className={cn(
-                "absolute right-3 p-1.5 rounded-full text-primary transition-all duration-200 cursor-pointer hover:bg-primary/10",
-                isListening && "animate-pulse bg-red-500/10 text-red-500 hover:bg-red-500/20"
-              )}
-              title="Voice Search"
-            >
-              {isListening ? <Loader2 className="w-4 h-4 animate-spin text-red-500" /> : <Mic className="w-4 h-4" />}
-            </button>
+            {/* Mic and Search Button inside */}
+            <div className="absolute right-2.5 flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={startSpeechRecognition}
+                className={cn(
+                  "p-1.5 rounded-full text-stone-400 hover:text-amber-500 transition-all duration-200 cursor-pointer hover:bg-stone-100 dark:hover:bg-white/10",
+                  isListening && "animate-pulse bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                )}
+                title="Voice Search"
+              >
+                {isListening ? <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm shrink-0 select-none">
+                <SearchIcon className="w-3 h-3" />
+                <span className="hidden sm:inline">{language === 'hi' ? 'खोजें' : 'Search'}</span>
+              </div>
+            </div>
           </div>
+ 
         </div>
       </header>
 
@@ -511,7 +568,7 @@ export default function SearchPage() {
 
                   <div 
                     ref={deityScrollRef}
-                    className="flex gap-5.5 overflow-x-auto pb-2.5 pt-1.5 no-scrollbar scroll-smooth snap-x touch-pan-x w-full"
+                    className="flex gap-7 md:gap-8 overflow-x-auto pb-2.5 pt-1.5 no-scrollbar scroll-smooth snap-x touch-pan-x w-full"
                   >
                     {allDeities.map((deity) => {
                       const slug = getDeitySlug(deity);
@@ -527,24 +584,31 @@ export default function SearchPage() {
                           className="flex flex-col items-center gap-2 group shrink-0 snap-start focus:outline-none cursor-pointer"
                         >
                           <div className={cn(
-                            "w-16 h-16 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all duration-300",
+                            "w-20 h-20 md:w-24 md:h-24 rounded-2xl md:rounded-3xl border flex items-center justify-center overflow-hidden transition-all duration-300 relative shadow-[0_4px_16px_rgba(0,0,0,0.35)]",
                             isActive 
-                              ? "border-amber-500 ring-2 ring-amber-500/50 ring-offset-2 ring-offset-background bg-amber-500/10 shadow-[0_0_12px_rgba(245,158,11,0.5)] scale-105" 
-                              : "border-amber-500/20 group-hover:border-amber-500/65",
+                              ? "border-amber-500 ring-2 ring-amber-500/40 ring-offset-1 ring-offset-background bg-amber-500/10 shadow-[0_0_16px_rgba(245,158,11,0.4)] scale-105" 
+                              : "border-white/10 group-hover:border-amber-500/50 group-hover:scale-105",
                             bgClass
                           )}>
                             {deity.imageUrl ? (
                               <img
                                 src={deity.imageUrl}
                                 alt={deity.name}
-                                className="w-[90%] h-[90%] object-contain rounded-full transition-transform duration-500 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                               />
                             ) : (
-                              <span className="text-2xl select-none">{deity.emoji}</span>
+                              <span className="text-3xl select-none">{deity.emoji}</span>
                             )}
+                            
+                            {/* Card gradient overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                            
+                            {/* Amber hover effect */}
+                            <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-all duration-500" />
                           </div>
+                          
                           <span className={cn(
-                            "text-[12px] font-sans font-black tracking-wide max-w-[85px] truncate transition-all duration-200 relative pb-1",
+                            "text-[10px] sm:text-xs font-sans font-black tracking-wide max-w-[80px] truncate transition-all duration-200 relative pb-0.5",
                             isActive 
                               ? "text-amber-500 font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-1/4 after:right-1/4 after:h-0.5 after:bg-amber-500" 
                               : "text-muted-foreground group-hover:text-amber-500/80"
@@ -570,7 +634,7 @@ export default function SearchPage() {
                 </p>
               </div>
 
-              {/* Expand deities grid if "সকল देखें" is active */}
+              {/* Expand deities grid if "सभी देखें" is active */}
               {showAllDeities && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
@@ -587,16 +651,17 @@ export default function SearchPage() {
                           handleDeityFilter(slug);
                           setShowAllDeities(false);
                         }}
-                        className="flex flex-col items-center gap-1.5 focus:outline-none cursor-pointer"
+                        className="flex flex-col items-center gap-1.5 focus:outline-none cursor-pointer group"
                       >
-                        <div className={cn("w-12 h-12 rounded-full border border-amber-500/20 flex items-center justify-center", bgClass)}>
+                        <div className={cn("w-14 h-14 rounded-2xl border border-white/10 hover:border-amber-500/50 flex items-center justify-center overflow-hidden transition-all duration-300 relative shadow-md", bgClass)}>
                           {deity.imageUrl ? (
-                            <img src={deity.imageUrl} alt={deity.name} className="w-[85%] h-[85%] object-contain rounded-full" />
+                            <img src={deity.imageUrl} alt={deity.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                           ) : (
                             <span className="text-xl">{deity.emoji}</span>
                           )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
                         </div>
-                        <span className="text-[10px] font-black text-muted-foreground truncate max-w-[60px]">
+                        <span className="text-[10px] font-black text-muted-foreground group-hover:text-amber-500 truncate max-w-[65px] transition-colors">
                           {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
                         </span>
                       </button>
@@ -864,7 +929,17 @@ export default function SearchPage() {
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={() => {
+                      if (cat === "वॉलपेपर") {
+                        const deityName = selectedDeityItem?.name || "";
+                        navigate(`/wallpaper?tab=wallpapers&deity=${encodeURIComponent(deityName)}`);
+                      } else if (cat === "पोस्टर") {
+                        const deityName = selectedDeityItem?.name || "";
+                        navigate(`/wallpaper?tab=maker&deity=${encodeURIComponent(deityName)}`);
+                      } else {
+                        setActiveCategory(cat);
+                      }
+                    }}
                     className={cn(
                       "px-4 py-2 rounded-full text-xs font-bold font-sans tracking-wide transition-all whitespace-nowrap cursor-pointer",
                       activeCategory === cat
@@ -948,7 +1023,10 @@ export default function SearchPage() {
 
                     {/* Card 2: वॉलपेपर */}
                     <div 
-                      onClick={() => setActiveCategory("वॉलपेपर")}
+                      onClick={() => {
+                        const deityName = selectedDeityItem?.name || "";
+                        navigate(`/wallpaper?tab=wallpapers&deity=${encodeURIComponent(deityName)}`);
+                      }}
                       className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
                       style={{ background: 'linear-gradient(135deg, rgba(16,28,48,0.9) 0%, rgba(7,14,28,0.98) 100%)' }}
                     >
@@ -976,7 +1054,10 @@ export default function SearchPage() {
 
                     {/* Card 4: पोस्टर */}
                     <div 
-                      onClick={() => setActiveCategory("पोस्टर")}
+                      onClick={() => {
+                        const deityName = selectedDeityItem?.name || "";
+                        navigate(`/wallpaper?tab=maker&deity=${encodeURIComponent(deityName)}`);
+                      }}
                       className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
                       style={{ background: 'linear-gradient(135deg, rgba(48,16,28,0.9) 0%, rgba(28,7,14,0.98) 100%)' }}
                     >
@@ -1002,31 +1083,41 @@ export default function SearchPage() {
                 {/* Wallpapers/Posters custom grid or Bhajans list */}
                 {activeCategory === "वॉलपेपर" || activeCategory === "पोस्टर" ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {[1, 2, 3].map((num) => (
-                      <div key={num} className="rounded-2xl overflow-hidden relative aspect-[9/16] group border border-amber-500/10 shadow-lg">
-                        {selectedDeityItem?.imageUrl ? (
-                          <img 
-                            src={selectedDeityItem.imageUrl} 
-                            alt={`${selectedDeityItem.name} wallpaper`} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">ॐ</div>
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-                        <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2">
-                          <span className="text-[10px] font-bold text-white tracking-wide">
-                            {selectedDeityItem?.nameHindi || selectedDeityItem?.name} Wallpaper {num}
-                          </span>
-                          <button
-                            onClick={() => downloadImage(selectedDeityItem?.imageUrl || "", `${selectedDeityItem?.slug || 'deity'}_wallpaper_${num}`)}
-                            className="w-full py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-sans text-[10px] font-black uppercase rounded-lg transition-all cursor-pointer shadow-md shadow-amber-500/25"
-                          >
-                            {language === 'hi' ? "डाउनलोड करें" : "Download"}
-                          </button>
+                    {(activeCategory === "वॉलपेपर" ? deityWallpapers : deityPosters).map((item, idx) => {
+                      const titleText = activeCategory === "वॉलपेपर" 
+                        ? (language === 'hi' ? item.nameHindi || item.name : item.name)
+                        : (language === 'hi' ? (item as any).titleHindi || item.title : item.title);
+                      
+                      const downloadUrl = item.imageUrl || selectedDeityItem?.imageUrl || "";
+                      const slug = selectedDeityItem ? getDeitySlug(selectedDeityItem) : 'deity';
+                      
+                      return (
+                        <div key={item.id} className="rounded-2xl overflow-hidden relative aspect-[9/16] group border border-amber-500/10 shadow-lg">
+                          {downloadUrl ? (
+                            <img 
+                              src={downloadUrl} 
+                              alt={titleText} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">ॐ</div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                          <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2">
+                            <span className="text-[10px] font-bold text-white tracking-wide line-clamp-2 text-left">
+                              {titleText}
+                            </span>
+                            <button
+                              onClick={() => downloadImage(downloadUrl, `${slug}_${activeCategory === 'वॉलपेपर' ? 'wallpaper' : 'poster'}_${idx + 1}`)}
+                              className="w-full py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-sans text-[10px] font-black uppercase rounded-lg transition-all cursor-pointer shadow-md shadow-amber-500/25"
+                            >
+                              {language === 'hi' ? "डाउनलोड करें" : "Download"}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : categoryFilteredBhajans.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">

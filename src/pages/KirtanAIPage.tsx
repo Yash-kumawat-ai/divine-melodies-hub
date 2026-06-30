@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -195,12 +195,17 @@ export default function KirtanAIPage() {
   useEffect(() => {
     setLibrary([...OFFLINE_BHAJANS, ...loadSavedBhajans()]);
     setFavorites(loadFavorites());
-    const stored = loadChatSessions();
-    const initial = stored[0] ?? createChatSession();
-    const sessions = stored.length ? stored : [initial];
+    
+    // Clean up empty sessions and start a new chat session on open
+    const stored = loadChatSessions().filter((s) => s.messages.length > 0);
+    const newSession = createChatSession();
+    const sessions = [newSession, ...stored];
+    saveChatSessions(sessions);
+    
     setChatSessions(sessions);
-    setActiveSessionId(initial.id);
-    setMessages((initial.messages as Message[]) ?? []);
+    setActiveSessionId(newSession.id);
+    setMessages([]);
+    
     setSidebarOpen(window.innerWidth >= 768);
     const support = checkVoiceSupport();
     setVoiceSupport(support);
@@ -580,6 +585,13 @@ export default function KirtanAIPage() {
 
         <main className="min-w-0 flex-1 flex flex-col min-h-0">
           <div className="flex items-center gap-2 border-b border-border px-4 py-2 shrink-0">
+            <Link
+              to="/"
+              className="rounded-lg p-2 hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground mr-1"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
             <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-accent md:hidden" aria-label="Open sidebar">
               <Menu className="h-5 w-5" />
             </button>

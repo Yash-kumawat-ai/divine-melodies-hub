@@ -89,9 +89,8 @@ export default function YouTubePlayerHost() {
                 src={buildYouTubeEmbedUrl(video.id)}
                 title={`YouTube player for ${video.title}`}
                 className="h-full w-full"
-                sandbox="allow-scripts allow-same-origin allow-presentation"
                 referrerPolicy="strict-origin-when-cross-origin"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             ) : null}

@@ -1040,7 +1040,21 @@ export default function BlessingsPage() {
   const [savedBlessings, setSavedBlessings] = useState<string[]>([]);
   const [streakCount, setStreakCount] = useState(0);
   const [completedDates, setCompletedDates] = useState<string[]>([]);
-  const [selectedDeityFilter, setSelectedDeityFilter] = useState<string | null>(null);
+  const [selectedDeityFilter, setSelectedDeityFilter] = useState<string | null>(
+    () => {
+      const deityParam = searchParams.get("deity");
+      if (deityParam) {
+        const norm = deityParam.toLowerCase();
+        if (norm === "shiva" || norm === "shiv") return "Shiva";
+        if (norm === "krishna") return "Krishna";
+        if (norm === "hanuman") return "Hanuman";
+        if (norm === "rama" || norm === "ram") return "Rama";
+        if (norm === "ganesh" || norm === "ganesha") return "Ganesha";
+        return deityParam;
+      }
+      return null;
+    }
+  );
   const [wallpaperType, setWallpaperType] = useState<'static' | 'live'>('static');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1213,8 +1227,8 @@ export default function BlessingsPage() {
 
     scrollTimeoutRef.current = window.setTimeout(() => {
       const index = Math.round(scrollTop / cardHeight);
-      if (index >= 0 && index < POSTER_TEMPLATES.length) {
-        const activePoster = POSTER_TEMPLATES[index];
+      if (index >= 0 && index < filteredPosterTemplates.length) {
+        const activePoster = filteredPosterTemplates[index];
         setSelectedPoster((curr) => {
           if (curr && activePoster.id !== curr.id) {
             return activePoster;
@@ -1279,6 +1293,72 @@ export default function BlessingsPage() {
     }
     return list;
   }, [selectedDeityFilter, searchQuery]);
+
+  const filteredPosterTemplates = React.useMemo(() => {
+    let list = POSTER_TEMPLATES;
+    if (selectedDeityFilter) {
+      const name = selectedDeityFilter.toLowerCase();
+      const matches = POSTER_TEMPLATES.filter((tpl) => {
+        // Shiva mapping
+        if (name === "shiva" || name === "shiv") {
+          return (
+            tpl.title.toLowerCase().includes("shiva") ||
+            tpl.title.toLowerCase().includes("shiv") ||
+            tpl.titleHindi.includes("शिव") ||
+            tpl.imageUrl.toLowerCase().includes("shiv")
+          );
+        }
+        // Krishna mapping
+        if (name === "krishna" || name === "radha") {
+          return (
+            tpl.title.toLowerCase().includes("krishna") ||
+            tpl.title.toLowerCase().includes("radha") ||
+            tpl.titleHindi.includes("कृष्ण") ||
+            tpl.titleHindi.includes("राधा") ||
+            tpl.imageUrl.toLowerCase().includes("krishna") ||
+            tpl.imageUrl.toLowerCase().includes("radha")
+          );
+        }
+        // Hanuman mapping
+        if (name === "hanuman" || name === "balaji") {
+          return (
+            tpl.title.toLowerCase().includes("hanuman") ||
+            tpl.title.toLowerCase().includes("balaji") ||
+            tpl.titleHindi.includes("हनुमान") ||
+            tpl.titleHindi.includes("बजरंग") ||
+            tpl.imageUrl.toLowerCase().includes("hanuman") ||
+            tpl.imageUrl.toLowerCase().includes("balaji")
+          );
+        }
+        // Ram mapping
+        if (name === "rama" || name === "ram") {
+          return (
+            tpl.title.toLowerCase().includes("ram") ||
+            tpl.titleHindi.includes("राम") ||
+            tpl.imageUrl.toLowerCase().includes("ram")
+          );
+        }
+        // Ganesh mapping
+        if (name === "ganesh" || name === "ganesha") {
+          return (
+            tpl.title.toLowerCase().includes("ganesh") ||
+            tpl.titleHindi.includes("गणेश") ||
+            tpl.imageUrl.toLowerCase().includes("ganesh")
+          );
+        }
+        return (
+          tpl.title.toLowerCase().includes(name) ||
+          (tpl.titleHindi && tpl.titleHindi.toLowerCase().includes(name)) ||
+          tpl.imageUrl.toLowerCase().includes(name)
+        );
+      });
+      // Fallback to all if no deity specific matches are found
+      if (matches.length > 0) {
+        list = matches;
+      }
+    }
+    return list;
+  }, [selectedDeityFilter]);
 
   // Swiping navigation handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -2817,7 +2897,7 @@ export default function BlessingsPage() {
 
                 {/* Featured Hero Card — Cinematic */}
                 {(() => {
-                  const heroPoster = POSTER_TEMPLATES.find(p => p.id === "poster-shyam-1") || POSTER_TEMPLATES[0];
+                  const heroPoster = filteredPosterTemplates.find(p => p.id === "poster-shyam-1") || filteredPosterTemplates[0];
                   return (
                     <div className="w-full rounded-[2rem] overflow-hidden relative shadow-[0_20px_60px_rgba(0,0,0,0.7)] cursor-pointer group flex flex-col md:flex-row md:h-[380px]" style={{border: '1px solid rgba(245,158,11,0.18)'}} onClick={() => setSelectedPoster(heroPoster)}>
                       {/* Left: Image Container */}
@@ -2930,7 +3010,7 @@ export default function BlessingsPage() {
                         </h3>
                       </div>
                       <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
-                        {POSTER_TEMPLATES.filter(p => p.category === "todays").map((tpl) => (
+                        {filteredPosterTemplates.filter(p => p.category === "todays").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
@@ -2992,7 +3072,7 @@ export default function BlessingsPage() {
                         </h3>
                       </div>
                       <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
-                        {POSTER_TEMPLATES.filter(p => p.category === "festival").map((tpl) => (
+                        {filteredPosterTemplates.filter(p => p.category === "festival").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
@@ -3048,7 +3128,7 @@ export default function BlessingsPage() {
                         </h3>
                       </div>
                       <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
-                        {POSTER_TEMPLATES.filter(p => p.category === "good_morning").map((tpl) => (
+                        {filteredPosterTemplates.filter(p => p.category === "good_morning").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
@@ -3975,23 +4055,26 @@ export default function BlessingsPage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                    style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
-                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
+                    className="fixed bottom-0 md:bottom-[8%] left-0 right-0 md:left-[4%] md:right-[4%] w-full md:max-w-3xl mx-auto backdrop-blur-2xl border-t md:border border-amber-500/20 rounded-t-[2rem] md:rounded-[2rem] p-5 pt-6 pb-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-col md:flex-row items-center justify-between overflow-visible"
                   >
-                    {/* Card close button (cross button inside card, top left) */}
+                    {/* Grab handle indicator for mobile bottom drawer */}
+                    <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 md:hidden shrink-0" />
+
+                    {/* Card close button (cross button inside card, top right on mobile, top left on desktop) */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowPreviewModal(null);
                       }}
-                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className="absolute top-4 right-4 md:left-4 md:right-auto w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     
                     {/* 1. LEFT SIDE: Info & CTA Card details */}
-                    <div className="w-[55%] flex flex-col justify-between self-stretch pt-7 md:pt-5 pb-1 gap-2 md:gap-3.5 select-none text-left">
-                      <div className="space-y-3.5 md:space-y-5">
+                    <div className="w-full md:w-[55%] flex flex-col justify-between self-stretch pt-2 md:pt-5 pb-1 gap-4 md:gap-3.5 select-none text-left order-2 md:order-1">
+                      <div className="space-y-4 md:space-y-5">
                         {/* Header title */}
                         <div className="space-y-2">
                           <span className="inline-block px-2 py-0.5 bg-amber-500/10 border border-amber-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
@@ -4062,11 +4145,11 @@ export default function BlessingsPage() {
 
                     {/* 2. RIGHT SIDE: Realistic Phone Mockup panel */}
                     <div 
-                      className="w-[42%] flex items-center justify-center relative overflow-visible self-stretch"
+                      className="w-full md:w-[42%] flex items-center justify-center relative overflow-visible order-1 md:order-2 py-4 md:py-0"
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
                     >
-                      <div className="absolute -top-12 md:-top-20 z-30 transition-transform active:scale-[0.98]">
+                      <div className="relative md:absolute md:-top-20 z-30 transition-transform active:scale-[0.98] scale-95 md:scale-100">
                         <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
                       </div>
                     </div>
@@ -4152,23 +4235,26 @@ export default function BlessingsPage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                    style={{ backgroundColor: "rgba(20, 10, 5, 0.75)" }}
-                    className="fixed bottom-[8%] left-[4%] right-[4%] max-w-[430px] md:max-w-3xl mx-auto backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
+                    className="fixed bottom-0 md:bottom-[8%] left-0 right-0 md:left-[4%] md:right-[4%] w-full md:max-w-3xl mx-auto backdrop-blur-2xl border-t md:border border-amber-500/20 rounded-t-[2rem] md:rounded-[2rem] p-5 pt-6 pb-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-col md:flex-row items-center justify-between overflow-visible"
                   >
-                    {/* Card close button (cross button inside card, top left) */}
+                    {/* Grab handle indicator for mobile bottom drawer */}
+                    <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 md:hidden shrink-0" />
+
+                    {/* Card close button (cross button inside card, top right on mobile, top left on desktop) */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowLivePreviewModal(null);
                       }}
-                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className="absolute top-4 right-4 md:left-4 md:right-auto w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     
                     {/* 1. LEFT SIDE: Info & CTA */}
-                    <div className="w-[55%] flex flex-col justify-between self-stretch pt-7 md:pt-5 pb-1 gap-2 md:gap-3.5 select-none text-left">
-                      <div className="space-y-3.5 md:space-y-5">
+                    <div className="w-full md:w-[55%] flex flex-col justify-between self-stretch pt-2 md:pt-5 pb-1 gap-4 md:gap-3.5 select-none text-left order-2 md:order-1">
+                      <div className="space-y-4 md:space-y-5">
                         {/* Header title */}
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-1.5">
@@ -4244,11 +4330,11 @@ export default function BlessingsPage() {
 
                     {/* 2. RIGHT SIDE: Phone Mockup panel */}
                     <div 
-                      className="w-[42%] flex items-center justify-center relative overflow-visible self-stretch"
+                      className="w-full md:w-[42%] flex items-center justify-center relative overflow-visible order-1 md:order-2 py-4 md:py-0"
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
                     >
-                      <div className="absolute -top-12 md:-top-20 z-30 transition-transform active:scale-[0.98]">
+                      <div className="relative md:absolute md:-top-20 z-30 transition-transform active:scale-[0.98] scale-95 md:scale-100">
                         <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
                       </div>
                     </div>
@@ -4689,7 +4775,7 @@ export default function BlessingsPage() {
                       transition: "opacity 0.12s ease-in-out",
                     }}
                   >
-                    {POSTER_TEMPLATES.map((tpl) => {
+                    {filteredPosterTemplates.map((tpl) => {
                       const isActive = selectedPoster.id === tpl.id;
                       
                       // Calculate relative coordinate percentages matching 1080x1920 canvas
