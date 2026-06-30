@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-29",
+  "date": "2026-06-30",
   "zone": "northeast",
   "city": "Kolkata",
   "tithi": "Poornima",
   "tithi_number": 15,
-  "nakshatra": "Moola - 1",
-  "yoga": "Sukla",
-  "karana": "Visti",
+  "nakshatra": "Poorvashada - 1",
+  "yoga": "Brahma",
+  "karana": "Bava",
   "paksha": "Shukla",
-  "sunrise": "04:58 AM",
+  "sunrise": "04:59 AM",
   "sunset": "06:21 PM",
-  "rahu_kaal": "06:38 AM - 08:19 AM",
-  "brahma_muhurat": "03:22 AM - 04:10 AM",
-  "vara": "Somvaar",
-  "updated_at": "2026-06-29T07:05:29+05:30"
+  "rahu_kaal": "03:00 PM - 04:41 PM",
+  "brahma_muhurat": "03:23 AM - 04:11 AM",
+  "vara": "Mangalvaar",
+  "updated_at": "2026-06-30T07:00:00+05:30"
 }

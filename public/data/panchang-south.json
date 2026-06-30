@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-29",
+  "date": "2026-06-30",
   "zone": "south",
   "city": "Bengaluru",
   "tithi": "Poornima",
   "tithi_number": 15,
-  "nakshatra": "Moola - 1",
-  "yoga": "Sukla",
-  "karana": "Visti",
+  "nakshatra": "Poorvashada - 1",
+  "yoga": "Brahma",
+  "karana": "Bava",
   "paksha": "Shukla",
   "sunrise": "06:00 AM",
   "sunset": "06:45 PM",
-  "rahu_kaal": "07:36 AM - 09:11 AM",
+  "rahu_kaal": "03:34 PM - 05:09 PM",
   "brahma_muhurat": "04:24 AM - 05:12 AM",
-  "vara": "Somvaar",
-  "updated_at": "2026-06-29T07:05:29+05:30"
+  "vara": "Mangalvaar",
+  "updated_at": "2026-06-30T07:00:00+05:30"
 }

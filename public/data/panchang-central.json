@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-29",
+  "date": "2026-06-30",
   "zone": "central",
   "city": "Nagpur",
   "tithi": "Poornima",
   "tithi_number": 15,
-  "nakshatra": "Moola - 1",
-  "yoga": "Sukla",
-  "karana": "Visti",
+  "nakshatra": "Poorvashada - 1",
+  "yoga": "Brahma",
+  "karana": "Bava",
   "paksha": "Shukla",
-  "sunrise": "05:38 AM",
+  "sunrise": "05:39 AM",
   "sunset": "06:55 PM",
-  "rahu_kaal": "07:18 AM - 08:57 AM",
-  "brahma_muhurat": "04:02 AM - 04:50 AM",
-  "vara": "Somvaar",
-  "updated_at": "2026-06-29T07:05:29+05:30"
+  "rahu_kaal": "03:36 PM - 05:16 PM",
+  "brahma_muhurat": "04:03 AM - 04:51 AM",
+  "vara": "Mangalvaar",
+  "updated_at": "2026-06-30T07:00:00+05:30"
 }
