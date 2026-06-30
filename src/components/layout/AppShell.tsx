@@ -39,7 +39,7 @@ export default function AppShell() {
     <div
       className={cn(
         "flex flex-col bg-background font-body",
-        isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-screen"
+        isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-dvh"
       )}
     >
       {!hideHeader && <Header />}

@@ -10,6 +10,7 @@ import posterBanner from '@/pages/images/poster_high_quality.webp';
 import darshanBanner from '@/pages/images/darshan_high_quality.webp';
 import panchangBanner from '@/pages/images/panchang_high_quality(1).webp';
 import naamJapBanner from '@/pages/images/naam_jap_high_quality.webp';
+import bhaktiSamudayBanner from '@/pages/images/bhakti_samuday_high_quality.webp';
 
 // Banners Data Array
 const BANNERS = [
@@ -20,6 +21,7 @@ const BANNERS = [
   { id: 5, title: "God Darshan", image: darshanBanner, href: "/wallpaper" },
   { id: 6, title: "Panchang", image: panchangBanner, href: "/panchang" },
   { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/community" },
+  { id: 8, title: "Bhakti Samuday", image: bhaktiSamudayBanner, href: "/community" },
 ];
 
 export function PromotionalCarousel() {
@@ -30,6 +32,7 @@ export function PromotionalCarousel() {
   const [dragOffset, setDragOffset] = useState(0);
 
   const dragStartX = useRef(0);
+  const dragDistance = useRef(0);
   const isPointerDown = useRef(false);
   const numBanners = BANNERS.length;
 
@@ -47,13 +50,17 @@ export function PromotionalCarousel() {
   const handleStart = (clientX: number) => {
     isPointerDown.current = true;
     dragStartX.current = clientX;
+    dragDistance.current = 0;
     setDragOffset(0);
   };
 
   const handleMove = (clientX: number) => {
     if (!isPointerDown.current) return;
     
-    if (!isDragging && Math.abs(clientX - dragStartX.current) > 5) {
+    const diff = Math.abs(clientX - dragStartX.current);
+    dragDistance.current = diff;
+    
+    if (!isDragging && diff > 5) {
       setIsDragging(true);
     }
     
@@ -82,9 +89,11 @@ export function PromotionalCarousel() {
 
   const handleBannerClick = (href: string, e: React.MouseEvent) => {
     // Prevent navigating if user was performing a swipe/drag gesture
-    if (isDragging || Math.abs(dragOffset) > 5) {
+    if (isDragging || Math.abs(dragOffset) > 5 || dragDistance.current > 10) {
       e.preventDefault();
       e.stopPropagation();
+      // Reset dragDistance to allow subsequent regular clicks
+      dragDistance.current = 0;
       return;
     }
     navigate(href);

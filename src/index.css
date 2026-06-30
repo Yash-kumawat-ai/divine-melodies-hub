@@ -186,7 +186,6 @@
 
     .mobile-bottom-nav {
       overflow: visible;
-      contain: layout paint;
     }
   }
 

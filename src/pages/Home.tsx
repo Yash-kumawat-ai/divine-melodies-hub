@@ -17,7 +17,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
-import hanumanImg from '@/assets/deities/hanuman_high_quality.webp';
+import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
 
 interface UserBhajan {
   id: string;
@@ -216,12 +216,12 @@ export default function Home() {
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
-      {/* Promotional Banner Carousel (Now at the top of the screen) */}
-      <PromotionalCarousel />
-
       <HeroSection stats={stats} />
 
-      {/* ── Hanuman Bhakt Community Banner Card (Dark Mode) ── */}
+      {/* Promotional Banner Carousel */}
+      <PromotionalCarousel />
+
+      {/* ── Hanuman Bhakt Community Banner Poster ── */}
       <section className="px-4 py-6 md:py-10">
         <div className="container mx-auto max-w-5xl">
           <motion.div
@@ -229,187 +229,32 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.55, ease: 'easeOut' }}
-            className="relative overflow-hidden rounded-[1.75rem] md:rounded-[2.25rem]"
+            className="relative overflow-hidden rounded-[1.75rem] md:rounded-[2.25rem] border border-amber-500/20 group hover:border-amber-500/40 transition-all duration-500 aspect-[16/9] md:aspect-[21/9] w-full"
             style={{
-              background: 'linear-gradient(135deg, #110804 0%, #1c0f06 40%, #130c08 100%)',
-              border: '1px solid rgba(200,120,20,0.22)',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(200,120,20,0.1)',
+              backgroundImage: `url(${hanumanCommunityBanner})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_50%,rgba(180,90,10,0.18),transparent_65%)] pointer-events-none" />
-            {/* OM watermark */}
-            <div className="absolute right-4 top-0 bottom-0 flex items-center pointer-events-none select-none opacity-[0.04]">
-              <span className="text-[240px] md:text-[300px] font-serif text-amber-400 leading-none">ॐ</span>
-            </div>
+            {/* Clickable link covering the whole banner (except the button) */}
+            <Link to="/community" className="absolute inset-0 z-10 cursor-pointer">
+              <span className="sr-only">{isHi ? 'समुदाय में शामिल हों' : 'Join Community'}</span>
+            </Link>
 
-            <div className="relative flex flex-col md:flex-row items-stretch">
-
-              {/* ── Hanuman Ji Image ── — blended into card via blurred backdrop + crisp center */}
-              <div
-                className="flex-shrink-0 w-full md:w-[260px] lg:w-[300px] relative overflow-hidden bg-stone-950 flex items-center justify-center border-b md:border-b-0 md:border-r border-amber-500/10"
-                style={{ minHeight: '220px' }}
+            {/* CTA Button centered at the bottom of the poster */}
+            <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 w-auto px-4 text-center">
+              <Link
+                to="/community"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 md:px-8 md:py-3.5 rounded-xl font-sans font-black text-xs md:text-sm uppercase tracking-widest text-stone-950 transition-all hover:scale-[1.04] active:scale-95 shadow-[0_6px_24px_rgba(234,88,12,0.45)] border border-amber-400/20"
+                style={{
+                  background: 'linear-gradient(135deg, #f5a623 0%, #e67c00 100%)',
+                }}
               >
-                {/* Blurred backdrop copy to fill left and right bars */}
-                <img
-                  src={hanumanImg}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover select-none opacity-30 blur-md scale-110 pointer-events-none"
-                  draggable={false}
-                />
-                
-                {/* Crisp centered Hanuman portrait */}
-                <img
-                  src={hanumanImg}
-                  alt="Hanumanji"
-                  className="relative mx-auto h-full w-auto max-w-full object-contain select-none opacity-90 filter brightness-[0.75] contrast-[1.1] saturate-[0.95] drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] z-10"
-                  draggable={false}
-                  style={{ maxHeight: '380px' }}
-                />
-
-                {/* Overlays to blend image container with the card background */}
-                {/* Top fade */}
-                <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#110804] to-transparent pointer-events-none z-20" />
-                {/* Bottom fade */}
-                <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#1c0f06] to-transparent pointer-events-none z-20" />
-                {/* Left fade */}
-                <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#110804] to-transparent pointer-events-none z-20" />
-                {/* Right fade */}
-                <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#1c0f06] to-transparent pointer-events-none z-20" />
-              </div>
-
-              {/* ── Content ── */}
-              <div className="flex-1 px-5 pb-7 pt-5 md:pt-8 md:pr-8 flex flex-col gap-4.5 text-left">
-
-                {/* Live online badge */}
-                <div className="flex items-center gap-2 self-start">
-                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500/15 via-green-500/5 to-transparent border border-emerald-500/25 text-emerald-400 text-[11px] font-bold px-3.5 py-1.5 rounded-full shadow-[0_2px_12px_rgba(16,185,129,0.1)] tracking-wide backdrop-blur-xs select-none">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    {isHi
-                      ? `${onlineCount.toLocaleString('hi')} भक्त ऑनलाइन`
-                      : `${onlineCount.toLocaleString()} ${onlineCount === 1 ? 'devotee' : 'devotees'} online`}
-                  </span>
-                </div>
-
-                {/* Heading */}
-                <div>
-                  <h2 className="font-display text-[26px] md:text-[34px] lg:text-[38px] font-black leading-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300">
-                    {isHi ? 'हमारे ' : 'Join Our '}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 font-extrabold drop-shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
-                      {isHi ? 'हनुमान भक्त' : 'Hanuman Bhakt'}
-                    </span>
-                    {isHi ? ' समुदाय से जुड़ें' : ' Community'}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="flex-1 max-w-[50px] h-[1px] bg-gradient-to-r from-transparent to-amber-500/40" />
-                    <span className="text-amber-500 text-sm animate-pulse">🌸</span>
-                    <span className="flex-1 max-w-[50px] h-[1px] bg-gradient-to-l from-transparent to-amber-500/40" />
-                  </div>
-                  <p className="text-amber-100/70 text-[13px] md:text-[14px] mt-2.5 leading-relaxed max-w-md font-medium tracking-wide">
-                    {isHi
-                      ? 'भक्तों से जुड़ें, साथ जाप करें, चुनौतियों में भाग लें और भक्ति में आगे बढ़ें।'
-                      : 'Connect with devotees, chant together, join challenges and grow in devotion.'}
-                  </p>
-                </div>
-
-                {/* 4 feature pills */}
-                <div className="grid grid-cols-4 gap-2.5">
-                  {[
-                    { icon: Sun, label: isHi ? 'दैनिक\nप्रेरणा' : 'Daily\nInspiration' },
-                    { icon: Trophy, label: isHi ? 'भक्ति\nचुनौती' : 'Bhakti\nChallenges' },
-                    { icon: Users, label: isHi ? 'समूह\nजाप' : 'Group\nJap' },
-                    { icon: Gift, label: isHi ? 'दिव्य\nपुरस्कार' : 'Divine\nRewards' },
-                  ].map((item, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      whileHover={{ scale: 1.04, y: -2, border: '1px solid rgba(245,158,11,0.45)' }}
-                      viewport={{ once: true }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                      className="flex flex-col items-center justify-center gap-2 bg-[#1b1008]/40 border border-amber-500/10 rounded-2xl py-3.5 px-1.5 cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)] transition-all duration-200"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 transition-colors border border-amber-500/10">
-                        <item.icon className="w-4.5 h-4.5 text-amber-400 filter drop-shadow-[0_2px_4px_rgba(245,158,11,0.2)]" />
-                      </div>
-                      <span className="text-[9px] font-black text-amber-200/80 uppercase tracking-widest text-center leading-tight whitespace-pre-line">{item.label}</span>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Dynamic stats row + CTA */}
-                <div className="flex flex-col lg:flex-row items-stretch gap-3.5 mt-2">
-                  {/* Stats */}
-                  <div className="flex-1 flex items-center justify-around bg-stone-950/80 border border-amber-500/10 rounded-2xl px-4 py-3.5 gap-1.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                        <Users className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
-                          {communityStats.members.toLocaleString()}
-                        </p>
-                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'सदस्य' : 'Members'}</p>
-                      </div>
-                    </div>
-                    <div className="w-px h-8 bg-amber-500/15" />
-                    
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                        <span className="text-amber-400 text-xs flex-shrink-0 leading-none">📿</span>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
-                          {communityStats.totalJaps >= 10000000
-                            ? `${(communityStats.totalJaps / 10000000).toFixed(1)} Cr`
-                            : communityStats.totalJaps >= 100000
-                            ? `${(communityStats.totalJaps / 100000).toFixed(1)} L`
-                            : communityStats.totalJaps.toLocaleString()}
-                        </p>
-                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'नाम जाप' : 'Naam Japs'}</p>
-                      </div>
-                    </div>
-                    <div className="w-px h-8 bg-amber-500/15" />
-                    
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                        <span className="text-amber-400 text-xs flex-shrink-0 leading-none">🔥</span>
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 to-amber-300 leading-none tabular-nums">
-                          {communityStats.todayParticipants.toLocaleString()}
-                        </p>
-                        <p className="text-[9px] text-amber-200/50 font-bold uppercase tracking-wider mt-1">{isHi ? 'आज सक्रिय' : 'Today Active'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CTA */}
-                  <Link
-                    to="/community"
-                    className="flex-shrink-0 flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-sans font-black text-xs uppercase tracking-widest text-stone-950 transition-all hover:scale-[1.03] active:scale-95 border border-amber-400/20 shadow-[0_4px_24px_rgba(234,88,12,0.35)]"
-                    style={{
-                      background: 'linear-gradient(135deg, #f5a623 0%, #e67c00 100%)',
-                    }}
-                  >
-                    <span>🪷</span>
-                    <span>{isHi ? 'समुदाय में शामिल हों' : 'Join Community'}</span>
-                    <ArrowRight className="w-4 h-4 text-stone-950" />
-                  </Link>
-                </div>
-
-                {/* Trust badges */}
-                <div className="flex items-center justify-center gap-3 text-[10px] text-amber-200/35 font-bold uppercase tracking-widest select-none">
-                  <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-amber-500/70" />{isHi ? 'सुरक्षित' : 'Safe'}</span>
-                  <span className="text-amber-500/40">•</span>
-                  <span>{isHi ? 'सकारात्मक' : 'Positive'}</span>
-                  <span className="text-amber-500/40">•</span>
-                  <span>{isHi ? 'आध्यात्मिक' : 'Spiritual'}</span>
-                </div>
-              </div>
+                <span>🪷</span>
+                <span>{isHi ? 'समुदाय में शामिल हों' : 'Join Now'}</span>
+                <ArrowRight className="w-4 h-4 text-stone-950" />
+              </Link>
             </div>
           </motion.div>
         </div>

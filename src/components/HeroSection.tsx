@@ -5,8 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useState } from 'react';
 
 // Import images from src/pages/images
-import krishnaMain from '@/pages/images/krishna main.webp';
-import krishnaMobile from '@/pages/images/krishna_mobile_wallpaper.webp';
+import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import panchangIcon from '@/pages/images/panchang_spiritual_icon.webp';
 import meditationIcon from '@/pages/images/meditation_spiritual_icon.webp';
 import templeIcon from '@/pages/images/temple_icon.webp';
@@ -62,13 +61,13 @@ export function HeroSection({ stats }: HeroSectionProps) {
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0"> 
         <picture className="block w-full h-full">
-          <source media="(min-width: 768px)" srcSet={krishnaMain} />
+          <source media="(min-width: 768px)" srcSet={raghavamHero} />
           <motion.img 
             initial={{ scale: 1.08 }}
             animate={{ scale: 1 }}
             transition={{ duration: 10, ease: "easeOut" }}
-            src={krishnaMobile} 
-            alt="Krishna" 
+            src={raghavamHero} 
+            alt="Raghavam" 
             className="w-full h-full object-cover object-[center_top] md:object-center" 
           />
         </picture>
