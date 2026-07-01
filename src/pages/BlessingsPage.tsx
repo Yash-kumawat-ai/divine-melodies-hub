@@ -4056,24 +4056,21 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
-                    className="fixed bottom-0 md:bottom-[8%] left-0 right-0 md:left-[4%] md:right-[4%] w-full md:max-w-3xl mx-auto backdrop-blur-2xl border-t md:border border-amber-500/20 rounded-t-[2rem] md:rounded-[2rem] p-5 pt-6 pb-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-col md:flex-row items-center justify-between overflow-visible"
+                    className="fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
                   >
-                    {/* Grab handle indicator for mobile bottom drawer */}
-                    <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 md:hidden shrink-0" />
-
-                    {/* Card close button (cross button inside card, top right on mobile, top left on desktop) */}
+                    {/* Card close button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowPreviewModal(null);
                       }}
-                      className="absolute top-4 right-4 md:left-4 md:right-auto w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     
                     {/* 1. LEFT SIDE: Info & CTA Card details */}
-                    <div className="w-full md:w-[55%] flex flex-col justify-between self-stretch pt-2 md:pt-5 pb-1 gap-4 md:gap-3.5 select-none text-left order-2 md:order-1">
+                    <div className="w-[55%] flex flex-col justify-between self-stretch pt-5 pb-1 gap-3.5 select-none text-left">
                       <div className="space-y-4 md:space-y-5">
                         {/* Header title */}
                         <div className="space-y-2">
@@ -4145,11 +4142,11 @@ export default function BlessingsPage() {
 
                     {/* 2. RIGHT SIDE: Realistic Phone Mockup panel */}
                     <div 
-                      className="w-full md:w-[42%] flex items-center justify-center relative overflow-visible order-1 md:order-2 py-4 md:py-0"
+                      className="w-[42%] flex items-center justify-center relative overflow-visible"
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, WALLPAPERS_LIST, wp.id, setShowPreviewModal)}
                     >
-                      <div className="relative md:absolute md:-top-20 z-30 transition-transform active:scale-[0.98] scale-95 md:scale-100">
+                      <div className="absolute -top-10 -right-6 md:-top-16 md:-right-8 z-30 transition-transform active:scale-[0.98]">
                         <PhoneFrame imageUrl={wp.imageUrl} previewMode={previewMode} />
                       </div>
                     </div>
@@ -4236,24 +4233,21 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
-                    className="fixed bottom-0 md:bottom-[8%] left-0 right-0 md:left-[4%] md:right-[4%] w-full md:max-w-3xl mx-auto backdrop-blur-2xl border-t md:border border-amber-500/20 rounded-t-[2rem] md:rounded-[2rem] p-5 pt-6 pb-6 md:p-8 min-h-[220px] md:min-h-[380px] shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-col md:flex-row items-center justify-between overflow-visible"
+                    className="fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
                   >
-                    {/* Grab handle indicator for mobile bottom drawer */}
-                    <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4 md:hidden shrink-0" />
-
-                    {/* Card close button (cross button inside card, top right on mobile, top left on desktop) */}
+                    {/* Card close button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setShowLivePreviewModal(null);
                       }}
-                      className="absolute top-4 right-4 md:left-4 md:right-auto w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     
                     {/* 1. LEFT SIDE: Info & CTA */}
-                    <div className="w-full md:w-[55%] flex flex-col justify-between self-stretch pt-2 md:pt-5 pb-1 gap-4 md:gap-3.5 select-none text-left order-2 md:order-1">
+                    <div className="w-[55%] flex flex-col justify-between self-stretch pt-5 pb-1 gap-3.5 select-none text-left">
                       <div className="space-y-4 md:space-y-5">
                         {/* Header title */}
                         <div className="space-y-2">
@@ -4330,11 +4324,11 @@ export default function BlessingsPage() {
 
                     {/* 2. RIGHT SIDE: Phone Mockup panel */}
                     <div 
-                      className="w-full md:w-[42%] flex items-center justify-center relative overflow-visible order-1 md:order-2 py-4 md:py-0"
+                      className="w-[42%] flex items-center justify-center relative overflow-visible"
                       onTouchStart={handleTouchStart}
                       onTouchEnd={(e) => handleTouchEnd(e, LIVE_WALLPAPERS_LIST, wp.id, setShowLivePreviewModal)}
                     >
-                      <div className="relative md:absolute md:-top-20 z-30 transition-transform active:scale-[0.98] scale-95 md:scale-100">
+                      <div className="absolute -top-10 -right-6 md:-top-16 md:-right-8 z-30 transition-transform active:scale-[0.98]">
                         <PhoneFrame imageUrl={wp.thumbnailUrl} previewMode={previewMode} effect={wp.effect} />
                       </div>
                     </div>

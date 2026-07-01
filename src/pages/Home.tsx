@@ -374,18 +374,18 @@ export default function Home() {
           {/* Grid — 4-column layout on mobile, 6-column on desktop */}
           <div className="grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-4">
             {([
-              { img: bhajansImg, label: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans' },
-              { img: aartiImg, label: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti' },
-              { img: panchangImg, label: isHi ? 'पंचांग' : 'Panchang', path: '/panchang' },
-              { img: meditationImg, label: isHi ? 'ध्यान' : 'Meditation', path: '/meditation' },
-              { img: templeImg, label: isHi ? 'मंदिर' : 'Temples', path: '/temple' },
-              { img: krishnaAIImg, label: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai' },
-              { img: lyricsImg, label: isHi ? 'गीत बोल' : 'Lyrics', path: '/all-bhajans' },
-              { img: wallpaperImg, label: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper' },
-              { img: posterImg, label: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker' },
-              { img: naamJapImg, label: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home' },
-              { img: communityImg, label: isHi ? 'समुदाय' : 'Community', path: '/community' },
-              { img: darshImg, label: isHi ? 'दर्शन' : 'Darshan', path: '/search' },
+              { label: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans' },
+              { label: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti' },
+              { label: isHi ? 'पंचांग' : 'Panchang', path: '/panchang' },
+              { label: isHi ? 'ध्यान' : 'Meditation', path: '/meditation' },
+              { label: isHi ? 'मंदिर' : 'Temples', path: '/temple' },
+              { label: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai' },
+              { label: isHi ? 'गीत बोल' : 'Lyrics', path: '/all-bhajans' },
+              { label: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper' },
+              { label: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker' },
+              { label: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home' },
+              { label: isHi ? 'समुदाय' : 'Community', path: '/community' },
+              { label: isHi ? 'दर्शन' : 'Darshan', path: '/search' },
             ]).map((item, i) => (
               <motion.button
                 key={item.label}
@@ -394,31 +394,17 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-30px' }}
                 transition={{ delay: i * 0.04, duration: 0.35 }}
-                className="group relative aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-white/10 hover:border-amber-500/40 transition-all duration-300 hover:scale-[1.06] hover:-translate-y-1 cursor-pointer shadow-[0_6px_20px_rgba(0,0,0,0.45)] hover:shadow-[0_12px_36px_rgba(249,115,22,0.26)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+                className="group relative aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-amber-500/10 hover:border-amber-500/50 bg-gradient-to-b from-[#140a05] to-[#0c0502] hover:from-[#1b0e06] hover:to-[#120702] transition-all duration-300 hover:scale-[1.05] hover:-translate-y-1 cursor-pointer flex flex-col items-center justify-center p-3 text-center shadow-[0_6px_20px_rgba(0,0,0,0.55)] hover:shadow-[0_12px_36px_rgba(249,115,22,0.15)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
               >
-                {/* Full image bg */}
-                <img
-                  src={item.img}
-                  alt={item.label}
-                  className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-                />
-                {/* Strong bottom dark fade overlay for maximum text legibility */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/98 via-black/55 via-45% to-transparent transition-all duration-500 group-hover:via-black/70" />
-                {/* Amber tint on hover */}
-                <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/8 transition-all duration-500" />
-                {/* Top shine reflection on hover */}
-                <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-white/6 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                {/* Label */}
-                <div className="absolute bottom-0 left-0 right-0 p-1.5 md:p-3.5">
-                  <span
-                    className="block text-center text-[9px] sm:text-xs md:text-[15px] font-black uppercase tracking-[0.06em] md:tracking-[0.12em] text-white/95 group-hover:text-amber-200 transition-colors duration-300 leading-tight"
-                    style={{ textShadow: '0 2px 10px rgba(0,0,0,0.98)' }}
-                  >
-                    {item.label}
-                  </span>
-                </div>
-                {/* Bottom shimmer line on hover */}
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* Label (Centered inside card) */}
+                <span
+                  className="block text-center text-[9px] sm:text-xs md:text-[15px] font-serif font-black uppercase tracking-[0.06em] md:tracking-[0.12em] text-amber-200/90 group-hover:text-amber-300 transition-colors duration-300 leading-normal"
+                >
+                  {item.label}
+                </span>
+                
+                {/* Micro gold indicator dot */}
+                <span className="w-1 h-1 bg-amber-500/40 group-hover:bg-amber-500 rounded-full mt-2 transition-colors duration-300" />
               </motion.button>
             ))}
           </div>

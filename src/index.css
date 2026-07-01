@@ -795,3 +795,126 @@ img.w-10.h-10.md\:w-8.md\:h-8.object-contain.shrink-0.transition-all.duration-30
     height: 50px;
     width: 150px;
 }
+
+
+.max-w-\[540px\] {
+    max-width: 490px;
+}
+
+.text-amber-300\/85 {
+    color: rgb(255 189 91);
+}
+
+
+.text-\[11px\] {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    .md\:-top-16 {
+        top: -21rem!important;
+    }
+
+        .md\:max-w-\[500px\] {
+        max-width: 550px!important;
+    }
+
+    
+        .md\:-right-8 {
+        right: -0.5rem!important;
+    }
+
+    .left-1\/2 {
+    left: 25%;
+}
+.bottom-\[8\%\] {
+    bottom: 2%;
+}
+
+}
+
+
+@media (max-width: 768px) {
+   
+.-top-10 {
+    top: -15rem;
+}
+
+.left-1\/2 {
+    left: 5%;
+}
+
+.bottom-\[8\%\] {
+    bottom: 1.5%;
+}
+
+.-right-6 {
+    right: -0.5rem;
+}
+}
+/* .animated-brand-logo.relative.select-none{
+
+  padding-left: 40px!important;
+} */
+
+@media (max-width: 768px) {
+    .left-1\/2 {
+        left: 50%;
+        
+}
+
+
+
+    }
+
+    .animate-pulse {
+    animation:none;
+}
+
+
+@media (min-width: 768px){
+      .md\:p-8 {
+        padding: 0 rem!important;
+      }
+
+      .max-w-\[540px\]{
+        max-width: 450px;
+      }
+}
+
+
+
+button.group.inline-flex.min-h-\[44px\].min-w-\[44px\].shrink-0.items-center.justify-center.gap-1\.5.rounded-full.border.border-primary\/25.bg-background\/85.px-2\.5.py-2.text-sm.font-semibold.text-foreground.shadow-\[0_10px_28px_rgba\(0\,0\,0\,0\.12\)\].backdrop-blur-md.transition-all.hover\:-translate-x-0\.5.hover\:border-primary\/45.hover\:bg-primary\/10.hover\:text-primary.focus-visible\:outline-none.focus-visible\:ring-2.focus-visible\:ring-primary\/55.active\:scale-95.touch-target.sm\:px-3\.5.sm\:py-2\.5 {
+    display: none;
+}
+
+
+button.group.relative.aspect-square.rounded-2xl.md\:rounded-3xl.overflow-hidden.border.border-amber-500\/10.hover\:border-amber-500\/50.bg-gradient-to-b.from-\[\#140a05\].to-\[\#0c0502\].hover\:from-\[\#1b0e06\].hover\:to-\[\#120702\].transition-all.duration-300.hover\:scale-\[1\.05\].hover\:-translate-y-1.cursor-pointer.flex.flex-col.items-center.justify-center.p-3.text-center.shadow-\[0_6px_20px_rgba\(0\,0\,0\,0\.55\)\].hover\:shadow-\[0_12px_36px_rgba\(249\,115\,22\,0\.15\)\].active\:scale-\[0\.97\].focus-visible\:outline-none.focus-visible\:ring-2.focus-visible\:ring-amber-400\/60
+:hover{
+  opacity: 1;
+    border-color: #8f713b;
+}
+
+
+/* 
+.animated-brand-logo {
+outline: 2px solid red;
+
+}
+
+.animated-brand-logo svg{
+  outline: 2px solid lime;
+} */
+
+
+
+.animated-brand-logo.relative.select-none {
+width:fit-content;
+}
+
+.animated-brand-logo{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+}

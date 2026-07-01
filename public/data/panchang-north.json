@@ -1,17 +1,17 @@
 {
-  "date": "2026-06-24",
+  "date": "2026-07-01",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Dasimi",
-  "tithi_number": 10,
-  "nakshatra": "Chitta - 3",
-  "yoga": "Parigha",
-  "karana": "Taitula",
-  "paksha": "Shukla",
-  "sunrise": "05:28 AM",
+  "tithi": "Padyami",
+  "tithi_number": 0,
+  "nakshatra": "Poorvashada - 4",
+  "yoga": "Indra",
+  "karana": "Kaulava",
+  "paksha": "Krishna",
+  "sunrise": "05:31 AM",
   "sunset": "07:18 PM",
-  "rahu_kaal": "10:39 AM - 12:23 PM",
-  "brahma_muhurat": "03:52 AM - 04:40 AM",
+  "rahu_kaal": "10:41 AM - 12:24 PM",
+  "brahma_muhurat": "03:55 AM - 04:43 AM",
   "vara": "Budhvaar",
-  "updated_at": "2026-06-24T06:54:21+05:30"
+  "updated_at": "2026-07-01T10:47:39+05:30"
 }

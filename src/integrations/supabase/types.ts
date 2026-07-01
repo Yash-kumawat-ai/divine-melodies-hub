@@ -33,6 +33,7 @@ export type Database = {
       user_jap_sessions: AppTable
       user_jap_totals: AppTable
       user_sankalpas: AppTable
+      daily_dohas: AppTable
     }
     Views: {
       [_ in never]: never

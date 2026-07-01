@@ -4,13 +4,16 @@ import { useLanguage } from '@/hooks/useLanguage';
 export function AnimatedBrandLogo({ className = '', style = {}, height }: { className?: string; style?: React.CSSProperties; height?: string | number } = {}) {
   const { language } = useLanguage();
   const isHi = language === 'hi';
+  const aspectRatio = isHi ? 2.25 : 2.94;
 
+  const leftPadding = 16; // 16px left padding to prevent cut off at screen edges
   const containerStyle: React.CSSProperties = height ? {
     height: height,
-    width: 'auto',
+    width: typeof height === 'number' ? `${height * aspectRatio + leftPadding}px` : `calc(${height} * ${aspectRatio} + ${leftPadding}px)`,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingLeft: `${leftPadding}px`,
     ...style
   } : style;
 
@@ -35,8 +38,6 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
           xmlSpace="preserve" 
-          width="100%" 
-          height="100%" 
           version="1.1" 
           style={{
             shapeRendering: 'geometricPrecision',
@@ -126,8 +127,6 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
           xmlSpace="preserve" 
-          width="100%" 
-          height="100%" 
           version="1.1" 
           style={{
             shapeRendering: 'geometricPrecision',

@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import lordRamMobile from '@/pages/images/lord_ram_high_quality.webp';
+import DailyDohaCard from '@/components/DailyDohaCard';
 
 interface HeroSectionProps {
   stats?: {
@@ -31,7 +32,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
   };
 
   return ( 
-    <section className="hero-section relative w-full overflow-hidden flex flex-col h-[70vh] min-h-[440px] md:h-[95vh] md:min-h-[640px]"> 
+    <section className="hero-section relative w-full overflow-hidden flex flex-col h-[70vh] min-h-[440px] md:h-[820px] lg:h-[900px] md:pb-24"> 
 
       {/* FULL BLEED BACKGROUND IMAGE */} 
       <div className="absolute inset-0 z-0 bg-black"> 
@@ -132,6 +133,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             🧿 {isHi ? 'जाप शुरू करें' : 'Start Chanting'}
           </button>
         </motion.div>
+
+        {/* Daily Ram Vani Doha Card (desktop layout only) */}
+        <DailyDohaCard />
       </div>
 
     </section> 
