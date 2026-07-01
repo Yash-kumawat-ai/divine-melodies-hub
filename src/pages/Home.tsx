@@ -380,7 +380,7 @@ export default function Home() {
               { label: isHi ? 'ध्यान' : 'Meditation', path: '/meditation' },
               { label: isHi ? 'मंदिर' : 'Temples', path: '/temple' },
               { label: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai' },
-              { label: isHi ? 'गीत बोल' : 'Lyrics', path: '/all-bhajans' },
+              { label: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts' },
               { label: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper' },
               { label: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker' },
               { label: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home' },

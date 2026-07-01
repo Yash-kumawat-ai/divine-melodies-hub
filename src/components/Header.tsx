@@ -5,6 +5,7 @@ import {
   Camera,
   ChevronDown,
   Clock3,
+  Film,
   Flower2,
   Image,
   Info,
@@ -132,6 +133,7 @@ export default function Header() {
     { to: "/community", label: language === 'hi' ? 'नाम संघ' : 'Naam Sangh', icon: Users, match: (path: string) => path.startsWith("/community") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
     { to: "/wallpaper", label: language === 'hi' ? 'वॉलपेपर' : 'Wallpapers', icon: Image, match: (path: string) => path.startsWith("/wallpaper") },
+    { to: "/shorts", label: language === 'hi' ? 'शॉर्ट्स' : 'Shorts', icon: Film, match: (path: string) => path.startsWith("/shorts") },
     { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
   ];
@@ -264,6 +266,11 @@ export default function Header() {
               <DropdownMenuItem asChild>
                 <Link to="/wallpaper" className="flex items-center gap-2">
                   <Image className="h-4 w-4 opacity-60" />{language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/shorts" className="flex items-center gap-2">
+                  <Film className="h-4 w-4 opacity-60" />{language === 'hi' ? 'शॉर्ट्स' : 'Shorts'}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

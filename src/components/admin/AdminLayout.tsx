@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Users, FileText } from 'lucide-react';
+import { Shield, Users, FileText, Video } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useModerationPendingCount } from '@/hooks/useModerationNotificationQueries';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,7 @@ import PanchangHealthAlert from './PanchangHealthAlert';
 
 const adminTabs = [
   { path: '/admin/moderation', label: 'Moderation', icon: Shield },
+  { path: '/admin/channel-whitelist', label: 'Channels', icon: Video },
   { path: '/admin/accounts', label: 'Accounts', icon: Users },
   { path: '/admin/audit', label: 'Audit Log', icon: FileText },
 ] as const;

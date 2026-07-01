@@ -55,6 +55,7 @@ const footerDict = {
     drivenStat: "Led",
     privacyPolicy: "Privacy Policy",
     termsOfService: "Terms of Service",
+    dmca: "DMCA",
     copyright: "Copyright",
     contactUs: "Contact Us",
     rightsReserved: "All rights reserved.",
@@ -87,6 +88,7 @@ const footerDict = {
     drivenStat: "संचालित",
     privacyPolicy: "गोपनीयता नीति",
     termsOfService: "सेवा की शर्तें",
+    dmca: "डीएमसीए",
     copyright: "कॉपीराइट",
     contactUs: "संपर्क करें",
     rightsReserved: "सर्वाधिकार सुरक्षित।",
@@ -518,6 +520,8 @@ export default function Footer() {
             </Link>
             <span className="text-brand-saffron/20">|</span>
             <Link to="/terms" className="hover:text-brand-saffron transition-colors">{l.termsOfService}</Link>
+            <span className="text-brand-saffron/20">|</span>
+            <Link to="/dmca" className="hover:text-brand-saffron transition-colors">{l.dmca}</Link>
             <span className="text-brand-saffron/20">|</span>
             <Link to="/privacy" className="hover:text-brand-saffron transition-colors">{l.copyright}</Link>
             <span className="text-brand-saffron/20">|</span>

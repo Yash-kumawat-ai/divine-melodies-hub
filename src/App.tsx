@@ -62,6 +62,11 @@ const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const JoinCommunityPage = lazy(() => import("./pages/JoinCommunityPage"));
 const PosterMakerPage = lazy(() => import("./pages/PosterMakerPage"));
 
+// Bhakti Shorts Feature lazy loads
+const ShortsFeed = lazy(() => import("./pages/ShortsFeed"));
+const ChannelWhitelist = lazy(() => import("./pages/admin/ChannelWhitelist"));
+const DMCAPage = lazy(() => import("./pages/DMCAPage"));
+
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -144,11 +149,24 @@ function AppContent() {
             <Route path="/join-community" element={<JoinCommunityPage />} />
             <Route path="/community/groups/:slug" element={<JoinCommunityPage />} />
             <Route path="/community/posts/:postId" element={<JoinCommunityPage />} />
+            
+            {/* Bhakti Shorts & Legal compliance routes */}
+            <Route path="/shorts" element={<ShortsFeed />} />
+            <Route path="/dmca" element={<DMCAPage />} />
             <Route
               path="/admin/moderation"
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminModeration />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/channel-whitelist"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <ChannelWhitelist />
                 </ProtectedRoute>
               }
             />
