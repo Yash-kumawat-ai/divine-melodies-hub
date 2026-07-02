@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-01",
+  "date": "2026-07-02",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Padyami",
+  "tithi": "Vidiya",
   "tithi_number": 0,
-  "nakshatra": "Poorvashada - 4",
-  "yoga": "Indra",
-  "karana": "Kaulava",
+  "nakshatra": "Uttarashada - 4",
+  "yoga": "Vaidhriti",
+  "karana": "Garija",
   "paksha": "Krishna",
   "sunrise": "04:59 AM",
   "sunset": "06:21 PM",
-  "rahu_kaal": "10:00 AM - 11:40 AM",
+  "rahu_kaal": "11:40 AM - 01:20 PM",
   "brahma_muhurat": "03:23 AM - 04:11 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-07-01T07:09:00+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-07-02T07:01:32+05:30"
 }

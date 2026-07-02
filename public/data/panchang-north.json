@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-01",
+  "date": "2026-07-02",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Padyami",
+  "tithi": "Vidiya",
   "tithi_number": 0,
-  "nakshatra": "Poorvashada - 4",
-  "yoga": "Indra",
-  "karana": "Kaulava",
+  "nakshatra": "Uttarashada - 4",
+  "yoga": "Vaidhriti",
+  "karana": "Garija",
   "paksha": "Krishna",
   "sunrise": "05:31 AM",
   "sunset": "07:18 PM",
-  "rahu_kaal": "10:41 AM - 12:24 PM",
+  "rahu_kaal": "12:24 PM - 02:08 PM",
   "brahma_muhurat": "03:55 AM - 04:43 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-07-01T07:09:00+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-07-02T07:01:32+05:30"
 }
