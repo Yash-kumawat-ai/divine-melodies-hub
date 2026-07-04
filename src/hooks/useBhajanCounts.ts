@@ -4,8 +4,6 @@ import { supabase } from '@/lib/supabaseClient';
 
 type CountMap = Record<number, number>;
 
-let channelSequence = 0;
-
 const staticCountsByDeity = staticBhajans.reduce<CountMap>((counts, bhajan) => {
   counts[bhajan.deityId] = (counts[bhajan.deityId] ?? 0) + 1;
   return counts;
@@ -50,33 +48,7 @@ export function useBhajanCounts() {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
     void refreshCounts();
-
-    channelSequence += 1;
-    const channel = (supabase as any)
-      .channel(`live-bhajan-counts-${channelSequence}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_uploads' },
-        () => {
-          if (!cancelled) {
-            void refreshCounts();
-          }
-        },
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      try {
-        channel.unsubscribe();
-        void (supabase as any).removeChannel(channel);
-      } catch {
-        // Ignore errors when WebSocket is closed before connection is established
-        // (common during React StrictMode double-render in development)
-      }
-    };
   }, [refreshCounts]);
 
   const countsByDeity = useMemo(() => mergeCounts(uploadCountsByDeity), [uploadCountsByDeity]);

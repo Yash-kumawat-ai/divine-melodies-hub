@@ -152,6 +152,7 @@ function AppContent() {
             
             {/* Bhakti Shorts & Legal compliance routes */}
             <Route path="/shorts" element={<ShortsFeed />} />
+            <Route path="/shorts/:videoId" element={<ShortsFeed />} />
             <Route path="/dmca" element={<DMCAPage />} />
             <Route
               path="/admin/moderation"

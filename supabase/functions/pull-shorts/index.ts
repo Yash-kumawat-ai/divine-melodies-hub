@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
+import { XMLParser } from "https://esm.sh/fast-xml-parser@4.5.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,15 +8,15 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Helper to parse ISO 8601 duration (e.g. PT1M15S, PT45S) into seconds
-function parseISO8601Duration(duration: string): number {
+// ISO 8601 Duration Parser (e.g. PT1M45S -> 105 seconds)
+function parseISO8601Duration(durationStr: string): number {
   const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
-  const matches = duration.match(regex);
+  const matches = durationStr.match(regex);
   if (!matches) return 0;
   const hours = parseInt(matches[1] || "0", 10);
   const minutes = parseInt(matches[2] || "0", 10);
   const seconds = parseInt(matches[3] || "0", 10);
-  return hours * 3600 + minutes * 60 + seconds;
+  return (hours * 3600) + (minutes * 60) + seconds;
 }
 
 serve(async (req: Request) => {
@@ -26,160 +27,218 @@ serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
+
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("Missing Supabase URL or Service Role Key environmental variable");
     }
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
-    if (!youtubeApiKey) {
-      throw new Error("Missing YOUTUBE_API_KEY secret");
-    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     let action = "pull";
     let inputVal = "";
-    let targetChannelUid = "";
+    let channelUid = "";
     try {
       const body = await req.json();
       if (body?.action) action = body.action;
       if (body?.input) inputVal = body.input;
-      if (body?.channel_uid) targetChannelUid = body.channel_uid;
+      if (body?.channel_uid) channelUid = body.channel_uid;
     } catch {
       // Ignore body parsing errors
     }
 
-    // Action: Resolve channel details from handle or ID
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+    });
+
+    // Action: Resolve channel details from ID
     if (action === "resolve") {
       if (!inputVal) {
         throw new Error("Missing 'input' parameter for channel resolution");
       }
       const cleanInput = inputVal.trim();
-      let queryUrl = "";
-      if (/^UC[A-Za-z0-9_-]{22}$/.test(cleanInput)) {
-        queryUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${cleanInput}&key=${youtubeApiKey}`;
-      } else {
-        const handle = cleanInput.startsWith("@") ? cleanInput : `@${cleanInput}`;
-        queryUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&forHandle=${handle}&key=${youtubeApiKey}`;
+      if (!/^UC[A-Za-z0-9_-]{22}$/.test(cleanInput)) {
+        throw new Error("To resolve key-free, please provide a valid YouTube Channel ID starting with 'UC' (or the full channel URL containing it).");
       }
-      const res = await fetch(queryUrl);
+
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${cleanInput}`;
+      const res = await fetch(feedUrl);
       if (!res.ok) {
-        const errText = await res.text();
-        throw new Error(`YouTube API returned error: ${errText}`);
+        throw new Error(`Failed to fetch RSS feed. HTTP status: ${res.status}`);
       }
-      const data = await res.json();
-      const channelItem = data.items?.[0];
-      if (!channelItem) {
-        throw new Error(`No YouTube channel found matching input: ${inputVal}`);
-      }
+
+      const xmlText = await res.text();
+      const jsonObj = parser.parse(xmlText);
+      const channelName = jsonObj.feed?.title || "Unknown Channel";
+
       return new Response(
         JSON.stringify({
-          channel_id: channelItem.id,
-          channel_name: channelItem.snippet?.title || "",
-          handle: channelItem.snippet?.customUrl || "",
+          channel_id: cleanInput,
+          channel_name: channelName,
+          handle: null,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Action: Pull Shorts
-    let channelsQuery = supabase.from("whitelisted_channels").select("*");
-    if (targetChannelUid) {
-      channelsQuery = channelsQuery.eq("id", targetChannelUid);
+    let channelsQuery = supabase.from("whitelisted_channels").select("id, channel_id, channel_name");
+    if (channelUid) {
+      channelsQuery = channelsQuery.eq("id", channelUid);
     } else {
       channelsQuery = channelsQuery.eq("status", "active");
     }
 
     const { data: channels, error: channelsError } = await channelsQuery;
+
     if (channelsError) {
       throw new Error(`Error fetching channels: ${channelsError.message}`);
     }
 
     if (!channels || channels.length === 0) {
       return new Response(
-        JSON.stringify({ message: "No active channels found to pull", pulledCount: 0 }),
+        JSON.stringify({ message: "No active channels found to pull", summary: {} }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    let totalPulled = 0;
-    const logs: string[] = [];
+    const summary: Record<string, { found: number; filtered_duration: number; pulled: number; errors: string[] }> = {};
 
     for (const channel of channels) {
+      summary[channel.channel_name] = { found: 0, filtered_duration: 0, pulled: 0, errors: [] };
       try {
-        logs.push(`Processing channel: ${channel.channel_name} (${channel.channel_id})`);
-
-        // Fetch recent 25 videos from YouTube Channel
-        const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=id,snippet&channelId=${channel.channel_id}&type=video&order=date&maxResults=25&key=${youtubeApiKey}`;
-        const searchRes = await fetch(searchUrl);
-        if (!searchRes.ok) {
-          const errMsg = await searchRes.text();
-          logs.push(`  Failed search.list for channel ${channel.channel_name}: ${errMsg}`);
-          continue;
+        const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channel_id}`;
+        const response = await fetch(feedUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
         }
 
-        const searchData = await searchRes.json();
-        const videoIds = searchData.items?.map((item: any) => item.id?.videoId).filter(Boolean) || [];
+        const xmlText = await response.text();
+        const jsonObj = parser.parse(xmlText);
 
-        if (videoIds.length === 0) {
-          logs.push(`  No recent videos found for channel ${channel.channel_name}`);
-          continue;
-        }
-
-        // Fetch duration details
-        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoIds.join(",")}&key=${youtubeApiKey}`;
-        const videosRes = await fetch(videosUrl);
-        if (!videosRes.ok) {
-          const errMsg = await videosRes.text();
-          logs.push(`  Failed videos.list for channel ${channel.channel_name}: ${errMsg}`);
-          continue;
-        }
-
-        const videosData = await videosRes.json();
-        const videoItems = videosData.items || [];
-
-        let channelPulledCount = 0;
-
-        for (const video of videoItems) {
-          const durationISO = video.contentDetails?.duration || "";
-          const durationSeconds = parseISO8601Duration(durationISO);
-
-          // YouTube Shorts are <= 60 seconds
-          if (durationSeconds > 0 && durationSeconds <= 60) {
-            const { error: upsertError } = await supabase
-              .from("shorts_queue")
-              .upsert(
-                {
-                  video_id: video.id,
-                  channel_uid: channel.id,
-                  title: video.snippet?.title || "Bhakti Short",
-                  description: video.snippet?.description || null,
-                  thumbnail_url: video.snippet?.thumbnails?.high?.url || video.snippet?.thumbnails?.default?.url || "",
-                  duration_seconds: durationSeconds,
-                  published_at: video.snippet?.publishedAt || new Date().toISOString(),
-                  youtube_url: `https://youtube.com/watch?v=${video.id}`,
-                  embed_url: `https://www.youtube-nocookie.com/embed/${video.id}`,
-                },
-                { onConflict: "video_id", ignoreDuplicates: true }
-              );
-
-            if (upsertError) {
-              logs.push(`  Error upserting video ${video.id}: ${upsertError.message}`);
-            } else {
-              channelPulledCount++;
-              totalPulled++;
-            }
+        // Update channel name in whitelisted_channels if it changed
+        const channelName = jsonObj.feed?.title || channel.channel_name;
+        if (channelName && channelName !== channel.channel_name) {
+          const { error: updateError } = await supabase
+            .from("whitelisted_channels")
+            .update({ channel_name: channelName })
+            .eq("id", channel.id);
+          
+          if (!updateError) {
+            channel.channel_name = channelName;
           }
         }
 
-        logs.push(`  Pulled ${channelPulledCount} new shorts for channel ${channel.channel_name}`);
-      } catch (channelErr) {
-        const msg = channelErr instanceof Error ? channelErr.message : String(channelErr);
-        logs.push(`  Error processing channel ${channel.channel_name}: ${msg}`);
+        let entries = jsonObj.feed?.entry;
+        if (!entries) {
+          entries = [];
+        } else if (!Array.isArray(entries)) {
+          entries = [entries];
+        }
+
+        summary[channel.channel_name].found = entries.length;
+
+        if (entries.length === 0) continue;
+
+        // Extract all video IDs in the feed
+        const allFeedVideoIds: string[] = [];
+        const entryMap: Record<string, any> = {};
+
+        for (const entry of entries) {
+          const videoId = entry["yt:videoId"] || entry.id?.replace("yt:video:", "") || "";
+          if (!videoId) continue;
+          allFeedVideoIds.push(videoId);
+          entryMap[videoId] = entry;
+        }
+
+        // Query the DB to check which video_ids already exist
+        const { data: existingShorts, error: existingError } = await supabase
+          .from("shorts")
+          .select("video_id")
+          .in("video_id", allFeedVideoIds);
+
+        if (existingError) {
+          throw existingError;
+        }
+
+        const existingSet = new Set(existingShorts?.map(s => s.video_id) || []);
+        const newVideoIds = allFeedVideoIds.filter(vid => !existingSet.has(vid));
+
+        if (newVideoIds.length === 0) {
+          continue; // All videos in feed already exist
+        }
+
+        // Batch call YouTube Data API to fetch durations for new videos (up to 50 at a time)
+        const durationsMap: Record<string, number> = {};
+
+        if (youtubeApiKey) {
+          const chunkSize = 50;
+          for (let i = 0; i < newVideoIds.length; i += chunkSize) {
+            const chunk = newVideoIds.slice(i, i + chunkSize);
+            const idsParam = chunk.join(",");
+            const ytApiUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${idsParam}&key=${youtubeApiKey}`;
+            const ytRes = await fetch(ytApiUrl);
+            if (ytRes.ok) {
+              const ytData = await ytRes.json();
+              const items = ytData.items || [];
+              for (const item of items) {
+                const durationStr = item.contentDetails?.duration;
+                if (durationStr) {
+                  durationsMap[item.id] = parseISO8601Duration(durationStr);
+                }
+              }
+            } else {
+              throw new Error(`YouTube API lookup failed. HTTP status: ${ytRes.status}`);
+            }
+          }
+        } else {
+          throw new Error("Missing YOUTUBE_API_KEY environment variable. Cannot verify durations.");
+        }
+
+        const shortsToInsert = [];
+        for (const videoId of newVideoIds) {
+          const entry = entryMap[videoId];
+          const duration = durationsMap[videoId] ?? 999; // Default to 999 if lookup failed
+
+          if (duration >= 120) {
+            summary[channel.channel_name].filtered_duration++;
+            continue; // Skip videos 2 mins or longer
+          }
+
+          shortsToInsert.push({
+            video_id: videoId,
+            channel_uid: channel.id,
+            title: entry.title || "Bhakti Short",
+            description: entry["media:group"]?.["media:description"] || null,
+            thumbnail_url: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+            youtube_url: `https://youtube.com/watch?v=${videoId}`,
+            embed_url: `https://www.youtube-nocookie.com/embed/${videoId}`,
+            duration_seconds: duration,
+            published_at: entry.published || new Date().toISOString(),
+          });
+        }
+
+        if (shortsToInsert.length > 0) {
+          const { data: insertedData, error: upsertError } = await supabase
+            .from("shorts")
+            .upsert(shortsToInsert, { onConflict: "video_id" })
+            .select("id");
+
+          if (upsertError) {
+            throw upsertError;
+          }
+
+          summary[channel.channel_name].pulled = insertedData?.length || 0;
+        }
+      } catch (err) {
+        let errorMsg = err instanceof Error ? err.message : String(err);
+        summary[channel.channel_name].errors.push(errorMsg);
       }
     }
 
     return new Response(
-      JSON.stringify({ message: "Shorts pull execution finished", totalPulled, logs }),
+      JSON.stringify({ message: "Shorts pull execution finished", summary }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

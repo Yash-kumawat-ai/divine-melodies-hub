@@ -11,6 +11,7 @@ import { communityApi, type CommunityPost, type PostComment } from '@/lib/commun
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function SavedPostsPage() {
   const { user } = useAuth();
@@ -24,12 +25,16 @@ export default function SavedPostsPage() {
   // Liked Bhajans hook
   const { likedBhajans } = useLikedBhajans();
 
-  // Active sub-tab: 'posts' | 'bhajans'
-  const [activeTab, setActiveTab] = useState<'posts' | 'bhajans'>('posts');
+  // Active sub-tab: 'posts' | 'bhajans' | 'shorts'
+  const [activeTab, setActiveTab] = useState<'posts' | 'bhajans' | 'shorts'>('posts');
 
   // Community posts data
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // Saved Shorts data
+  const [savedShorts, setSavedShorts] = useState<any[]>([]);
+  const [loadingShorts, setLoadingShorts] = useState(false);
 
   // Comments map and comment form state
   const [commentsMap, setCommentsMap] = useState<Record<string, PostComment[]>>({});
@@ -51,11 +56,61 @@ export default function SavedPostsPage() {
     }
   };
 
+  const loadSavedShorts = async () => {
+    if (!user) return;
+    setLoadingShorts(true);
+    try {
+      const { data, error } = await supabase
+        .from('shorts_interactions')
+        .select(`
+          short_id,
+          shorts (
+            id,
+            video_id,
+            title,
+            thumbnail_url,
+            whitelisted_channels (
+              channel_name,
+              handle
+            )
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('interaction_type', 'save');
+
+      if (error) throw error;
+
+      const formatted = (data || []).map((item: any) => {
+        if (!item.shorts) return null;
+        return {
+          id: item.shorts.id,
+          video_id: item.shorts.video_id,
+          title: item.shorts.title,
+          thumbnail_url: item.shorts.thumbnail_url,
+          channel_name: item.shorts.whitelisted_channels?.channel_name || 'Creator',
+          handle: item.shorts.whitelisted_channels?.handle || '@creator',
+        };
+      }).filter(Boolean);
+
+      setSavedShorts(formatted);
+    } catch (err) {
+      console.error("Error loading saved shorts:", err);
+    } finally {
+      setLoadingShorts(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadPosts();
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user && activeTab === 'shorts') {
+      loadSavedShorts();
+    }
+  }, [user?.id, activeTab]);
 
   // Filter posts to show only saved ones
   const savedPosts = useMemo(() => {
@@ -226,10 +281,10 @@ export default function SavedPostsPage() {
       ) : (
         <>
           {/* Sub Tabs */}
-          <div className="flex gap-2 border-b border-[#2c2018] pb-3 mb-6">
+          <div className="flex gap-2 border-b border-[#2c2018] pb-3 mb-6 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab('posts')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
                 activeTab === 'posts'
                   ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
                   : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
@@ -239,13 +294,23 @@ export default function SavedPostsPage() {
             </button>
             <button
               onClick={() => setActiveTab('bhajans')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
                 activeTab === 'bhajans'
                   ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
                   : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
               }`}
             >
               🎵 {isHi ? "पसंदीदा भजन" : "Liked Bhajans"} ({likedBhajans.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('shorts')}
+              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
+                activeTab === 'shorts'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
+                  : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
+              }`}
+            >
+              🎥 {isHi ? "सहेजे गए शॉर्ट्स" : "Saved Shorts"} ({savedShorts.length})
             </button>
           </div>
 
@@ -322,6 +387,60 @@ export default function SavedPostsPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {likedBhajans.map((bhajan) => (
                     <BhajanCard key={bhajan.id} bhajan={bhajan} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Shorts Tab Content */}
+          {activeTab === 'shorts' && (
+            <>
+              {loadingShorts ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-3" />
+                  <span className="text-xs text-stone-400 font-medium">
+                    {isHi ? "सहेजे गए शॉर्ट्स लोड हो रहे हैं..." : "Loading saved shorts..."}
+                  </span>
+                </div>
+              ) : savedShorts.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#2c2018] p-12 text-center bg-[#120e0c]/30">
+                  <span className="text-4xl block mb-3">🎥</span>
+                  <p className="text-stone-400 font-medium text-sm">
+                    {isHi ? "अभी तक कोई शॉर्ट्स नहीं सहेजे गए हैं।" : "No shorts saved yet."}
+                  </p>
+                  <Button asChild variant="outline" className="mt-4 rounded-xl border-[#2c2018] bg-[#120e0c] text-stone-300 hover:text-white">
+                    <Link to="/shorts">{isHi ? "शॉर्ट्स देखें" : "Browse Shorts"}</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+                  {savedShorts.map((short) => (
+                    <Link
+                      key={short.id}
+                      to={`/shorts/${short.video_id}`}
+                      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#2c2018] bg-[#120e0c]/40 hover:border-orange-500/30 transition-all hover:scale-[1.02]"
+                    >
+                      <div className="aspect-[9/16] relative w-full overflow-hidden bg-stone-950">
+                        <img
+                          src={short.thumbnail_url}
+                          alt={short.title}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                        <span className="absolute bottom-2 left-2 text-[10px] font-black uppercase bg-orange-500 text-white px-2 py-0.5 rounded-md shadow-md">
+                          {short.channel_name}
+                        </span>
+                      </div>
+                      <div className="p-2 flex-1 flex flex-col justify-between">
+                        <h3 className="text-xs font-bold text-stone-200 line-clamp-2 leading-snug">
+                          {short.title}
+                        </h3>
+                        <p className="text-[10px] text-stone-500 mt-1 font-medium truncate">
+                          {short.handle}
+                        </p>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               )}

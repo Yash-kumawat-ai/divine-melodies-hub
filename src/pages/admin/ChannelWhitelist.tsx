@@ -20,7 +20,7 @@ interface WhitelistedChannel {
   channel_id: string;
   channel_name: string;
   handle: string;
-  category: 'bhajan' | 'pravachan' | 'darshan' | 'katha';
+  category?: 'bhajan' | 'pravachan' | 'darshan' | 'katha';
   status: 'active' | 'paused';
   notes?: string;
   created_at: string;
@@ -41,8 +41,8 @@ export default function ChannelWhitelist() {
     channel_name: string;
     handle: string;
   } | null>(null);
-  const [category, setCategory] = useState<'bhajan' | 'pravachan' | 'darshan' | 'katha'>('bhajan');
   const [notes, setNotes] = useState('');
+  const [category, setCategory] = useState<'bhajan' | 'pravachan' | 'darshan' | 'katha'>('bhajan');
 
   const loadChannels = useCallback(async () => {
     setLoading(true);
@@ -121,7 +121,7 @@ export default function ChannelWhitelist() {
       toast.success(`Successfully resolved: ${data.channel_name}`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to resolve channel. Confirm handle or ID is correct.');
+      toast.error(err instanceof Error ? err.message : 'Failed to resolve channel. Confirm ID is correct.');
     } finally {
       setResolving(false);
     }
@@ -134,7 +134,7 @@ export default function ChannelWhitelist() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('whitelisted_channels')
         .insert({
           channel_id: resolvedChannel.channel_id,
@@ -143,7 +143,9 @@ export default function ChannelWhitelist() {
           category,
           status: 'active',
           notes: notes.trim() || null,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) {
         if (error.code === '23505') {
@@ -157,6 +159,15 @@ export default function ChannelWhitelist() {
         setResolvedChannel(null);
         setNotes('');
         loadChannels();
+
+        // Trigger Edge Function pull in background (fire-and-forget)
+        if (data?.id) {
+          supabase.functions.invoke('pull-shorts', {
+            body: { action: 'pull', channel_uid: data.id }
+          }).catch(err => {
+            console.error("Failed to automatically pull shorts for new channel:", err);
+          });
+        }
       }
     } catch (err) {
       console.error(err);
@@ -182,6 +193,16 @@ export default function ChannelWhitelist() {
           ? 'Channel active: new shorts will be pulled' 
           : 'Channel paused: shorts hidden from public feed'
       );
+
+      // Trigger Edge Function pull in background when channel is reactivated
+      if (newStatus === 'active') {
+        supabase.functions.invoke('pull-shorts', {
+          body: { action: 'pull', channel_uid: id }
+        }).catch(err => {
+          console.error("Failed to automatically pull shorts on channel resume:", err);
+        });
+      }
+
       // Reload channels to reflect the state change
       setChannels(prev => 
         prev.map(c => c.id === id ? { ...c, status: newStatus } : c)
@@ -199,7 +220,8 @@ export default function ChannelWhitelist() {
         body: { action: 'pull', channel_uid: id }
       });
       if (error) throw error;
-      toast.success(`Success! Imported ${data.totalPulled || 0} shorts for ${name}.`);
+      const channelSummary = data.summary?.[name] || { pulled: 0, filtered_duration: 0 };
+      toast.success(`Success! Imported ${channelSummary.pulled} new shorts for ${name} (filtered ${channelSummary.filtered_duration} long-form videos).`);
     } catch (err) {
       console.error(err);
       toast.error(`Failed to import shorts for ${name}`);
@@ -279,17 +301,17 @@ export default function ChannelWhitelist() {
                     {resolvedChannel.handle && <p className="text-xs text-stone-400">Handle: {resolvedChannel.handle}</p>}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-stone-300">Category</label>
-                      <Select 
-                        value={category} 
+                      <label className="text-xs font-bold text-stone-300">Category (Required)</label>
+                      <Select
+                        value={category}
                         onValueChange={(val: any) => setCategory(val)}
                       >
                         <SelectTrigger className="rounded-xl border-orange-900/30 bg-[#2a1a08] text-stone-100">
                           <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1e130c] border-orange-900/40 text-stone-50">
+                        <SelectContent className="border-orange-900/20 bg-stone-900 text-stone-200">
                           <SelectItem value="bhajan">Bhajan</SelectItem>
                           <SelectItem value="pravachan">Pravachan</SelectItem>
                           <SelectItem value="darshan">Darshan</SelectItem>
@@ -352,8 +374,8 @@ export default function ChannelWhitelist() {
                     <thead>
                       <tr className="border-b border-orange-900/20 bg-[#1e130c]/30 text-stone-400 uppercase font-semibold">
                         <th className="px-6 py-3">Channel Name</th>
-                        <th className="px-6 py-3">Category</th>
                         <th className="px-6 py-3 text-center">Status</th>
+                        <th className="px-6 py-3 text-center">Category</th>
                         <th className="px-6 py-3">Notes</th>
                         <th className="px-6 py-3 text-right">Actions</th>
                       </tr>
@@ -364,11 +386,6 @@ export default function ChannelWhitelist() {
                           <td className="px-6 py-4">
                             <div className="font-semibold text-stone-200">{chan.channel_name}</div>
                             <div className="text-[10px] text-stone-500">{chan.handle || chan.channel_id}</div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge className="bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 capitalize font-medium">
-                              {chan.category}
-                            </Badge>
                           </td>
                           <td className="px-6 py-4 text-center">
                             <Badge 
@@ -381,24 +398,16 @@ export default function ChannelWhitelist() {
                               {chan.status}
                             </Badge>
                           </td>
+                          <td className="px-6 py-4 text-center capitalize">
+                            <Badge className="bg-orange-500/10 text-orange-400 border border-orange-500/20 font-bold uppercase tracking-wider text-[10px]">
+                              {chan.category || 'bhajan'}
+                            </Badge>
+                          </td>
                           <td className="px-6 py-4 italic text-stone-400 truncate max-w-[120px]">
                             {chan.notes || '-'}
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleChannelStatus(chan.id, chan.status)}
-                              className={chan.status === 'active' ? 'text-stone-400 hover:text-orange-400' : 'text-orange-400 hover:text-stone-400'}
-                              title={chan.status === 'active' ? 'Pause Channel' : 'Activate Channel'}
-                            >
-                              {chan.status === 'active' ? (
-                                <ToggleRight className="w-5 h-5 text-emerald-500" />
-                              ) : (
-                                <ToggleLeft className="w-5 h-5 text-stone-500" />
-                              )}
-                            </Button>
-
+                          <td className="px-6 py-4 text-right flex justify-end gap-1.5">
+                            {/* Import Shorts Trigger */}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -411,6 +420,20 @@ export default function ChannelWhitelist() {
                                 <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
                               ) : (
                                 <Download className="w-4 h-4" />
+                              )}
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleChannelStatus(chan.id, chan.status)}
+                              className={chan.status === 'active' ? 'text-stone-400 hover:text-orange-400' : 'text-orange-400 hover:text-stone-400'}
+                              title={chan.status === 'active' ? 'Pause Channel' : 'Activate Channel'}
+                            >
+                              {chan.status === 'active' ? (
+                                <ToggleRight className="w-5 h-5 text-emerald-500" />
+                              ) : (
+                                <ToggleLeft className="w-5 h-5 text-stone-500" />
                               )}
                             </Button>
 

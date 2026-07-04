@@ -57,7 +57,6 @@ export default function NaradFloatingWidget() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isBhajanModalOpen } = useBhajanModalOpen();
-
   const open = uiState !== "closed";
 
   useEffect(() => {
@@ -279,7 +278,8 @@ export default function NaradFloatingWidget() {
     isBhajanModalOpen ||
     pathname === "/kirtan-ai" ||
     pathname.startsWith("/auth") ||
-    pathname === "/meditation"
+    pathname === "/meditation" ||
+    pathname.startsWith("/shorts")
   ) {
     return null;
   }

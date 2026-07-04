@@ -1,31 +1,36 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
-import { Loader2, Film, RefreshCw } from 'lucide-react';
+import { Loader2, Film } from 'lucide-react';
 import { toast } from 'sonner';
 import ShortsPlayer from '@/components/shorts/ShortsPlayer';
 import { cn } from '@/lib/utils';
+import { SEO } from '@/components/SEO';
 
 interface ShortItem {
   id: string;
   video_id: string;
   channel_id: string;
   title: string;
+  description?: string;
   thumbnail_url: string;
-  duration_seconds: number;
   whitelisted_channels: {
     channel_name: string;
-    category: string;
+    handle?: string;
+    category?: string;
   };
 }
 
 export default function ShortsFeed() {
   const { user } = useAuth();
+  const { videoId } = useParams<{ videoId?: string }>();
+  
   const [shorts, setShorts] = useState<ShortItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'bhajan' | 'pravachan' | 'darshan' | 'katha'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Interaction mapping states
   const [likedVideoIds, setLikedVideoIds] = useState<Set<string>>(new Set());
@@ -35,32 +40,38 @@ export default function ShortsFeed() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Load Shorts and Curation details
-  const loadShorts = useCallback(async () => {
+  const loadShorts = useCallback(async (catFilter = selectedCategory) => {
     setLoading(true);
     try {
       // Query shorts from active channels
       let query = supabase
-        .from('shorts_queue')
-        .select('id, video_id, title, thumbnail_url, duration_seconds, whitelisted_channels!inner(channel_name, status, category)')
+        .from('shorts')
+        .select('id, video_id, title, description, thumbnail_url, whitelisted_channels!inner(channel_name, status, handle, category)')
         .eq('whitelisted_channels.status', 'active')
-        .order('published_at', { ascending: false });
+        .eq('hidden', false);
 
-      if (activeCategory !== 'all') {
-        query = query.eq('whitelisted_channels.category', activeCategory);
+      if (videoId) {
+        query = query.eq('video_id', videoId);
+      } else if (catFilter !== 'all') {
+        query = query.eq('whitelisted_channels.category', catFilter);
       }
 
+      query = query.order('published_at', { ascending: false });
+
       const { data, error } = await query;
+
       if (error) throw error;
 
       const formattedShorts = (data || []).map((s: any) => ({
         id: s.id, // Database UUID (used for internal relationships)
         video_id: s.video_id, // YouTube Video ID (used for player embed)
         title: s.title,
+        description: s.description,
         thumbnail_url: s.thumbnail_url,
-        duration_seconds: s.duration_seconds,
         whitelisted_channels: {
           channel_name: s.whitelisted_channels?.channel_name || 'Creator',
-          category: s.whitelisted_channels?.category || 'bhajan',
+          handle: s.whitelisted_channels?.handle,
+          category: s.whitelisted_channels?.category,
         }
       }));
 
@@ -70,26 +81,26 @@ export default function ShortsFeed() {
         containerRef.current.scrollTop = 0;
       }
 
-      // Fetch interactions (Likes Count) using video_uid
+      // Fetch interactions (Likes Count) using short_id
       const { data: counts, error: countsError } = await supabase
         .from('shorts_interactions')
-        .select('video_uid, interaction_type');
+        .select('short_id, interaction_type');
 
       if (countsError) throw countsError;
 
       const countsMap: Record<string, number> = {};
       counts?.forEach(item => {
-        if (item.interaction_type === 'like' && item.video_uid) {
-          countsMap[item.video_uid] = (countsMap[item.video_uid] || 0) + 1;
+        if (item.interaction_type === 'like' && item.short_id) {
+          countsMap[item.short_id] = (countsMap[item.short_id] || 0) + 1;
         }
       });
       setLikesCountMap(countsMap);
 
-      // Fetch current user's liked and saved states using video_uid
+      // Fetch current user's liked and saved states using short_id
       if (user) {
         const { data: userInteracts, error: userInteractsError } = await supabase
           .from('shorts_interactions')
-          .select('video_uid, interaction_type')
+          .select('short_id, interaction_type')
           .eq('user_id', user.id);
 
         if (userInteractsError) throw userInteractsError;
@@ -98,8 +109,8 @@ export default function ShortsFeed() {
         const savedSet = new Set<string>();
 
         userInteracts?.forEach(item => {
-          if (item.interaction_type === 'like' && item.video_uid) likedSet.add(item.video_uid);
-          if (item.interaction_type === 'save' && item.video_uid) savedSet.add(item.video_uid);
+          if (item.interaction_type === 'like' && item.short_id) likedSet.add(item.short_id);
+          if (item.interaction_type === 'save' && item.short_id) savedSet.add(item.short_id);
         });
 
         setLikedVideoIds(likedSet);
@@ -115,11 +126,16 @@ export default function ShortsFeed() {
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, user]);
+  }, [user, selectedCategory, videoId]);
 
   useEffect(() => {
     loadShorts();
   }, [loadShorts]);
+
+  const handleCategoryChange = (cat: string) => {
+    setSelectedCategory(cat);
+    loadShorts(cat);
+  };
 
   // Scroll handler to snap active index
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -130,26 +146,26 @@ export default function ShortsFeed() {
     }
   };
 
-  // Toggle Like Interaction using video_uid
-  const handleLikeToggle = async (videoUid: string) => {
+  // Toggle Like Interaction using database UUID (shortId)
+  const handleLikeToggle = async (shortId: string) => {
     if (!user) {
       toast.info('Please log in to like shorts');
       return;
     }
 
-    const alreadyLiked = likedVideoIds.has(videoUid);
+    const alreadyLiked = likedVideoIds.has(shortId);
 
     // Optimistic state updates
     setLikedVideoIds(prev => {
       const next = new Set(prev);
-      if (alreadyLiked) next.delete(videoUid);
-      else next.add(videoUid);
+      if (alreadyLiked) next.delete(shortId);
+      else next.add(shortId);
       return next;
     });
 
     setLikesCountMap(prev => ({
       ...prev,
-      [videoUid]: (prev[videoUid] || 0) + (alreadyLiked ? -1 : 1)
+      [shortId]: (prev[shortId] || 0) + (alreadyLiked ? -1 : 1)
     }));
 
     try {
@@ -157,12 +173,12 @@ export default function ShortsFeed() {
         const { error } = await supabase
           .from('shorts_interactions')
           .delete()
-          .match({ user_id: user.id, video_uid: videoUid, interaction_type: 'like' });
+          .match({ user_id: user.id, short_id: shortId, interaction_type: 'like' });
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('shorts_interactions')
-          .insert({ user_id: user.id, video_uid: videoUid, interaction_type: 'like' });
+          .insert({ user_id: user.id, short_id: shortId, interaction_type: 'like' });
         if (error) throw error;
       }
     } catch (err) {
@@ -170,32 +186,32 @@ export default function ShortsFeed() {
       // Revert states on error
       setLikedVideoIds(prev => {
         const next = new Set(prev);
-        if (alreadyLiked) next.add(videoUid);
-        else next.delete(videoUid);
+        if (alreadyLiked) next.add(shortId);
+        else next.delete(shortId);
         return next;
       });
       setLikesCountMap(prev => ({
         ...prev,
-        [videoUid]: (prev[videoUid] || 0) + (alreadyLiked ? 1 : -1)
+        [shortId]: (prev[shortId] || 0) + (alreadyLiked ? 1 : -1)
       }));
       toast.error('Failed to update like status');
     }
   };
 
-  // Toggle Save Interaction using video_uid
-  const handleSaveToggle = async (videoUid: string) => {
+  // Toggle Save Interaction using database UUID (shortId)
+  const handleSaveToggle = async (shortId: string) => {
     if (!user) {
       toast.info('Please log in to save shorts');
       return;
     }
 
-    const alreadySaved = savedVideoIds.has(videoUid);
+    const alreadySaved = savedVideoIds.has(shortId);
 
     // Optimistic state update
     setSavedVideoIds(prev => {
       const next = new Set(prev);
-      if (alreadySaved) next.delete(videoUid);
-      else next.add(videoUid);
+      if (alreadySaved) next.delete(shortId);
+      else next.add(shortId);
       return next;
     });
 
@@ -204,13 +220,13 @@ export default function ShortsFeed() {
         const { error } = await supabase
           .from('shorts_interactions')
           .delete()
-          .match({ user_id: user.id, video_uid: videoUid, interaction_type: 'save' });
+          .match({ user_id: user.id, short_id: shortId, interaction_type: 'save' });
         if (error) throw error;
         toast.success('Removed from saved videos');
       } else {
         const { error } = await supabase
           .from('shorts_interactions')
-          .insert({ user_id: user.id, video_uid: videoUid, interaction_type: 'save' });
+          .insert({ user_id: user.id, short_id: shortId, interaction_type: 'save' });
         if (error) throw error;
         toast.success('Saved to your library');
       }
@@ -219,111 +235,125 @@ export default function ShortsFeed() {
       // Revert state on error
       setSavedVideoIds(prev => {
         const next = new Set(prev);
-        if (alreadySaved) next.add(videoUid);
-        else next.delete(videoUid);
+        if (alreadySaved) next.add(shortId);
+        else next.delete(shortId);
         return next;
       });
       toast.error('Failed to update saved status');
     }
   };
 
-  // Share link
-  const handleShare = (videoId: string) => {
-    const shareUrl = `${window.location.origin}/shorts?v=${videoId}`;
+  // Share link (uses deep-link format)
+  const handleShare = (vId: string) => {
+    const shareUrl = `${window.location.origin}/shorts/${vId}`;
     navigator.clipboard.writeText(shareUrl);
     toast.success('Short link copied to clipboard!');
   };
 
-  const categories = [
-    { id: 'all', label: 'All' },
-    { id: 'bhajan', label: 'Bhajans' },
-    { id: 'pravachan', label: 'Pravachans' },
-    { id: 'darshan', label: 'Darshan' },
-    { id: 'katha', label: 'Katha' },
-  ] as const;
+  const activeShort = shorts[activeIndex];
 
   return (
-    <div className="relative min-h-[calc(100vh-112px)] bg-[#070302] flex flex-col items-center justify-start text-white">
-      {/* 1. Category Tabs header */}
-      <div className="w-full z-20 bg-[#0c0705]/85 backdrop-blur-md border-b border-orange-900/10 py-3 shrink-0 flex items-center justify-center">
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4 max-w-full">
-          {categories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap",
-                activeCategory === cat.id
-                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                  : "bg-white/5 border border-white/10 text-stone-400 hover:text-stone-200"
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="relative min-h-[calc(100vh-112px)] bg-[#070302] flex flex-col items-center justify-start text-white w-full">
+      {/* Dynamic SEO Meta Injection for Shared Deep Links */}
+      {activeShort && (
+        <SEO
+          title={activeShort.title}
+          description={`${activeShort.whitelisted_channels?.channel_name} • ${activeShort.whitelisted_channels?.category || 'Devotional'}`}
+          image={activeShort.thumbnail_url}
+          url={`${window.location.origin}/shorts/${activeShort.video_id}`}
+        />
+      )}
 
-      {/* 2. Loading state */}
-      {loading ? (
+      {/* 1. Loading state */}
+      {loading && shorts.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
           <p className="text-sm text-stone-400">Loading Bhakti Shorts...</p>
         </div>
-      ) : shorts.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center py-20">
-          <Film className="w-12 h-12 text-stone-600 mb-4" />
-          <h2 className="text-lg font-bold text-stone-300">No Shorts Available</h2>
-          <p className="text-xs text-stone-500 mt-1 max-w-xs">
-            There are currently no approved shorts in this category. Check back later!
-          </p>
-          <Button
-            variant="outline"
-            onClick={loadShorts}
-            className="mt-6 rounded-xl border-orange-900/30 text-orange-400 hover:bg-orange-950/20"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Reload Feed
-          </Button>
-        </div>
       ) : (
-        /* 3. Snapping Feed Viewport (Desktop centered shell, Mobile full screen) */
-        <div className="w-full flex-1 flex items-center justify-center p-0 md:py-4">
-          <div className="relative w-full max-w-[400px] h-[calc(100vh-160px)] md:h-[700px] md:rounded-[2rem] md:overflow-hidden md:border md:border-orange-900/30 md:shadow-[0_20px_60px_rgba(0,0,0,0.85)] bg-black">
-            
-            {/* Swiper wrapper */}
-            <div
-              ref={containerRef}
-              onScroll={handleScroll}
-              className="w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-              style={{ scrollBehavior: 'smooth' }}
-            >
-              {shorts.map((item, idx) => (
-                <div key={item.id} className="w-full h-full snap-start shrink-0">
-                  <ShortsPlayer
-                    videoId={item.video_id}
-                    title={item.title}
-                    channelName={item.whitelisted_channels?.channel_name || 'Creator'}
-                    isActive={idx === activeIndex}
-                    liked={likedVideoIds.has(item.video_id)}
-                    saved={savedVideoIds.has(item.video_id)}
-                    likesCount={likesCountMap[item.video_id] || 0}
-                    onLike={() => handleLikeToggle(item.video_id)}
-                    onSave={() => handleSaveToggle(item.video_id)}
-                    onShare={() => handleShare(item.video_id)}
-                  />
-                </div>
+        /* Feed Viewport */
+        <div className="w-full flex-1 flex flex-col items-center justify-center p-0 md:py-4">
+          
+          {/* Category Filter Tabs - Hide when displaying a single shared deep-link */}
+          {!videoId && (
+            <div className="w-full max-w-[400px] flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-hide z-30 bg-[#070302]/95 backdrop-blur-md border-b border-orange-950/20">
+              {['all', 'bhajan', 'pravachan', 'darshan', 'katha'].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  className={cn(
+                    "px-3.5 py-1 text-[11px] font-black uppercase tracking-wider rounded-full border transition-all whitespace-nowrap",
+                    selectedCategory === cat
+                      ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20"
+                      : "bg-[#2a1a08]/30 text-stone-400 border-orange-900/10 hover:border-orange-500/25 hover:text-stone-300"
+                  )}
+                >
+                  {cat}
+                </button>
               ))}
             </div>
+          )}
 
-            {/* Desktop Mockup Overlay Elements */}
-            <div className="absolute top-4 left-4 z-20 pointer-events-none hidden md:block">
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-orange-400 border border-white/5">
-                Bhakti Shorts
-              </span>
+          {shorts.length === 0 ? (
+            <div className="flex-1 w-full max-w-[400px] flex flex-col items-center justify-center p-6 text-center py-20 min-h-[400px]">
+              <Film className="w-12 h-12 text-stone-600 mb-4" />
+              <h2 className="text-lg font-bold text-stone-300">No Shorts Available</h2>
+              <p className="text-xs text-stone-500 mt-1 max-w-xs">
+                {videoId ? "This short is not found or has been hidden." : `There are currently no shorts available in the "${selectedCategory}" category.`}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (videoId) {
+                    window.location.href = '/shorts';
+                  } else {
+                    handleCategoryChange('all');
+                  }
+                }}
+                className="mt-6 rounded-xl border-orange-900/30 text-orange-400 hover:bg-orange-950/20"
+              >
+                {videoId ? "Browse All Shorts" : "View All Categories"}
+              </Button>
             </div>
+          ) : (
+            <div className="relative w-full max-w-[400px] h-[calc(100vh-210px)] md:h-[650px] md:rounded-[2rem] md:overflow-hidden md:border md:border-orange-900/30 md:shadow-[0_20px_60px_rgba(0,0,0,0.85)] bg-black">
+              
+              {/* Swiper wrapper */}
+              <div
+                ref={containerRef}
+                onScroll={handleScroll}
+                className="w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+                style={{ scrollBehavior: 'smooth' }}
+              >
+                {shorts.map((item, idx) => (
+                  <div key={item.id} className="w-full h-full snap-start snap-always shrink-0">
+                    <ShortsPlayer
+                      videoId={item.video_id}
+                      title={item.title}
+                      description={item.description}
+                      channelName={item.whitelisted_channels?.channel_name || 'Creator'}
+                      channelHandle={item.whitelisted_channels?.handle || '@creator'}
+                      isActive={idx === activeIndex}
+                      liked={likedVideoIds.has(item.id)}
+                      saved={savedVideoIds.has(item.id)}
+                      likesCount={likesCountMap[item.id] || 0}
+                      onLike={() => handleLikeToggle(item.id)}
+                      onSave={() => handleSaveToggle(item.id)}
+                      onShare={() => handleShare(item.video_id)}
+                    />
+                  </div>
+                ))}
+              </div>
 
-          </div>
+              {/* Desktop Mockup Overlay Elements */}
+              <div className="absolute top-4 left-4 z-20 pointer-events-none hidden md:block">
+                <span className="text-[10px] uppercase font-bold tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-orange-400 border border-white/5">
+                  Bhakti Shorts
+                </span>
+              </div>
+
+            </div>
+          )}
         </div>
       )}
     </div>
