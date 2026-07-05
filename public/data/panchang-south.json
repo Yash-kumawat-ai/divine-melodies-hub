@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-04",
+  "date": "2026-07-05",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Chavithi",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Dhanishta - 3",
-  "yoga": "Priti",
-  "karana": "Balava",
+  "nakshatra": "Satabhisha - 3",
+  "yoga": "Ayushman",
+  "karana": "Taitula",
   "paksha": "Krishna",
   "sunrise": "06:01 AM",
   "sunset": "06:46 PM",
-  "rahu_kaal": "09:12 AM - 10:48 AM",
+  "rahu_kaal": "05:10 PM - 06:46 PM",
   "brahma_muhurat": "04:25 AM - 05:13 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-07-04T06:37:36+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-07-05T06:43:45+05:30"
 }
