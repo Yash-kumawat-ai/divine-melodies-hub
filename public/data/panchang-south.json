@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-07",
+  "date": "2026-07-08",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Saptami",
-  "tithi_number": 7,
-  "nakshatra": "Uttarabhadra - 3",
-  "yoga": "Sobhana",
-  "karana": "Bava",
+  "tithi": "Ashtami",
+  "tithi_number": 8,
+  "nakshatra": "Revathi - 3",
+  "yoga": "Atiganda",
+  "karana": "Kaulava",
   "paksha": "Shukla",
   "sunrise": "06:02 AM",
   "sunset": "06:46 PM",
-  "rahu_kaal": "03:35 PM - 05:10 PM",
+  "rahu_kaal": "10:48 AM - 12:24 PM",
   "brahma_muhurat": "04:26 AM - 05:14 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-07-07T06:45:35+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-07-08T06:28:16+05:30"
 }
