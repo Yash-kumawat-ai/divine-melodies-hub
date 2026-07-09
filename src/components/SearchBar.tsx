@@ -30,18 +30,16 @@ export default function SearchBar() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="relative flex items-center">
-        <Search className="absolute left-5 w-6 h-6 text-muted-foreground" />
+      <div className="relative flex items-center bg-white dark:bg-[#1E1710] border border-orange-200/50 dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] focus-within:border-orange-500/50 focus-within:ring-2 focus-within:ring-orange-500/10 transition-all duration-300 p-1.5 pl-6 pr-2">
+        <Search className="w-5 h-5 text-[#FF6A00] shrink-0 mr-3 select-none" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('searchBhajansOrSingersPlaceholder')}
-          className="w-full pl-14 pr-16 py-5 rounded-2xl bg-card text-foreground text-lg border border-border shadow-temple focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground touch-target"
+          className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-foreground text-base md:text-lg placeholder:text-muted-foreground/60 py-2.5"
         />
-        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-          <VoiceSearchButton onResult={handleVoiceResult} />
-        </div>
+        <VoiceSearchButton onResult={handleVoiceResult} />
       </div>
       <p className="text-center text-sm text-muted-foreground mt-3 hindi-text">
         {t('searchHint')}

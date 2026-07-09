@@ -43,7 +43,7 @@ type AuthContextValue = {
 };
 
 const AUTH_CONTEXT_KEY = Symbol.for('app.auth_context');
-const AuthContext = (globalThis as any)[AUTH_CONTEXT_KEY] || (() => {
+const AuthContext: import('react').Context<AuthContextValue | null> = (globalThis as any)[AUTH_CONTEXT_KEY] || (() => {
   const ctx = createContext<AuthContextValue | null>(null);
   (globalThis as any)[AUTH_CONTEXT_KEY] = ctx;
   return ctx;

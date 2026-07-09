@@ -67,10 +67,10 @@ export default function VoiceSearchButton({ onResult }: VoiceSearchButtonProps) 
         type="button"
         onClick={startListening}
         disabled={isListening}
-        className={`inline-flex h-11 w-11 items-center justify-center rounded-xl transition-all touch-target sm:h-12 sm:w-12 ${
+        className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-all shrink-0 shadow-sm ${
           isListening
-            ? "bg-destructive text-destructive-foreground shadow-md animate-pulse"
-            : "bg-card/70 text-primary shadow-sm hover:bg-primary/10 hover:text-primary"
+            ? "bg-red-600 text-white shadow-md animate-pulse"
+            : "bg-[#FF6A00] hover:bg-[#E05B00] text-white hover:scale-105 active:scale-95"
         }`}
         aria-label={isListening ? "Listening..." : "Voice search"}
       >

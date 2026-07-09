@@ -7,18 +7,25 @@ import PageContentFallback from "@/components/layout/PageContentFallback";
 import { cn } from "@/lib/utils";
 
 export default function AppShell() {
-  const { pathname } = useLocation();
-  const isKirtanAi = pathname === "/kirtan-ai";
-  const isTemplePage = pathname === "/temple";
-  const isLeaderboard = pathname === "/leaderboard";
-  const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard;
-  const isWallpaperPage = pathname === "/wallpaper";
-  const isSearchPage = pathname === "/search";
+  const { pathname, search } = useLocation();
+  const searchParams = new URLSearchParams(search || window.location.search);
+  
+  // Prevent visual flash of header/footer on first mount if router defaults to "/" initially
+  const resolvedPath = pathname === "/" && window.location.pathname !== "/" ? window.location.pathname : pathname;
+
+  const isKirtanAi = resolvedPath === "/kirtan-ai";
+  const isTemplePage = resolvedPath === "/temple";
+  const isLeaderboard = resolvedPath === "/leaderboard";
+  const activePracticeId = searchParams.get("practice");
+  const hasActivePractice = resolvedPath === "/meditation" && activePracticeId && activePracticeId !== "mantra_jap_home";
+  const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard || hasActivePractice;
+  const isWallpaperPage = resolvedPath === "/wallpaper";
+  const isSearchPage = resolvedPath === "/search";
   const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage;
 
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isAccountRoute = pathname.startsWith("/account");
-  const isNotifications = pathname === "/notifications";
+  const isAdminRoute = resolvedPath.startsWith("/admin");
+  const isAccountRoute = resolvedPath.startsWith("/account");
+  const isNotifications = resolvedPath === "/notifications";
   const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications;
 
 

@@ -18,6 +18,7 @@ import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
+import mandalaSvg from '@/pages/images/mandala.svg';
 // Feature card images
 import panchangImg from '@/pages/images/panchang_spiritual_icon.webp';
 import meditationImg from '@/pages/images/meditation_spiritual_icon.webp';
@@ -53,6 +54,92 @@ const PinkLotusSvg = ({ className = "w-5 h-5", fill = "#ec4899" }: { className?:
         </g>
       </g>
     </g>
+  </svg>
+);
+
+const HeadphonesIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+  </svg>
+);
+
+const FlameIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const LotusIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+    <path d="M12 6a6 6 0 0 0-6 6c0 2.2.8 4.2 2.1 5.7L12 12l3.9 5.7c1.3-1.5 2.1-3.5 2.1-5.7a6 6 0 0 0-6-6z" />
+  </svg>
+);
+
+const TempleIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+  </svg>
+);
+
+const SkyBlueImageIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <polyline points="21 15 16 10 5 21" />
+  </svg>
+);
+
+const PaletteIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.3431 19.4845 5.25059 20.3012 4.87322 20.784C4.30132 21.5158 4.78651 22 5.71761 22H12Z" />
+    <circle cx="7.5" cy="10.5" r="1.5" />
+    <circle cx="11.5" cy="7.5" r="1.5" />
+  </svg>
+);
+
+const ActivityIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+  </svg>
+);
+
+const VideoIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m22 8-6 4 6 4V8Z" />
+    <rect x="2" y="6" width="14" height="12" rx="2" ry="2" />
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg className="w-[22px] h-[22px] text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
@@ -113,7 +200,7 @@ const DevotionalDivider = ({ language }: { language: string }) => {
           100% { transform: translateX(-50%); }
         }
         .dev-marquee-track {
-          animation: devMarquee 20s linear infinite;
+          animation: devMarquee 45s linear infinite;
         }
       `}} />
       
@@ -123,7 +210,7 @@ const DevotionalDivider = ({ language }: { language: string }) => {
       {/* Marquee Content */}
       <div className="my-1.5 w-full overflow-hidden flex relative z-10">
         <div className="flex whitespace-nowrap dev-marquee-track gap-4 shrink-0 pr-4">
-          {Array.from({ length: 24 }).map((_, i) => (
+          {Array.from({ length: 60 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4 shrink-0">
               <span className="text-[#E8B15C]/90 font-semibold tracking-wide text-sm md:text-[18px]">
                 {isHi ? 'राम' : 'RAM'}
@@ -132,7 +219,7 @@ const DevotionalDivider = ({ language }: { language: string }) => {
             </div>
           ))}
           {/* Duplicate track for seamless infinite looping */}
-          {Array.from({ length: 24 }).map((_, i) => (
+          {Array.from({ length: 60 }).map((_, i) => (
             <div key={`dup-${i}`} className="flex items-center gap-4 shrink-0" aria-hidden="true">
               <span className="text-[#E8B15C]/90 font-semibold tracking-wide text-sm md:text-[18px]">
                 {isHi ? 'राम' : 'RAM'}
@@ -358,53 +445,95 @@ export default function Home() {
       <HeroSection stats={stats} />
       <DevotionalDivider language={language} />
 
-      {/* ── ALL FEATURES — Square Image Grid (separate from hero) ── */}
-      <section className="bg-background py-8 md:py-12 px-3 md:px-6">
-        <div className="container mx-auto max-w-6xl">
+      {/* ── ALL FEATURES — Premium Devotional 12-Feature Grid ── */}
+      <section className="bg-background py-10 md:py-16 px-4 md:px-6">
+        <div className="container mx-auto max-w-5xl">
           {/* Section title */}
-          <div className="text-center mb-6 md:mb-8">
-            <h2 className="font-serif text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-100 to-amber-300">
+          <div className="text-center mb-8 md:mb-12">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-amber-500/60" />
+              <span className="text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.2em] font-sans">✦ ✦ ✦</span>
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-amber-500/60" />
+            </div>
+            <h2 className="font-serif text-3xl font-black text-foreground">
               {isHi ? 'राघवम् की विशेषताएं' : 'Explore Features'}
             </h2>
-            <p className="text-amber-200/40 font-sans text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-2">
               {isHi ? 'सब कुछ एक जगह — भजन से पंचांग तक' : 'Everything in one place — bhajans to panchang'}
             </p>
           </div>
 
-          {/* Grid — 4-column layout on mobile, 6-column on desktop */}
-          <div className="grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-4">
+          {/* Grid Layout: 4 columns on all device sizes (mobile, tablet, desktop) */}
+          <div className="grid grid-cols-4 gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
             {([
-              { label: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans' },
-              { label: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti' },
-              { label: isHi ? 'पंचांग' : 'Panchang', path: '/panchang' },
-              { label: isHi ? 'ध्यान' : 'Meditation', path: '/meditation' },
-              { label: isHi ? 'मंदिर' : 'Temples', path: '/temple' },
-              { label: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai' },
-              { label: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts' },
-              { label: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper' },
-              { label: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker' },
-              { label: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home' },
-              { label: isHi ? 'समुदाय' : 'Community', path: '/community' },
-              { label: isHi ? 'दर्शन' : 'Darshan', path: '/search' },
+              { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', gradient: 'from-[#FF9737] to-[#F46A1D]', icon: <HeadphonesIcon /> },
+              { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', gradient: 'from-[#FF8A2A] to-[#E65A0D]', icon: <FlameIcon /> },
+              { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', gradient: 'from-[#8B5CF6] to-[#6D28D9]', icon: <CalendarIcon /> },
+              { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', gradient: 'from-[#18A768] to-[#0C8D59]', icon: <LotusIcon /> },
+              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon /> },
+              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', gradient: 'from-[#EC4899] to-[#DB2777]', icon: <SparklesIcon /> },
+              { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', gradient: 'from-[#06B6D4] to-[#0891B2]', icon: <SkyBlueImageIcon /> },
+              { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', gradient: 'from-[#F59E0B] to-[#D97706]', icon: <PaletteIcon /> },
+              { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', gradient: 'from-[#8B5CF6] to-[#7C3AED]', icon: <ActivityIcon /> },
+              { title: isHi ? 'समुदाय' : 'Community', path: '/community', gradient: 'from-[#14B8A6] to-[#0F766E]', icon: <UsersIcon /> },
+              { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', gradient: 'from-[#EF4444] to-[#DC2626]', icon: <VideoIcon /> },
+              { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', gradient: 'from-[#6B7280] to-[#4B5563]', icon: <EyeIcon /> },
             ]).map((item, i) => (
               <motion.button
-                key={item.label}
+                key={item.title}
                 onClick={() => navigate(item.path)}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-30px' }}
-                transition={{ delay: i * 0.04, duration: 0.35 }}
-                className="group relative aspect-square rounded-2xl md:rounded-3xl overflow-hidden border border-amber-500/10 hover:border-amber-500/50 bg-gradient-to-b from-[#140a05] to-[#0c0502] hover:from-[#1b0e06] hover:to-[#120702] transition-all duration-300 hover:scale-[1.05] hover:-translate-y-1 cursor-pointer flex flex-col items-center justify-center p-3 text-center shadow-[0_6px_20px_rgba(0,0,0,0.55)] hover:shadow-[0_12px_36px_rgba(249,115,22,0.15)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+                viewport={{ once: true, margin: '-20px' }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ 
+                  scale: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
+                  default: { delay: i * 0.02, duration: 0.3 }
+                }}
+                className="flex flex-col items-center justify-center p-3 rounded-[18px] md:rounded-[24px] bg-gradient-to-b from-[#FFF9F0] to-[#F8F1E5] dark:from-[#1E1710] dark:to-[#150F0A] border border-[rgba(201,167,110,0.25)] dark:border-[rgba(201,167,110,0.15)] shadow-[0_6px_18px_rgba(95,72,38,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_14px_32px_rgba(95,72,38,0.12)] hover:-translate-y-1 transition-all w-full md:w-[190px] h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
+                style={{
+                  transitionDuration: '350ms',
+                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                }}
               >
-                {/* Label (Centered inside card) */}
-                <span
-                  className="block text-center text-[9px] sm:text-xs md:text-[15px] font-serif font-black uppercase tracking-[0.06em] md:tracking-[0.12em] text-amber-200/90 group-hover:text-amber-300 transition-colors duration-300 leading-normal"
-                >
-                  {item.label}
-                </span>
-                
-                {/* Micro gold indicator dot */}
-                <span className="w-1 h-1 bg-amber-500/40 group-hover:bg-amber-500 rounded-full mt-2 transition-colors duration-300" />
+                {/* Dedicated Icon Wrapper: Centering parent for Mandala and Gradient Circle */}
+                <div className="relative flex items-center justify-center w-16 h-16 md:w-[72px] md:h-[72px] shrink-0 z-10">
+                  {/* Mandala SVG (Absolute inside wrapper, centered behind icon, 72px width on all, 6% opacity) */}
+                  <img 
+                    src={mandalaSvg} 
+                    alt="" 
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0 transition-transform group-hover:rotate-3 group-hover:scale-105"
+                    style={{
+                      opacity: 0.06,
+                      filter: 'invert(79%) sepia(35%) saturate(543%) hue-rotate(352%) brightness(91%) contrast(85%)',
+                      transitionDuration: '350ms',
+                      transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                    }}
+                  />
+
+                  {/* Gradient Icon Circle (Relative z-10 inside wrapper, 48px width, centered) */}
+                  <div 
+                    className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br ${item.gradient} transition-all group-hover:scale-[1.08] shadow-[0_8px_18px_rgba(0,0,0,0.12)] group-hover:shadow-[0_12px_24px_rgba(0,0,0,0.22)]`}
+                    style={{
+                      transitionDuration: '350ms',
+                      transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                    }}
+                  >
+                    {item.icon}
+                  </div>
+                </div>
+
+                {/* Title (Subtitle hidden completely, title 16px, weight 600, color #2E1F14, margin-top 12px) */}
+                <div className="flex flex-col items-center justify-center z-10 mt-3">
+                  <span className="text-[16px] font-semibold text-[#2E1F14] dark:text-[#F3ECE4] leading-tight group-hover:text-amber-800 dark:group-hover:text-amber-400 transition-colors">
+                    {item.title}
+                  </span>
+                </div>
+
+                {/* Small Circular Arrow Button (Hidden on mobile, shown on desktop) */}
+                <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 items-center justify-center text-xs text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 dark:group-hover:bg-amber-600 group-hover:text-white transition-all duration-300 transform group-hover:translate-x-1 shrink-0 z-10 opacity-0 group-hover:opacity-100">
+                  →
+                </div>
               </motion.button>
             ))}
           </div>
@@ -416,14 +545,14 @@ export default function Home() {
       <DevotionalDivider language={language} />
 
       {/* ── Hanuman Bhakt Community Banner Poster ── */}
-      <section className="px-0 py-6 md:py-10">
-        <div className="container mx-auto max-w-5xl px-0 sm:px-4">
+      <section className="px-4 py-6 md:py-10">
+        <div className="container mx-auto max-w-5xl px-0">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.55, ease: 'easeOut' }}
-            className="relative overflow-hidden w-full rounded-none sm:rounded-2xl"
+            className="relative overflow-hidden w-full rounded-2xl border border-[rgba(201,167,110,0.25)] dark:border-[rgba(201,167,110,0.15)] shadow-[0_6px_18px_rgba(95,72,38,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
           >
             {/* The actual poster image - scales naturally without cropping */}
             <img
@@ -507,14 +636,16 @@ export default function Home() {
         </div>
         <div className="container mx-auto max-w-6xl relative">
           {/* Section Header */}
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1.5 mb-4 rounded-full text-xs font-black uppercase tracking-widest font-sans border border-amber-500/30 bg-amber-500/10 text-amber-400">
-              {isHi ? "राघवम् की विशेषताएं" : "Platform Features"}
-            </span>
-            <h2 className="font-serif text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-100 to-amber-300 mb-3">
+          <div className="text-center mb-10">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-amber-500/60" />
+              <span className="text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.2em] font-sans">✦ ✦ ✦</span>
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-amber-500/60" />
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl font-black text-foreground mb-2">
               {isHi ? "सब कुछ एक जगह" : "Everything You Need"}
             </h2>
-            <p className="text-amber-200/45 font-sans text-base md:text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-base max-w-xl mx-auto">
               {isHi ? "भक्ति की संपूर्ण डिजिटल यात्रा" : "Your complete digital devotion journey"}
             </p>
           </div>

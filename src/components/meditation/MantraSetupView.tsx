@@ -23,6 +23,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import meditationHighQuality from "@/pages/images/meditation_high_quality.webp";
+import devotionalBackground from "@/pages/images/devotional_background.webp";
 
 // ─── CUSTOM GOLD ICONS ───────────────────────────────────────────
 const MalaIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -335,7 +336,19 @@ export default function MantraSetupView({
   };
 
   return (
-    <div className="h-full w-full bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] text-brand-cream/90 font-sans relative select-none flex flex-col md:justify-center overflow-y-auto overflow-x-hidden md:overflow-hidden scrollbar-hide pb-4 pt-1 md:py-8">
+    <div className="relative min-h-screen text-brand-cream/90 font-sans select-none flex flex-col md:justify-center overflow-y-auto overflow-x-hidden md:overflow-hidden scrollbar-hide pb-4 pt-1 md:py-8">
+      {/* Full-screen Fixed Background Image Layer */}
+      <div className="fixed inset-0 -z-20 select-none pointer-events-none">
+        <img 
+          src={devotionalBackground} 
+          alt="Page Background" 
+          className="w-full h-full object-cover object-center opacity-10" 
+        />
+        {/* Ambient dark warm gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] opacity-92" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.08),transparent)]" />
+      </div>
+
       {/* Decorative watermarked background mandala */}
       <div className="absolute top-0 right-[-100px] md:right-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] opacity-[0.04] pointer-events-none text-amber-500 z-0">
         <svg className="w-full h-full animate-[spin_180s_linear_infinite]" viewBox="0 0 100 105">

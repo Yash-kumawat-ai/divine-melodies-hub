@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 30 50% 97%;
+    --background: 36 45% 91%;
     --foreground: 20 30% 12%;
 
-    --card: 35 40% 95%;
+    --card: 36 60% 97%;
     --card-foreground: 20 30% 12%;
 
-    --popover: 30 50% 97%;
+    --popover: 36 60% 97%;
     --popover-foreground: 20 30% 12%;
 
     --primary: 30 100% 50%;
@@ -19,8 +19,8 @@
     --secondary: 40 80% 55%;
     --secondary-foreground: 20 30% 12%;
 
-    --muted: 30 20% 90%;
-    --muted-foreground: 20 10% 45%;
+    --muted: 35 30% 85%;
+    --muted-foreground: 20 15% 42%;
 
     --accent: 15 90% 55%;
     --accent-foreground: 0 0% 100%;
@@ -28,19 +28,19 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 30 25% 85%;
-    --input: 30 25% 85%;
+    --border: 30 30% 75%;
+    --input: 36 60% 97%;
     --ring: 30 100% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 30 40% 95%;
+    --sidebar-background: 36 40% 87%;
     --sidebar-foreground: 20 30% 12%;
     --sidebar-primary: 30 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 40 80% 55%;
     --sidebar-accent-foreground: 20 30% 12%;
-    --sidebar-border: 30 25% 85%;
+    --sidebar-border: 30 30% 72%;
     --sidebar-ring: 30 100% 50%;
 
     /* Custom spiritual tokens */
@@ -51,7 +51,7 @@
     --gold-light: 48 100% 88%;
     --maroon: 0 60% 30%;
     --cream: 38 60% 96%;
-    --temple-shadow: 0 10px 40px -10px hsl(30 60% 30% / 0.2);
+    --temple-shadow: 0 10px 40px -10px hsl(30 60% 30% / 0.25);
 
     --font-display: "Faculty Glyphic", "Noto Sans Devanagari", sans-serif;
     --font-hindi: "Tiro Devanagari Hindi", "Noto Sans Devanagari", serif;
@@ -129,6 +129,17 @@
     font-family: var(--font-hindi);
   }
 
+  /* ─── Light mode: cards pop with white surface + shadow on beige background ─── */
+  html:not(.dark) .bg-card,
+  html:not(.dark) [class*="bg-card"] {
+    background-color: hsl(36 60% 97%);
+  }
+
+  /* Ensure section backgrounds in light mode are distinct */
+  html:not(.dark) section {
+    background-color: transparent;
+  }
+
   .lang-hi body,
   .lang-hi p,
   .lang-hi span,
@@ -173,6 +184,17 @@
   }
   .shadow-temple {
     box-shadow: var(--temple-shadow);
+  }
+  /* In light mode, give boxes a more visible lift */
+  html:not(.dark) .shadow-temple {
+    box-shadow: 0 4px 20px -4px hsl(30 40% 30% / 0.18), 0 1px 4px hsl(30 40% 30% / 0.10);
+  }
+  /* Utility: card box with beige bg and visible border + shadow for light mode */
+  .card-light {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 16px -4px hsl(30 40% 30% / 0.14);
+    border-radius: var(--radius);
   }
   .touch-target {
     @apply min-h-[60px] min-w-[60px];
@@ -917,4 +939,50 @@ width:fit-content;
     align-items:center;
     justify-content:center;
     padding:0;
+}
+
+
+@media(max-width: 768px){
+    .fixed.bottom-0.left-0.right-0.max-w-md.mx-auto.bg-\[\#140b07\].border-t.border-amber-500\/20.rounded-t-\[28px\].p-6.pb-8.z-50.text-brand-cream.shadow-\[0_-8px_32px_rgba\(245\,158\,11\,0\.15\)\] {
+
+      padding-bottom: 7rem;
+}
+
+img.w-full.h-full.object-cover.object-top {
+    mask-image: linear-gradient(black 5%, transparent 60%)!important;
+}
+
+
+.relative.z-10.w-full.max-w-4xl.mx-auto.px-6.pt-5.pb-2.border-t.border-white\/5.flex.items-center.justify-center.gap-5.bg-black\/10.select-none
+{
+padding-bottom: 1rem;
+    } 
+
+    .relative.z-10.w-full.px-3.py-2.pb-\[calc\(1rem\+env\(safe-area-inset-bottom\)\)\].md\:pb-3.select-none{
+          padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+          margin-bottom: 2rem;
+    }
+  }
+/* .bg-\[radial-gradient\(circle_at_center\2c rgba\(234\2c 179\2c 8\2c 0\.07\)\2c transparent_70\%\)\] {
+    background-image: radial-gradient(circle at 50% 30%, #8e6a23cc, transparent 30%)!important;
+} */
+
+
+.absolute.inset-0.bg-\[radial-gradient\(circle.at.\35 0\%.\33 0\%\,.\#8e6a23cc\,.transparent.\33 0\%\)\;.\}\].pointer-events-none{
+
+      background-image: radial-gradient(circle at 50% 30%, #8e6a23cc, transparent 30%)
+}
+
+
+.absolute.left-\[-22px\].md\:left-\[-55px\].top-\[48\%\].-translate-y-1\/2.pointer-events-none.z-0.transition-all.duration-300{
+  display: none;
+}
+
+.absolute.right-\[-22px\].md\:right-\[-55px\].top-\[48\%\].-translate-y-1\/2.pointer-events-none.z-0.transition-all.duration-300{ 
+  display: none;
+}
+
+
+img.w-full.h-full.object-cover.fixed.opacity-\[0\.25\].scale-\[1\.01\].transition-opacity.duration-1000.blur-\[1px\]{
+  opacity: 1;
 }

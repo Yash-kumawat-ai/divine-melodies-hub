@@ -163,7 +163,7 @@ export function PromotionalCarousel() {
           }
 
           const isActive = index === currentIndex;
-          const isVisible = Math.abs(offset) <= 1.5; // Only active and directly adjacent are visible, others are far off-screen
+          const isVisible = true; // Make all banners visible to show a continuous row of cards across the screen without gaps
 
           return (
             <div 

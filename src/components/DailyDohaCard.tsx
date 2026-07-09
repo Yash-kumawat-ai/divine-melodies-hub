@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Heart, Copy, RotateCw, Check } from 'lucide-react';
+import { Heart, Copy, RotateCw, Check, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabaseClient';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -21,7 +21,7 @@ const FALLBACK_DOHAS: DohaItem[] = [
     id: 1,
     title: "राम नाम की लूट है",
     source: "लोकप्रिय",
-    doha: ["राम नाम की लूट है, लूट सके तो लूट।", "अंत काल पछताएगा, जब प्राण जाएंगे छूट॥"],
+    doha: ["राम नाम की लूट है, लूट सके तो लूट।", "... जब प्राण जाएंगे छूट॥"],
     meaning: "श्रीराम का नाम सबसे अमूल्य धन है, जिसे हर व्यक्ति बिना किसी मूल्य के प्राप्त कर सकता है। जीवन रहते हुए भगवान का स्मरण कर लेना चाहिए, क्योंकि मृत्यु के समय पश्चाताप करने का अवसर नहीं मिलता।",
     category: "भक्ति",
     likes: 124
@@ -168,36 +168,6 @@ export default function DailyDohaCard() {
     }, 450);
   };
 
-  const handleLike = async () => {
-    const isAlreadyLiked = likedIds.includes(currentDoha.id);
-    let newLikedIds = [...likedIds];
-    let newLikeCount = typeof currentDoha.likes === 'number' && !isNaN(currentDoha.likes) ? currentDoha.likes : 0;
-
-    if (isAlreadyLiked) {
-      newLikedIds = newLikedIds.filter(id => id !== currentDoha.id);
-      newLikeCount = Math.max(0, newLikeCount - 1);
-    } else {
-      newLikedIds.push(currentDoha.id);
-      newLikeCount += 1;
-    }
-
-    setLikedIds(newLikedIds);
-    localStorage.setItem('liked-dohas', JSON.stringify(newLikedIds));
-    
-    const updatedDoha = { ...currentDoha, likes: newLikeCount };
-    setCurrentDoha(updatedDoha);
-    setDohas(prev => prev.map(d => d.id === currentDoha.id ? updatedDoha : d));
-
-    try {
-      await supabase
-        .from('daily_dohas')
-        .update({ likes: newLikeCount })
-        .eq('id', currentDoha.id);
-    } catch (err) {
-      console.warn("Failed to sync like count to database", err);
-    }
-  };
-
   const handleCopy = () => {
     const textToCopy = `${currentDoha.doha.join('\n')}\n— ${currentDoha.source}`;
     navigator.clipboard.writeText(textToCopy).then(() => {
@@ -208,14 +178,12 @@ export default function DailyDohaCard() {
     });
   };
 
-  const isCurrentDohaLiked = likedIds.includes(currentDoha.id);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.85, duration: 0.6 }}
-      className="relative w-full max-w-[540px] mt-8 p-6 md:p-8 rounded-[2rem] border border-amber-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none text-center overflow-hidden hidden md:block"
+      className="relative w-[92%] max-w-[360px] md:max-w-[540px] mx-auto md:mx-0 mt-6 md:mt-8 p-5 md:p-8 rounded-[22px] border border-amber-500/20 shadow-[0_20px_50px_rgba(0,0,0,0.85)] select-none text-center overflow-hidden"
     >
       {/* Background Image Layer */}
       <div 
@@ -225,7 +193,7 @@ export default function DailyDohaCard() {
           transition: 'transform 10s ease-out'
         }}
       />
-      {/* Dark overlay for text readability - lighter for visibility */}
+      {/* Dark overlay for text readability */}
       <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#140a05]/75 via-[#180c06]/60 to-[#140a05]/80 backdrop-blur-[0.5px]" />
 
       {/* Ornate corners */}
@@ -234,33 +202,31 @@ export default function DailyDohaCard() {
       <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-amber-500/40 rounded-bl-md pointer-events-none z-10" />
       <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-amber-500/40 rounded-br-md pointer-events-none z-10" />
 
-      {/* Decorative center center dots */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-amber-500/40 rounded-full z-10" />
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-amber-500/40 rounded-full z-10" />
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-amber-500/40 rounded-full z-10" />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-amber-500/40 rounded-full z-10" />
+      {/* Ornate diamonds in bottom corners */}
+      <div className="absolute bottom-5 left-5 text-amber-500/30 text-xs hidden md:block">◆</div>
+      <div className="absolute bottom-5 right-5 text-amber-500/30 text-xs hidden md:block">◆</div>
 
-      {/* TOP HEADER BADGE WITH FLANKING LOTUS FLOWERS (Now inside card flow) */}
-      <div className="relative z-10 flex items-center justify-center gap-3.5 mb-6 mt-1">
+      {/* TOP HEADER BADGE WITH LOTUS FLOWERS */}
+      <div className="relative z-10 flex items-center justify-center gap-3.5 mb-5 mt-1">
         <img 
           src={abhijitMuhuratLotus} 
           alt="Lotus" 
-          className="w-8 h-8 object-contain drop-shadow-[0_2px_8px_rgba(244,114,182,0.6)] animate-pulse"
+          className="w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-[0_2px_8px_rgba(244,114,182,0.6)] animate-pulse"
         />
         <div className="px-5 py-1 bg-[#1e0e07]/90 border border-amber-500/30 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-          <span className="text-amber-300 font-serif text-xs md:text-sm tracking-widest font-black uppercase flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-amber-300 font-serif text-[10px] md:text-xs tracking-widest font-black uppercase flex items-center gap-1.5 whitespace-nowrap">
             <span>✦</span> {isHi ? "आज की राम वाणी" : "Today's Ram Vani"} <span>✦</span>
           </span>
         </div>
         <img 
           src={abhijitMuhuratLotus} 
           alt="Lotus" 
-          className="w-8 h-8 object-contain drop-shadow-[0_2px_8px_rgba(244,114,182,0.6)] animate-pulse"
+          className="w-6 h-6 md:w-8 md:h-8 object-contain drop-shadow-[0_2px_8px_rgba(244,114,182,0.6)] animate-pulse"
         />
       </div>
 
       {/* CONTENT AREA */}
-      <div className="my-4 min-h-[90px] flex flex-col justify-center items-center relative z-10">
+      <div className="my-3 min-h-[90px] flex flex-col justify-center items-center relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentDoha.id}
@@ -270,12 +236,12 @@ export default function DailyDohaCard() {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center justify-center w-full"
           >
-            {/* Doha lines rendered exactly from the string array */}
+            {/* Doha lines */}
             <div className="flex flex-col items-center justify-center gap-1.5 w-full">
               {currentDoha.doha.map((line, idx) => (
                 <p 
                   key={idx} 
-                  className="text-amber-100/95 font-serif text-base sm:text-lg md:text-xl font-bold tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] whitespace-nowrap break-keep select-text text-center"
+                  className="text-amber-100/95 font-serif text-sm sm:text-base md:text-lg font-bold tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] break-keep select-text text-center leading-relaxed"
                 >
                   {line}
                 </p>
@@ -283,21 +249,13 @@ export default function DailyDohaCard() {
             </div>
 
             {/* Source */}
-            <span className="text-amber-400/80 font-serif text-xs sm:text-sm italic mt-3 select-none tracking-wider drop-shadow-md">
+            <span className="text-amber-400/80 font-serif text-[10px] md:text-xs italic mt-2.5 select-none tracking-wider drop-shadow-md">
               — {currentDoha.source}
             </span>
 
-            {/* MEANING (अर्थ) TOGGLE OPTION */}
+            {/* Meaning details panel */}
             {currentDoha.meaning && (
-              <div className="mt-4 w-full flex flex-col items-center">
-                <button
-                  onClick={() => setShowMeaning(!showMeaning)}
-                  className="px-3.5 py-1 border border-amber-500/20 hover:border-amber-500/40 rounded-full text-[11px] font-bold text-amber-300/85 hover:text-amber-300 hover:bg-amber-500/10 cursor-pointer transition-all duration-300 active:scale-95 flex items-center gap-1"
-                >
-                  <span>❃</span>
-                  <span>{showMeaning ? (isHi ? "अर्थ छुपाएं" : "Hide Meaning") : (isHi ? "अर्थ देखें" : "View Meaning")}</span>
-                </button>
-                
+              <div className="w-full flex flex-col items-center">
                 <AnimatePresence>
                   {showMeaning && (
                     <motion.div
@@ -307,7 +265,7 @@ export default function DailyDohaCard() {
                       transition={{ duration: 0.35, ease: "easeInOut" }}
                       className="overflow-hidden w-full"
                     >
-                      <p className="text-xs sm:text-sm text-stone-300/95 leading-relaxed font-sans max-w-[92%] mx-auto mt-3 border-t border-amber-500/10 pt-3 text-center select-text">
+                      <p className="text-[11px] md:text-xs text-stone-300/95 leading-relaxed font-sans max-w-[92%] mx-auto mt-2.5 border-t border-amber-500/10 pt-2.5 text-center select-text">
                         <strong className="text-amber-400/90 font-serif mr-1">{isHi ? "अर्थ:" : "Meaning:"}</strong>
                         {currentDoha.meaning}
                       </p>
@@ -321,52 +279,42 @@ export default function DailyDohaCard() {
       </div>
 
       {/* ACTIONS FOOTER */}
-      <div className="flex items-center justify-center gap-3 mt-5 relative z-10">
-        {/* Like Button */}
+      <div className="flex items-center justify-center gap-2 mt-4 relative z-10">
+        <span className="text-amber-500/20 text-xs hidden md:inline mr-2">◆</span>
+        
+        {/* Toggle Meaning Button */}
         <button
-          onClick={handleLike}
-          className={`flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold cursor-pointer transition-all duration-300 active:scale-95 select-none ${
-            isCurrentDohaLiked
-              ? 'bg-red-500/10 border-red-500/40 text-red-400 hover:bg-red-500/25'
-              : 'border-amber-600/30 text-amber-100/85 hover:border-amber-500/60 hover:bg-amber-500/10'
-          }`}
+          onClick={() => setShowMeaning(!showMeaning)}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-amber-500/20 hover:border-amber-500/40 rounded-xl text-[10px] md:text-xs font-bold text-amber-300/90 hover:text-amber-300 hover:bg-amber-500/10 cursor-pointer transition-all duration-300 active:scale-95 select-none"
         >
-          <Heart className={`w-3.5 h-3.5 transition-transform duration-300 ${isCurrentDohaLiked ? 'fill-current scale-110 text-red-500' : ''}`} />
-          <span>{isHi ? "पसंद करें" : "Like"}</span>
-          <span className="text-[10px] opacity-75 font-sans">({typeof currentDoha.likes === 'number' && !isNaN(currentDoha.likes) ? currentDoha.likes : 0})</span>
+          <BookOpen className="w-3.5 h-3.5 text-amber-400/90" />
+          <span>{showMeaning ? (isHi ? "अर्थ छुपाएं" : "Hide Meaning") : (isHi ? "अर्थ देखें" : "View Meaning")}</span>
         </button>
 
         {/* Copy Button */}
         <button
           onClick={handleCopy}
-          className={`flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold cursor-pointer transition-all duration-300 active:scale-95 select-none ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-[10px] md:text-xs font-bold cursor-pointer transition-all duration-300 active:scale-95 select-none ${
             isCopied
-              ? 'bg-green-500/15 border-green-500/50 text-green-400'
-              : 'border-amber-600/30 text-amber-100/85 hover:border-amber-500/60 hover:bg-amber-500/10'
+              ? 'bg-green-500/10 border-green-500/40 text-green-400'
+              : 'border-amber-500/20 text-amber-100/90 hover:border-amber-500/40 hover:bg-amber-500/10'
           }`}
         >
-          {isCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>{isCopied ? (isHi ? "कॉपी किया गया" : "Copied!") : (isHi ? "कॉपी करें" : "Copy")}</span>
+          {isCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400/90" />}
+          <span>{isCopied ? (isHi ? "कॉपी किया" : "Copied!") : (isHi ? "कॉपी करें" : "Copy")}</span>
         </button>
 
-        {/* Refresh Button */}
+        {/* Small Refresh Button */}
         <button
           onClick={handleReload}
           disabled={isRefreshing}
-          className="flex items-center gap-2 px-4 py-2 border border-amber-600/30 rounded-full text-xs font-bold text-amber-100/85 cursor-pointer hover:border-amber-500/60 hover:bg-amber-500/10 transition-all duration-300 active:scale-95 select-none disabled:opacity-50"
+          className="flex items-center justify-center w-8 h-8 border border-amber-500/20 rounded-xl text-amber-300/90 cursor-pointer hover:border-amber-500/40 hover:bg-amber-500/10 transition-all duration-300 active:scale-95 select-none disabled:opacity-50"
+          title={isHi ? "एक और दोहा" : "Another Doha"}
         >
           <RotateCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          <span>{isHi ? "एक और दोहा" : "Another Doha"}</span>
         </button>
-      </div>
 
-      {/* Bottom decorative Lotus Ornament (Now inside the card flow) */}
-      <div className="relative z-10 flex justify-center mt-6">
-        <img 
-          src={abhijitMuhuratLotus} 
-          alt="Lotus" 
-          className="w-14 h-9 object-contain drop-shadow-[0_2px_8px_rgba(244,114,182,0.65)] transition-transform hover:scale-110"
-        />
+        <span className="text-amber-500/20 text-xs hidden md:inline ml-2">◆</span>
       </div>
     </motion.div>
   );

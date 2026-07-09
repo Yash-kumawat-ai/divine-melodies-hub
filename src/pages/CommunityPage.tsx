@@ -136,18 +136,27 @@ export default function CommunityPage() {
 
       // Compute stats
       const totalGroups = fetched.length;
-      const totalJaps = fetched.reduce((sum, g) => sum + (g.total_chants || 0), 0);
       
       // Fetch total profiles count for devotees metric
       const { count: profileCount } = await supabase
         .from("user_profiles")
         .select("id", { count: "exact", head: true });
 
-      // Add a base offset to statistics to feel realistic/populated as in mock
+      // Fetch sum of chants from user_jap_totals
+      const { data: japTotals } = await supabase
+        .from("user_jap_totals")
+        .select("total_chants");
+      const realTotalJaps = (japTotals ?? []).reduce((sum, row) => sum + (Number(row.total_chants) || 0), 0);
+
+      // Fetch total groups count
+      const { count: groupsCount } = await supabase
+        .from("naam_sangh_groups")
+        .select("id", { count: "exact", head: true });
+
       setGlobalStats({
-        devotees: (profileCount ?? 0) + 12500, // Matching screen's 12.5k base
-        totalJaps: totalJaps + 24000000,      // Matching screen's 2.4Cr base
-        groupCount: totalGroups + 500,        // Matching screen's 500+ base
+        devotees: profileCount ?? 0,
+        totalJaps: realTotalJaps,
+        groupCount: groupsCount ?? totalGroups ?? 0,
       });
     } catch (err) {
       console.error("Error loading community data:", err);

@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import type { Mantra, JapTotal } from "@/lib/mantraJapa/mantraJapaApi";
+import devotionalBackground from "@/pages/images/devotional_background.webp";
+import devotionalBackground1 from "@/pages/images/devotional_background(1).webp";
 
 // ─── CUSTOM ICONS ───────────────────────────────────────────────
 const YogiIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -634,9 +636,31 @@ export default function MantraDetailView({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202] pb-16 text-amber-50 relative select-none">
-      {/* Background soft glowing spots */}
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.12),transparent)]" />
+    <div className="relative min-h-screen text-amber-50 pb-16 select-none">
+      {/* Full-screen Fixed Background Image Layer */}
+      <div className="fixed inset-0 -z-20 select-none pointer-events-none">
+        {/* Upper Background Image (devotional_background.webp) */}
+        <div className="absolute top-0 left-0 right-0 h-[48vh] overflow-hidden">
+          <img 
+            src={devotionalBackground} 
+            alt="Page Background Upper" 
+            className="w-full h-full object-cover object-center opacity-[0.38]" 
+          />
+        </div>
+        
+        {/* Lower Background Image (devotional_background(1).webp) */}
+        <div className="absolute top-[48vh] bottom-0 left-0 right-0 overflow-hidden">
+          <img 
+            src={devotionalBackground1} 
+            alt="Page Background Lower" 
+            className="w-full h-full object-cover object-center opacity-[0.28]" 
+          />
+        </div>
+
+        {/* Ambient dark warm gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202] opacity-80" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.08),transparent)]" />
+      </div>
 
       {/* ─── FLOATING BACK & SHARE BUTTONS ──────────────────────── */}
       <div className="sticky top-0 z-40 bg-[#0a0503]/80 backdrop-blur-md border-b border-white/5 px-4 py-4 flex items-center justify-between w-full">
@@ -665,7 +689,7 @@ export default function MantraDetailView({
       <div className="mx-auto max-w-4xl px-4 mt-6 space-y-6">
 
         {/* ─── DEITY COVER HEADER SECTION ─────────────────────────── */}
-        <section className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/10 bg-gradient-to-r from-[#170e0a] to-[#0d0705] p-5 sm:p-6 shadow-2xl">
+        <section className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/15 bg-gradient-to-r from-[#170e0a]/40 to-[#0d0705]/45 backdrop-blur-md p-5 sm:p-6 shadow-2xl">
           <div className="grid grid-cols-12 gap-6 items-center">
             {/* Left: Rounded Deity Image */}
             <div className="col-span-12 sm:col-span-5 flex justify-center">
@@ -731,7 +755,7 @@ export default function MantraDetailView({
           </div>
         </section>
         {/* ─── CARD 0: MANTRA TEXT ────────────────────────────────── */}
-        <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center">
+        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center">
           {/* Background Mandalas */}
           <MandalaBg className="absolute -left-16 -bottom-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
           <MandalaBg className="absolute -right-16 -top-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
@@ -767,7 +791,7 @@ export default function MantraDetailView({
         </section>
 
         {/* ─── CARD 1: MEANING OF MANTRA ─────────────────────────── */}
-        <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 relative overflow-hidden shadow-lg">
+        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 relative overflow-hidden shadow-lg">
           {/* Background Mandalas */}
           <MandalaBg className="absolute -left-12 -top-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
           <MandalaBg className="absolute -right-12 -bottom-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
@@ -787,7 +811,7 @@ export default function MantraDetailView({
         </section>
 
         {/* ─── CARD 2: WHY CHANT THIS MANTRA ──────────────────────── */}
-        <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 shadow-lg">
+        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg">
           <div className="space-y-5">
             <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2">
               <Flower2 className="w-4.5 h-4.5 text-amber-500" />
@@ -816,7 +840,7 @@ export default function MantraDetailView({
         {/* ─── ROW: BENEFITS AND AUDIO LISTEN ────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Card 3: Benefits (इस मंत्र के लाभ) */}
-          <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between shadow-lg">
+          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between shadow-lg">
             <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
               <Sparkles className="w-4.5 h-4.5 text-amber-500" />
               {isHi ? "इस मंत्र के लाभ" : "Benefits of this Mantra"}
@@ -866,7 +890,7 @@ export default function MantraDetailView({
           </section>
 
           {/* Card 4: Audio listen (मंत्र सुनें) */}
-          <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between items-center shadow-lg text-center">
+          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between items-center shadow-lg text-center">
             <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
               <Headphones className="w-4 h-4 text-amber-500" />
               {isHi ? "मंत्र सुनें" : "Listen to Mantra"}
@@ -926,7 +950,7 @@ export default function MantraDetailView({
         {/* ─── ROW: BEST TIMES AND RECOMMENDED COUNTS ────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Card 5: Best Times (सर्वश्रेष्ठ समय) */}
-          <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
+          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
             <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
               <Clock className="w-4 h-4 text-amber-500" />
               {isHi ? "सर्वश्रेष्ठ समय" : "Best Time to Chant"}
@@ -990,7 +1014,7 @@ export default function MantraDetailView({
           </section>
 
           {/* Card 6: Recommended Chants (अनुशंसित जप संख्या) */}
-          <section className="bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
+          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
             <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
               <Compass className="w-4.5 h-4.5 text-amber-500" />
               {isHi ? "अनुशंसित जप संख्या" : "Recommended Chants"}
@@ -1037,11 +1061,20 @@ export default function MantraDetailView({
         </div>
 
                 {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
-        <section className="bg-[#130d0a]/65 backdrop-blur-xl border border-amber-500/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative overflow-hidden">
-          {/* Decorative background mandala segment */}
-          <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/[0.02] rounded-full blur-3xl pointer-events-none" />
+        <section className="relative overflow-hidden bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/15 rounded-[2.5rem] p-6 md:p-8 shadow-2xl">
           
-          <div className="space-y-8">
+          {/* Section Background Image Layer - devotional_background(1).webp */}
+          <div className="absolute inset-0 z-0 select-none pointer-events-none">
+            <img 
+              src={devotionalBackground1} 
+              alt="Practice Background" 
+              className="w-full h-full object-cover object-center opacity-30" 
+            />
+            {/* Ambient dark filter to maintain high legibility */}
+            <div className="absolute inset-0 bg-[#0c0705]/85" />
+          </div>
+
+          <div className="relative z-10 space-y-8">
             {/* Guide Header */}
             <div className="text-center space-y-2.5">
               <h3 className="text-2xl md:text-3xl font-display font-bold text-amber-400 flex items-center justify-center gap-3">

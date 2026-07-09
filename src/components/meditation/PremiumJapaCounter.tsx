@@ -27,11 +27,13 @@ import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJa
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 // Deity images for leaderboard avatars
 import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
 import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
 import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
+import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
 
 // ─── SHANKH & BELL SYNTH SOUND GENERATOR ──────────────────────────
 const playBellSound = (volumeEnabled: boolean) => {
@@ -150,14 +152,21 @@ export default function PremiumJapaCounter({
   const { language } = useLanguage();
   const isHi = language === "hi";
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // Initialize count and secondsElapsed from URL search parameters if returning
+  const initialCount = Number(searchParams.get("resumeCount") || "0");
+  const initialSeconds = Number(searchParams.get("resumeSeconds") || "0");
+
   // Load mantras database and authentication context
   const { mantras, stats, todaySessions, mantraTotalsMap, userId } = useMantraJapa();
-  const { profile } = useAuth();
+  const { profile } = useAuth() as any;
 
   // ─── LOCAL STATE ────────────────────────────────────────────────
   const [activeMantra, setActiveMantra] = useState<Mantra>(mantra);
   const [practiceMode, setPracticeMode] = useState<"mala" | "tap" | "voice" | "guided">(initialPracticeMode);
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(initialCount);
   const [isCompleted, setIsCompleted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
@@ -212,9 +221,19 @@ export default function PremiumJapaCounter({
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [count, isCompleted, isHi]);
+
+  // Clean up URL parameters after loading them into local state
+  useEffect(() => {
+    if (searchParams.has("resumeCount") || searchParams.has("resumeSeconds")) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("resumeCount");
+      newParams.delete("resumeSeconds");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
   
   // Timer tracking
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [secondsElapsed, setSecondsElapsed] = useState(initialSeconds);
   const [timerActive, setTimerActive] = useState(true);
 
   // Guided Mode specific states
@@ -1332,7 +1351,13 @@ export default function PremiumJapaCounter({
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setLeaderboardOpen(true)}
+                onClick={() => {
+                  const currentQuery = new URLSearchParams(window.location.search);
+                  currentQuery.set("resumeCount", count.toString());
+                  currentQuery.set("resumeSeconds", secondsElapsed.toString());
+                  const returnPath = `/meditation?${currentQuery.toString()}`;
+                  navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
+                }}
                 className="w-10 h-10 rounded-full border border-amber-500/20 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-300 active:scale-95 transition-all"
                 aria-label="Leaderboard"
               >
@@ -1868,7 +1893,30 @@ export default function PremiumJapaCounter({
       className="fixed inset-0 z-[100] bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] flex flex-col justify-between text-[#fbf6f0] select-none md:overflow-y-auto overflow-y-hidden cursor-pointer"
     >
       {/* Background radial soft light */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.07),transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle at 50% 30%, #8e6a23cc, transparent 30%);
+}] pointer-events-none" />
+
+      {/* Devotional Deity Background Image with Fade */}
+      <div 
+        className="absolute top-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.45]"
+        style={{
+          width: isMobile ? "100%" : "512px",
+          left: isMobile ? "0" : "calc(50% - 256px)",
+          height: isMobile ? "52vh" : "58vh",
+        }}
+      >
+        <img 
+          src={hanumanDevotionalImg} 
+          className="w-full h-full object-cover object-top" 
+          style={{
+            maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent 100%)"
+          }}
+          alt="Deity Background"
+        />
+        {/* Soft radial overlay on top of image to blend with black background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-[#050203]/90" />
+      </div>
 
       {/* ─── HEADER BAR ───────────────────────────────────────────── */}
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-2.5 md:py-4 flex items-center justify-between">
@@ -1896,7 +1944,13 @@ export default function PremiumJapaCounter({
         </div>
 
         <button
-          onClick={() => setLeaderboardOpen(true)}
+          onClick={() => {
+            const currentQuery = new URLSearchParams(window.location.search);
+            currentQuery.set("resumeCount", count.toString());
+            currentQuery.set("resumeSeconds", secondsElapsed.toString());
+            const returnPath = `/meditation?${currentQuery.toString()}`;
+            navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
+          }}
           className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
           aria-label="Leaderboard"
         >
@@ -1915,6 +1969,20 @@ export default function PremiumJapaCounter({
             height: isMobile ? "280px" : "470px",
           }}
         >
+          {/* Flanking Lotus Flowers (Pink filled with soft glow) */}
+          <div className="absolute left-[-22px] md:left-[-55px] top-[48%] -translate-y-1/2 pointer-events-none z-0 transition-all duration-300">
+            <LotusFlowerSvg 
+              className="w-14 h-14 md:w-24 md:h-24 text-pink-500 fill-pink-500 opacity-[0.82] filter drop-shadow-[0_0_12px_rgba(236,72,153,0.6)] animate-pulse"
+              color="#ec4899"
+            />
+          </div>
+          <div className="absolute right-[-22px] md:right-[-55px] top-[48%] -translate-y-1/2 pointer-events-none z-0 transition-all duration-300">
+            <LotusFlowerSvg 
+              className="w-14 h-14 md:w-24 md:h-24 text-pink-500 fill-pink-500 opacity-[0.82] filter drop-shadow-[0_0_12px_rgba(236,72,153,0.6)] animate-pulse"
+              color="#ec4899"
+            />
+          </div>
+
           {/* Rotating Faint Mandala Background in Ring */}
           <div className="absolute inset-6 opacity-[0.04] text-amber-400 pointer-events-none flex items-center justify-center">
             <svg className="w-full h-full animate-[spin_180s_linear_infinite]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.6">
@@ -1952,10 +2020,12 @@ export default function PremiumJapaCounter({
 
           {/* Mala Thread (Connecting line/string between beads) */}
           <div 
-            className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
+            className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
             style={{
               width: `${R * 2}px`,
               height: `${R * 2}px`,
+              left: `calc(50% - ${R}px)`,
+              top: `calc(50% - ${R}px)`,
             }}
           />
 
@@ -2150,7 +2220,7 @@ export default function PremiumJapaCounter({
 
       {/* ─── QUICK SETTINGS BAR (Premium Pill Design) ──────────────── */}
       <div
-        className="relative z-10 w-full px-3 py-2 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
+        className="relative z-10 w-full px-3 py-2 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Outer pill container */}
