@@ -15,6 +15,8 @@ import { AIModalProvider, useAIModal } from "@/hooks/useAIModal";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
 import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
+import { DrawerProvider } from "@/context/DrawerContext";
+import { MobileDrawer } from "@/components/navigation/MobileDrawer";
 import Home from "./pages/Home";
 import AllBhajans from "./pages/AllBhajans";
 import LoginForm from "./components/Auth/LoginForm";
@@ -87,6 +89,7 @@ function AppContent() {
   return (
     <>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <MobileDrawer />
         <Routes>
           <Route
             path="/auth/login"
@@ -277,11 +280,13 @@ const App = () => (
             <AIModalProvider>
               <YouTubePlayerProvider>
                 <BhajanModalOpenProvider>
+                <DrawerProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
                   <AppContent />
                 </TooltipProvider>
+                </DrawerProvider>
                 </BhajanModalOpenProvider>
               </YouTubePlayerProvider>
             </AIModalProvider>

@@ -47,6 +47,7 @@ import { UserNotificationBell } from "@/components/notifications/UserNotificatio
 import ProfileHubSheet from "@/components/account/ProfileHubSheet";
 import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { cn } from "@/lib/utils";
+import { HamburgerButton } from "@/components/navigation/HamburgerButton";
 
 export default function Header() {
   const [profileHubOpen, setProfileHubOpen] = useState(false);
@@ -141,7 +142,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
-        <div className="flex items-center gap-0 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
+        <div className="flex items-center gap-1 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
+          {/* Hamburger — mobile left corner */}
+          <span className="inline-flex md:hidden">
+            <HamburgerButton />
+          </span>
           {showBack && (
             <span className="inline-flex md:hidden">
               <MobileBackButton />

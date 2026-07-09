@@ -443,7 +443,9 @@ export default function Home() {
       />
 
       <HeroSection stats={stats} />
-      <DevotionalDivider language={language} />
+      <div className="hidden md:block">
+        <DevotionalDivider language={language} />
+      </div>
 
       {/* ── ALL FEATURES — Premium Devotional 12-Feature Grid ── */}
       <section className="bg-background py-10 md:py-16 px-4 md:px-6">
