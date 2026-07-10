@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-09",
+  "date": "2026-07-10",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Navami",
-  "tithi_number": 9,
-  "nakshatra": "Aswini - 3",
-  "yoga": "Sukarma",
-  "karana": "Garija",
+  "tithi": "Dasimi",
+  "tithi_number": 10,
+  "nakshatra": "Bharani - 3",
+  "yoga": "Dhriti",
+  "karana": "Visti",
   "paksha": "Shukla",
   "sunrise": "06:03 AM",
   "sunset": "06:46 PM",
-  "rahu_kaal": "12:24 PM - 02:00 PM",
+  "rahu_kaal": "02:00 PM - 03:35 PM",
   "brahma_muhurat": "04:27 AM - 05:15 AM",
-  "vara": "Guruvaar",
-  "updated_at": "2026-07-09T06:38:54+05:30"
+  "vara": "Shukravaar",
+  "updated_at": "2026-07-10T06:37:34+05:30"
 }
