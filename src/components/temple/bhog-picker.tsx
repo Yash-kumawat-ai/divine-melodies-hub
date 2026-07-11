@@ -41,13 +41,13 @@ export function BhogPicker({
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full rounded-t-3xl border-t border-gold/30 bg-gradient-to-b from-[#1d0e06] to-[#0d0705] px-5 pb-6 pt-4"
+            className="relative w-full rounded-t-3xl border-t border-[#EAD7C3] dark:border-gold/30 bg-gradient-to-b from-[#FFFDF6] to-[#FCF6E8] dark:from-[#1d0e06] dark:to-[#0d0705] px-5 pb-6 pt-4 transition-all duration-300"
           >
-            <div className="mx-auto mb-2 h-1 w-12 rounded-full bg-white/20" />
-            <h3 className="mb-1 font-serif text-lg text-gold">
+            <div className="mx-auto mb-2 h-1 w-12 rounded-full bg-stone-500/20 dark:bg-white/20 transition-colors duration-300" />
+            <h3 className="mb-1 font-serif text-lg text-[#E06D14] dark:text-gold transition-colors duration-300">
               {lang === 'hi' ? 'भोग चुनें' : 'Choose Bhog'}
             </h3>
-            <p className="mb-4 text-xs text-white/60 italic">
+            <p className="mb-4 text-xs text-[#543D2B]/75 dark:text-white/60 italic transition-colors duration-300">
               {lang === 'hi' ? 'देवता को अर्पित करने के लिए भोग चुनें' : 'Select prasad to offer'}
             </p>
             <div className="grid grid-cols-4 gap-3">
@@ -61,14 +61,14 @@ export function BhogPicker({
                   }}
                   className="group flex flex-col items-center gap-1.5"
                 >
-                  <span className="flex h-16 w-16 items-center justify-center rounded-full border border-gold/40 bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-saffron group-active:bg-saffron/30">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#EAD7C3] dark:border-gold/40 bg-[#FFF5EA] dark:bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-[#E06D14] dark:group-active:border-saffron group-active:bg-[#E06D14]/10 dark:group-active:bg-saffron/30">
                     <img
                       src={item.image}
                       alt=""
                       className="h-11 w-11 object-contain"
                     />
                   </span>
-                  <span className="text-[10px] text-white/70">
+                  <span className="text-[10px] text-[#543D2B] dark:text-white/70 transition-colors duration-300">
                     {lang === 'hi' ? item.nameHi : item.nameEn}
                   </span>
                 </button>

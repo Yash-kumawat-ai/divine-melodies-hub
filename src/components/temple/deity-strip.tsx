@@ -33,37 +33,33 @@ export function DeityStrip({
   return (
     <nav
       aria-label="Deities"
-      className="relative w-full h-8 z-10"
+      className="relative w-full h-10 z-10"
     >
       <ul
         ref={listRef}
         className="no-scrollbar flex h-full items-center gap-6 overflow-x-auto px-4"
       >
         {deities.map((deity, i) => (
-          <li key={deity.id} className="shrink-0">
+          <li key={deity.id} className="shrink-0 h-full flex items-center">
             <button
               type="button"
               onClick={() => onSelect(i)}
               aria-current={i === activeIndex ? 'true' : undefined}
-              className="flex flex-col items-center gap-0.5 focus-visible:outline-none"
+              className="relative flex flex-col items-center justify-center h-full px-1 focus-visible:outline-none"
             >
               <span
-                className={`font-serif text-[13px] tracking-wide whitespace-nowrap transition-colors duration-200 ${
+                className={`font-serif text-[14px] tracking-wide whitespace-nowrap transition-colors duration-200 ${
                   i === activeIndex
-                    ? 'text-[#f2b84b] font-medium drop-shadow-[0_0_8px_rgba(249,184,75,0.4)]'
-                    : 'text-[#fcefd2]/65 hover:text-[#fcefd2]'
+                    ? 'text-[#E06D14] dark:text-[#f2b84b] font-semibold drop-shadow-sm'
+                    : 'text-[#543D2B]/75 dark:text-[#fcefd2]/65 hover:text-[#E06D14] dark:hover:text-[#fcefd2]'
                 }`}
               >
                 {lang === 'hi' ? deity.nameHindi : deity.nameEnglish}
               </span>
-              {i === activeIndex ? (
-                <div className="relative w-full flex items-center justify-center h-1 mt-0.5 shrink-0">
-                  <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent to-[#f2b84b]" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-[#f2b84b] shrink-0 mx-0.5 shadow-[0_0_5px_rgba(249,184,75,0.8)]" />
-                  <div className="w-1/2 h-[1px] bg-gradient-to-l from-transparent to-[#f2b84b]" />
-                </div>
-              ) : (
-                <div className="h-1 mt-0.5 w-full bg-transparent shrink-0" />
+              {i === activeIndex && (
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#E06D14] dark:bg-[#f2b84b] rounded-full shadow-[0_1px_3px_rgba(224,109,20,0.35)] dark:shadow-[0_1px_3px_rgba(242,184,75,0.35)]" 
+                />
               )}
             </button>
           </li>

@@ -253,25 +253,21 @@ export default function DailyDohaCard() {
               — {currentDoha.source}
             </span>
 
-            {/* Meaning details panel */}
+            {/* Meaning details panel (Always rendered to reserve space and prevent layout shifts) */}
             {currentDoha.meaning && (
               <div className="w-full flex flex-col items-center">
-                <AnimatePresence>
-                  {showMeaning && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.35, ease: "easeInOut" }}
-                      className="overflow-hidden w-full"
-                    >
-                      <p className="text-[11px] md:text-xs text-stone-300/95 leading-relaxed font-sans max-w-[92%] mx-auto mt-2.5 border-t border-amber-500/10 pt-2.5 text-center select-text">
-                        <strong className="text-amber-400/90 font-serif mr-1">{isHi ? "अर्थ:" : "Meaning:"}</strong>
-                        {currentDoha.meaning}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div
+                  className="w-full transition-opacity duration-300 ease-in-out"
+                  style={{
+                    opacity: showMeaning ? 1 : 0,
+                    pointerEvents: showMeaning ? 'auto' : 'none',
+                  }}
+                >
+                  <p className="text-[11px] md:text-xs text-stone-300/95 leading-relaxed font-sans max-w-[92%] mx-auto mt-2.5 border-t border-amber-500/10 pt-2.5 text-center select-text">
+                    <strong className="text-amber-400/90 font-serif mr-1">{isHi ? "अर्थ:" : "Meaning:"}</strong>
+                    {currentDoha.meaning}
+                  </p>
+                </div>
               </div>
             )}
           </motion.div>

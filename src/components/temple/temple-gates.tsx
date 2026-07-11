@@ -14,7 +14,7 @@ export function TempleGates({ open }: TempleGatesProps) {
     <div
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 z-20"
-      style={{ perspective: '1400px' }}
+      style={{ perspective: '-1400px' }}
     >
       {/* Left door panel */}
       <div
@@ -25,8 +25,9 @@ export function TempleGates({ open }: TempleGatesProps) {
           backgroundImage: 'url(/images/temple-door.webp)',
           backgroundSize: '200% 100%',
           backgroundPosition: 'left center',
-          transform: open ? 'rotateY(-95deg)' : 'rotateY(0deg)',
-          transitionDuration: '850ms',
+          transform: open ? 'rotateY(-80deg)' : 'rotateY(0deg)',
+          transitionDuration: '420ms',
+          transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)',
           backfaceVisibility: 'hidden',
           boxShadow: open ? 'none' : '6px 0 24px rgba(0,0,0,0.6)',
         }}
@@ -40,8 +41,9 @@ export function TempleGates({ open }: TempleGatesProps) {
           backgroundImage: 'url(/images/temple-door.webp)',
           backgroundSize: '200% 100%',
           backgroundPosition: 'right center',
-          transform: open ? 'rotateY(95deg)' : 'rotateY(0deg)',
-          transitionDuration: '850ms',
+          transform: open ? 'rotateY(80deg)' : 'rotateY(0deg)',
+          transitionDuration: '420ms',
+          transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)',
           backfaceVisibility: 'hidden',
           boxShadow: open ? 'none' : '-6px 0 24px rgba(0,0,0,0.6)',
         }}

@@ -25,8 +25,8 @@ import { FlowerPicker } from './flower-picker'
 import { BhogPicker } from './bhog-picker'
 
 const XP_KEY = 'mandir-bhakti-xp'
-const GATE_CLOSE_MS = 900
-const GATE_REOPEN_DELAY_MS = 280
+const GATE_CLOSE_MS = 400
+const GATE_REOPEN_DELAY_MS = 100
 
 interface Petal {
   id: number
@@ -115,7 +115,7 @@ export function DarshanScreen() {
     const timer = setTimeout(() => {
       setGatesOpen(true)
       playBellChime()
-    }, 600)
+    }, 150)
     const hintTimer = setTimeout(() => setShowSwipeHint(false), 6000)
     return () => {
       clearTimeout(timer)
@@ -309,13 +309,13 @@ export function DarshanScreen() {
 
   return (
     <div
-      className="relative mx-auto h-full w-full max-w-md overflow-hidden bg-[#0d0705]"
+      className="relative mx-auto h-full w-full max-w-md overflow-hidden bg-[#FCF6E8] dark:bg-[#0d0705] transition-colors duration-300"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onWheel={onWheel}
     >
       {/* LAYER 1: Temple background — subtle radial warmth */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#3d1a08_0%,#1d0e06_55%,#0d0705_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#FFF9EE_0%,#F6EAD2_55%,#EAD7C3_100%)] dark:bg-[radial-gradient(ellipse_at_50%_42%,#3d1a08_0%,#1d0e06_55%,#0d0705_100%)] transition-all duration-300" />
 
       {/* LAYER 2: Divine rotating light rays behind deity */}
       <div
@@ -342,7 +342,7 @@ export function DarshanScreen() {
           />
         </AnimatePresence>
         {/* Warm vignette so edges melt into the temple darkness */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,transparent_52%,rgba(13,7,5,0.82)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,transparent_52%,rgba(95,72,38,0.22)_100%)] dark:bg-[radial-gradient(ellipse_at_50%_38%,transparent_52%,rgba(13,7,5,0.82)_100%)] transition-all duration-300" />
         {/* Divine glow overlay — pulses on puja actions */}
         <div
           className="pointer-events-none absolute inset-0 transition-opacity duration-300"
@@ -362,7 +362,7 @@ export function DarshanScreen() {
         <svg viewBox="0 0 390 100" className="w-full" fill="none">
           <path
             d="M0 0h390v34c-26 0-36 22-62 22-24 0-30-14-52-14-20 0-26 10-46 10h-70c-20 0-26-10-46-10-22 0-28 14-52 14-26 0-36-22-62-22V0z"
-            fill="#2a1408"
+            className="fill-[#FCF6E8] dark:fill-[#0d0705] transition-colors duration-300"
           />
           <path
             d="M0 34c26 0 36 22 62 22 24 0 30-14 52-14 20 0 26 10 46 10h70c20 0 26-10 46-10 22 0 28 14 52 14 26 0 36-22 62-22"
@@ -452,7 +452,7 @@ export function DarshanScreen() {
       </AnimatePresence>
 
       {/* LAYER 6: Beautiful Temple Header */}
-      <header className="absolute top-0 right-0 left-0 z-50 flex flex-col bg-gradient-to-b from-black/95 via-[#0d0705]/95 to-[#0d0705]/90 border-b border-[#d4a853]/25 px-4 pt-4 pb-3 gap-2">
+      <header className="absolute top-0 right-0 left-0 z-50 flex flex-col bg-[#FCF6E8]/95 dark:bg-[#0d0705]/95 border-b border-[#EAD7C3] dark:border-[#d4a853]/25 px-4 pt-4 pb-3 gap-2 transition-all duration-300 backdrop-blur-md">
         
         {/* Top Row: Language | Jaikara & Lotus Divider | Diya & Bell */}
         <div className="flex items-center justify-between w-full min-h-[44px]">
@@ -462,7 +462,7 @@ export function DarshanScreen() {
             type="button"
             onClick={toggle}
             aria-label="Toggle language"
-            className="rounded-full border border-[#d4a853]/30 bg-black/40 px-3.5 py-1.5 font-serif text-xs text-[#fcefd2] shadow-inner transition-all hover:border-[#d4a853]/60 active:scale-95"
+            className="rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 px-3.5 py-1.5 font-serif text-xs text-[#543D2B] dark:text-[#fcefd2] shadow-inner transition-all hover:border-[#E06D14]/40 dark:hover:border-[#d4a853]/60 active:scale-95"
           >
             {'हिं / EN'}
           </button>
@@ -476,7 +476,7 @@ export function DarshanScreen() {
                 animate={{ opacity: gatesOpen ? 1 : 0, y: 0 }}
                 exit={{ opacity: 0, y: 4 }}
                 transition={{ duration: 0.3 }}
-                className="font-serif text-[15px] font-bold text-[#f2b84b] drop-shadow-[0_1.5px_4px_rgba(0,0,0,0.95)] tracking-wide leading-none"
+                className="font-serif text-[15px] font-bold text-[#E06D14] dark:text-[#f2b84b] drop-shadow-[0_1.5px_4px_rgba(255,255,255,0.1)] dark:drop-shadow-[0_1.5px_4px_rgba(0,0,0,0.95)] tracking-wide leading-none"
               >
                 {deity.jaikara}
               </motion.p>
@@ -484,7 +484,7 @@ export function DarshanScreen() {
 
             {/* Lotus Divider SVG */}
             <svg
-              className="w-36 h-5 text-[#d4a853] mt-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+              className="w-36 h-5 text-[#E06D14]/80 dark:text-[#d4a853] mt-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
               viewBox="0 0 200 30"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -518,7 +518,7 @@ export function DarshanScreen() {
           {/* Right: Diya/XP Pill & Bell Circle */}
           <div className="flex items-center gap-2">
             {/* Diya / XP Pill */}
-            <div className="flex items-center gap-1.5 rounded-full border border-[#d4a853]/30 bg-black/40 px-3 py-1.5 text-xs text-[#fcefd2] shadow-inner select-none">
+            <div className="flex items-center gap-1.5 rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 px-3 py-1.5 text-xs text-[#543D2B] dark:text-[#fcefd2] shadow-inner select-none">
               <svg className="w-5 h-4 shrink-0" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12,0 C12,0 15,4.5 15,7 C15,8.66 13.66,10 12,10 C10.34,10 9,8.66 9,7 C9,4.5 12,0 12,0 Z" fill="url(#flameGrad)" />
                 <path d="M3,9 C3,9 2,11 2,12 C2,14.5 6.5,16 12,16 C17.5,16 22,14.5 22,12 C22,11 21,9 21,9 C19.5,10.5 16,11.5 12,11.5 C8,11.5 4.5,10.5 3,9 Z" fill="url(#diyaGrad)" stroke="#d4a853" strokeWidth="0.5" />
@@ -544,10 +544,10 @@ export function DarshanScreen() {
               type="button"
               onClick={ringHeaderBell}
               disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning || bellActive}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d4a853]/30 bg-black/40 text-[#d4a853] transition-all hover:border-[#d4a853]/60 active:scale-90 disabled:opacity-50"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 text-[#E06D14] dark:text-[#d4a853] transition-all hover:border-[#EAD7C3]/80 dark:hover:border-[#d4a853]/60 active:scale-90 disabled:opacity-50"
               aria-label="Ring bell"
             >
-              <Bell className="h-4.5 w-4.5 fill-[#d4a853] text-[#d4a853]" />
+              <Bell className="h-4.5 w-4.5 fill-[#E06D14] dark:fill-[#d4a853] text-[#E06D14] dark:text-[#d4a853]" />
             </button>
           </div>
 

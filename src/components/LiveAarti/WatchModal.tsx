@@ -65,6 +65,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
   const { language } = useLanguage();
   const isHi = language === 'hi';
   const [showInAppPlayer, setShowInAppPlayer] = useState(false);
+  const [forceShowPlayer, setForceShowPlayer] = useState(false);
   const [highlightSchedule, setHighlightSchedule] = useState(false);
   const [tick, setTick] = useState(0);
   
@@ -74,6 +75,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
   useEffect(() => {
     if (isOpen) {
       setShowInAppPlayer(false);
+      setForceShowPlayer(false);
       setHighlightSchedule(false);
       const timer = setInterval(() => {
         setTick(t => t + 1);
@@ -133,14 +135,14 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
     switch (status) {
       case 'LIVE':
         return (
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-red-500/5 border border-red-500/15 text-red-200">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-red-500/5 border border-red-500/15 text-red-700 dark:text-red-200">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]"></span>
             </span>
             <div>
-              <p className="font-bold text-xs md:text-sm text-white">{isHi ? '🔴 लाइव दर्शन उपलब्ध' : '🔴 Live Now'}</p>
-              <p className="text-[11px] text-zinc-400">
+              <p className="font-bold text-xs md:text-sm text-[#543D2B] dark:text-white">{isHi ? '🔴 लाइव दर्शन उपलब्ध' : '🔴 Live Now'}</p>
+              <p className="text-[11px] text-[#543D2B]/75 dark:text-zinc-400">
                 {isHi ? 'यूट्यूब पर सत्यापित लाइव प्रसारण' : 'Verified live on YouTube'}
               </p>
             </div>
@@ -149,7 +151,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
       case 'UPCOMING':
         return (
           <div 
-            className="flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-300"
+            className="flex flex-col gap-2 p-4 rounded-2xl border transition-all duration-300 bg-[#FCF6E8]/40 dark:bg-white/[0.01]"
             style={{ 
               backgroundColor: `${accentColor}08`, 
               borderColor: `${accentColor}25` 
@@ -161,7 +163,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ backgroundColor: accentColor }}></span>
                 </span>
-                <p className="font-bold text-sm text-white">{isHi ? '🟠 जल्द ही शुरू' : '🟠 Starting Soon'}</p>
+                <p className="font-bold text-sm text-[#543D2B] dark:text-white">{isHi ? '🟠 जल्द ही शुरू' : '🟠 Starting Soon'}</p>
               </div>
               {nextAartiData && (
                 <span 
@@ -173,9 +175,9 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
               )}
             </div>
             
-            <div className="flex justify-between items-baseline mt-1.5 border-t border-white/5 pt-2">
-              <p className="text-xs text-zinc-400">{isHi ? 'प्रारंभ होने का समय:' : 'Starts In:'}</p>
-              <div className="flex items-center gap-1.5 font-display text-lg font-bold text-white tracking-wide">
+            <div className="flex justify-between items-baseline mt-1.5 border-t border-[#EAD7C3]/50 dark:border-white/5 pt-2">
+              <p className="text-xs text-[#543D2B]/60 dark:text-zinc-400">{isHi ? 'प्रारंभ होने का समय:' : 'Starts In:'}</p>
+              <div className="flex items-center gap-1.5 font-display text-lg font-bold text-[#E06D14] dark:text-white tracking-wide">
                 <Clock className="w-4.5 h-4.5 animate-pulse" style={{ color: accentColor }} />
                 <span>{timeStr}</span>
               </div>
@@ -184,11 +186,11 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
         );
       case 'STREAM_UNAVAILABLE':
         return (
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-yellow-500/5 border border-yellow-500/15 text-yellow-250">
-            <AlertTriangle className="w-4 h-4 text-yellow-500 shrink-0" />
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-yellow-500/5 border border-yellow-500/15 text-yellow-800 dark:text-yellow-250">
+            <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-500 shrink-0" />
             <div>
-              <p className="font-bold text-xs md:text-sm text-white">{isHi ? '⚠️ लाइव स्ट्रीम अवरुद्ध' : '⚠️ Live Stream Blocked'}</p>
-              <p className="text-[11px] text-zinc-400 leading-normal">
+              <p className="font-bold text-xs md:text-sm text-[#543D2B] dark:text-white">{isHi ? '⚠️ लाइव स्ट्रीम अवरुद्ध' : '⚠️ Live Stream Blocked'}</p>
+              <p className="text-[11px] text-[#543D2B]/75 dark:text-zinc-400 leading-normal">
                 {isHi
                   ? 'वर्तमान लाइव स्ट्रीम भक्ति से संबंधित नहीं है।'
                   : 'Current stream is not devotional content.'}
@@ -199,13 +201,13 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
       case 'OFFLINE':
       default:
         return (
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#1e1e1e]/10 border border-white/5 text-zinc-300">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-black/5 dark:bg-[#1e1e1e]/10 border border-[#EAD7C3] dark:border-white/5 text-[#543D2B]/85 dark:text-zinc-300">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-zinc-500 animate-pulse"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-zinc-450 dark:bg-zinc-500 animate-pulse"></span>
             </span>
             <div>
-              <p className="font-bold text-xs md:text-sm text-white">{isHi ? '⚪ अभी ऑफ़लाइन' : '⚪ Currently Offline'}</p>
-              <p className="text-[11px] text-zinc-400">
+              <p className="font-bold text-xs md:text-sm text-[#543D2B] dark:text-white">{isHi ? '⚪ अभी ऑफ़लाइन' : '⚪ Currently Offline'}</p>
+              <p className="text-[11px] text-[#543D2B]/60 dark:text-zinc-400">
                 {isHi ? 'अगली आरती बाद में उपलब्ध होगी' : 'Next Aarti available later today'}
               </p>
             </div>
@@ -254,7 +256,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           {/* Backdrop overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -270,7 +272,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="relative w-full max-w-lg max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 bg-[#0c0705] text-amber-50 shadow-2xl z-10 flex flex-col"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-hidden rounded-3xl border border-[#EAD7C3] dark:border-white/10 bg-[#FCF6E8] dark:bg-[#0c0705] text-[#543D2B] dark:text-amber-50 shadow-2xl z-10 flex flex-col transition-colors duration-300"
           >
             {/* Accent colored bar */}
             <div
@@ -279,20 +281,20 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
             />
 
             {/* Modal Header (Sticky) */}
-            <div className="flex items-start justify-between p-4 border-b border-white/5 bg-[#0e0a08] shrink-0 sticky top-0 z-20">
+            <div className="flex items-start justify-between p-4 border-b border-[#EAD7C3]/50 dark:border-white/5 bg-[#FCF6E8]/95 dark:bg-[#0e0a08]/95 backdrop-blur-md shrink-0 sticky top-0 z-20 text-[#543D2B] dark:text-amber-50">
               <div>
-                <span className="text-[9px] uppercase font-bold tracking-wider text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full mb-1.5 inline-block">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full mb-1.5 inline-block">
                   {temple.category}
                 </span>
-                <h2 className="text-lg md:text-xl font-bold font-display text-white leading-tight">
+                <h2 className="text-lg md:text-xl font-bold font-display text-[#543D2B] dark:text-white leading-tight">
                   {title}
                 </h2>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-[11px] text-zinc-400">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-[11px] text-[#543D2B]/75 dark:text-zinc-400">
                   <p>{deityText} • {temple.location}</p>
                   {temple.lastVerifiedAt && (
                     <>
-                      <span className="text-zinc-700 hidden sm:inline">•</span>
-                      <span className="text-[10px] text-zinc-500 font-semibold bg-white/5 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+                      <span className="text-[#EAD7C3] dark:text-zinc-700 hidden sm:inline">•</span>
+                      <span className="text-[10px] text-[#543D2B]/60 dark:text-zinc-500 font-semibold bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full flex items-center gap-1.5">
                         <span className={`w-1 h-1 rounded-full ${resolvedStatus === 'LIVE' ? 'bg-red-500 animate-pulse' : resolvedStatus === 'UPCOMING' ? 'bg-amber-400' : 'bg-zinc-500'}`} />
                         <span>
                           {resolvedStatus === 'LIVE' 
@@ -307,7 +309,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
               </div>
               <button
                 onClick={onClose}
-                className="rounded-full p-2 text-zinc-400 hover:text-white hover:bg-white/5 transition-all active:scale-95 shrink-0"
+                className="rounded-full p-2 text-[#543D2B]/60 dark:text-zinc-400 hover:text-[#543D2B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-95 shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -327,12 +329,12 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                 </div>
               )}
 
-              {/* Conditionally Render Video Player (ONLY when status = LIVE) */}
-              {resolvedStatus === 'LIVE' ? (
+              {/* Conditionally Render Video Player (when status = LIVE or forced) */}
+              {(resolvedStatus === 'LIVE' || forceShowPlayer) ? (
                 <div className="space-y-4">
                   {/* Main Player Container */}
                   <div className="w-full aspect-video rounded-2xl overflow-hidden bg-black border border-white/5 flex flex-col items-center justify-center text-center relative shadow-lg">
-                    {showInAppPlayer && embedUrl ? (
+                    {(showInAppPlayer || forceShowPlayer) && embedUrl ? (
                       <iframe
                         src={embedUrl}
                         title={`${temple.name} Live Stream`}
@@ -391,7 +393,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                       alt={title}
                       className="w-full h-full object-cover opacity-75"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0c0705] via-[#0c0705]/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#FCF6E8] dark:from-[#0c0705] via-[#FCF6E8]/20 dark:via-[#0c0705]/20 to-transparent" />
                   </div>
 
                   {/* Prominent Status Banner */}
@@ -403,13 +405,13 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
               {temple.aartiSchedule.length > 0 && (
                 <div 
                   ref={scheduleRef} 
-                  className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 scroll-mt-6"
+                  className="bg-white/40 dark:bg-white/[0.01] border border-[#EAD7C3] dark:border-white/5 rounded-2xl p-4 scroll-mt-6"
                 >
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3.5 flex items-center gap-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#543D2B]/60 dark:text-zinc-400 mb-3.5 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-orange-500/75" />
                     <span>{isHi ? 'दैनिक आरती समय सारिणी (IST)' : 'Daily Aarti Schedule (IST)'}</span>
                   </h4>
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-y divide-[#EAD7C3]/50 dark:divide-white/5">
                     {temple.aartiSchedule.map((item, idx) => {
                       const isNext = nextAartiData && nextAartiData.aarti.time === item.time;
                       return (
@@ -419,14 +421,14 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                             isNext 
                               ? highlightSchedule
                                 ? 'bg-orange-500/20 ring-1 scale-[1.01]'
-                                : 'bg-white/[0.02]'
+                                : 'bg-black/5 dark:bg-white/[0.02]'
                               : ''
                           }`}
                           style={isNext && highlightSchedule ? { ringColor: accentColor } : {}}
                         >
                           <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                              <span className={`text-sm font-semibold ${isNext ? 'text-white font-bold' : 'text-zinc-300'}`}>
+                              <span className={`text-sm font-semibold ${isNext ? 'text-[#543D2B] dark:text-white font-bold' : 'text-[#543D2B]/85 dark:text-zinc-300'}`}>
                                 {isHi ? item.nameHindi : item.name}
                               </span>
                               {isNext && (
@@ -438,13 +440,13 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                                 </span>
                               )}
                             </div>
-                            <div className="text-sm font-semibold text-amber-250">
-                              {item.time} <span className="text-[10px] font-medium text-zinc-500">({item.durationMinutes}m)</span>
+                            <div className="text-sm font-semibold text-[#B27A1C] dark:text-amber-250">
+                              {item.time} <span className="text-[10px] font-medium text-[#543D2B]/50 dark:text-zinc-500">({item.durationMinutes}m)</span>
                             </div>
                           </div>
                           {isNext && displayMinutes !== undefined && resolvedStatus !== 'LIVE' && (
                             <p className="text-[11px] font-bold mt-0.5 flex items-center gap-1" style={{ color: accentColor }}>
-                              <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: accentColor }} />
+                               <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: accentColor }} />
                               <span>{isHi ? `शुरू होने में: ${formatMinutes(displayMinutes)}` : `Starts in: ${formatMinutes(displayMinutes)}`}</span>
                             </p>
                           )}
@@ -455,43 +457,56 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                 </div>
               )}
 
-              {/* Development Debug Panel (Issue 2 & 8) */}
-              {isDevelopment && (
-                <div className="mt-4 p-3.5 rounded-2xl bg-black border border-red-500/20 text-[10px] font-mono text-zinc-400 space-y-1 shadow-inner">
-                  <p className="font-bold text-red-400 uppercase tracking-wider text-[8px] mb-2 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
-                    <span>Development Debug Info</span>
-                  </p>
-                  <p><span className="text-zinc-500">Temple ID:</span> {temple.id}</p>
-                  <p><span className="text-zinc-500">Verification Status:</span> {resolvedStatus}</p>
-                  <p><span className="text-zinc-500">Video ID:</span> {temple.videoId || 'null'}</p>
-                  <p><span className="text-zinc-500">Live Title:</span> {temple.liveTitle || 'null'}</p>
-                  <p><span className="text-zinc-500">Last Verified:</span> {temple.lastVerifiedAt ? new Date(temple.lastVerifiedAt).toLocaleString() + ' IST' : 'null'}</p>
-                </div>
-              )}
 
             </div>
 
             {/* Modal Footer (Sticky) */}
-            <div className="p-4 border-t border-white/5 bg-[#0e0a08]/95 backdrop-blur-sm shrink-0 sticky bottom-0 z-20 flex flex-col gap-2">
-              <button
-                onClick={handlePrimaryAction}
-                className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold py-3.5 px-6 rounded-2xl shadow-[0_10px_25px_-10px_rgba(249,115,22,0.4)] transition-all duration-300 text-sm"
-              >
-                {resolvedStatus === 'LIVE' && <span className="w-2 h-2 rounded-full bg-white animate-ping" />}
-                {resolvedStatus === 'UPCOMING' && <Clock className="w-4 h-4" />}
-                {resolvedStatus === 'OFFLINE' && <Youtube className="w-4.5 h-4.5 text-red-500 fill-white" />}
-                {resolvedStatus === 'STREAM_UNAVAILABLE' && <Youtube className="w-4.5 h-4.5 text-red-500 fill-white animate-pulse" />}
-                <span>{getButtonText()}</span>
-              </button>
+            <div className="p-4 border-t border-[#EAD7C3] dark:border-white/5 bg-[#FCF6E8]/95 dark:bg-[#0e0a08]/95 backdrop-blur-sm shrink-0 sticky bottom-0 z-20 flex flex-col gap-2">
+              {/* Primary action button (e.g. Schedule/Open Channel) */}
+              {!(resolvedStatus === 'LIVE' || forceShowPlayer) && (
+                <button
+                  onClick={handlePrimaryAction}
+                  className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold py-3.5 px-6 rounded-2xl shadow-[0_10px_25px_-10px_rgba(249,115,22,0.4)] transition-all duration-300 text-sm"
+                >
+                  {resolvedStatus === 'UPCOMING' && <Clock className="w-4 h-4" />}
+                  {resolvedStatus === 'OFFLINE' && <Youtube className="w-4.5 h-4.5 text-red-500 fill-white" />}
+                  {resolvedStatus === 'STREAM_UNAVAILABLE' && <Youtube className="w-4.5 h-4.5 text-red-500 fill-white animate-pulse" />}
+                  <span>{getButtonText()}</span>
+                </button>
+              )}
 
-              {/* Secondary In-App fallback option when status is LIVE and playing in iframe */}
-              {resolvedStatus === 'LIVE' && showInAppPlayer && (
+              {/* In-App Live Stream Player Trigger */}
+              {!(resolvedStatus === 'LIVE' || forceShowPlayer) && embedUrl && (
+                <button
+                  type="button"
+                  onClick={() => setForceShowPlayer(true)}
+                  className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold transition-all duration-300 text-sm shadow-md"
+                >
+                  <Play className="w-4 h-4 fill-white stroke-none" />
+                  <span>{isHi ? '📺 वेबसाइट पर लाइव चलाएं' : '📺 Play Live Stream in Website'}</span>
+                </button>
+              )}
+
+              {/* Direct Live stream option on YouTube if shown offline/upcoming (to bypass scrape block/rate limit) */}
+              {!(resolvedStatus === 'LIVE' || forceShowPlayer) && (
+                <button
+                  type="button"
+                  onClick={() => window.open(temple.fallbackLiveUrl, '_blank', 'noopener,noreferrer')}
+                  className="w-full flex items-center justify-center gap-2.5 px-6 py-3 rounded-2xl border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-600 dark:text-red-400 font-bold transition-all duration-300 text-sm"
+                >
+                  <Youtube className="w-4.5 h-4.5 text-red-600 dark:text-red-500 fill-current shrink-0" />
+                  <span>{isHi ? '🔴 यूट्यूब पर सीधा लाइव चेक करें' : '🔴 Check Direct Live on YouTube'}</span>
+                </button>
+              )}
+
+              {/* Secondary option when status is LIVE or playing in iframe */}
+              {(resolvedStatus === 'LIVE' || forceShowPlayer) && (
                 <button
                   onClick={() => window.open(temple.fallbackLiveUrl, '_blank', 'noopener,noreferrer')}
-                  className="text-xs font-semibold text-zinc-400 hover:text-orange-400 underline underline-offset-4 transition-colors py-1 self-center"
+                  className="w-full flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold py-3.5 px-6 rounded-2xl transition-all duration-300 text-sm shadow-md"
                 >
-                  {isHi ? 'यूट्यूब ऐप में खोलें' : 'Open in YouTube app'}
+                  <Youtube className="w-4.5 h-4.5 fill-white stroke-none" />
+                  <span>{isHi ? 'यूट्यूब ऐप में खोलें' : 'Open in YouTube App'}</span>
                 </button>
               )}
             </div>

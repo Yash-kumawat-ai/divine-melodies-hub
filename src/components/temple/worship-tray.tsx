@@ -122,7 +122,7 @@ export function WorshipTray({
   return (
     <nav
       aria-label={t('offeringsLabel')}
-      className="absolute right-0 bottom-0 left-0 z-50 border-t border-gold/30 bg-gradient-to-t from-[#0d0705] to-[#0d0705]/95 pb-[env(safe-area-inset-bottom)]"
+      className="absolute right-0 bottom-0 left-0 z-50 border-t border-[#EAD7C3] dark:border-gold/30 bg-gradient-to-t from-[#FCF6E8] to-[#FCF6E8]/95 dark:from-[#0d0705] dark:to-[#0d0705]/95 pb-[env(safe-area-inset-bottom)] transition-all duration-300"
     >
       <ul className="no-scrollbar flex items-center gap-1 overflow-x-auto px-3 py-2.5">
         {ACTIONS.map((action) => (
@@ -133,10 +133,10 @@ export function WorshipTray({
               onClick={() => onAction(action.id)}
               className="group flex w-[68px] flex-col items-center gap-1 focus-visible:outline-none disabled:opacity-50"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-gold/50 bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-saffron group-active:bg-saffron/30">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-[#EAD7C3] dark:border-gold/50 bg-[#FFF5EA] dark:bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-[#E06D14] dark:group-active:border-saffron group-active:bg-[#E06D14]/10 dark:group-active:bg-saffron/30">
                 {action.icon}
               </span>
-              <span className="font-serif text-[11px] whitespace-nowrap text-white/80">
+              <span className="font-serif text-[11px] whitespace-nowrap text-[#543D2B] dark:text-white/80 transition-colors duration-300">
                 {t(action.labelKey)}
               </span>
             </button>

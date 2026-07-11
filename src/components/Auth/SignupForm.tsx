@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -220,8 +220,8 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="text-3xl font-semibold text-white">{copy.title}</h2>
-        <p className="text-sm text-slate-400">{copy.subtitle}</p>
+        <h2 className="text-3xl font-semibold text-[#3A2412] dark:text-white">{copy.title}</h2>
+        <p className="text-sm text-[#543D2B]/80 dark:text-slate-400">{copy.subtitle}</p>
       </div>
       
       {error && (
@@ -237,15 +237,15 @@ export default function SignupForm() {
       )}
 
       <div className="space-y-2">
-        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.fullName}</label>
+        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-slate-300">{copy.fullName}</label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E06D14]/70 dark:text-orange-500/60 w-4 h-4" />
           <Input
             id="name"
             type="text"
             {...register('name')}
             placeholder={copy.fullNamePlaceholder}
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-orange-500/50 bg-[#FFFDFC]/40 dark:bg-slate-800/50 text-[#3A2412] dark:text-white placeholder:text-[#543D2B]/40 dark:placeholder:text-slate-500 pl-10 focus-visible:ring-[#E06D14] dark:focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-[#E06D14] dark:focus-visible:border-orange-500 shadow-lg shadow-black/[0.02] dark:shadow-orange-500/20 hover:border-[#E06D14]/40 dark:hover:border-orange-500/75 transition-all"
           />
         </div>
         {errors.name && (
@@ -254,15 +254,15 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.email}</label>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-slate-300">{copy.email}</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E06D14]/70 dark:text-orange-500/60 w-4 h-4" />
           <Input
             id="email"
             type="email"
             {...register('email')}
             placeholder="your@email.com"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-orange-500/50 bg-[#FFFDFC]/40 dark:bg-slate-800/50 text-[#3A2412] dark:text-white placeholder:text-[#543D2B]/40 dark:placeholder:text-slate-500 pl-10 focus-visible:ring-[#E06D14] dark:focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-[#E06D14] dark:focus-visible:border-orange-500 shadow-lg shadow-black/[0.02] dark:shadow-orange-500/20 hover:border-[#E06D14]/40 dark:hover:border-orange-500/75 transition-all"
           />
         </div>
         {errors.email && (
@@ -271,15 +271,15 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.phone}</label>
+        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-slate-300">{copy.phone}</label>
         <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E06D14]/70 dark:text-orange-500/60 w-4 h-4" />
           <Input
             id="phone"
             type="tel"
             {...register('phone')}
             placeholder="+91 98765 43210"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-orange-500/50 bg-[#FFFDFC]/40 dark:bg-slate-800/50 text-[#3A2412] dark:text-white placeholder:text-[#543D2B]/40 dark:placeholder:text-slate-500 pl-10 focus-visible:ring-[#E06D14] dark:focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-[#E06D14] dark:focus-visible:border-orange-500 shadow-lg shadow-black/[0.02] dark:shadow-orange-500/20 hover:border-[#E06D14]/40 dark:hover:border-orange-500/75 transition-all"
           />
         </div>
         {errors.phone && (
@@ -288,15 +288,15 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.password}</label>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-slate-300">{copy.password}</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E06D14]/70 dark:text-orange-500/60 w-4 h-4" />
           <Input
             id="password"
             type="password"
             {...register('password')}
             placeholder="••••••••"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-orange-500/50 bg-[#FFFDFC]/40 dark:bg-slate-800/50 text-[#3A2412] dark:text-white placeholder:text-[#543D2B]/40 dark:placeholder:text-slate-500 pl-10 focus-visible:ring-[#E06D14] dark:focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-[#E06D14] dark:focus-visible:border-orange-500 shadow-lg shadow-black/[0.02] dark:shadow-orange-500/20 hover:border-[#E06D14]/40 dark:hover:border-orange-500/75 transition-all"
           />
         </div>
         {errors.password && (
@@ -305,15 +305,15 @@ export default function SignupForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wide text-slate-300">{copy.confirmPassword}</label>
+        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-slate-300">{copy.confirmPassword}</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-500/60 w-4 h-4" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#E06D14]/70 dark:text-orange-500/60 w-4 h-4" />
           <Input
             id="confirmPassword"
             type="password"
             {...register('confirmPassword')}
             placeholder="••••••••"
-            className="h-12 rounded-xl border border-orange-500/50 bg-slate-800/50 text-white placeholder:text-slate-500 pl-10 focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-orange-500 shadow-lg shadow-orange-500/20 hover:border-orange-500/75 transition-all"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-orange-500/50 bg-[#FFFDFC]/40 dark:bg-slate-800/50 text-[#3A2412] dark:text-white placeholder:text-[#543D2B]/40 dark:placeholder:text-slate-500 pl-10 focus-visible:ring-[#E06D14] dark:focus-visible:ring-orange-500 focus-visible:ring-2 focus-visible:border-[#E06D14] dark:focus-visible:border-orange-500 shadow-lg shadow-black/[0.02] dark:shadow-orange-500/20 hover:border-[#E06D14]/40 dark:hover:border-orange-500/75 transition-all"
           />
         </div>
         {errors.confirmPassword && (
@@ -321,17 +321,17 @@ export default function SignupForm() {
         )}
       </div>
 
-      <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all shadow-lg ${isRateLimited ? 'bg-slate-600 text-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-orange-500/30'}`}>
+      <Button type="submit" disabled={loading || isRateLimited} className={`h-12 w-full rounded-xl text-base font-semibold transition-all shadow-lg ${isRateLimited ? 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-300 cursor-not-allowed' : 'bg-gradient-to-r from-[#E06D14] to-[#F59E0B] dark:from-orange-500 dark:to-amber-500 text-white hover:from-[#F59E0B] hover:to-[#E06D14] dark:hover:from-orange-600 dark:hover:to-amber-600 shadow-[0_8px_28px_rgba(224,109,20,0.25)] dark:shadow-orange-500/30'}`}>
         {loading && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
         {isRateLimited ? `${copy.blocked} ${secondsRemaining}s` : copy.submit}
       </Button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-orange-500/20" />
+          <span className="w-full border-t border-[#EAD7C3] dark:border-orange-500/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-800/50 px-3 text-slate-400">{copy.divider}</span>
+          <span className="bg-[#FFFDFC]/95 dark:bg-slate-800/50 px-3 text-[#543D2B]/80 dark:text-slate-400">{copy.divider}</span>
         </div>
       </div>
 
@@ -340,15 +340,15 @@ export default function SignupForm() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="h-12 w-full rounded-xl border border-orange-500/30 bg-slate-800/50 text-white hover:bg-slate-700/50 hover:border-orange-500/50"
+        className="h-12 w-full rounded-xl border border-[#EAD7C3] dark:border-orange-500/30 bg-transparent text-[#3A2412] dark:text-white hover:border-[#E06D14]/40 dark:hover:border-orange-500/50 hover:bg-[#FFF5EA]/35 dark:hover:bg-slate-700/50"
       >
         <Chrome className="mr-2 w-4 h-4" />
         {copy.google}
       </Button>
 
-      <p className="text-center text-sm text-slate-400">
+      <p className="text-center text-sm text-[#543D2B]/85 dark:text-slate-400">
         {copy.alreadyAccount}{' '}
-        <Link to="/auth/login" className="text-orange-400 hover:text-orange-300 hover:underline font-medium">
+        <Link to="/auth/login" className="text-[#E06D14] dark:text-orange-400 hover:text-[#E06D14]/80 dark:hover:text-orange-300 hover:underline font-medium">
           {copy.login}
         </Link>
       </p>

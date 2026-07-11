@@ -140,8 +140,8 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">{copy.title}</h2>
-        <p className="text-sm text-[#B5BFD0]">{copy.subtitle}</p>
+        <h2 className="font-display text-2xl font-semibold text-[#3A2412] dark:text-white sm:text-3xl">{copy.title}</h2>
+        <p className="text-sm text-[#543D2B]/80 dark:text-[#B5BFD0]">{copy.subtitle}</p>
       </div>
       
       {error && (
@@ -152,7 +152,7 @@ export default function LoginForm() {
               type="button"
               onClick={handleResendConfirmation}
               disabled={loading}
-              className="mt-2 block text-xs font-semibold text-[#E6C27A] hover:text-[#FFD98A] hover:underline"
+              className="mt-2 block text-xs font-semibold text-[#E06D14] dark:text-[#E6C27A] hover:text-[#E06D14]/80 dark:hover:text-[#FFD98A] hover:underline"
             >
               {copy.resend}
             </button>
@@ -161,21 +161,21 @@ export default function LoginForm() {
       )}
 
       {notice && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-300">
           {notice}
         </div>
       )}
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-[#B5BFD0]">{copy.email}</label>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-[#B5BFD0]">{copy.email}</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E6C27A]/70" />
+          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E06D14]/70 dark:text-[#E6C27A]/70" />
           <Input
             id="email"
             type="email"
             {...register('email')}
             placeholder="namaste@example.com"
-            className="h-12 rounded-xl border border-[#E6C27A]/25 bg-[#061323]/60 pl-10 text-white shadow-lg shadow-black/20 placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E6C27A]/45 focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E6C27A]/30"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-[#E6C27A]/25 bg-[#FFFDFC]/40 dark:bg-[#061323]/60 pl-10 text-[#3A2412] dark:text-white shadow-lg shadow-black/[0.02] dark:shadow-black/20 placeholder:text-[#543D2B]/40 dark:placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E06D14]/40 dark:hover:border-[#E6C27A]/45 focus-visible:border-[#E06D14] dark:focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E06D14]/30 dark:focus-visible:ring-[#E6C27A]/30"
           />
         </div>
         {errors.email && (
@@ -184,15 +184,15 @@ export default function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-[#B5BFD0]">{copy.password}</label>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wide text-[#543D2B]/85 dark:text-[#B5BFD0]">{copy.password}</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E6C27A]/70" />
+          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E06D14]/70 dark:text-[#E6C27A]/70" />
           <Input
             id="password"
             type="password"
             {...register('password')}
             placeholder="••••••••"
-            className="h-12 rounded-xl border border-[#E6C27A]/25 bg-[#061323]/60 pl-10 text-white shadow-lg shadow-black/20 placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E6C27A]/45 focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E6C27A]/30"
+            className="h-12 rounded-xl border border-[#EAD7C3] dark:border-[#E6C27A]/25 bg-[#FFFDFC]/40 dark:bg-[#061323]/60 pl-10 text-[#3A2412] dark:text-white shadow-lg shadow-black/[0.02] dark:shadow-black/20 placeholder:text-[#543D2B]/40 dark:placeholder:text-[#B5BFD0]/50 transition-all hover:border-[#E06D14]/40 dark:hover:border-[#E6C27A]/45 focus-visible:border-[#E06D14] dark:focus-visible:border-[#E6C27A] focus-visible:ring-2 focus-visible:ring-[#E06D14]/30 dark:focus-visible:ring-[#E6C27A]/30"
           />
         </div>
         {errors.password && (
@@ -203,7 +203,7 @@ export default function LoginForm() {
       <Button
         type="submit"
         disabled={loading}
-        className="h-12 w-full rounded-xl bg-gradient-to-r from-[#E6C27A] to-[#FFD98A] text-base font-semibold text-[#061323] shadow-[0_8px_28px_rgba(230,194,122,0.35)] transition-all hover:from-[#FFD98A] hover:to-[#E6C27A] hover:shadow-[0_10px_32px_rgba(255,217,138,0.4)]"
+        className="h-12 w-full rounded-xl bg-gradient-to-r from-[#E06D14] to-[#F59E0B] dark:from-[#E6C27A] dark:to-[#FFD98A] text-base font-semibold text-white dark:text-[#061323] shadow-[0_8px_28px_rgba(224,109,20,0.25)] dark:shadow-[0_8px_28px_rgba(230,194,122,0.35)] transition-all hover:from-[#F59E0B] hover:to-[#E06D14] dark:hover:from-[#FFD98A] dark:hover:to-[#E6C27A] hover:shadow-[0_10px_32px_rgba(245,158,11,0.3)] dark:hover:shadow-[0_10px_32px_rgba(255,217,138,0.4)]"
       >
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {copy.submit}
@@ -211,10 +211,10 @@ export default function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[#E6C27A]/20" />
+          <span className="w-full border-t border-[#EAD7C3] dark:border-[#E6C27A]/20" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-[#0A1830]/80 px-3 text-[#B5BFD0]">{copy.or}</span>
+          <span className="bg-[#FFFDFC]/95 dark:bg-[#0A1830]/80 px-3 text-[#543D2B]/80 dark:text-[#B5BFD0]">{copy.or}</span>
         </div>
       </div>
 
@@ -223,15 +223,15 @@ export default function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="h-12 w-full rounded-xl border border-[#E6C27A]/30 bg-transparent text-white hover:border-[#E6C27A]/55 hover:bg-[#061323]/40"
+        className="h-12 w-full rounded-xl border border-[#EAD7C3] dark:border-[#E6C27A]/30 bg-transparent text-[#3A2412] dark:text-white hover:border-[#E06D14]/40 dark:hover:border-[#E6C27A]/55 hover:bg-[#FFF5EA]/35 dark:hover:bg-[#061323]/40"
       >
         <Chrome className="mr-2 h-4 w-4" />
         {copy.google}
       </Button>
 
-      <p className="text-center text-sm text-[#B5BFD0]">
+      <p className="text-center text-sm text-[#543D2B]/85 dark:text-[#B5BFD0]">
         {copy.noAccount}{' '}
-        <Link to="/auth/signup" className="font-medium text-[#E6C27A] hover:text-[#FFD98A] hover:underline">
+        <Link to="/auth/signup" className="font-medium text-[#E06D14] dark:text-[#E6C27A] hover:text-[#E06D14]/80 dark:hover:text-[#FFD98A] hover:underline">
           {copy.signUp}
         </Link>
       </p>

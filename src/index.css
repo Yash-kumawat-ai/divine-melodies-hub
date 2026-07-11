@@ -94,7 +94,26 @@
     --temple-shadow: 0 12px 40px -12px hsl(0 0% 0% / 0.55);
   }
 
+  /* ── Panchang page: light-mode overrides (warm saffron-cream palette) ── */
   .panchang-temple {
+    --background: 36 50% 95%;
+    --foreground: 20 35% 12%;
+    --card: 36 65% 98%;
+    --card-foreground: 20 35% 12%;
+    --popover: 36 65% 98%;
+    --popover-foreground: 20 35% 12%;
+    --muted: 35 35% 88%;
+    --muted-foreground: 25 18% 40%;
+    --accent: 32 90% 55%;
+    --accent-foreground: 0 0% 100%;
+    --border: 32 35% 72%;
+    --input: 36 65% 98%;
+    --ring: 32 90% 55%;
+    color: hsl(var(--foreground));
+  }
+
+  /* ── Panchang page: dark-mode overrides ── */
+  .dark .panchang-temple {
     --background: 24 24% 7%;
     --foreground: 35 40% 92%;
     --card: 24 20% 12%;
@@ -296,8 +315,18 @@
     line-height: 1.25;
   }
 
+  /* Light-mode panchang background: warm saffron-cream gradient */
   .panchang-temple-bg {
-    background-image: radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 34%),
+    background-image:
+      radial-gradient(circle at top left, rgba(245, 158, 11, 0.10), transparent 34%),
+      radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.12), transparent 42%),
+      linear-gradient(180deg, hsl(36 55% 93%) 0%, hsl(36 50% 96%) 45%, hsl(34 45% 91%) 100%);
+  }
+
+  /* Dark-mode panchang background: deep amber-brown */
+  .dark .panchang-temple-bg {
+    background-image:
+      radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 34%),
       radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.2), transparent 42%),
       linear-gradient(180deg, #140b05 0%, #0b0603 45%, #1a0f08 100%);
   }
@@ -949,7 +978,7 @@ width:fit-content;
 }
 
 img.w-full.h-full.object-cover.object-top {
-    mask-image: linear-gradient(black 5%, transparent 60%)!important;
+    /* mask-image fade removed */
 }
 
 

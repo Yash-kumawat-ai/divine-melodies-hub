@@ -49,9 +49,9 @@ const shellContent = {
 function OmSymbol({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#E6C27A]/40 bg-[#0A1830]/60 shadow-[0_0_28px_rgba(255,217,138,0.2)] sm:h-16 sm:w-16 ${className}`}
+      className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#EAD7C3] dark:border-[#E6C27A]/40 bg-[#FFF5EA] dark:bg-[#0A1830]/60 shadow-[0_0_28px_rgba(224,109,20,0.1)] dark:shadow-[0_0_28px_rgba(255,217,138,0.2)] sm:h-16 sm:w-16 ${className}`}
     >
-      <span className="font-display text-2xl text-[#FFD98A] drop-shadow-[0_0_12px_rgba(255,217,138,0.45)] sm:text-3xl">
+      <span className="font-display text-2xl text-[#E06D14] dark:text-[#FFD98A] drop-shadow-[0_0_12px_rgba(224,109,20,0.2)] dark:drop-shadow-[0_0_12px_rgba(255,217,138,0.45)] sm:text-3xl">
         ॐ
       </span>
     </div>
@@ -67,11 +67,8 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
       : mode === 'signup' && isHindi
         ? shellContent.signupHi
         : shellContent[mode];
-
-
-
   return (
-    <div className="relative min-h-[100svh] overflow-hidden bg-[#061323]">
+    <div className="relative min-h-[100svh] overflow-hidden bg-[#FCF6E8] dark:bg-[#061323]">
       {/* Desktop wallpaper — covers the entire desktop site */}
       <img
         src={shivDesktop}
@@ -89,17 +86,17 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
         <label className="sr-only" htmlFor="auth-language">
           {content.language}
         </label>
-        <div className="flex items-center gap-2 rounded-full border border-[#E6C27A]/30 bg-[#0A1830]/80 px-3 py-2 text-[#E6C27A] shadow-lg shadow-black/30 backdrop-blur-xl">
+        <div className="flex items-center gap-2 rounded-full border border-[#EAD7C3] dark:border-[#E6C27A]/30 bg-[#FFF5EA]/90 dark:bg-[#0A1830]/80 px-3 py-2 text-[#E06D14] dark:text-[#E6C27A] shadow-lg shadow-black/5 dark:shadow-black/30 backdrop-blur-xl">
           <Languages className="h-4 w-4" />
           <select
             id="auth-language"
             value={language}
             onChange={(event) => setLanguage(event.target.value as typeof language)}
-            className="bg-transparent text-xs font-semibold uppercase tracking-wide text-[#FFD98A] outline-none"
+            className="bg-transparent text-xs font-semibold uppercase tracking-wide text-[#E06D14] dark:text-[#FFD98A] outline-none"
             aria-label={content.language}
           >
             {languageOptions.map((option) => (
-              <option key={option.code} value={option.code} className="bg-[#0A1830] text-white">
+              <option key={option.code} value={option.code} className="bg-white dark:bg-[#0A1830] text-[#3A2412] dark:text-white">
                 {option.label}
               </option>
             ))}
@@ -114,16 +111,16 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
           <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 bg-[radial-gradient(circle_at_25%_30%,rgba(230,194,122,0.07),transparent_50%)] md:block" />
 
           <div className="relative w-full max-w-md">
-            <div className="relative -mt-10 overflow-hidden rounded-t-[1.75rem] rounded-b-2xl border border-[#E6C27A]/30 bg-[#0A1830]/80 p-6 shadow-[0_-16px_48px_rgba(0,0,0,0.45),0_24px_64px_-12px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-7 md:mt-0 md:rounded-2xl md:shadow-[0_24px_64px_-12px_rgba(0,0,0,0.6)]">
+            <div className="relative -mt-10 overflow-hidden rounded-t-[1.75rem] rounded-b-2xl border border-[#EAD7C3] dark:border-[#E6C27A]/30 bg-[#FFFDFC]/90 dark:bg-[#0A1830]/80 p-6 shadow-[0_-16px_48px_rgba(95,72,38,0.06),0_24px_64px_-12px_rgba(95,72,38,0.08)] dark:shadow-[0_-16px_48px_rgba(0,0,0,0.45),0_24px_64px_-12px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-7 md:mt-0 md:rounded-2xl md:shadow-[0_24px_64px_-12px_rgba(95,72,38,0.08)] dark:shadow-[0_24px_64px_-12px_rgba(0,0,0,0.6)]">
               {/* Temple arch accent */}
-              <div className="pointer-events-none absolute -top-px left-1/2 h-7 w-28 -translate-x-1/2 rounded-b-[1.75rem] border-b border-x border-[#E6C27A]/20 bg-[#0A1830]/90" />
+              <div className="pointer-events-none absolute -top-px left-1/2 h-7 w-28 -translate-x-1/2 rounded-b-[1.75rem] border-b border-x border-[#EAD7C3] dark:border-[#E6C27A]/20 bg-[#FFFDFC]/95 dark:bg-[#0A1830]/90" />
 
               <OmSymbol className="mb-5" />
               {children}
-              <div className="mt-6 border-t border-[#E6C27A]/15 pt-4 text-center text-xs text-[#B5BFD0]">
+              <div className="mt-6 border-t border-[#EAD7C3] dark:border-[#E6C27A]/15 pt-4 text-center text-xs text-[#543D2B]/85 dark:text-[#B5BFD0]">
                 <p>{content.guideline}</p>
                 <p className="mt-2">
-                  <Link className="font-semibold text-[#E6C27A] hover:text-[#FFD98A]" to="/">
+                  <Link className="font-semibold text-[#E06D14] dark:text-[#E6C27A] hover:text-[#E06D14]/80 dark:hover:text-[#FFD98A]" to="/">
                     {content.home}
                   </Link>
                 </p>

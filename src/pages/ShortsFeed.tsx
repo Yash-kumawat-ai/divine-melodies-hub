@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabaseClient';
@@ -38,6 +38,19 @@ export default function ShortsFeed() {
   const [likesCountMap, setLikesCountMap] = useState<Record<string, number>>({});
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+
+  // Callback ref: fires as soon as the scroll div mounts (works after loading state resolves)
+  const scrollRefCallback = useCallback((node: HTMLDivElement | null) => {
+    (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    if (!node) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerHeight(entry.contentRect.height);
+    });
+    ro.observe(node);
+    // Initial measurement
+    setContainerHeight(node.clientHeight);
+  }, []);
 
   // Load Shorts and Curation details
   const loadShorts = useCallback(async (catFilter = selectedCategory) => {
@@ -253,8 +266,8 @@ export default function ShortsFeed() {
   const activeShort = shorts[activeIndex];
 
   return (
-    <div className="relative min-h-[calc(100vh-112px)] bg-[#070302] flex flex-col items-center justify-start text-white w-full">
-      {/* Dynamic SEO Meta Injection for Shared Deep Links */}
+    <div className="relative w-full flex-1 flex flex-col bg-background dark:bg-[#070302] min-h-0">
+      {/* Dynamic SEO */}
       {activeShort && (
         <SEO
           title={activeShort.title}
@@ -264,19 +277,68 @@ export default function ShortsFeed() {
         />
       )}
 
-      {/* 1. Loading state */}
+      {/* Loading state */}
       {loading && shorts.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-full flex-1 flex flex-col items-center justify-center gap-3 bg-background dark:bg-[#070302]">
           <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
-          <p className="text-sm text-stone-400">Loading Bhakti Shorts...</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">Loading Bhakti Shorts...</p>
+        </div>
+      ) : shorts.length === 0 ? (
+        <div className="w-full flex-1 flex flex-col items-center justify-center p-6 text-center bg-background dark:bg-[#070302]">
+          <Film className="w-12 h-12 text-stone-400 dark:text-stone-600 mb-4" />
+          <h2 className="text-lg font-bold text-stone-700 dark:text-stone-300">No Shorts Available</h2>
+          <p className="text-xs text-stone-500 mt-1 max-w-xs">
+            {videoId
+              ? "This short is not found or has been hidden."
+              : `No shorts in the "${selectedCategory}" category.`}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (videoId) window.location.href = '/shorts';
+              else handleCategoryChange('all');
+            }}
+            className="mt-6 rounded-xl border-orange-200 dark:border-orange-900/30 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+          >
+            {videoId ? "Browse All Shorts" : "View All Categories"}
+          </Button>
         </div>
       ) : (
-        /* Feed Viewport */
-        <div className="w-full flex-1 flex flex-col items-center justify-center p-0 md:py-4">
-          
-          {/* Category Filter Tabs - Hide when displaying a single shared deep-link */}
+        <>
+          {/* Video scroll feed — fills the full container */}
+          <div
+            ref={scrollRefCallback}
+            onScroll={handleScroll}
+            className="flex-1 min-h-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide bg-black"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {shorts.map((item, idx) => (
+              <div
+                key={item.id}
+                className="w-full shrink-0 snap-start snap-always"
+                style={{ height: containerHeight > 0 ? containerHeight : '100svh' }}
+              >
+                <ShortsPlayer
+                  videoId={item.video_id}
+                  title={item.title}
+                  description={item.description}
+                  channelName={item.whitelisted_channels?.channel_name || 'Creator'}
+                  channelHandle={item.whitelisted_channels?.handle || '@creator'}
+                  isActive={idx === activeIndex}
+                  liked={likedVideoIds.has(item.id)}
+                  saved={savedVideoIds.has(item.id)}
+                  likesCount={likesCountMap[item.id] || 0}
+                  onLike={() => handleLikeToggle(item.id)}
+                  onSave={() => handleSaveToggle(item.id)}
+                  onShare={() => handleShare(item.video_id)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Category filter — floats over the top of the video */}
           {!videoId && (
-            <div className="w-full max-w-[400px] flex gap-2 overflow-x-auto px-4 py-2.5 scrollbar-hide z-30 bg-[#070302]/95 backdrop-blur-md border-b border-orange-950/20">
+            <div className="absolute top-0 left-0 right-0 z-30 flex gap-2 overflow-x-auto px-4 pt-3 pb-5 scrollbar-hide bg-gradient-to-b from-white/80 dark:from-black/75 via-white/30 dark:via-black/30 to-transparent">
               {['all', 'bhajan', 'pravachan', 'darshan', 'katha'].map((cat) => (
                 <button
                   key={cat}
@@ -284,8 +346,8 @@ export default function ShortsFeed() {
                   className={cn(
                     "px-3.5 py-1 text-[11px] font-black uppercase tracking-wider rounded-full border transition-all whitespace-nowrap",
                     selectedCategory === cat
-                      ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/20"
-                      : "bg-[#2a1a08]/30 text-stone-400 border-orange-900/10 hover:border-orange-500/25 hover:text-stone-300"
+                      ? "bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30"
+                      : "bg-white/40 dark:bg-black/30 text-amber-900 dark:text-white/80 border-amber-500/20 dark:border-white/25 hover:border-orange-400/70 hover:text-orange-600 dark:hover:text-white backdrop-blur-sm"
                   )}
                 >
                   {cat}
@@ -293,68 +355,7 @@ export default function ShortsFeed() {
               ))}
             </div>
           )}
-
-          {shorts.length === 0 ? (
-            <div className="flex-1 w-full max-w-[400px] flex flex-col items-center justify-center p-6 text-center py-20 min-h-[400px]">
-              <Film className="w-12 h-12 text-stone-600 mb-4" />
-              <h2 className="text-lg font-bold text-stone-300">No Shorts Available</h2>
-              <p className="text-xs text-stone-500 mt-1 max-w-xs">
-                {videoId ? "This short is not found or has been hidden." : `There are currently no shorts available in the "${selectedCategory}" category.`}
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (videoId) {
-                    window.location.href = '/shorts';
-                  } else {
-                    handleCategoryChange('all');
-                  }
-                }}
-                className="mt-6 rounded-xl border-orange-900/30 text-orange-400 hover:bg-orange-950/20"
-              >
-                {videoId ? "Browse All Shorts" : "View All Categories"}
-              </Button>
-            </div>
-          ) : (
-            <div className="relative w-full max-w-[400px] h-[calc(100vh-210px)] md:h-[650px] md:rounded-[2rem] md:overflow-hidden md:border md:border-orange-900/30 md:shadow-[0_20px_60px_rgba(0,0,0,0.85)] bg-black">
-              
-              {/* Swiper wrapper */}
-              <div
-                ref={containerRef}
-                onScroll={handleScroll}
-                className="w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-                style={{ scrollBehavior: 'smooth' }}
-              >
-                {shorts.map((item, idx) => (
-                  <div key={item.id} className="w-full h-full snap-start snap-always shrink-0">
-                    <ShortsPlayer
-                      videoId={item.video_id}
-                      title={item.title}
-                      description={item.description}
-                      channelName={item.whitelisted_channels?.channel_name || 'Creator'}
-                      channelHandle={item.whitelisted_channels?.handle || '@creator'}
-                      isActive={idx === activeIndex}
-                      liked={likedVideoIds.has(item.id)}
-                      saved={savedVideoIds.has(item.id)}
-                      likesCount={likesCountMap[item.id] || 0}
-                      onLike={() => handleLikeToggle(item.id)}
-                      onSave={() => handleSaveToggle(item.id)}
-                      onShare={() => handleShare(item.video_id)}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop Mockup Overlay Elements */}
-              <div className="absolute top-4 left-4 z-20 pointer-events-none hidden md:block">
-                <span className="text-[10px] uppercase font-bold tracking-widest bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-orange-400 border border-white/5">
-                  Bhakti Shorts
-                </span>
-              </div>
-
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

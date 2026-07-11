@@ -62,6 +62,7 @@ export default async function handler(request: Request): Promise<Response> {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+943'
       }
     });
     clearTimeout(timeoutId);
@@ -73,14 +74,14 @@ export default async function handler(request: Request): Promise<Response> {
     const html = await res.text();
     const finalUrl = res.url;
 
-    // Check if the page is currently live on YouTube
-    const hasWatchRedirect = finalUrl.includes('/watch') || finalUrl.includes('?v=') || html.includes('"videoId":');
-    const isLiveIndicated = html.includes('"isLive":true') || 
-                            html.includes('"isLiveStream":true') || 
-                            html.includes('{"livePlayables":') ||
-                            html.includes('yt-playertab-active');
+    // Check if the page is currently live on YouTube (either redirected to watch or has live indicators)
+    const isRedirectToWatch = finalUrl.includes('/watch') || finalUrl.includes('?v=');
+    const isLiveInHtml = html.includes('"isLive":true') || 
+                         html.includes('"isLiveStream":true') || 
+                         html.includes('{"livePlayables":') ||
+                         html.includes('yt-playertab-active');
 
-    if (hasWatchRedirect && isLiveIndicated) {
+    if (isRedirectToWatch || isLiveInHtml) {
       // Extract video ID
       let videoId: string | null = null;
       const videoIdMatch = html.match(/"videoId":"([^"]+)"/) || finalUrl.match(/[?&]v=([^&]+)/);

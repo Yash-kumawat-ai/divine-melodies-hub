@@ -51,12 +51,6 @@ export function HeroSection({ stats }: HeroSectionProps) {
               className="w-full h-full object-cover object-top md:object-[center_0%]" 
             />
           </picture>
-          
-          {/* Desktop horizontal gradient overlay for left-aligned content readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 via-45% to-transparent" />
-          
-          {/* Subtle top shadow */}
-          <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/30 to-transparent pointer-events-none" />
         </div>
 
         {/* HERO CONTENT */}

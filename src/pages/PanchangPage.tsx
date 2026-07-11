@@ -246,7 +246,7 @@ function FestivalMiniCard({
             {formatDate(festival.date, language)}
           </p>
           {reminder && (
-            <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500/12 px-2 py-1 text-[11px] font-bold text-amber-100">
+            <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500/12 px-2 py-1 text-[11px] font-bold text-amber-800 dark:text-amber-100">
               <BellRing className="h-3 w-3" />
               {language === 'hi' ? `${reminder.leadDays} दिन पहले` : `${reminder.leadDays} day alert`}
             </p>
@@ -258,8 +258,8 @@ function FestivalMiniCard({
           className={cn(
             'min-h-10 w-full shrink-0 rounded-full border px-3 text-xs font-bold transition min-[380px]:w-auto',
             reminder
-              ? 'border-amber-400 bg-amber-500/15 text-amber-100'
-              : 'border-border bg-background text-amber-100/70 hover:border-amber-400 hover:text-amber-100',
+              ? 'border-amber-400 bg-amber-500/15 text-amber-800 dark:text-amber-100'
+              : 'border-border bg-background text-amber-700/80 dark:text-amber-100/70 hover:border-amber-400 hover:text-amber-800 dark:hover:text-amber-100',
           )}
         >
           {reminder ? (language === 'hi' ? 'मार्क किया' : 'Marked') : (language === 'hi' ? 'रिमाइंड' : 'Remind')}
@@ -325,7 +325,7 @@ function ReminderCenter({
     <section className={wrapperClass}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-amber-200/80">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-200/80">
             <BellRing className="h-3.5 w-3.5" />
             {t.marked}
           </p>
@@ -335,7 +335,7 @@ function ReminderCenter({
           type="button"
           size="sm"
           variant="outline"
-          className="w-full rounded-full border-amber-300/40 bg-background/60 text-amber-100 sm:w-auto"
+          className="w-full rounded-full border-amber-500/30 bg-background/60 text-amber-700 dark:text-amber-100 sm:w-auto"
           onClick={onPermission}
         >
           {notificationStatus === 'granted' ? (language === 'hi' ? 'चालू' : 'On') : t.permission}
@@ -382,7 +382,7 @@ function ReminderCenter({
 
       <form onSubmit={submitCustom} className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-500/8 p-3">
         <p className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-          <Plus className="h-4 w-4 text-amber-200" />
+          <Plus className="h-4 w-4 text-amber-600 dark:text-amber-200" />
           {t.addDate}
         </p>
         <div className="grid gap-2">
@@ -693,18 +693,18 @@ export default function PanchangPage() {
             <h2 className="font-display text-2xl font-bold text-foreground">
               {text.panchangDetails}
             </h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/50">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-200/50">
               Sacred Daily Insights
             </p>
           </div>
         </div>
-        <div className="px-4 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/10">
-          <p className="text-sm font-bold text-amber-100/90">{formatDate(displayDate, lang)}</p>
+        <div className="px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+          <p className="text-sm font-bold text-amber-700 dark:text-amber-100/90">{formatDate(displayDate, lang)}</p>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-amber-300/35 bg-amber-500/10 p-4 text-sm text-amber-100 flex items-center gap-3">
+        <div className="mb-6 rounded-2xl border border-amber-300/35 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100 flex items-center gap-3">
           <TriangleAlert className="h-5 w-5 text-amber-400 shrink-0" />
           {error}
         </div>
@@ -718,7 +718,7 @@ export default function PanchangPage() {
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-200/70 sm:text-xs">{label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-200/70 sm:text-xs">{label}</span>
                 <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
@@ -731,7 +731,7 @@ export default function PanchangPage() {
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-200/70 sm:text-xs">{label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-200/70 sm:text-xs">{label}</span>
                 <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
@@ -747,10 +747,10 @@ export default function PanchangPage() {
         {muhuratTiles.map((tile) => (
           <div key={tile.id} className="temple-panel-soft group relative flex min-w-0 items-center justify-between overflow-hidden p-3 sm:p-5">
             <div className="relative z-10 flex-1 min-w-0">
-              <p className="text-sm sm:text-lg font-bold uppercase tracking-[0.1em] text-amber-200/90">
+              <p className="text-sm sm:text-lg font-bold uppercase tracking-[0.1em] text-amber-800 dark:text-amber-200/90">
                 {localized(tile.title)}
               </p>
-              <p className="mt-1.5 text-xs sm:text-base font-semibold text-amber-100/80 whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="mt-1.5 text-xs sm:text-base font-semibold text-amber-700/80 dark:text-amber-100/80 whitespace-nowrap overflow-hidden text-ellipsis">
                 {tile.time}
               </p>
             </div>
@@ -768,12 +768,12 @@ export default function PanchangPage() {
       <div className="mt-4 rounded-2xl border border-amber-400/35 bg-amber-500/10 p-3 sm:p-5 overflow-hidden relative group">
         <div className="flex items-center justify-between gap-3 sm:gap-4">
           <div className="relative z-10 flex-1">
-            <div className="flex items-center gap-2 text-amber-100">
+            <div className="flex items-center gap-2 text-amber-900 dark:text-amber-100">
               <TriangleAlert className="h-4 w-4 text-amber-400" />
               <p className="font-display text-base sm:text-xl font-bold">{text.rahuKaal}</p>
             </div>
-            <p className="mt-1.5 text-lg sm:text-2xl font-bold text-amber-100 whitespace-nowrap">{displayValue(panchang?.rahu_kaal)}</p>
-            <p className="mt-1 text-sm sm:text-sm text-amber-100/70">{text.rahuHint}</p>
+            <p className="mt-1.5 text-lg sm:text-2xl font-bold text-amber-900 dark:text-amber-100 whitespace-nowrap">{displayValue(panchang?.rahu_kaal)}</p>
+            <p className="mt-1 text-sm sm:text-sm text-amber-800/70 dark:text-amber-100/70">{text.rahuHint}</p>
           </div>
           <div className="shrink-0">
             <img 
@@ -790,7 +790,7 @@ export default function PanchangPage() {
   const muhuratSection = (
     <section className="temple-panel p-4 sm:p-5">
       <div className="flex items-center gap-2">
-        <Clock className="h-5 w-5 text-amber-200" />
+        <Clock className="h-5 w-5 text-amber-600 dark:text-amber-200" />
         <h2 className="font-display text-2xl font-bold text-foreground">{text.muhurat}</h2>
       </div>
       {muhuratBody}
@@ -800,14 +800,14 @@ export default function PanchangPage() {
   const karyaSection = (
     <section className="temple-panel p-3 sm:p-8 dark:bg-zinc-900/60 dark:border-white/5 transition-colors duration-300">
       {dynamicKarya && (
-        <div className="mb-8 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 dark:bg-amber-900/10 dark:border-amber-700/20">
+        <div className="mb-8 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 dark:bg-amber-900/10 dark:border-amber-700/20">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 text-amber-400" />
-            <p className="text-lg font-bold text-amber-100 dark:text-amber-50">{dynamicKarya.todaySummary}</p>
+            <Sparkles className="h-5 w-5 text-amber-500" />
+            <p className="text-lg font-bold text-amber-900 dark:text-amber-50">{dynamicKarya.todaySummary}</p>
           </div>
           {dynamicKarya.dominantReason && (
-            <p className="mt-2 text-sm text-amber-200/70 dark:text-amber-200/40">
-              मुख्य कारक: <span className="text-amber-400 font-bold dark:text-amber-300">{dynamicKarya.dominantReason}</span>
+            <p className="mt-2 text-sm text-amber-800/80 dark:text-amber-200/40">
+              मुख्य कारक: <span className="text-amber-600 dark:text-amber-300 font-bold">{dynamicKarya.dominantReason}</span>
             </p>
           )}
         </div>
@@ -817,17 +817,17 @@ export default function PanchangPage() {
         <motion.div 
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-8 p-4 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center gap-3 dark:bg-rose-900/20 dark:border-rose-700/30"
+          className="mb-8 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center gap-3 dark:bg-rose-900/20 dark:border-rose-700/30"
         >
-          <TriangleAlert className="h-6 w-6 text-rose-400" />
-          <p className="text-lg font-bold text-rose-100 dark:text-rose-50">⚠️ अभी राहु काल है — शुभ कार्य वर्जित</p>
+          <TriangleAlert className="h-6 w-6 text-rose-500" />
+          <p className="text-lg font-bold text-rose-800 dark:text-rose-50">⚠️ अभी राहु काल है — शुभ कार्य वर्जित</p>
         </motion.div>
       )}
 
       {dynamicKarya?.shubhKarya.some(k => k.reason.includes('अभिजित')) && (
-        <div className="mb-8 p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center gap-3 dark:bg-emerald-900/20 dark:border-emerald-700/30">
-          <Sparkles className="h-6 w-6 text-emerald-400" />
-          <p className="text-lg font-bold text-emerald-100 dark:text-emerald-50">✨ अभिजित मुहूर्त — सभी कार्य शुभ</p>
+        <div className="mb-8 p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-3 dark:bg-emerald-900/20 dark:border-emerald-700/30">
+          <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+          <p className="text-lg font-bold text-emerald-900 dark:text-emerald-50">✨ अभिजित मुहूर्त — सभी कार्य शुभ</p>
         </div>
       )}
 
@@ -835,20 +835,20 @@ export default function PanchangPage() {
         {/* Shubh Karya */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-3 sm:mb-5">
-            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-900/20">
-              <CheckCircle2 className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-400" />
+            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-emerald-500/15 dark:bg-emerald-900/20">
+              <CheckCircle2 className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-emerald-300/90 dark:text-emerald-200 truncate">{text.shubhKarya}</p>
+            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-300 truncate">{text.shubhKarya}</p>
           </div>
           <div className="space-y-3 sm:space-y-5">
             {(dynamicKarya?.shubhKarya.slice(0, 4) || panchangKaryaLists.shubh.slice(0, 4).map(i => ({ name: localized(i), reason: 'स्थिर', source: 'tithi', priority: 3 }))).map((item, idx) => (
               <div key={idx} className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-[10px] sm:text-lg text-amber-100/90 dark:text-brand-cream/90">
-                  <CheckCircle2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-emerald-300/60 dark:text-emerald-500/40" />
+                <div className="flex items-center gap-2 text-[10px] sm:text-lg text-amber-900 dark:text-brand-cream/90">
+                  <CheckCircle2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-emerald-600 dark:text-emerald-500/40" />
                   <span className="truncate font-bold">{'name' in item ? item.name : localized(item as any)}</span>
                 </div>
                 {'reason' in item && (
-                  <span className="ml-5 sm:ml-7 text-[8px] sm:text-xs text-amber-200/40 dark:text-amber-200/20 font-medium">{item.reason}</span>
+                  <span className="ml-5 sm:ml-7 text-[8px] sm:text-xs text-amber-700/60 dark:text-amber-200/20 font-medium">{item.reason}</span>
                 )}
               </div>
             ))}
@@ -858,7 +858,7 @@ export default function PanchangPage() {
         {/* Vertical Separator with Om */}
         <div className="flex flex-col items-center justify-center px-1 sm:px-6">
           <div className="w-[1.5px] h-full bg-gradient-to-b from-transparent via-amber-500/40 to-transparent dark:via-white/10" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-5 bg-[#120c08] dark:bg-[#0a0705] rounded-full border border-amber-500/20 dark:border-white/5 shadow-[0_0_35px_rgba(245,158,11,0.2)] dark:shadow-[0_0_35px_rgba(255,255,255,0.05)] z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-5 bg-card dark:bg-[#0a0705] rounded-full border border-amber-500/20 dark:border-white/5 shadow-[0_0_35px_rgba(245,158,11,0.2)] dark:shadow-[0_0_35px_rgba(255,255,255,0.05)] z-10">
             <img src={omImage} alt="Om" className="h-10 w-10 sm:h-20 sm:w-20 object-contain" />
           </div>
         </div>
@@ -866,20 +866,20 @@ export default function PanchangPage() {
         {/* Ashubh Karya */}
         <div className="flex-1 min-w-0 text-right sm:text-left">
           <div className="flex items-center justify-end sm:justify-start gap-1.5 mb-3 sm:mb-5">
-            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-rose-300/90 dark:text-rose-200 truncate order-1 sm:order-2">{text.ashubhKarya}</p>
-            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-rose-500/10 dark:bg-rose-900/20 order-2 sm:order-1">
-              <XCircle className="h-4 w-4 sm:h-6 sm:w-6 text-rose-400" />
+            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-rose-700 dark:text-rose-300 truncate order-1 sm:order-2">{text.ashubhKarya}</p>
+            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-rose-500/15 dark:bg-rose-900/20 order-2 sm:order-1">
+              <XCircle className="h-4 w-4 sm:h-6 sm:w-6 text-rose-600 dark:text-rose-400" />
             </div>
           </div>
           <div className="space-y-3 sm:space-y-5">
             {(dynamicKarya?.ashubhKarya.slice(0, 4) || panchangKaryaLists.ashubh.slice(0, 4).map(i => ({ name: localized(i), reason: 'स्थिर', source: 'tithi', priority: 3 }))).map((item, idx) => (
               <div key={idx} className="flex flex-col gap-1 items-end sm:items-start">
-                <div className="flex items-center justify-end sm:justify-start gap-2 text-[10px] sm:text-lg text-amber-100/90 dark:text-brand-cream/90">
+                <div className="flex items-center justify-end sm:justify-start gap-2 text-[10px] sm:text-lg text-amber-900 dark:text-brand-cream/90">
                   <span className="truncate font-bold order-1 sm:order-2">{'name' in item ? item.name : localized(item as any)}</span>
-                  <XCircle className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-rose-300/60 dark:text-rose-500/40 order-2 sm:order-1" />
+                  <XCircle className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-rose-600 dark:text-rose-500/40 order-2 sm:order-1" />
                 </div>
                 {'reason' in item && (
-                  <span className="mr-5 sm:mr-0 sm:ml-7 text-[8px] sm:text-xs text-amber-200/40 dark:text-amber-200/20 font-medium">{item.reason}</span>
+                  <span className="mr-5 sm:mr-0 sm:ml-7 text-[8px] sm:text-xs text-amber-700/60 dark:text-amber-200/20 font-medium">{item.reason}</span>
                 )}
               </div>
             ))}
@@ -891,9 +891,9 @@ export default function PanchangPage() {
       <div className="mt-8 flex justify-center">
         <Link
           to="/panchang/details"
-          className="group relative flex items-center gap-3 overflow-hidden rounded-full border border-amber-500/20 bg-amber-500/5 dark:bg-white/5 dark:border-white/10 px-8 py-3.5 text-sm font-bold uppercase tracking-[0.15em] text-amber-200 dark:text-amber-100 backdrop-blur-xl transition-all hover:border-amber-400/40 hover:bg-amber-500/10 dark:hover:bg-white/10 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+          className="group relative flex items-center gap-3 overflow-hidden rounded-full border border-amber-600/40 bg-amber-500/10 dark:bg-white/5 dark:border-white/10 px-8 py-3.5 text-sm font-bold uppercase tracking-[0.15em] text-amber-700 dark:text-amber-100 backdrop-blur-xl transition-all hover:border-amber-500 hover:bg-amber-500/20 dark:hover:bg-white/10 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
         >
-          <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-t from-amber-500/10 to-transparent dark:from-white/5 transition-transform duration-500 group-hover:translate-y-0" />
+          <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-t from-amber-500/15 to-transparent dark:from-white/5 transition-transform duration-500 group-hover:translate-y-0" />
           <span className="relative">{text.seeMore}</span>
           <ArrowRight className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Link>
@@ -904,12 +904,12 @@ export default function PanchangPage() {
   const upcomingEventsList = (
     <div className={cn('mt-4 space-y-3', isMobile ? 'max-h-60 overflow-y-auto pr-1' : 'max-h-[360px] overflow-y-auto pr-1')}>
       {festivalLoading && (
-        <p className="temple-panel-soft p-3 text-sm text-amber-100/70">
+        <p className="temple-panel-soft p-3 text-sm text-amber-700/70 dark:text-amber-100/70">
           {lang === 'hi' ? 'पर्व लोड हो रहे हैं...' : 'Loading festivals...'}
         </p>
       )}
       {!festivalLoading && upcomingEvents.length === 0 && (
-        <p className="temple-panel-soft p-3 text-sm text-amber-100/70">{text.noUpcomingEvents}</p>
+        <p className="temple-panel-soft p-3 text-sm text-amber-700/70 dark:text-amber-100/70">{text.noUpcomingEvents}</p>
       )}
       {upcomingEvents.map((festival) => (
         <FestivalMiniCard
@@ -985,7 +985,7 @@ export default function PanchangPage() {
           <div className="relative flex flex-col items-center text-center gap-6">
             <div className="flex flex-col items-center w-full gap-2">
               <div className="min-w-0 max-w-2xl">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70 sm:text-[12px] sm:tracking-[0.4em]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700/80 dark:text-amber-200/70 sm:text-[12px] sm:tracking-[0.4em]">
                   {lang === 'hi' ? '|| श्री गणेशाय नमः ||' : '|| Shri Ganeshay Namah ||'}
                 </p>
                 <h1 className="mt-4 font-display text-4xl font-bold text-foreground sm:text-6xl tracking-tight">
@@ -994,7 +994,7 @@ export default function PanchangPage() {
                 
                 <div className="mt-8 flex items-center justify-center gap-4 text-amber-500/40">
                   <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-current" />
-                  <div className="flex items-center gap-3 text-amber-400/90">
+                  <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400/90">
                     <span className="text-xl">ॐ</span>
                     <span className="font-display text-xl font-bold tracking-[0.15em]">{lang === 'hi' ? 'जय श्री राम' : 'Jai Shri Ram'}</span>
                     <span className="text-xl">ॐ</span>
@@ -1004,7 +1004,7 @@ export default function PanchangPage() {
               </div>
 
               <div className="mt-4 flex items-center gap-2">
-                <span className="rounded-full border border-amber-300/35 bg-amber-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-100/80">
+                <span className="rounded-full border border-amber-300/35 bg-amber-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700 dark:text-amber-100/80">
                   {isStale ? text.updating : text.updated}
                 </span>
               </div>
@@ -1013,12 +1013,12 @@ export default function PanchangPage() {
             <div className="grid grid-cols-1 gap-3 w-full max-w-5xl min-[480px]:grid-cols-2 lg:grid-cols-3">
               {/* Date Card */}
               <div className="temple-panel-soft p-4 flex flex-col items-center justify-center text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/60 mb-3">{text.dateLabel}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60 mb-3">{text.dateLabel}</p>
                 <div className="flex items-center gap-4">
-                  <span className="text-5xl font-display font-bold text-amber-100">{dateParts.day}</span>
+                  <span className="text-5xl font-display font-bold text-amber-900 dark:text-amber-100">{dateParts.day}</span>
                   <div className="text-left">
-                    <p className="text-base font-bold text-amber-100 leading-none">{dateParts.month}</p>
-                    <p className="text-sm font-semibold text-amber-100/70 mt-1">{dateParts.year}</p>
+                    <p className="text-base font-bold text-amber-900 dark:text-amber-100 leading-none">{dateParts.month}</p>
+                    <p className="text-sm font-semibold text-amber-800/70 dark:text-amber-100/70 mt-1">{dateParts.year}</p>
                     <p className="text-xs font-bold text-amber-400/90 mt-1">{dateParts.weekday}</p>
                   </div>
                 </div>
@@ -1026,10 +1026,10 @@ export default function PanchangPage() {
 
               {/* Vikram Card */}
               <div className="temple-panel-soft p-4 flex flex-col items-center justify-center text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/60 mb-2">{text.vikram}</p>
-                <p className="text-xl font-bold text-amber-100">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60 mb-2">{text.vikram}</p>
+                <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
                 <div className="mt-3 flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                   <span className="text-xs font-bold text-amber-200">{pakshaText}</span>
+                   <span className="text-xs font-bold text-amber-800 dark:text-amber-200">{pakshaText}</span>
                 </div>
               </div>
 
@@ -1038,26 +1038,26 @@ export default function PanchangPage() {
                 <div className="grid grid-cols-2 gap-8 w-full">
                   <div className="flex flex-col items-center gap-2">
                     <Sunrise className="h-6 w-6 text-amber-400" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/60">{text.sunrise}</p>
-                    <p className="text-base font-bold text-amber-100">{displayValue(panchang?.sunrise)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60">{text.sunrise}</p>
+                    <p className="text-base font-bold text-amber-900 dark:text-amber-100">{displayValue(panchang?.sunrise)}</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     <Sunset className="h-6 w-6 text-amber-400" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/60">{text.sunset}</p>
-                    <p className="text-base font-bold text-amber-100">{displayValue(panchang?.sunset)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60">{text.sunset}</p>
+                    <p className="text-base font-bold text-amber-900 dark:text-amber-100">{displayValue(panchang?.sunset)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col items-center gap-4 w-full">
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/10 text-amber-400/90">
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400/90">
                 <MapPin className="h-3.5 w-3.5" />
                 <span className="text-sm font-semibold tracking-wide">{currentZone.city}, {lang === 'hi' ? 'भारत' : 'India'}</span>
               </div>
 
               <label className="relative block w-full max-w-[320px]">
-                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.2em] text-amber-200/70">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700/80 dark:text-amber-200/70">
                   {text.changeZone}
                 </span>
                 <select
@@ -1071,7 +1071,7 @@ export default function PanchangPage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute bottom-3.5 right-5 h-4 w-4 text-amber-200/70" />
+                <ChevronDown className="pointer-events-none absolute bottom-3.5 right-5 h-4 w-4 text-amber-700/80 dark:text-amber-200/70" />
               </label>
             </div>
           </div>

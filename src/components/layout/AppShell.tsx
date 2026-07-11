@@ -21,16 +21,17 @@ export default function AppShell() {
   const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard || hasActivePractice;
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
-  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage;
+  const isShortsPage = resolvedPath.startsWith("/shorts");
+  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");
   const isNotifications = resolvedPath === "/notifications";
-  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications;
+  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage;
 
 
   useEffect(() => {
-    if (!isFullScreenApp) {
+    if (!isFullScreenApp && !isShortsPage) {
       window.scrollTo(0, 0);
       
       // Delay reset scroll to top to ensure async/lazy page loads are captured
@@ -40,20 +41,20 @@ export default function AppShell() {
       
       return () => clearTimeout(timer);
     }
-  }, [pathname, isFullScreenApp]);
+  }, [pathname, isFullScreenApp, isShortsPage]);
 
   return (
     <div
       className={cn(
         "flex flex-col bg-background font-body",
-        isFullScreenApp ? "h-dvh overflow-hidden" : "min-h-dvh"
+        (isFullScreenApp || isShortsPage) ? "h-dvh overflow-hidden" : "min-h-dvh"
       )}
     >
       {!hideHeader && <Header />}
       <main
         className={cn(
           "flex-1",
-          isFullScreenApp && "flex min-h-0 flex-col overflow-hidden",
+          (isFullScreenApp || isShortsPage) && "flex min-h-0 flex-col overflow-hidden",
           isTemplePage && "temple-mobile-layout"
         )}
       >
@@ -61,7 +62,7 @@ export default function AppShell() {
           <Outlet />
         </Suspense>
       </main>
-      {(!isFullScreenApp || isTemplePage) && (
+      {(!isFullScreenApp || isTemplePage || isShortsPage) && (
         <div className="block md:hidden">
           <MobileBottomNav />
         </div>

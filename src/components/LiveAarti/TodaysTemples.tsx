@@ -20,7 +20,7 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
     <div className="space-y-4">
       <div className="flex items-center gap-2 px-1">
         <Sparkles className="w-4 h-4 text-orange-400" />
-        <h2 className="text-lg font-bold font-display text-white tracking-wide">
+        <h2 className="text-lg font-bold font-display text-[#543D2B] dark:text-white tracking-wide">
           {isHi ? "आज के शुभ मंदिर" : "Today's Auspicious Temples"}
         </h2>
       </div>
@@ -35,7 +35,7 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
               key={temple.id}
               whileTap={{ scale: 0.98 }}
               onClick={() => onTempleClick(temple)}
-              className="flex-shrink-0 w-72 snap-start overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] p-4 transition-all duration-300 relative cursor-pointer flex flex-col justify-between group"
+              className="flex-shrink-0 w-72 snap-start overflow-hidden rounded-2xl border border-[#EAD7C3] dark:border-white/5 bg-white/60 dark:bg-white/[0.02] hover:bg-white/90 dark:hover:bg-white/[0.04] p-4 transition-all duration-300 relative cursor-pointer flex flex-col justify-between group shadow-sm dark:shadow-md"
             >
               {/* Highlight colored bar */}
               <div 
@@ -45,7 +45,7 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
 
               <div className="space-y-2">
                 {/* Temple image thumbnail */}
-                <div className="relative h-28 w-full overflow-hidden rounded-xl bg-zinc-950/40 border border-white/5 mb-1.5">
+                <div className="relative h-28 w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-950/40 border border-[#EAD7C3]/50 dark:border-white/5 mb-1.5">
                   <img
                     src={resolveTempleBanner(temple.id)}
                     alt={title}
@@ -54,20 +54,20 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </div>
-                <span className="text-[9px] uppercase font-bold tracking-wider text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full inline-block">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full inline-block">
                   {temple.category}
                 </span>
                 
                 <div className="space-y-1">
-                  <h3 className="font-bold text-white text-base truncate leading-tight">
+                  <h3 className="font-bold text-[#543D2B] dark:text-white text-base truncate leading-tight group-hover:text-[#E06D14] dark:group-hover:text-amber-100 transition-colors">
                     {title}
                   </h3>
-                  <p className="text-xs text-amber-100/70 truncate flex items-center gap-1.5">
+                  <p className="text-xs text-[#E06D14] dark:text-amber-100/70 truncate flex items-center gap-1.5">
                     <Landmark className="w-3.5 h-3.5 text-orange-500/60" />
                     <span>{deityText}</span>
                   </p>
-                  <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-zinc-500" />
+                  <p className="text-[10px] text-[#543D2B]/60 dark:text-zinc-400 truncate flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-[#543D2B]/40 dark:text-zinc-500" />
                     <span>{temple.location}</span>
                   </p>
                 </div>
