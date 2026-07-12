@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-11",
+  "date": "2026-07-12",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Ekadasi",
-  "tithi_number": 0,
-  "nakshatra": "Krithika - 3",
-  "yoga": "Ganda",
-  "karana": "Balava",
-  "paksha": "Krishna",
+  "tithi": "Triodasi",
+  "tithi_number": 13,
+  "nakshatra": "Rohini - 4",
+  "yoga": "Vriddha",
+  "karana": "Garija",
+  "paksha": "Shukla",
   "sunrise": "05:35 AM",
   "sunset": "07:17 PM",
-  "rahu_kaal": "09:00 AM - 10:43 AM",
+  "rahu_kaal": "05:34 PM - 07:17 PM",
   "brahma_muhurat": "03:59 AM - 04:47 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-07-11T06:25:34+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-07-12T06:32:35+05:30"
 }
