@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTheme } from "@/hooks/useTheme";
 import { useSavedPosts } from "@/hooks/useSavedPosts";
 import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember } from "@/lib/community/communityApi";
 import { uploadToCloudinary } from "@/lib/cloudinary";
@@ -45,6 +46,8 @@ export default function JoinCommunityPage() {
   const { user, profile } = useAuth();
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const { isSaved, toggleSave } = useSavedPosts();
 
   const handleToggleSavePost = (pId: string) => {
@@ -832,22 +835,28 @@ export default function JoinCommunityPage() {
                   </div>
 
                   {/* Mobile Bhajan Request Board Banner (Hidden on desktop) */}
-                  <div className="lg:hidden bg-[#16120e] border border-orange-500/20 rounded-3xl p-5 shadow-lg flex items-center justify-between gap-4 text-left relative overflow-hidden select-none">
+                  <div className={`lg:hidden border rounded-3xl p-5 shadow-lg flex items-center justify-between gap-4 text-left relative overflow-hidden select-none ${
+                    isDark ? 'bg-[#16120e] border-orange-500/20' : 'bg-[#FAF6EE] border-orange-500/15 shadow-orange-950/5'
+                  }`}>
                     <div className="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
                     
                     <div className="flex items-start gap-3.5 relative z-10">
                       <span className="text-3xl mt-0.5 filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">📿</span>
                       <div className="space-y-1">
                         <div className="flex items-center gap-1">
-                          <h4 className="font-display font-extrabold text-sm text-amber-100">
+                          <h4 className={`font-display font-extrabold text-sm ${
+                            isDark ? 'text-amber-100' : 'text-stone-850'
+                          }`}>
                             {isHi ? "भजन अनुरोध बोर्ड" : "Bhajan Request Board"}
                           </h4>
                           <span className="text-[10px] text-stone-400">❓</span>
                         </div>
-                        <p className="text-[10px] text-stone-300 leading-relaxed max-w-[190px] font-medium">
+                        <p className={`text-[10px] leading-relaxed max-w-[190px] font-medium ${
+                          isDark ? 'text-stone-300' : 'text-stone-600'
+                        }`}>
                           {isHi ? "क्या आपको कोई भजन नहीं मिल रहा? यहाँ अनुरोध करें और भक्तों से सहायता लें।" : "Can't find a bhajan? Request it here and get lyrics from other devotees."}
                         </p>
-                        <p className="text-[9px] text-purple-400 font-bold flex items-center gap-1 pt-1">
+                        <p className="text-[9px] text-purple-500 font-bold flex items-center gap-1 pt-1">
                           ✦ {isHi ? "आज 23 नए अनुरोध" : "23 new requests today"}
                         </p>
                       </div>
@@ -2085,6 +2094,8 @@ export function PostCard({
   isPostSaved,
   onToggleSavePost
 }: PostCardProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   
   // Format DateTime
   const formatTime = (isoString: string) => {
@@ -2145,13 +2156,17 @@ export function PostCard({
   };
 
   return (
-    <div className="bg-[#130f0c] border border-[#231b15] rounded-[24px] p-5 hover:border-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.07)] transition-all flex flex-col gap-4 text-left shadow-lg">
+    <div className={`rounded-[24px] p-5 hover:border-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.07)] transition-all flex flex-col gap-4 text-left shadow-lg border ${
+      isDark ? 'bg-[#130f0c] border-[#231b15]' : 'bg-white border-stone-200'
+    }`}>
       <div>
         {/* Post Card Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 to-orange-600 shrink-0">
-              <div className="w-full h-full rounded-full bg-stone-900 overflow-hidden flex items-center justify-center text-orange-400 font-extrabold text-xs uppercase select-none">
+              <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center font-extrabold text-xs uppercase select-none ${
+                isDark ? 'bg-stone-900 text-orange-400' : 'bg-stone-100 text-orange-600'
+              }`}>
                 {post.author?.avatar_url ? (
                   <img src={post.author.avatar_url} alt="author" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
                 ) : (
@@ -2160,18 +2175,24 @@ export function PostCard({
               </div>
             </div>
             <div>
-              <span className="font-display font-bold text-xs text-stone-100 flex items-center gap-1.5 flex-wrap">
+              <span className={`font-display font-bold text-xs flex items-center gap-1.5 flex-wrap ${
+                isDark ? 'text-stone-100' : 'text-stone-850'
+              }`}>
                 {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
                 <span className="text-[10px] select-none" title={authorBadge.label}>
                   {authorBadge.icon}
                 </span>
                 {post.group_name && (
-                  <span className="text-[10px] text-stone-500 font-semibold">
+                  <span className={`text-[10px] font-semibold ${
+                    isDark ? 'text-stone-500' : 'text-stone-400'
+                  }`}>
                     in <span className="text-orange-400 font-bold">#${post.group_name}</span>
                   </span>
                 )}
               </span>
-              <p className="text-[9px] text-stone-400 font-medium tracking-wide mt-0.5">
+              <p className={`text-[9px] font-medium tracking-wide mt-0.5 ${
+                isDark ? 'text-stone-400' : 'text-stone-500'
+              }`}>
                 {formatTime(post.created_at)} • <span className={authorBadge.colorClass}>{authorBadge.label}</span>
               </p>
             </div>
@@ -2181,12 +2202,12 @@ export function PostCard({
             {/* Colored Type Tag */}
             <Badge 
               variant="outline" 
-              className={`text-[9px] uppercase font-extrabold border-orange-500/20 ${
-                post.type === 'bhajan_share' ? "bg-emerald-950/20 text-emerald-400" :
-                post.type === 'bhajan_request' ? "bg-[#2c2018] text-amber-400" :
-                post.type === 'question' ? "bg-blue-950/20 text-blue-400" :
-                post.type === 'event' ? "bg-rose-950/20 text-rose-400" :
-                "bg-stone-900 text-stone-400"
+              className={`text-[9px] uppercase font-extrabold ${
+                post.type === 'bhajan_share' ? (isDark ? "bg-emerald-950/20 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-300/40") :
+                post.type === 'bhajan_request' ? (isDark ? "bg-[#2c2018] text-amber-400 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-300/60") :
+                post.type === 'question' ? (isDark ? "bg-blue-950/20 text-blue-400 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-300/40") :
+                post.type === 'event' ? (isDark ? "bg-rose-950/20 text-rose-400 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-300/40") :
+                isDark ? "bg-stone-900 text-stone-400 border-stone-800" : "bg-stone-100 text-stone-600 border-stone-200"
               }`}
             >
               {post.type.replace('_', ' ')}
@@ -2194,7 +2215,9 @@ export function PostCard({
             {user?.id === post.author_id && (
               <button 
                 onClick={() => onDeletePost(post.id)}
-                className="text-stone-400 hover:text-rose-500 p-1 transition-colors"
+                className={`p-1 transition-colors ${
+                  isDark ? 'text-stone-400 hover:text-rose-500' : 'text-stone-500 hover:text-rose-600'
+                }`}
                 title="Delete Post"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -2207,21 +2230,27 @@ export function PostCard({
         <div className="mt-3.5 space-y-3.5 text-left w-full">
           {/* Title */}
           {post.title && (
-            <h3 className="font-display font-extrabold text-sm sm:text-base text-amber-50 leading-tight">
+            <h3 className={`font-display font-extrabold text-sm sm:text-base leading-tight ${
+              isDark ? 'text-amber-50' : 'text-stone-850'
+            }`}>
               {post.title}
             </h3>
           )}
 
           {/* Content text */}
           {post.content && (
-            <p className="text-xs sm:text-[13px] text-stone-300 whitespace-pre-wrap leading-relaxed">
+            <p className={`text-xs sm:text-[13px] whitespace-pre-wrap leading-relaxed ${
+              isDark ? 'text-stone-300' : 'text-stone-600'
+            }`}>
               {highlightSacredText(post.content)}
             </p>
           )}
 
           {/* Optional Uploaded Image (Full-width, rounded) */}
           {post.image_url && (
-            <div className="w-full rounded-2xl overflow-hidden border border-orange-500/10 shadow-md bg-stone-900/40">
+            <div className={`w-full rounded-2xl overflow-hidden shadow-sm border ${
+              isDark ? 'border-orange-500/10 bg-stone-900/40' : 'border-stone-200 bg-stone-50'
+            }`}>
               <img 
                 src={post.image_url} 
                 alt="post visual" 
@@ -2234,10 +2263,14 @@ export function PostCard({
           {post.type === 'bhajan_share' && post.youtube_url && (
             <div 
               onClick={() => window.open(post.youtube_url, '_blank')}
-              className="bg-[#17120e] border border-[#2c2018] rounded-2xl p-4 flex items-center gap-3 w-full cursor-pointer hover:bg-[#201813] transition-all group relative shadow-md select-none"
+              className={`rounded-2xl p-4 flex items-center gap-3 w-full cursor-pointer transition-all group relative shadow-xs select-none border ${
+                isDark ? 'bg-[#17120e] border-[#2c2018] hover:bg-[#201813]' : 'bg-orange-50/40 border-orange-200/60 hover:bg-orange-100/30'
+              }`}
             >
               {/* Deity image */}
-              <div className="w-12 h-12 rounded-xl overflow-hidden border border-orange-500/10 shrink-0 bg-stone-900 flex items-center justify-center">
+              <div className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border ${
+                isDark ? 'border-orange-500/10 bg-stone-900' : 'border-orange-200/50 bg-white'
+              }`}>
                 <img 
                   src={getDeityImgForPost(post.id)} 
                   alt="deity logo" 
@@ -2247,7 +2280,9 @@ export function PostCard({
               {/* Title & wave visualizer */}
               <div className="min-w-0 flex-1 flex flex-col justify-between text-left">
                 <div>
-                  <span className="font-bold text-xs sm:text-sm text-stone-100 truncate block group-hover:text-orange-400 transition-colors">
+                  <span className={`font-bold text-xs sm:text-sm truncate block group-hover:text-orange-500 transition-colors ${
+                    isDark ? 'text-stone-100' : 'text-stone-850'
+                  }`}>
                     {post.title || (isHi ? "भजन कीर्तन" : "Bhajan Share")}
                   </span>
                   <span className="text-[10px] sm:text-xs text-orange-400/90 font-medium block truncate mt-0.5">
@@ -2272,10 +2307,14 @@ export function PostCard({
 
           {/* Embedded YouTube Link (For posts that are NOT bhajan_share but have youtube_url) */}
           {post.youtube_url && post.type !== 'bhajan_share' && (
-            <div className="rounded-xl border border-orange-500/10 p-2.5 bg-[#1a1410]/50 flex items-center justify-between gap-3 max-w-[400px]">
+            <div className={`rounded-xl p-2.5 flex items-center justify-between gap-3 max-w-[400px] border ${
+              isDark ? 'border-orange-500/10 bg-[#1a1410]/50' : 'border-stone-200 bg-stone-50'
+            }`}>
               <Play className="w-6 h-6 text-orange-500 shrink-0 ml-1" />
               <div className="min-w-0 flex-1">
-                <span className="text-[8px] text-stone-400 font-bold uppercase tracking-wider block">YouTube Link</span>
+                <span className={`text-[8px] font-bold uppercase tracking-wider block ${
+                  isDark ? 'text-stone-400' : 'text-stone-500'
+                }`}>YouTube Link</span>
                 <a 
                   href={post.youtube_url} 
                   target="_blank" 
@@ -2293,9 +2332,9 @@ export function PostCard({
 
           {/* A. Bhajan Request status timeline */}
           {post.type === 'bhajan_request' && (
-            <div className="bg-stone-900/20 border border-orange-500/10 rounded-2xl p-4">
+            <div className={`border rounded-2xl p-4 ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
               <div className="flex items-center justify-between mb-3.5">
-                <span className="text-xs font-bold text-stone-400">{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
+                <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
                 <Badge variant="outline" className={"text-[10px] font-extrabold capitalize " + getStatusBadgeColor(post.request_status)}>
                   {post.request_status.replace('_', ' ')}
                 </Badge>
@@ -2321,7 +2360,7 @@ export function PostCard({
 
               {/* Status Timeline Circles */}
               <div className="flex items-center justify-between text-[10px] font-extrabold tracking-tight text-center relative px-2 mb-2">
-                <div className="absolute top-2 left-6 right-6 h-0.5 bg-stone-850 -z-10" />
+                <div className={`absolute top-2 left-6 right-6 h-0.5 -z-10 ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
                 {[
                   { status: 'open', label: isHi ? 'खुला' : 'Open' },
                   { status: 'lyrics_submitted', label: isHi ? 'उत्तर प्राप्त' : 'Lyrics' },
@@ -2337,11 +2376,11 @@ export function PostCard({
                       <div className={"w-4 h-4 rounded-full border flex items-center justify-center text-[7.5px] font-bold " + (
                         isPassed 
                           ? "bg-orange-500 border-orange-600 text-white" 
-                          : "bg-[#130f0c] border-stone-800 text-stone-400"
+                          : isDark ? "bg-[#130f0c] border-stone-800 text-stone-400" : "bg-white border-stone-200 text-stone-450"
                       )}>
                         {isPassed && "✓"}
                       </div>
-                      <span className={"mt-1 font-semibold " + (isPassed ? "text-orange-400" : "text-stone-500")}>
+                      <span className={"mt-1 font-semibold " + (isPassed ? "text-orange-400" : isDark ? "text-stone-500" : "text-stone-400")}>
                         {step.label}
                       </span>
                     </div>
@@ -2363,13 +2402,13 @@ export function PostCard({
 
           {/* B. Event Date and Location detail card */}
           {post.type === 'event' && (
-            <div className="bg-stone-900/20 border border-orange-500/10 rounded-2xl p-4 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold text-stone-300 gap-2 border-b border-[#2c2018] pb-2.5">
-                <span className="flex items-center gap-1 text-rose-400">
+            <div className={`border rounded-2xl p-4 space-y-3 ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2 border-b pb-2.5 ${isDark ? 'text-stone-300 border-[#2c2018]' : 'text-stone-700 border-stone-200'}`}>
+                <span className="flex items-center gap-1 text-rose-500">
                   <Calendar className="w-4 h-4" />
                   {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : "Date/Time not set"}
                 </span>
-                <span className="flex items-center gap-1 text-stone-400">
+                <span className={`flex items-center gap-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   <MapPin className="w-4 h-4" />
                   {post.event_location || "Virtual Zoom"}
                 </span>
@@ -2377,10 +2416,12 @@ export function PostCard({
 
               {/* Linked Bhajan */}
               {post.linked_bhajan_id && (
-                <div className="p-3 bg-[#1a1410]/50 rounded-xl border border-orange-500/10 flex items-center justify-between gap-3">
+                <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
+                  isDark ? 'bg-[#1a1410]/50 border-orange-500/10' : 'bg-orange-50/30 border-orange-200/50'
+                }`}>
                   <div className="min-w-0 flex-1">
                     <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">Linked Bhajan</span>
-                    <span className="text-xs font-bold text-stone-200 truncate block">Bhajan Page Reference</span>
+                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-850'}`}>Bhajan Page Reference</span>
                   </div>
                   <a 
                     href={"/bhajan/" + post.linked_bhajan_id}
@@ -2409,7 +2450,7 @@ export function PostCard({
                       className={"flex-1 flex items-center justify-center gap-2 border px-3 py-2 rounded-xl text-xs font-bold active:scale-98 transition-all " + (
                         isActive 
                           ? "bg-rose-500 border-rose-600 text-white shadow-xs" 
-                          : "bg-[#1a1410] border-rose-500/15 text-rose-400 hover:bg-rose-500/5"
+                          : isDark ? "bg-[#1a1410] border-rose-500/15 text-rose-400 hover:bg-rose-500/5" : "bg-rose-50/30 border-rose-200/60 text-rose-600 hover:bg-rose-100/40"
                       )}
                     >
                       <span>{opt.status === 'interested' ? '⭐' : '✓'}</span>
@@ -2423,8 +2464,8 @@ export function PostCard({
 
           {/* C. Question poll quick choices render */}
           {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
-            <div className="bg-stone-900/20 p-4 rounded-2xl border border-orange-500/10">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-400 block">
+            <div className={`p-4 rounded-2xl border ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-500 block mb-2">
                 Quick tap option poll
               </span>
               <div className="space-y-2">
@@ -2436,7 +2477,9 @@ export function PostCard({
                     <button
                       key={index}
                       onClick={() => onVoteOption(post.id, index)}
-                      className="w-full relative overflow-hidden text-left p-3 rounded-xl border border-orange-500/10 bg-[#130f0c] hover:border-orange-500/25 transition-all flex items-center justify-between"
+                      className={`w-full relative overflow-hidden text-left p-3 rounded-xl flex items-center justify-between border ${
+                        isDark ? 'border-orange-500/10 bg-[#130f0c] hover:border-orange-500/25' : 'border-stone-200 bg-white hover:border-stone-300'
+                      }`}
                     >
                       {/* Percentage Progress Fill */}
                       <div 
@@ -2444,10 +2487,10 @@ export function PostCard({
                         style={{ width: pct + '%' }}
                       />
                       
-                      <span className={"text-xs font-bold relative z-10 flex items-center gap-1.5 " + (isVoted ? "text-orange-400" : "text-stone-300")}>
+                      <span className={"text-xs font-bold relative z-10 flex items-center gap-1.5 " + (isVoted ? "text-orange-500" : isDark ? "text-stone-300" : "text-stone-700")}>
                         {isVoted && "✦"} {opt}
                       </span>
-                      <span className="text-xs font-bold text-orange-400 relative z-10">{pct}%</span>
+                      <span className="text-xs font-bold text-orange-500 relative z-10">{pct}%</span>
                     </button>
                   );
                 })}
@@ -2456,7 +2499,9 @@ export function PostCard({
           )}
         </div>
       </div>
-      <div className="flex items-center bg-[#181310] border border-[#281f19] rounded-full px-5 py-2 w-fit gap-4 mt-3 shadow-inner">
+      <div className={`flex items-center rounded-full px-5 py-2 w-fit gap-4 mt-3 shadow-inner border ${
+        isDark ? 'bg-[#181310] border-[#281f19]' : 'bg-stone-50 border-stone-200'
+      }`}>
         {/* Blessings (Like) */}
         <button
           onClick={() => onToggleReaction(post.id)}
@@ -2464,13 +2509,17 @@ export function PostCard({
         >
           <Heart className={`w-5 h-5 transition-all ${post.has_reacted ? 'text-rose-500 fill-rose-500 scale-110' : 'text-stone-400 group-hover:text-rose-500'}`} />
           <div>
-            <p className={`text-xs font-black leading-none transition-colors ${post.has_reacted ? 'text-rose-500' : 'text-stone-100'}`}>{post.reaction_count}</p>
-            <p className={`text-[9px] font-bold mt-0.5 transition-colors ${post.has_reacted ? 'text-rose-400' : 'text-stone-400 group-hover:text-rose-300'}`}>{isHi ? "प्रणाम" : "Blessings"}</p>
+            <p className={`text-xs font-black leading-none transition-colors ${
+              post.has_reacted ? 'text-rose-500' : isDark ? 'text-stone-100' : 'text-stone-850'
+            }`}>{post.reaction_count}</p>
+            <p className={`text-[9px] font-bold mt-0.5 transition-colors ${
+              post.has_reacted ? 'text-rose-400' : isDark ? 'text-stone-400' : 'text-stone-500'
+            }`}>{isHi ? "प्रणाम" : "Blessings"}</p>
           </div>
         </button>
 
         {/* Divider */}
-        <span className="w-px h-6 bg-[#2c2018]" />
+        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
 
         {/* Comments */}
         <button
@@ -2479,13 +2528,13 @@ export function PostCard({
         >
           <MessageSquare className={`w-5 h-5 transition-all ${isCommentsExpanded ? 'text-orange-400 scale-110' : 'text-stone-400 group-hover:text-orange-400'}`} />
           <div>
-            <p className="text-xs font-black text-stone-100 leading-none">{post.comment_count}</p>
-            <p className="text-[9px] font-bold text-stone-400 mt-0.5">{isHi ? "टिप्पणी" : "Comments"}</p>
+            <p className={`text-xs font-black leading-none ${isDark ? 'text-stone-100' : 'text-stone-850'}`}>{post.comment_count}</p>
+            <p className={`text-[9px] font-bold mt-0.5 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{isHi ? "टिप्पणी" : "Comments"}</p>
           </div>
         </button>
 
         {/* Divider */}
-        <span className="w-px h-6 bg-[#2c2018]" />
+        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
 
         {/* Save button */}
         <button
@@ -2493,11 +2542,13 @@ export function PostCard({
           className="flex items-center gap-2 text-left transition-all active:scale-95 group"
         >
           <Bookmark className={`w-4.5 h-4.5 transition-all ${isPostSaved ? 'text-amber-500 fill-amber-500 scale-110' : 'text-stone-400 group-hover:text-amber-500'}`} />
-          <span className={`text-[11px] font-bold transition-colors ${isPostSaved ? 'text-amber-500' : 'text-stone-300 group-hover:text-stone-100'}`}>{isHi ? "सहेजें" : "Save"}</span>
+          <span className={`text-[11px] font-bold transition-colors ${
+            isPostSaved ? 'text-amber-500' : isDark ? 'text-stone-300 group-hover:text-stone-100' : 'text-stone-600 group-hover:text-stone-850'
+          }`}>{isHi ? "सहेजें" : "Save"}</span>
         </button>
 
         {/* Divider */}
-        <span className="w-px h-6 bg-[#2c2018]" />
+        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
 
         {/* Share */}
         <button
@@ -2521,16 +2572,18 @@ export function PostCard({
           }}
           className="flex items-center gap-2 text-left transition-all active:scale-95 group"
         >
-          <ExternalLink className="w-4 h-4 text-stone-400 group-hover:text-orange-400 transition-colors" />
-          <span className="text-[11px] font-bold text-stone-300 group-hover:text-stone-100 transition-colors">{isHi ? "साझा करें" : "Share"}</span>
+          <ExternalLink className={`w-4 h-4 transition-colors ${isDark ? 'text-stone-400 group-hover:text-orange-400' : 'text-stone-500 group-hover:text-orange-500'}`} />
+          <span className={`text-[11px] font-bold transition-colors ${isDark ? 'text-stone-300 group-hover:text-stone-100' : 'text-stone-600 group-hover:text-stone-850'}`}>{isHi ? "साझा करें" : "Share"}</span>
         </button>
       </div>
 
       {/* ─── COLLAPSED COMMENTS PANEL ───────────────────────────── */}
       {isCommentsExpanded && (
-        <div className="mt-4 bg-[#120e0c] rounded-2xl p-4 border border-orange-500/5 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#231b15] pb-2">
-            <span className="text-xs font-bold text-stone-400">
+        <div className={`mt-4 rounded-2xl p-4 border space-y-4 ${
+          isDark ? 'bg-[#120e0c] border-orange-500/5' : 'bg-stone-50/50 border-stone-200/80'
+        }`}>
+          <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
+            <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               {isHi ? "वार्तालाप" : "Discussion Thread"}
             </span>
           </div>
@@ -2545,8 +2598,10 @@ export function PostCard({
                 </span>
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-6 border border-dashed border-[#231b15] rounded-xl bg-orange-500/[0.01]">
-                <p className="text-xs text-stone-400 font-medium">
+              <div className={`text-center py-6 border border-dashed rounded-xl bg-orange-500/[0.01] ${
+                isDark ? 'border-[#231b15]' : 'border-stone-200'
+              }`}>
+                <p className={`text-xs font-medium ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें! 📿" : "No replies yet. Be the first to reply! 📿"}
                 </p>
               </div>
@@ -2563,9 +2618,13 @@ export function PostCard({
                       ) : "DV"
                     )}
                   </div>
-                  <div className="flex-1 bg-[#17120f] border border-[#231b15] p-3 rounded-2xl min-w-0 shadow-xs hover:border-orange-500/10 transition-colors">
+                  <div className={`p-3 rounded-2xl min-w-0 shadow-xs transition-colors flex-1 border ${
+                    isDark ? 'bg-[#17120f] border-[#231b15] hover:border-orange-500/10' : 'bg-white border-stone-200 hover:border-stone-300'
+                  }`}>
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                      <span className="font-extrabold text-stone-100 flex items-center gap-1.5 flex-wrap">
+                      <span className={`font-extrabold flex items-center gap-1.5 flex-wrap ${
+                        isDark ? 'text-stone-100' : 'text-stone-850'
+                      }`}>
                         {comment.author?.display_name || "Devotee"}
                         {comment.is_lyrics_submission && (
                           <Badge variant="outline" className="text-[7px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
@@ -2573,9 +2632,11 @@ export function PostCard({
                           </Badge>
                         )}
                       </span>
-                      <span className="text-[8px] font-semibold text-stone-500">{formatTime(comment.created_at)}</span>
+                      <span className={`text-[8px] font-semibold ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{formatTime(comment.created_at)}</span>
                     </div>
-                    <p className="text-stone-300 text-xs whitespace-pre-wrap leading-relaxed break-words font-medium">
+                    <p className={`text-xs whitespace-pre-wrap leading-relaxed break-words font-medium ${
+                      isDark ? 'text-stone-300' : 'text-stone-600'
+                    }`}>
                       {comment.content}
                     </p>
                     {user?.id === comment.author_id && (
@@ -2594,7 +2655,7 @@ export function PostCard({
 
           {/* Comment input form */}
           {user ? (
-            <div className="space-y-2 pt-2 border-t border-[#231b15]">
+            <div className={`pt-2 border-t ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
               <div className="flex gap-2">
                 <textarea
                   rows={2}
@@ -2605,7 +2666,9 @@ export function PostCard({
                       ? (isHi ? "भजन के बोल यहाँ लिखें..." : "Provide lyrics or details here...")
                       : (isHi ? "अपनी टिप्पणी यहाँ लिखें..." : "Write a response...")
                   }
-                  className="flex-1 text-xs rounded-xl border border-orange-500/10 p-2.5 bg-[#130f0c] text-stone-200 focus:outline-none focus:border-orange-500 resize-none"
+                  className={`flex-1 text-xs rounded-xl p-2.5 focus:outline-none focus:border-orange-500 resize-none border ${
+                    isDark ? 'border-orange-500/10 bg-[#130f0c] text-stone-200' : 'border-stone-200 bg-white text-stone-700'
+                  }`}
                 />
                 <button
                   onClick={() => onAddComment(post.id)}

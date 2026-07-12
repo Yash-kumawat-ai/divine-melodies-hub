@@ -17,7 +17,7 @@ export default function AppShell() {
   const isTemplePage = resolvedPath === "/temple";
   const isLeaderboard = resolvedPath === "/leaderboard";
   const activePracticeId = searchParams.get("practice");
-  const hasActivePractice = resolvedPath === "/meditation" && activePracticeId && activePracticeId !== "mantra_jap_home";
+  const hasActivePractice = resolvedPath === "/meditation" && activePracticeId != null && activePracticeId !== "";
   const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard || hasActivePractice;
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
@@ -29,6 +29,7 @@ export default function AppShell() {
   const isNotifications = resolvedPath === "/notifications";
   const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage;
 
+  const showMobileBottomNav = !isFullScreenApp || isTemplePage || isShortsPage || resolvedPath.startsWith("/meditation");
 
   useEffect(() => {
     if (!isFullScreenApp && !isShortsPage) {
@@ -55,6 +56,7 @@ export default function AppShell() {
         className={cn(
           "flex-1",
           (isFullScreenApp || isShortsPage) && "flex min-h-0 flex-col overflow-hidden",
+          (isFullScreenApp && showMobileBottomNav) && "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
           isTemplePage && "temple-mobile-layout"
         )}
       >
@@ -62,7 +64,7 @@ export default function AppShell() {
           <Outlet />
         </Suspense>
       </main>
-      {(!isFullScreenApp || isTemplePage || isShortsPage) && (
+      {showMobileBottomNav && (
         <div className="block md:hidden">
           <MobileBottomNav />
         </div>

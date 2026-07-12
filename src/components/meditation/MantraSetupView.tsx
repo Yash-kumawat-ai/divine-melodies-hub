@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import meditationHighQuality from "@/pages/images/meditation_high_quality.webp";
 import devotionalBackground from "@/pages/images/devotional_background.webp";
@@ -236,6 +237,8 @@ export default function MantraSetupView({
 }: MantraSetupViewProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // ─── STATE ──────────────────────────────────────────────────────
   const [selectedSankalpIndex, setSelectedSankalpIndex] = useState(0);
@@ -335,18 +338,40 @@ export default function MantraSetupView({
     });
   };
 
+  // Theme-aware classes
+  const wrapperClass = isDark ? "text-brand-cream/90" : "text-stone-900";
+  const bgGradient   = isDark ? "from-[#090506] via-[#0c0608] to-[#040205] opacity-92" : "from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0] opacity-90";
+  const headerBtn    = isDark ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-400" : "border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700";
+  const headerTitle  = isDark ? "text-amber-400" : "text-stone-900";
+  const headerDesc   = isDark ? "text-brand-cream/50" : "text-stone-500";
+  const heroBorder   = isDark ? "border-amber-500/15 shadow-amber-950/25" : "border-stone-200 shadow-orange-100/10";
+  const heroOverlay  = isDark ? "from-stone-950 via-stone-950/45" : "from-black/75 via-black/35";
+  const heroDesc     = isDark ? "text-brand-cream/65" : "text-stone-500";
+  const configCard   = isDark ? "bg-gradient-to-b from-[#1b110b] to-[#120a06] border-amber-500/20 shadow-[0_12px_36px_rgba(24,12,6,0.5)]" : "bg-white border-stone-200 shadow-md";
+  const labelClass   = isDark ? "text-amber-500/70" : "text-orange-700";
+  const dropBtn      = isDark ? "bg-[#0d0704]/90 border-amber-500/10 hover:border-amber-500/25" : "bg-stone-50 border-stone-200 hover:bg-stone-100";
+  const dropSubLabel = isDark ? "text-stone-500" : "text-stone-400";
+  const dropValue    = isDark ? "text-amber-100" : "text-stone-900";
+  const dropEstText  = isDark ? "text-stone-400" : "text-stone-500";
+  const sumCard      = isDark ? "bg-[#0c0604]/80 border-amber-500/10 shadow-black/20" : "bg-stone-50 border-stone-200 shadow-orange-100/10";
+  const sumTitle     = isDark ? "text-amber-500/50" : "text-orange-700";
+  const sumLabel     = isDark ? "text-stone-500" : "text-stone-400";
+  const sumValue     = isDark ? "text-amber-100" : "text-stone-850";
+  const sheetClass   = isDark ? "bg-[#140b07] border-amber-500/20 text-brand-cream shadow-[0_-8px_32px_rgba(245,158,11,0.15)]" : "bg-white border-stone-200 text-stone-900 shadow-2xl";
+  const sheetTitle   = isDark ? "text-amber-400" : "text-orange-850";
+
   return (
-    <div className="relative min-h-screen text-brand-cream/90 font-sans select-none flex flex-col md:justify-center overflow-y-auto overflow-x-hidden md:overflow-hidden scrollbar-hide pb-4 pt-1 md:py-8">
+    <div className={`relative h-full ${wrapperClass} font-sans select-none flex flex-col md:justify-center overflow-hidden overflow-x-hidden scrollbar-hide pb-4 pt-1 md:py-8`}>
       {/* Full-screen Fixed Background Image Layer */}
       <div className="fixed inset-0 -z-20 select-none pointer-events-none">
         <img 
           src={devotionalBackground} 
           alt="Page Background" 
-          className="w-full h-full object-cover object-center opacity-10" 
+          className={`w-full h-full object-cover object-center ${isDark ? "opacity-10" : "opacity-[0.03]"}`} 
         />
         {/* Ambient dark warm gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#090506] via-[#0c0608] to-[#040205] opacity-92" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.08),transparent)]" />
+        <div className={`absolute inset-0 bg-gradient-to-b ${bgGradient}`} />
+        <div className={`absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,${isDark ? "0.08" : "0.04"}),transparent)]`} />
       </div>
 
       {/* Decorative watermarked background mandala */}
@@ -369,7 +394,7 @@ export default function MantraSetupView({
             <div className="flex items-center gap-3">
               <button
                 onClick={onBack}
-                className="w-10 h-10 rounded-full border border-amber-500/20 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-400 active:scale-95 transition-all shrink-0"
+                className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all shrink-0 ${headerBtn}`}
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -381,10 +406,10 @@ export default function MantraSetupView({
                   </svg>
                 </div>
                 <div className="min-w-0">
-                  <h1 className="font-display font-black text-sm md:text-base text-amber-400 tracking-wide leading-none">
+                  <h1 className={`font-display font-black text-sm md:text-base tracking-wide leading-none ${headerTitle}`}>
                     {isHi ? "जप साधना" : "Japa Sadhana"}
                   </h1>
-                  <p className="text-[9px] text-brand-cream/50 mt-1 truncate">
+                  <p className={`text-[9px] mt-1 truncate ${headerDesc}`}>
                     {isHi ? "अपनी साधना चुनें और आज से आरंभ करें" : "Set your intention and begin practice"}
                   </p>
                 </div>
@@ -393,13 +418,13 @@ export default function MantraSetupView({
           </div>
 
           {/* HERO SECTION */}
-          <div className="relative h-44 md:h-auto md:flex-grow rounded-[28px] overflow-hidden border border-amber-500/15 shadow-lg shadow-amber-950/25 flex-shrink-0 flex flex-col justify-end">
+          <div className={`relative h-44 md:h-auto md:flex-grow rounded-[28px] overflow-hidden border flex-shrink-0 flex flex-col justify-end shadow-lg ${heroBorder}`}>
             <img
               src={meditationHighQuality}
               alt="Divine Meditation Scene"
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/45 to-transparent" />
+            <div className={`absolute inset-0 bg-gradient-to-t ${heroOverlay} to-transparent`} />
             <div className="absolute inset-0 bg-radial-gradient from-amber-500/10 via-transparent to-transparent pointer-events-none" />
             
             <div className="absolute top-4 right-4 opacity-[0.12] w-20 h-20 md:w-36 md:h-36 text-amber-400 pointer-events-none animate-[spin_120s_linear_infinite]">
@@ -413,7 +438,7 @@ export default function MantraSetupView({
               <h2 className="text-base md:text-2xl font-serif font-black text-amber-100 tracking-wide flex items-center gap-2">
                 {isHi ? mantra.name_hindi : mantra.name_english}
               </h2>
-              <p className="text-[9px] md:text-xs text-brand-cream/65 mt-0.5 md:mt-2 leading-relaxed max-w-[95%]">
+              <p className={`text-[9px] md:text-xs mt-0.5 md:mt-2 leading-relaxed max-w-[95%] ${heroDesc}`}>
                 {isHi 
                   ? "हर मंत्र के साथ अपने मन को शांत करें और ईश्वर से जुड़ें।" 
                   : "Calm your mind with every chant and align with the divine energies."}
@@ -426,25 +451,25 @@ export default function MantraSetupView({
         <div className="md:col-span-7 flex flex-col justify-between space-y-3 md:space-y-4 h-full md:justify-center md:py-2">
           
           {/* SACRED CONFIGURATION CARD */}
-          <div className="bg-gradient-to-b from-[#1b110b] to-[#120a06] border border-amber-500/20 rounded-[28px] p-3.5 md:p-6 shadow-[0_12px_36px_rgba(24,12,6,0.5)] space-y-3 md:space-y-4 relative flex-shrink-0">
+          <div className={`rounded-[28px] p-3.5 md:p-6 shadow-2xl space-y-3 md:space-y-4 relative flex-shrink-0 ${configCard}`}>
             <div className="absolute -inset-px bg-gradient-to-b from-amber-500/10 to-transparent rounded-[28px] -z-10 pointer-events-none" />
 
             {/* SANKALP DROPDOWN */}
             <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-500/70 block">
+              <label className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider block ${labelClass}`}>
                 {isHi ? "संकल्प" : "Sankalpa (Intention)"}
               </label>
               <button
                 onClick={() => setIsSankalpSheetOpen(true)}
-                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-[#0d0704]/90 border border-amber-500/10 hover:border-amber-500/25 rounded-2xl active:scale-[0.99] transition-all text-left"
+                className={`w-full flex items-center justify-between p-2.5 md:p-3 border rounded-2xl active:scale-[0.99] transition-all text-left ${dropBtn}`}
               >
                 <div className="flex items-center gap-3 md:gap-4">
                   <span className="text-sm md:text-base">🌸</span>
                   <div>
-                    <div className="text-[9px] md:text-[10px] text-stone-500 font-semibold uppercase tracking-wider">
+                    <div className={`text-[9px] md:text-[10px] font-semibold uppercase tracking-wider ${dropSubLabel}`}>
                       {isHi ? "संकल्प" : "Intention"}
                     </div>
-                    <div className="text-xs md:text-sm font-bold text-amber-100 mt-0.5 truncate max-w-[220px] md:max-w-[340px]">
+                    <div className={`text-xs md:text-sm font-bold mt-0.5 truncate max-w-[220px] md:max-w-[340px] ${dropValue}`}>
                       {currentSankalpText}
                     </div>
                   </div>
@@ -455,21 +480,21 @@ export default function MantraSetupView({
 
             {/* GOAL DROPDOWN */}
             <div className="space-y-1 md:space-y-1.5">
-              <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-500/70 block">
-                {isHi ? "लक्ष्य" : "Goal (Target count)"}
+              <label className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider block ${labelClass}`}>
+                {isHi ? "लक्षय" : "Goal (Target count)"}
               </label>
               <button
                 onClick={() => setIsGoalSheetOpen(true)}
-                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-[#0d0704]/90 border border-amber-500/10 hover:border-amber-500/25 rounded-2xl active:scale-[0.99] transition-all text-left"
+                className={`w-full flex items-center justify-between p-2.5 md:p-3 border rounded-2xl active:scale-[0.99] transition-all text-left ${dropBtn}`}
               >
                 <div className="flex items-center gap-3 md:gap-4">
                   <span className="text-sm md:text-base">🎯</span>
                   <div>
-                    <div className="text-[9px] md:text-[10px] text-stone-500 font-semibold uppercase tracking-wider">
+                    <div className={`text-[9px] md:text-[10px] font-semibold uppercase tracking-wider ${dropSubLabel}`}>
                       {isHi ? "मंत्र संख्या" : "Mantra Count"}
                     </div>
-                    <div className="text-xs md:text-sm font-bold text-amber-100 mt-0.5">
-                      {targetCount} {isHi ? "मंत्र" : "Mantras"} <span className="text-[9px] md:text-[10px] font-normal text-stone-400">({currentEstTime} {isHi ? "मिनट" : "min"})</span>
+                    <div className={`text-xs md:text-sm font-bold mt-0.5 ${dropValue}`}>
+                      {targetCount} {isHi ? "मंत्र" : "Mantras"} <span className={`text-[9px] md:text-[10px] font-normal ${dropEstText}`}>({currentEstTime} {isHi ? "मिनट" : "min"})</span>
                     </div>
                   </div>
                 </div>
@@ -477,9 +502,9 @@ export default function MantraSetupView({
               </button>
             </div>
 
-            {/* PRACTICE MODE (2 Segmented Cards) */}
+            {/* PRACTICE MODE */}
             <div className="space-y-1.5 md:space-y-2">
-              <label className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-500/70 block">
+              <label className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider block ${labelClass}`}>
                 {isHi ? "विधि" : "Practice Mode"}
               </label>
               <div className="grid grid-cols-2 gap-3.5 w-full">
@@ -488,15 +513,19 @@ export default function MantraSetupView({
                   onClick={() => setPracticeMode("mala")}
                   className={`w-full flex flex-col items-center justify-center py-3.5 px-3 md:py-4 md:px-5 rounded-xl border transition-all text-center relative overflow-hidden group select-none ${
                     practiceMode === "mala"
-                      ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                      : "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                      ? isDark
+                        ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                        : "bg-orange-50 border-orange-500 text-orange-850 shadow-sm"
+                      : isDark
+                        ? "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                        : "bg-stone-50 border-stone-200 text-stone-600 hover:border-stone-300"
                   }`}
                 >
                   <MalaIcon className={`w-6 h-6 md:w-6.5 md:h-6.5 mb-1.5 transition-transform group-hover:scale-105 ${
-                    practiceMode === "mala" ? "text-amber-400 animate-[pulse_3s_infinite]" : "text-stone-500"
+                    practiceMode === "mala" ? "text-amber-500 animate-[pulse_3s_infinite]" : "text-stone-400"
                   }`} />
                   <span className="text-xs md:text-sm font-bold block">{isHi ? "माला जप" : "Mala Jap"}</span>
-                  <span className="text-[8px] md:text-[9px] opacity-60 block mt-0.5">{isHi ? "Traditional Counting" : "Traditional Counting"}</span>
+                  <span className={`text-[8px] md:text-[9px] opacity-60 block mt-0.5 ${isDark ? "text-amber-100/40" : "text-stone-500"}`}>{isHi ? "Traditional Counting" : "Traditional Counting"}</span>
                   {practiceMode === "mala" && (
                     <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-[7px] md:text-[8px] text-[#1c120c] font-black">
                       ✓
@@ -509,15 +538,19 @@ export default function MantraSetupView({
                   onClick={() => setPracticeMode("voice")}
                   className={`w-full flex flex-col items-center justify-center py-3.5 px-3 md:py-4 md:px-5 rounded-xl border transition-all text-center relative overflow-hidden group select-none ${
                     practiceMode === "voice"
-                      ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                      : "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                      ? isDark
+                        ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                        : "bg-orange-50 border-orange-500 text-orange-850 shadow-sm"
+                      : isDark
+                        ? "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                        : "bg-stone-50 border-stone-200 text-stone-600 hover:border-stone-300"
                   }`}
                 >
                   <Mic className={`w-5.5 h-5.5 md:w-6 md:h-6 mb-2 transition-transform group-hover:scale-105 ${
-                    practiceMode === "voice" ? "text-amber-400 animate-pulse" : "text-stone-500"
+                    practiceMode === "voice" ? "text-amber-500 animate-pulse" : "text-stone-400"
                   }`} />
                   <span className="text-xs md:text-sm font-bold block">{isHi ? "स्वर जप" : "Voice Jap"}</span>
-                  <span className="text-[8px] md:text-[9px] opacity-60 block mt-0.5">{isHi ? "Automatic Counting" : "Automatic Counting"}</span>
+                  <span className={`text-[8px] md:text-[9px] opacity-60 block mt-0.5 ${isDark ? "text-amber-100/40" : "text-stone-500"}`}>{isHi ? "Automatic Counting" : "Automatic Counting"}</span>
                   {practiceMode === "voice" && (
                     <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-amber-500 flex items-center justify-center text-[7px] md:text-[8px] text-[#1c120c] font-black">
                       ✓
@@ -529,32 +562,32 @@ export default function MantraSetupView({
           </div>
 
           {/* LIVE SUMMARY CARD */}
-          <div className="bg-[#0c0604]/80 border border-amber-500/10 rounded-2xl p-2.5 md:p-4 shadow-md shadow-black/20 flex-shrink-0">
-            <h4 className="text-[8px] md:text-[9px] font-bold uppercase tracking-wider text-amber-500/50 mb-1 md:mb-2 text-center">
+          <div className={`border rounded-2xl p-2.5 md:p-4 shadow flex-shrink-0 ${sumCard}`}>
+            <h4 className={`text-[8px] md:text-[9px] font-bold uppercase tracking-wider mb-1 md:mb-2 text-center ${sumTitle}`}>
               {isHi ? "आपका अभ्यास" : "Your Practice Details"}
             </h4>
             <div className="grid grid-cols-4 gap-0.5 text-center divide-x divide-stone-800">
               <div className="px-1 min-w-0">
-                <span className="text-[7.5px] md:text-[8.5px] block text-stone-500 uppercase tracking-wider font-bold">🌸 Sankalp</span>
-                <span className="text-[9.5px] md:text-xs font-bold text-amber-100 block truncate mt-0.5">
+                <span className={`text-[7.5px] md:text-[8.5px] block uppercase tracking-wider font-bold ${sumLabel}`}>🌸 Sankalp</span>
+                <span className={`text-[9.5px] md:text-xs font-bold block truncate mt-0.5 ${sumValue}`}>
                   {currentSankalpText}
                 </span>
               </div>
               <div className="px-1 min-w-0">
-                <span className="text-[7.5px] md:text-[8.5px] block text-stone-500 uppercase tracking-wider font-bold">📿 Method</span>
-                <span className="text-[9.5px] md:text-xs font-bold text-amber-100 block truncate mt-0.5">
+                <span className={`text-[7.5px] md:text-[8.5px] block uppercase tracking-wider font-bold ${sumLabel}`}>📿 Method</span>
+                <span className={`text-[9.5px] md:text-xs font-bold block truncate mt-0.5 ${sumValue}`}>
                   {practiceMode === "voice" ? (isHi ? "स्वर जप" : "Voice Japa") : (isHi ? "माला जप" : "Mala Japa")}
                 </span>
               </div>
               <div className="px-1 min-w-0">
-                <span className="text-[7.5px] md:text-[8.5px] block text-stone-500 uppercase tracking-wider font-bold">🔢 Count</span>
-                <span className="text-[9.5px] md:text-xs font-bold text-amber-100 block truncate mt-0.5">
+                <span className={`text-[7.5px] md:text-[8.5px] block uppercase tracking-wider font-bold ${sumLabel}`}>🔢 Count</span>
+                <span className={`text-[9.5px] md:text-xs font-bold block truncate mt-0.5 ${sumValue}`}>
                   {targetCount}
                 </span>
               </div>
               <div className="px-1 min-w-0">
-                <span className="text-[7.5px] md:text-[8.5px] block text-stone-500 uppercase tracking-wider font-bold">⏱ Time</span>
-                <span className="text-[9.5px] md:text-xs font-bold text-amber-100 block truncate mt-0.5">
+                <span className={`text-[7.5px] md:text-[8.5px] block uppercase tracking-wider font-bold ${sumLabel}`}>⏱ Time</span>
+                <span className={`text-[9.5px] md:text-xs font-bold block truncate mt-0.5 ${sumValue}`}>
                   {currentEstTime} {isHi ? "मिनट" : "min"}
                 </span>
               </div>
@@ -562,24 +595,24 @@ export default function MantraSetupView({
           </div>
 
           {/* CTA START BUTTON */}
-          <div className="pt-1.5 pb-2 w-full flex flex-col items-center gap-2 flex-shrink-0">
+          <div className="pt-1.5 pb-8 w-full flex flex-col items-center gap-2 flex-shrink-0">
             <button
               onClick={handleBegin}
-              className="w-[90%] md:w-full h-14 md:h-16 bg-gradient-to-r from-amber-500 via-orange-500 to-red-650 hover:from-amber-600 hover:to-red-750 active:scale-[0.98] text-stone-950 font-black px-6 rounded-2xl flex items-center justify-between shadow-[0_6px_24px_rgba(245,158,11,0.3)] transition-all duration-300 border border-amber-400/20 group cursor-pointer"
+              className={`w-[90%] md:w-full h-14 md:h-16 font-black px-6 rounded-2xl flex items-center justify-between transition-all duration-300 group cursor-pointer ${isDark ? "bg-gradient-to-r from-amber-500 via-orange-500 to-red-650 hover:from-amber-600 hover:to-red-750 text-stone-950 border border-amber-400/20 shadow-[0_6px_24px_rgba(245,158,11,0.3)]" : "bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white shadow-lg"}`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-xl md:text-2xl font-serif text-[#1c120c] leading-none drop-shadow-md">ॐ</span>
-                <span className="text-sm md:text-base tracking-wide font-extrabold text-[#1c120c]">
+                <span className="text-xl md:text-2xl font-serif leading-none drop-shadow-md">ॐ</span>
+                <span className="text-sm md:text-base tracking-wide font-extrabold">
                   {isHi ? "जप प्रारम्भ करें" : "Begin Sadhana"}
                 </span>
               </div>
-              <div className="flex items-center gap-1 bg-[#1c120c]/10 px-2.5 py-1 rounded-xl border border-white/5 group-hover:bg-[#1c120c]/20 transition-all">
-                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 text-[#1c120c] group-hover:translate-x-1 transition-transform" />
+              <div className={`flex items-center gap-1 px-2.5 py-1 rounded-xl border transition-all ${isDark ? "bg-[#1c120c]/10 border-white/5 group-hover:bg-[#1c120c]/20" : "bg-white/20 border-white/20 group-hover:bg-white/30"}`}>
+                <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
 
-            <p className="text-[8px] md:text-[9px] text-white/30 font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center">
-              <ShieldCrossIcon className="w-3 h-3 md:w-3.5 md:h-3.5 text-amber-500/40" />
+            <p className={`text-[8px] md:text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center ${isDark ? "text-white/30" : "text-stone-500"}`}>
+              <ShieldCrossIcon className={`w-3 h-3 md:w-3.5 md:h-3.5 ${isDark ? "text-amber-500/40" : "text-orange-600/40"}`} />
               {isHi ? "आपकी साधना सुरक्षित और निजी है" : "Your Sadhana is Secure & Private"}
             </p>
           </div>
@@ -605,12 +638,12 @@ export default function MantraSetupView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#140b07] border-t border-amber-500/20 rounded-t-[28px] p-6 pb-8 z-50 text-brand-cream shadow-[0_-8px_32px_rgba(245,158,11,0.15)]"
+              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-8 z-50 ${sheetClass}`}
             >
               {/* Drag handle */}
-              <div className="w-12 h-1 bg-stone-850 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-1 bg-stone-800/80 rounded-full mx-auto mb-5" />
               
-              <h3 className="text-base font-bold text-amber-400 mb-4 flex items-center gap-2">
+              <h3 className={`text-base font-bold mb-4 flex items-center gap-2 ${sheetTitle}`}>
                 🌸 {isHi ? "संकल्प का चयन करें" : "Select Intention (Sankalpa)"}
               </h3>
               
@@ -628,16 +661,20 @@ export default function MantraSetupView({
                       }}
                       className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border ${
                         isSelected
-                          ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
-                          : "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
+                          ? isDark
+                            ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                            : "bg-orange-50 border-orange-400 text-orange-850 shadow-sm"
+                          : isDark
+                            ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
+                            : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
                       }`}
                     >
                       <div className="flex items-center gap-3 text-left">
-                        <div className={`p-2 rounded-xl ${isSelected ? "bg-amber-500/20 text-amber-400" : "bg-stone-900 text-stone-400"}`}>
+                        <div className={`p-2 rounded-xl ${isSelected ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-orange-100 text-orange-700") : (isDark ? "bg-stone-900 text-stone-400" : "bg-stone-100 text-stone-500")}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="font-bold text-xs">{isHi ? opt.labelHi : opt.labelEn}</div>
+                          <div className={`font-bold text-xs ${isSelected ? "" : (isDark ? "text-stone-300" : "text-stone-850")}`}>{isHi ? opt.labelHi : opt.labelEn}</div>
                           <div className="text-[10px] text-stone-500">{isHi ? opt.subHi : opt.subEn}</div>
                         </div>
                       </div>
@@ -652,7 +689,7 @@ export default function MantraSetupView({
               </div>
 
               {/* Custom Sankalpa Input */}
-              <div className="mt-4 pt-4 border-t border-stone-850">
+              <div className={`mt-4 pt-4 border-t ${isDark ? "border-stone-800" : "border-stone-200"}`}>
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-500 mb-2">
                   {isHi ? "या अपना स्वयं का संकल्प लिखें:" : "Or write a custom Sankalpa:"}
                 </label>
@@ -665,12 +702,12 @@ export default function MantraSetupView({
                       setSelectedSankalpIndex(-1); // custom sankalpa
                     }}
                     placeholder={isHi ? "उदा. सुख और समृद्धि..." : "e.g. Health and Prosperity..."}
-                    className="flex-1 bg-stone-950/60 border border-stone-850 focus:border-amber-500/40 focus:outline-none rounded-xl px-4 py-2.5 text-xs text-brand-cream placeholder-stone-700"
+                    className={`flex-1 focus:outline-none rounded-xl px-4 py-2.5 text-xs ${isDark ? "bg-stone-950/60 border border-stone-850 focus:border-amber-500/40 text-brand-cream placeholder-stone-700" : "bg-stone-50 border border-stone-300 focus:border-orange-500 text-stone-900 placeholder-stone-400"}`}
                   />
                   {customSankalp.trim() && selectedSankalpIndex === -1 && (
                     <button
                       onClick={() => setIsSankalpSheetOpen(false)}
-                      className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-stone-950 font-bold px-4 rounded-xl text-xs transition-all"
+                      className={`active:scale-95 font-bold px-4 rounded-xl text-xs transition-all ${isDark ? "bg-amber-500 hover:bg-amber-600 text-stone-950" : "bg-orange-500 hover:bg-orange-600 text-white"}`}
                     >
                       {isHi ? "लागू करें" : "Apply"}
                     </button>
@@ -697,12 +734,12 @@ export default function MantraSetupView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#140b07] border-t border-amber-500/20 rounded-t-[28px] p-6 pb-8 z-50 text-brand-cream shadow-[0_-8px_32px_rgba(245,158,11,0.15)]"
+              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-8 z-50 ${sheetClass}`}
             >
               {/* Drag handle */}
-              <div className="w-12 h-1 bg-stone-850 rounded-full mx-auto mb-5" />
+              <div className="w-12 h-1 bg-stone-800/80 rounded-full mx-auto mb-5" />
               
-              <h3 className="text-base font-bold text-amber-400 mb-4 flex items-center gap-2">
+              <h3 className={`text-base font-bold mb-4 flex items-center gap-2 ${sheetTitle}`}>
                 🎯 {isHi ? "लक्ष्य (मंत्र संख्या) का चयन करें" : "Select Goal Count"}
               </h3>
               
@@ -719,18 +756,22 @@ export default function MantraSetupView({
                       }}
                       className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                         isSelected
-                          ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
-                          : "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
+                          ? isDark
+                            ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                            : "bg-orange-50 border-orange-400 text-orange-850 shadow-sm"
+                          : isDark
+                            ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
+                            : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
                       }`}
                     >
                       <div className="flex items-center gap-3 text-left">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${
-                          isSelected ? "bg-amber-500/20 text-amber-400" : "bg-stone-900 text-stone-400"
+                          isSelected ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-orange-100 text-orange-700") : (isDark ? "bg-stone-900 text-stone-400" : "bg-stone-100 text-stone-500")
                         }`}>
                           {opt.count}
                         </div>
                         <div>
-                          <div className="font-bold text-xs">
+                          <div className={`font-bold text-xs ${isSelected ? "" : (isDark ? "text-stone-300" : "text-stone-850")}`}>
                             {isHi ? opt.labelHi : opt.labelEn}
                           </div>
                           <div className="text-[10px] text-stone-500">

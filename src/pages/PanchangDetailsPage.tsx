@@ -153,10 +153,6 @@ export default function PanchangDetailsPage() {
           </button>
         </div>
 
-        {/* Ornament backgrounds */}
-        <div className="absolute top-4 left-4 opacity-5 pointer-events-none">
-          <img src="/mandala-logo.png" alt="" className="w-48 h-48 animate-spin-slow" />
-        </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 -mt-6">
@@ -324,9 +320,9 @@ export default function PanchangDetailsPage() {
           </div>
           
           {/* Background decoration */}
-          <div className="absolute bottom-[-20%] right-[-5%] opacity-[0.03] dark:opacity-[0.01] pointer-events-none">
+          {/* <div className="absolute bottom-[-20%] right-[-5%] opacity-[0.03] dark:opacity-[0.01] pointer-events-none">
             <img src="/mandala-logo.png" alt="" className="w-64 h-64" />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

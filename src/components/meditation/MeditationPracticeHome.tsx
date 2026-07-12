@@ -10,15 +10,16 @@ import redLotus from "@/pages/images/red_lotus_lossless.webp";
 import hanumanHd2 from "@/pages/images/hanuman_hd (2).webp";
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useTheme } from "@/hooks/useTheme";
 
 const MEDITATION_QUOTES = [
-  { hi: "“शांति बाहर नहीं, अंदर मिलती है।”", en: "“Peace is not found outside, it is found within.”" },
-  { hi: "“मौन में उतरें। चेतना को स्पर्श करें।”", en: "“Step into silence. Touch the consciousness.”" },
-  { hi: "“ध्यान नहीं, स्वयं से मिलन।”", en: "“Not just meditation, a meeting with self.”" },
-  { hi: "“जहाँ श्वास शांत होती है, वहाँ आत्मा बोलती है।”", en: "“Where breath calms, the soul speaks.”" },
-  { hi: "“भीतर की शांति, बाहर का प्रकाश।”", en: "“Inner peace, outer light.”" },
-  { hi: "“मन से परे। चेतना के करीब।”", en: "“Beyond the mind. Closer to consciousness.”" },
-  { hi: "“निरंतर अभ्यास ही सच्ची शांति का मार्ग है।”", en: "“Consistent practice is the path to true peace.”" }
+  { hi: "\u201cशांति बाहर नहीं, अंदर मिलती है।\u201d", en: "\u201cPeace is not found outside, it is found within.\u201d" },
+  { hi: "\u201cमौन में उतरें। चेतना को स्पर्श करें।\u201d", en: "\u201cStep into silence. Touch the consciousness.\u201d" },
+  { hi: "\u201cध्यान नहीं, स्वयं से मिलन।\u201d", en: "\u201cNot just meditation, a meeting with self.\u201d" },
+  { hi: "\u201cजहाँ श्वास शांत होती है, वहाँ आत्मा बोलती है।\u201d", en: "\u201cWhere breath calms, the soul speaks.\u201d" },
+  { hi: "\u201cभीतर की शांति, बाहर का प्रकाश।\u201d", en: "\u201cInner peace, outer light.\u201d" },
+  { hi: "\u201cमन से परे। चेतना के करीब।\u201d", en: "\u201cBeyond the mind. Closer to consciousness.\u201d" },
+  { hi: "\u201cनिरंतर अभ्यास ही सच्ची शांति का मार्ग है।\u201d", en: "\u201cConsistent practice is the path to true peace.\u201d" }
 ];
 
 // Pink Lotus SVG Component
@@ -54,6 +55,8 @@ type MeditationPracticeHomeProps = {
 export default function MeditationPracticeHome({ onSelectPractice, onQuickStart }: MeditationPracticeHomeProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const stats = computeStats(loadSessionLogs());
   const prefs = loadPreferences();
@@ -77,9 +80,8 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
 
     const completedDays = new Set(completed.map((l) => getLocalDateString(l.completedAt)));
     
-    // Get the start of the current week (Monday)
     const now = new Date();
-    const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
+    const currentDay = now.getDay();
     const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1;
     const monday = new Date(now);
     monday.setDate(now.getDate() - distanceToMonday);
@@ -162,7 +164,6 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
     return `${count} ${count === 1 ? "Session" : "Sessions"}`;
   };
 
-  // Fallback to mantra_shiva if there is no previous session
   const lastPractice = prefs.lastPracticeId ? getPracticeById(prefs.lastPracticeId) : getPracticeById("mantra_shiva")!;
 
   const copy = {
@@ -184,7 +185,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
     },
     quote: {
       title: isHi ? "आज का विचार" : "Thought of the Day",
-      text: isHi ? "“शांति बाहर नहीं, अंदर मिलती है।”" : "“Peace is not found outside, it is found within.”",
+      text: isHi ? "\u201cशांति बाहर नहीं, अंदर मिलती है।\u201d" : "\u201cPeace is not found outside, it is found within.\u201d",
     },
     practices: {
       title: isHi ? "ध्यान के अभ्यास" : "Meditation Practices",
@@ -207,165 +208,121 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
     }
   };
 
-  const particles = useMemo(() => Array.from({ length: 25 }).map((_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 3, // size between 3px and 7px
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    duration: Math.random() * 12 + 8, // duration between 8s and 20s
-    delay: Math.random() * -20, // negative delay so they are pre-distributed on mount
-  })), []);
-
   const handleScrollToPractices = () => {
     const element = document.getElementById("meditation-practices-section");
     if (element) {
-      const offset = 80; // offset for sticky navigation header
+      const offset = 80;
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
       const elementPosition = elementRect - bodyRect;
       const offsetPosition = elementPosition - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
+      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
     }
   };
 
+  // Theme-aware color tokens
+  const bg        = isDark ? "bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306]" : "bg-gradient-to-b from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0]";
+  const textMain  = isDark ? "text-amber-50"   : "text-stone-900";
+  const cardBg    = isDark ? "bg-[#130d0a]/80" : "bg-white/80";
+  const cardBorder= isDark ? "border-orange-500/10" : "border-orange-300/30";
+  const cardBg2   = isDark ? "bg-[#130d0a]/35" : "bg-white/70";
+  const textMuted = isDark ? "text-white/40"   : "text-stone-500";
+  const textHead  = isDark ? "text-white"      : "text-stone-900";
+  const trackBg   = isDark ? "bg-white/10"     : "bg-stone-300/50";
+  const dayCircleBg = isDark ? "bg-black/40 border-white/10" : "bg-stone-200/60 border-stone-300/50";
+  const streakCardBg = isDark ? "bg-[#130d0a]/65" : "bg-white/80";
+  const weekLabelColor = isDark ? "text-white/80" : "text-stone-600";
+  const statLabelColor = isDark ? "text-amber-200/80" : "text-stone-600";
+  const statValueColor = isDark ? "text-amber-300" : "text-orange-600";
+  const practiceLabelColor = isDark ? "text-white/50" : "text-stone-500";
+  const practiceCardBorder = isDark ? "border-white/5" : "border-stone-200/60";
+  const practiceCard3Bg = isDark ? "bg-[#130d0a]/50" : "bg-white/80";
+  const sectionHeadColor = isDark ? "text-amber-300/90" : "text-orange-700";
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306] pb-28 text-amber-50 md:pb-12">
+    <div className={`min-h-screen ${bg} ${textMain} pb-28 md:pb-12`}>
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
           50% { transform: translateY(-8px); }
           100% { transform: translateY(0px); }
         }
-        .animate-lotus-float {
-          animation: float 6s ease-in-out infinite;
-        }
+        .animate-lotus-float { animation: float 6s ease-in-out infinite; }
         @keyframes subtlePulse {
           0% { transform: scale(1); }
           50% { transform: scale(1.05); }
           100% { transform: scale(1); }
         }
-        .animate-node-pulse {
-          animation: subtlePulse 4s ease-in-out infinite;
-        }
+        .animate-node-pulse { animation: subtlePulse 4s ease-in-out infinite; }
       `}</style>
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.12),transparent),radial-gradient(circle_at_90%_20%,rgba(244,63,94,0.05),transparent_40%)]" />
 
-      {/* HERO BANNER SECTION - Full width edge-to-edge */}
-      <section className="relative min-h-[420px] md:min-h-[480px] overflow-hidden border-b border-white/10 shadow-2xl shadow-black/60 group flex flex-col justify-center px-6 md:px-12 lg:px-24 py-10 md:py-14 w-full">
-          {/* Background Image - same for both mobile and desktop */}
+      {!isDark && (
+        <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.06),transparent)]" />
+      )}
+      {isDark && (
+        <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.12),transparent),radial-gradient(circle_at_90%_20%,rgba(244,63,94,0.05),transparent_40%)]" />
+      )}
+
+      {/* HERO BANNER — boxed card inside content container */}
+      <div className="mx-auto max-w-5xl px-4 mt-6 space-y-8">
+
+        <section className="relative min-h-[380px] md:min-h-[420px] overflow-hidden rounded-3xl shadow-xl flex flex-col justify-center px-6 md:px-12 py-10 md:py-14 w-full">
           <div className="absolute inset-0 z-0">
             <img
               src={meditationDesktopBg}
               alt="Meditation"
-              className="w-full h-full object-cover object-center transition-transform ease-out group-hover:scale-105"
-              style={{ transitionDuration: "15000ms" }}
+              className="w-full h-full object-cover object-center"
             />
           </div>
-          
-          {/* Overlays for readable text */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-[1]" />
 
-          {/* Floating Particles - floating IN FRONT of text & image (z-20) */}
-          <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-            {particles.map((p) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ 
-                  opacity: [0, 0.85, 0],
-                  y: ["100%", "-10%"],
-                  x: [`${p.x}%`, `${p.x + (Math.random() * 12 - 6)}%`]
-                }}
-                transition={{ 
-                  duration: p.duration, 
-                  repeat: Infinity, 
-                  delay: p.delay,
-                  ease: "linear"
-                }}
-                className="absolute rounded-full bg-[#D9A441] blur-[0.5px] shadow-[0_0_8px_rgba(217,164,65,0.7)]"
-                style={{ 
-                  left: `${p.x}%`, 
-                  bottom: 0,
-                  width: `${p.size}px`,
-                  height: `${p.size}px`
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Banner Content */}
+          {/* Banner Content — always white on image */}
           <div className="relative z-10 max-w-xl text-left">
-            <motion.p 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-amber-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-3"
-            >
+            <p className="text-amber-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-3">
               {copy.hero.tag}
-            </motion.p>
-            
-            <motion.h1 
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-3xl md:text-5xl font-display font-bold text-white leading-tight drop-shadow-lg whitespace-pre-line"
-            >
+            </p>
+
+            <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight drop-shadow-lg whitespace-pre-line">
               {copy.hero.title}
-            </motion.h1>
+            </h1>
 
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-amber-100/70 text-sm md:text-base mt-3 mb-8 font-light"
-            >
+            <p className="text-amber-100/80 text-sm md:text-base mt-3 mb-8 font-light drop-shadow">
               {copy.hero.subtitle}
-            </motion.p>
+            </p>
 
-            <motion.button
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 }}
+            <button
               onClick={handleScrollToPractices}
-              className="group flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-7 py-3.5 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
+              className="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-7 py-3.5 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
             >
-              <Play className="w-5 h-5 fill-white stroke-none group-hover:scale-110 transition-transform" />
+              <Play className="w-5 h-5 fill-white stroke-none" />
               <span>{copy.hero.cta}</span>
-            </motion.button>
+            </button>
           </div>
         </section>
 
-        <div className="mx-auto max-w-5xl px-4 mt-8 space-y-8">
-
-        {/* SECTION 1: TWO COLUMN ROW ( जारी ध्यान + आज का विचार ) */}
+        {/* SECTION 1: TWO COLUMN ROW */}
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Card Left: जारी ध्यान (Continuing Meditation) */}
-          <div className="bg-[#130d0a]/80 backdrop-blur-xl border border-orange-500/10 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group/recent">
+          {/* Card Left: जारी ध्यान */}
+          <div className={`${cardBg} backdrop-blur-xl border ${cardBorder} rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group/recent`}>
             <div className="absolute -top-10 -left-10 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
             
             <div>
-              <h2 className="text-amber-400 font-display font-bold uppercase tracking-wider text-xs md:text-sm mb-4 flex items-center gap-2">
+              <h2 className="text-amber-500 font-display font-bold uppercase tracking-wider text-xs md:text-sm mb-4 flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                 {copy.recent.title}
               </h2>
               
               <div className="flex items-center gap-4">
-                {/* ॐ Icon in glowing circle */}
-                <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-400 font-display text-2xl font-bold">
+                <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-500 font-display text-2xl font-bold`}>
                   <span>ॐ</span>
                   <div className="absolute inset-0 rounded-2xl bg-orange-500/5 blur-md" />
                 </div>
                 
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-white truncate">
+                  <h3 className={`text-lg font-bold ${textHead} truncate`}>
                     {lastPractice ? getMeditationPracticeTitle(lastPractice, language) : (isHi ? "ॐ नमः शिवाय" : "Om Namah Shivaya")}
                   </h3>
-                  <p className="text-[13px] text-white/40 mt-1 font-medium">
+                  <p className={`text-[13px] ${textMuted} mt-1 font-medium`}>
                     {lastPractice 
                       ? copy.recent.type(lastPractice.defaultDurationMinutes, lastPractice.type) 
                       : (isHi ? "10 मिनट • मंत्र ध्यान" : "10 mins • Mantra Meditation")}
@@ -375,15 +332,13 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             </div>
 
             <div className="mt-6">
-              {/* Progress bar and mobile play button */}
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
-                  <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                  <div className={`h-1 rounded-full ${trackBg} overflow-hidden`}>
                     <div className="h-full w-[65%] bg-gradient-to-r from-orange-500 to-amber-400" />
                   </div>
                 </div>
                 
-                {/* Mobile play button */}
                 <button 
                   onClick={onQuickStart}
                   className="flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 transition-colors"
@@ -392,11 +347,10 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                 </button>
               </div>
 
-              {/* Desktop continue button */}
               <div className="hidden md:block mt-4">
                 <button 
                   onClick={onQuickStart}
-                  className="inline-flex items-center gap-2 rounded-xl bg-orange-500/10 border border-orange-500/30 px-4 py-2 text-[13px] md:text-xs font-bold text-orange-400 hover:bg-orange-500/20 hover:border-orange-500/50 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-orange-500/10 border border-orange-500/30 px-4 py-2 text-[13px] md:text-xs font-bold text-orange-500 hover:bg-orange-500/20 hover:border-orange-500/50 transition-colors"
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   <span>{copy.recent.btn}</span>
@@ -405,29 +359,27 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             </div>
           </div>
 
-          {/* Card Right: आज का विचार (Thought of the Day) */}
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40 min-h-[190px] p-6 flex flex-col justify-between items-center text-center">
-            {/* Background Image of yogi at sunset */}
+          {/* Card Right: आज का विचार */}
+          <div className={`relative overflow-hidden rounded-3xl border ${cardBorder} ${isDark ? "bg-black/40" : "bg-white/70"} min-h-[190px] p-6 flex flex-col justify-between items-center text-center`}>
             <div className="absolute inset-0 z-0">
               <img
                 src={meditationDesktopBg}
                 alt=""
                 className="w-full h-full object-cover opacity-20 object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/95" />
+              <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/95 via-black/40 to-black/95" : "bg-gradient-to-t from-white/90 via-white/50 to-white/90"}`} />
             </div>
 
-            <h2 className="relative z-10 text-amber-300 font-display font-bold uppercase tracking-wider text-xs md:text-sm flex items-center gap-2 justify-center">
+            <h2 className="relative z-10 text-amber-500 font-display font-bold uppercase tracking-wider text-xs md:text-sm flex items-center gap-2 justify-center">
               <span>✦</span>
               {copy.quote.title}
               <span>✦</span>
             </h2>
 
-            <p className="relative z-10 text-base md:text-lg text-white font-medium max-w-md my-4 italic leading-relaxed">
+            <p className={`relative z-10 text-base md:text-lg ${textHead} font-medium max-w-md my-4 italic leading-relaxed`}>
               {isHi ? randomQuote.hi : randomQuote.en}
             </p>
 
-            {/* Separator gold lotus */}
             <div className="relative z-10 flex items-center justify-center gap-3 w-full opacity-45">
               <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-amber-400" />
               <PinkLotusSvg className="w-5 h-4 shrink-0" fill="#fbbf24" opacity={0.9} />
@@ -436,29 +388,26 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           </div>
         </section>
 
-        {/* STREAK JOURNEY SECTION (साधना यात्रा) */}
-        <section className="relative overflow-hidden bg-[#130d0a]/65 backdrop-blur-xl border border-orange-500/15 rounded-[2.5rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
-          {/* Card Background Image Layer */}
+        {/* STREAK JOURNEY SECTION */}
+        <section className={`relative overflow-hidden ${streakCardBg} backdrop-blur-xl border ${cardBorder} rounded-[2.5rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl`}>
           <div className="absolute inset-0 z-0 select-none pointer-events-none">
             <img 
               src={hanumanHd2} 
               alt="" 
-              className="w-full h-full object-cover object-center opacity-[0.08]" 
+              className={`w-full h-full object-cover object-center ${isDark ? "opacity-[0.08]" : "opacity-[0.04]"}`} 
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-[#120804]/50 to-[#0c050a]/60" />
+            <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-[#120804]/50 to-[#0c050a]/60" : "bg-gradient-to-br from-white/60 to-orange-50/70"}`} />
           </div>
 
           <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-48 bg-orange-500/[0.03] rounded-full blur-3xl pointer-events-none" />
           
-          {/* Left: Glowing Mandala with Golden Red Lotus */}
+          {/* Left: Mandala with Lotus */}
           <div className="relative z-10 w-40 h-40 md:w-44 md:h-44 shrink-0 flex items-center justify-center">
-            {/* Concentric rotating design rings */}
             <div className="absolute inset-0 rounded-full border border-orange-500/15 animate-[spin_80s_linear_infinite]" />
             <div className="absolute inset-2 rounded-full border border-dashed border-orange-500/20 animate-[spin_50s_linear_infinite_reverse]" />
             <div className="absolute inset-4 rounded-full border border-orange-500/10" />
             <div className="absolute inset-8 rounded-full border border-dashed border-orange-500/25" />
             
-            {/* SVG Progress Circle Around Red Lotus */}
             <svg className="absolute inset-0 w-full h-full -rotate-90 z-20 pointer-events-none" viewBox="0 0 100 100">
               <defs>
                 <linearGradient id="orangeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -469,24 +418,11 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                   <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f97316" floodOpacity="0.6" />
                 </filter>
               </defs>
-              {/* Background Track Circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="44"
-                fill="none"
-                stroke="rgba(255, 255, 255, 0.05)"
-                strokeWidth="2.5"
-              />
-              {/* Foreground Active Progress Arc */}
+              <circle cx="50" cy="50" r="44" fill="none" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"} strokeWidth="2.5" />
               {completionFraction > 0 && (
                 <circle
-                  cx="50"
-                  cy="50"
-                  r="44"
-                  fill="none"
-                  stroke="url(#orangeGlow)"
-                  strokeWidth="3.2"
+                  cx="50" cy="50" r="44" fill="none"
+                  stroke="url(#orangeGlow)" strokeWidth="3.2"
                   strokeDasharray={276.46}
                   strokeDashoffset={276.46 * (1 - completionFraction)}
                   strokeLinecap="round"
@@ -496,17 +432,13 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               )}
             </svg>
 
-            {/* Glowing spot */}
             <div className="absolute w-24 h-24 bg-orange-500/10 rounded-full blur-xl" />
-            
-            {/* Red Lotus Image */}
             <img 
               src={redLotus} 
               alt="Golden Lotus" 
               className="relative z-10 w-32 h-32 md:w-36 md:h-36 object-cover rounded-full shadow-[0_0_20px_rgba(249,115,22,0.45)] animate-lotus-float"
             />
             
-            {/* Divider decoration underneath */}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-30">
               <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-orange-500" />
               <span className="text-orange-400 text-[6px]">◆</span>
@@ -516,48 +448,41 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             </div>
           </div>
 
-          {/* Right: Streak status & weekday logs */}
+          {/* Right: Streak info */}
           <div className="relative z-10 flex-1 w-full text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 text-orange-500">
               <Flame className="w-5 h-5 fill-current animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/25">
+              <span className="text-xs font-bold uppercase tracking-widest text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/25">
                 {isHi ? "साधना यात्रा" : "Sadhana Yatra"}
               </span>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight mt-3 bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent">
+            <h2 className={`text-3xl md:text-4xl font-display font-bold ${textHead} tracking-tight mt-3`}>
               {headingText}
             </h2>
             
-            <p className="text-sm md:text-base text-brand-cream/60 mt-2 font-light max-w-md mx-auto md:mx-0">
+            <p className={`text-sm md:text-base ${textMuted} mt-2 font-light max-w-md mx-auto md:mx-0`}>
               {subtitleText}
             </p>
 
-            {/* Connected Weekday Tracker */}
+            {/* Weekday Tracker */}
             <div className="w-full max-w-md md:max-w-none mx-auto md:mx-0 mt-6 pb-6 select-none">
-              {/* Row 1: Weekday Labels */}
-              <div className="flex justify-between w-full text-xs font-bold text-white/80 mb-3 px-1">
+              <div className={`flex justify-between w-full text-xs font-bold ${weekLabelColor} mb-3 px-1`}>
                 {weekProgress.map((day, idx) => (
                   <span key={idx} className="w-7 text-center">{day.label}</span>
                 ))}
               </div>
 
-              {/* Row 2: Circles and Line */}
               <div className="relative flex justify-between w-full items-center px-1">
-                {/* Line */}
-                <div className="absolute left-[14px] right-[14px] h-[2px] bg-white/10 top-1/2 -translate-y-1/2 -z-10">
+                <div className={`absolute left-[14px] right-[14px] h-[2px] ${trackBg} top-1/2 -translate-y-1/2 -z-10`}>
                   {hasMeditated && orangeLinePosition.width > 0 && (
                     <div 
                       className="absolute h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_12px_rgba(249,115,22,0.85)] transition-all duration-500"
-                      style={{ 
-                        left: `${orangeLinePosition.left}%`, 
-                        width: `${orangeLinePosition.width}%` 
-                      }}
+                      style={{ left: `${orangeLinePosition.left}%`, width: `${orangeLinePosition.width}%` }}
                     />
                   )}
                 </div>
 
-                {/* Circles */}
                 {weekProgress.map((day, idx) => (
                   <div key={idx} className="w-7 h-7 flex items-center justify-center shrink-0">
                     {hasMeditated && day.completed ? (
@@ -569,9 +494,8 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                       </div>
                     ) : (
                       <div 
-                        className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded-full bg-black/40 border border-white/10 text-transparent text-xs animate-node-pulse",
-                          hasMeditated && day.isToday && "border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)] bg-black/60"
+                        className={cn(`flex h-7 w-7 items-center justify-center rounded-full ${dayCircleBg} text-transparent text-xs animate-node-pulse`,
+                          hasMeditated && day.isToday && "border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]"
                         )}
                         style={{ animationDelay: `${idx * 0.25}s` }}
                       />
@@ -580,7 +504,6 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                 ))}
               </div>
 
-              {/* Row 3: "Today" Indicators */}
               <div className="relative flex justify-between w-full mt-2 px-1 min-h-[20px]">
                 {weekProgress.map((day, idx) => (
                   <div key={idx} className="w-7 flex flex-col items-center shrink-0">
@@ -597,35 +520,33 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               </div>
             </div>
 
-            {/* Stats Summary Panel (Two columns side-by-side) */}
+            {/* Stats Panel */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 w-full">
-              {/* Meditation Time */}
-              <div className="bg-[#130d0a]/35 backdrop-blur-md border border-orange-500/10 rounded-2xl p-4.5 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300">
-                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400">
-                  <Clock3 className="w-5.5 h-5.5 text-orange-400" strokeWidth={2} />
+              <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300`}>
+                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-500">
+                  <Clock3 className="w-5 h-5 text-orange-500" strokeWidth={2} />
                   <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-md opacity-70" />
                 </div>
                 <div className="min-w-0 text-left">
-                  <p className="text-[11px] font-black text-brand-cream/80 uppercase tracking-wider">
+                  <p className={`text-[11px] font-black ${statLabelColor} uppercase tracking-wider`}>
                     {isHi ? "कुल ध्यान समय" : "Meditation Time"}
                   </p>
-                  <p className="text-xl font-black text-amber-300 mt-1 select-text tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                  <p className={`text-xl font-black ${statValueColor} mt-1 select-text tracking-wide`}>
                     {formatMeditationTime(stats.totalMindfulMinutes)}
                   </p>
                 </div>
               </div>
               
-              {/* Sessions */}
-              <div className="bg-[#130d0a]/35 backdrop-blur-md border border-orange-500/10 rounded-2xl p-4.5 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300">
-                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400">
-                  <Flame className="w-5.5 h-5.5 text-orange-400" strokeWidth={2} />
+              <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300`}>
+                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-500">
+                  <Flame className="w-5 h-5 text-orange-500" strokeWidth={2} />
                   <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-md opacity-70" />
                 </div>
                 <div className="min-w-0 text-left">
-                  <p className="text-[11px] font-black text-brand-cream/80 uppercase tracking-wider">
+                  <p className={`text-[11px] font-black ${statLabelColor} uppercase tracking-wider`}>
                     {isHi ? "कुल सत्र" : "Total Sessions"}
                   </p>
-                  <p className="text-xl font-black text-amber-300 mt-1 select-text tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]">
+                  <p className={`text-xl font-black ${statValueColor} mt-1 select-text tracking-wide`}>
                     {formatSessionsCount(stats.sessionCount)}
                   </p>
                 </div>
@@ -634,9 +555,9 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           </div>
         </section>
 
-        {/* SECTION 2: MEDITATION PRACTICES ( ध्यान के अभ्यास ) */}
+        {/* MEDITATION PRACTICES */}
         <section id="meditation-practices-section" className="space-y-4">
-          <h2 className="font-display font-bold uppercase tracking-wider text-xs md:text-sm text-amber-300/90 flex items-center gap-2 border-l-2 border-orange-500 pl-3.5 my-2">
+          <h2 className={`font-display font-bold uppercase tracking-wider text-xs md:text-sm ${sectionHeadColor} flex items-center gap-2 border-l-2 border-orange-500 pl-3.5 my-2`}>
             {copy.practices.title}
           </h2>
 
@@ -645,35 +566,33 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             {/* Card 1: मंत्र ध्यान */}
             <div 
               onClick={() => onSelectPractice({ id: "mantra_jap_home" })}
-              className="group relative h-full min-h-[180px] md:min-h-[190px] overflow-hidden rounded-3xl border border-white/5 bg-[#130d0a]/50 p-5 hover:border-orange-500/20 hover:bg-[#18100c]/70 transition-all cursor-pointer flex flex-col justify-between shadow-xl"
+              className={`group relative h-full min-h-[180px] md:min-h-[190px] overflow-hidden rounded-3xl border ${practiceCardBorder} p-5 transition-all cursor-pointer flex flex-col justify-between shadow-xl ${isDark ? "bg-[#130d0a]/50 hover:border-orange-500/20 hover:bg-[#18100c]/70" : "bg-white/80 hover:border-orange-400/40 hover:bg-orange-50/80"}`}
             >
               <div className="absolute inset-0 z-0">
                 <img 
                   src={hanumanHd2} 
                   alt="" 
-                  className="h-full w-full object-cover object-center opacity-95 transition-transform duration-700 group-hover:scale-105"
+                  className={`h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 ${isDark ? "opacity-95" : "opacity-20"}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+                <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/60 via-black/25 to-transparent" : "bg-gradient-to-t from-white/80 via-white/40 to-transparent"}`} />
               </div>
 
               <div className="relative z-10 space-y-4">
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-400 font-display text-2xl font-bold shadow-[0_0_20px_rgba(249,115,22,0.15)] group-hover:scale-105 transition-transform">
+                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-500 font-display text-2xl font-bold shadow-[0_0_20px_rgba(249,115,22,0.15)] group-hover:scale-105 transition-transform">
                   <span>ॐ</span>
                 </div>
                 <div>
-                  <h3 className="text-[17px] font-bold text-white group-hover:text-orange-400 transition-colors">
+                  <h3 className={`text-[17px] font-bold ${textHead} group-hover:text-orange-500 transition-colors`}>
                     {copy.practices.mantra.title}
                   </h3>
-                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
+                  <p className={`text-sm ${textMuted} mt-1 leading-relaxed`}>
                     {copy.practices.mantra.desc}
                   </p>
                 </div>
               </div>
-              <div className="relative z-10 mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] text-white/50 font-medium">
-                  {copy.practices.mantra.dur}
-                </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-orange-500/20 group-hover:border-orange-500/30 group-hover:translate-x-0.5 text-orange-400 transition-all">
+              <div className={`relative z-10 mt-6 flex items-center justify-between border-t ${practiceCardBorder} pt-3`}>
+                <span className={`text-[13px] ${practiceLabelColor} font-medium`}>{copy.practices.mantra.dur}</span>
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isDark ? "bg-white/5 border-white/10" : "bg-orange-50 border-orange-200"} border group-hover:bg-orange-500/20 group-hover:border-orange-500/30 group-hover:translate-x-0.5 text-orange-500 transition-all`}>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -682,35 +601,33 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             {/* Card 2: निर्देशित ध्यान */}
             <div 
               onClick={() => onSelectPractice(getPracticeById("focus_clarity")!)}
-              className="group relative h-full min-h-[180px] md:min-h-[190px] overflow-hidden rounded-3xl border border-white/5 bg-[#130d0a]/50 p-5 hover:border-purple-500/20 hover:bg-[#150d18]/70 transition-all cursor-pointer flex flex-col justify-between shadow-xl"
+              className={`group relative h-full min-h-[180px] md:min-h-[190px] overflow-hidden rounded-3xl border ${practiceCardBorder} p-5 transition-all cursor-pointer flex flex-col justify-between shadow-xl ${isDark ? "bg-[#130d0a]/50 hover:border-purple-500/20 hover:bg-[#150d18]/70" : "bg-white/80 hover:border-purple-400/40 hover:bg-purple-50/60"}`}
             >
               <div className="absolute inset-0 z-0">
                 <img 
                   src={hanumanHd2} 
                   alt="" 
-                  className="h-full w-full object-cover object-center opacity-95 transition-transform duration-700 group-hover:scale-105"
+                  className={`h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 ${isDark ? "opacity-95" : "opacity-20"}`}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent" />
+                <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/60 via-black/25 to-transparent" : "bg-gradient-to-t from-white/80 via-white/40 to-transparent"}`} />
               </div>
 
               <div className="relative z-10 space-y-4">
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.15)] group-hover:scale-105 transition-transform">
+                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.15)] group-hover:scale-105 transition-transform">
                   <Mic className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-[17px] font-bold text-white group-hover:text-purple-400 transition-colors">
+                  <h3 className={`text-[17px] font-bold ${textHead} group-hover:text-purple-500 transition-colors`}>
                     {copy.practices.guided.title}
                   </h3>
-                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
+                  <p className={`text-sm ${textMuted} mt-1 leading-relaxed`}>
                     {copy.practices.guided.desc}
                   </p>
                 </div>
               </div>
-              <div className="relative z-10 mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] text-white/50 font-medium">
-                  {copy.practices.guided.dur}
-                </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-purple-500/20 group-hover:border-purple-500/30 group-hover:translate-x-0.5 text-purple-400 transition-all">
+              <div className={`relative z-10 mt-6 flex items-center justify-between border-t ${practiceCardBorder} pt-3`}>
+                <span className={`text-[13px] ${practiceLabelColor} font-medium`}>{copy.practices.guided.dur}</span>
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isDark ? "bg-white/5 border-white/10" : "bg-purple-50 border-purple-200"} border group-hover:bg-purple-500/20 group-hover:border-purple-500/30 group-hover:translate-x-0.5 text-purple-500 transition-all`}>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -719,26 +636,24 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             {/* Card 3: श्वास ध्यान */}
             <div 
               onClick={() => onSelectPractice(getPracticeById("breath_box")!)}
-              className="bg-[#130d0a]/50 backdrop-blur-xl border border-white/5 rounded-3xl p-5 hover:border-green-500/20 hover:bg-[#0d1811]/70 transition-all cursor-pointer group flex flex-col justify-between h-full relative"
+              className={`border ${practiceCardBorder} rounded-3xl p-5 transition-all cursor-pointer group flex flex-col justify-between h-full relative shadow-xl ${isDark ? "bg-[#130d0a]/50 hover:border-green-500/20 hover:bg-[#0d1811]/70" : "bg-white/80 hover:border-green-400/40 hover:bg-green-50/60"}`}
             >
               <div className="space-y-4">
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/30 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.15)] group-hover:scale-105 transition-transform">
+                <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-green-500/10 border border-green-500/30 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.15)] group-hover:scale-105 transition-transform">
                   <Wind className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-[17px] font-bold text-white group-hover:text-green-400 transition-colors">
+                  <h3 className={`text-[17px] font-bold ${textHead} group-hover:text-green-500 transition-colors`}>
                     {copy.practices.breath.title}
                   </h3>
-                  <p className="text-sm text-white/60 mt-1 leading-relaxed">
+                  <p className={`text-sm ${textMuted} mt-1 leading-relaxed`}>
                     {copy.practices.breath.desc}
                   </p>
                 </div>
               </div>
-              <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-3">
-                <span className="text-[13px] text-white/50 font-medium">
-                  {copy.practices.breath.dur}
-                </span>
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/5 border border-white/10 group-hover:bg-green-500/20 group-hover:border-green-500/30 group-hover:translate-x-0.5 text-green-400 transition-all">
+              <div className={`mt-6 flex items-center justify-between border-t ${practiceCardBorder} pt-3`}>
+                <span className={`text-[13px] ${practiceLabelColor} font-medium`}>{copy.practices.breath.dur}</span>
+                <div className={`flex h-7 w-7 items-center justify-center rounded-full ${isDark ? "bg-white/5 border-white/10" : "bg-green-50 border-green-200"} border group-hover:bg-green-500/20 group-hover:border-green-500/30 group-hover:translate-x-0.5 text-green-500 transition-all`}>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>

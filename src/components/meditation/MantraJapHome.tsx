@@ -25,6 +25,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTheme } from "@/hooks/useTheme";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useMantraJapa, resolveMantraImage } from "@/hooks/useMantraJapa";
 import JapaCounter from "@/components/devotion/JapaCounter";
@@ -131,6 +132,8 @@ const japaStepsData = [
 export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const navigate = useNavigate();
 
   const {
@@ -490,60 +493,88 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   }
 
   return (
-    <div className="relative min-h-screen text-amber-50 pb-28 lg:pb-12 overflow-x-hidden">
-      {/* Full-screen Fixed Background Image Layer */}
-      <div className="fixed inset-0 -z-20 select-none pointer-events-none">
-        <img 
-          src={devotionalBackground} 
-          alt="Page Background" 
-          className="w-full h-full object-cover object-center opacity-10" 
-        />
-        {/* Ambient dark warm gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306] opacity-92" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.08),transparent)]" />
-      </div>
+    <div className={`relative flex flex-col h-full overflow-hidden transition-colors duration-300 ${isDark ? 'text-amber-50' : 'text-stone-800 bg-[#FDF8F2]'}`}>
+      {/* Full-screen Background Layer */}
+      {isDark && (
+        <div className="absolute inset-0 -z-20 select-none pointer-events-none">
+          <img 
+            src={devotionalBackground} 
+            alt="Page Background" 
+            className="w-full h-full object-cover object-center opacity-10" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#080504] via-[#0c0608] to-[#050306] opacity-92" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(251,146,60,0.08),transparent)]" />
+        </div>
+      )}
+      {!isDark && (
+        <div className="absolute inset-0 -z-20 select-none pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#FDF8F2] via-[#FFF7ED] to-[#FDF4E7]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_0%,rgba(251,146,60,0.07),transparent)]" />
+        </div>
+      )}
 
       {/* ─── HEADER ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#080504]/90 backdrop-blur-md border-b border-white/5 px-4 py-4 lg:py-5 flex items-center justify-between">
+      <header className={`sticky top-0 z-40 px-4 py-3.5 lg:py-4 flex items-center justify-between border-b transition-colors duration-300 ${
+        isDark
+          ? 'bg-[#1a1008]/95 backdrop-blur-md border-amber-900/20 shadow-[0_2px_12px_rgba(0,0,0,0.4)]'
+          : 'bg-[#FDF3E3]/95 backdrop-blur-md border-amber-300/40 shadow-[0_2px_12px_rgba(214,152,74,0.12)]'
+      }`}>
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="flex items-center justify-center h-10 w-10 rounded-full hover:bg-white/5 active:scale-95 text-amber-100 transition-all"
+            className={`flex items-center justify-center h-10 w-10 rounded-full active:scale-95 transition-all ${
+              isDark ? 'hover:bg-amber-900/30 text-amber-200' : 'hover:bg-amber-200/60 text-amber-800'
+            }`}
             aria-label="Back"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-xl lg:text-2xl text-orange-400 font-display">ॐ</span>
-            <h1 className="text-lg lg:text-xl font-bold font-display text-white tracking-wide">
+            <span className={`text-2xl lg:text-2xl font-display ${
+              isDark ? 'text-amber-400' : 'text-amber-700'
+            }`}>ॐ</span>
+            <h1 className={`text-xl lg:text-2xl font-bold font-display tracking-wide ${
+              isDark ? 'text-amber-100' : 'text-amber-900'
+            }`}>
               {copy.title}
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {isGuest && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20 font-medium">
+            <span className={`text-[10px] px-2.5 py-1 rounded-full border font-bold ${
+              isDark ? 'bg-amber-900/30 text-amber-300 border-amber-700/40' : 'bg-amber-100 text-amber-700 border-amber-300/60'
+            }`}>
               {isHi ? "अतिथि" : "Guest"}
             </span>
           )}
           <button
             onClick={() => navigate("/leaderboard")}
-            className="h-10 w-10 rounded-full hover:bg-[#ff9800]/10 flex items-center justify-center text-amber-400 hover:text-amber-300 active:scale-95 transition-all"
+            className={`h-10 w-10 rounded-full flex items-center justify-center active:scale-95 transition-all ${
+              isDark ? 'hover:bg-amber-900/30 text-amber-400 hover:text-amber-300' : 'hover:bg-amber-200/60 text-amber-700 hover:text-amber-900'
+            }`}
             title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
           >
             <Trophy className="w-5 h-5" />
           </button>
-          <button className="h-10 w-10 rounded-full hover:bg-white/5 flex items-center justify-center text-amber-100/70">
+          <button className={`h-10 w-10 rounded-full flex items-center justify-center transition-all ${
+            isDark ? 'hover:bg-amber-900/30 text-amber-300/70' : 'hover:bg-amber-200/60 text-amber-700'
+          }`}>
             <Bell className="w-5 h-5" />
           </button>
         </div>
       </header>
 
       {/* ─── MAIN CONTENT ───────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6 space-y-12">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden pb-6">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 mt-6 space-y-12">
 
-        {/* HERO BANNER SECTION WITH WEB P BACKGROUND */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-amber-500/10 p-6 md:p-8 lg:p-10 shadow-2xl shadow-black/80">
+        {/* HERO BANNER SECTION */}
+        <section className={`relative overflow-hidden rounded-[2rem] border p-6 md:p-8 lg:p-10 shadow-xl transition-all duration-300 ${
+          isDark
+            ? 'border-amber-500/10 shadow-black/80'
+            : 'border-amber-300/40 shadow-amber-200/60'
+        }`}>
           
           {/* Background Image Layer */}
           <div className="absolute inset-0 z-0 select-none pointer-events-none">
@@ -552,26 +583,42 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               alt="Devotional Background" 
               className="w-full h-full object-cover object-center" 
             />
-            {/* High-fidelity dark warm overlays for perfect text readability */}
-            <div className="absolute inset-0 bg-[#0c0705]/82 backdrop-blur-[0.5px]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0c0705]/30 via-transparent to-[#0c0705]/95" />
+            {isDark ? (
+              <>
+                <div className="absolute inset-0 bg-[#0c0705]/82 backdrop-blur-[0.5px]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-[#0c0705]/30 via-transparent to-[#0c0705]/95" />
+              </>
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-white/85 backdrop-blur-[1px]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-white/40 to-amber-50/80" />
+              </>
+            )}
           </div>
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Col 1: Title & Subtitle */}
             <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left space-y-4">
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full border-2 border-amber-500/30 overflow-hidden shadow-[0_4px_20px_rgba(245,158,11,0.25)] select-none bg-black">
+              <div className={`relative flex h-20 w-20 items-center justify-center rounded-full border-2 overflow-hidden shadow-[0_4px_20px_rgba(245,158,11,0.25)] select-none ${
+                isDark ? 'border-amber-500/30 bg-black' : 'border-amber-400/50 bg-amber-50'
+              }`}>
                 <img 
                   src={omShivayaImg} 
                   alt="Om Shivaya" 
                   className="w-full h-full object-cover" 
                 />
               </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white tracking-wide drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+              <h2 className={`text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-wide ${
+                isDark ? 'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]' : 'text-amber-900 drop-shadow-none'
+              }`}>
                 {isHi ? "मंत्र जाप" : "Mantra Japa"}
               </h2>
-              <div className="w-full max-w-xs h-[1px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent lg:via-amber-500/30 lg:to-transparent" />
-              <p className="text-amber-400 font-bold text-xs md:text-sm tracking-widest leading-relaxed drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.9)]">
+              <div className={`w-full max-w-xs h-[1px] bg-gradient-to-r from-transparent to-transparent ${
+                isDark ? 'via-amber-500/30' : 'via-amber-400/50'
+              }`} />
+              <p className={`font-bold text-xs md:text-sm tracking-widest leading-relaxed ${
+                isDark ? 'text-amber-400 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.9)]' : 'text-amber-700'
+              }`}>
                 {isHi ? "—» ध्वनि से ध्यान, ध्यान से शांति, शांति से परमात्मा «—" : "—» Sound to meditation, meditation to peace, peace to Divine «—"}
               </p>
               <div className="flex justify-center w-full lg:justify-start">
@@ -582,12 +629,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             {/* Col 2: Why Japa & Action Buttons */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="space-y-3">
-                <h3 className="text-lg md:text-xl font-bold text-amber-300 flex items-center justify-center lg:justify-start gap-2 drop-shadow-md">
-                  <span className="text-amber-600">❖</span>
+                <h3 className={`text-lg md:text-xl font-bold flex items-center justify-center lg:justify-start gap-2 ${
+                  isDark ? 'text-amber-300 drop-shadow-md' : 'text-amber-800'
+                }`}>
+                  <span className={isDark ? 'text-amber-600' : 'text-amber-500'}>❖</span>
                   {isHi ? "मंत्र जाप क्यों करें?" : "Why do Mantra Japa?"}
-                  <span className="text-amber-600">❖</span>
+                  <span className={isDark ? 'text-amber-600' : 'text-amber-500'}>❖</span>
                 </h3>
-                <p className="text-stone-100/90 text-sm md:text-base leading-relaxed font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                <p className={`text-sm md:text-base leading-relaxed font-semibold ${
+                  isDark ? 'text-stone-100/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]' : 'text-stone-700'
+                }`}>
                   {isHi
                     ? "मंत्रों में अपार शक्ति होती है। नियमित मंत्र जाप से मन शांत होता है, चित्त एकाग्र होता है और जीवन में सकारात्मक ऊर्जा का संचार होता है। यह हमारी आध्यात्मिक यात्रा को गहराई देता है और हमें ईश्वर के और निकट लाता है।"
                     : "Mantras hold immense power. Regular chanting calms the mind, sharpens focus, and fills life with positive energy. It deepens our spiritual journey and brings us closer to the Divine."}
@@ -597,9 +648,15 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                 <button
                   onClick={() => document.getElementById("japa-benefits")?.scrollIntoView({ behavior: "smooth" })}
-                  className="group flex items-center justify-center gap-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 px-6 py-3 text-sm font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/45 active:scale-95 transition-all duration-300"
+                  className={`group flex items-center justify-center gap-3 rounded-2xl border px-6 py-3 text-sm font-bold active:scale-95 transition-all duration-300 ${
+                    isDark
+                      ? 'bg-amber-500/10 border-amber-500/25 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/45'
+                      : 'bg-amber-100 border-amber-300/60 text-amber-800 hover:bg-amber-200 hover:border-amber-400'
+                  }`}
                 >
-                  <Heart className="h-4 w-4 text-amber-300 group-hover:scale-110 transition-transform" />
+                  <Heart className={`h-4 w-4 group-hover:scale-110 transition-transform ${
+                    isDark ? 'text-amber-300' : 'text-amber-700'
+                  }`} />
                   <span>{isHi ? "इसके लाभ" : "Its Benefits"}</span>
                 </button>
               </div>
@@ -609,21 +666,29 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
 
         {/* ── MANTRA CARDS LIST ────────────────────────────────── */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-3">
-            <h3 className="text-lg lg:text-xl font-bold text-amber-400 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-500" />
+          <div className={`flex items-center justify-between border-b pb-3 ${
+            isDark ? 'border-white/5' : 'border-amber-200/50'
+          }`}>
+            <h3 className={`text-lg lg:text-xl font-bold flex items-center gap-2 ${
+              isDark ? 'text-amber-400' : 'text-amber-800'
+            }`}>
+              <Sparkles className={`w-5 h-5 ${isDark ? 'text-amber-500' : 'text-amber-600'}`} />
               {copy.selectTitle}
             </h3>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowAddMantraModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-xl text-xs font-bold hover:bg-amber-500/20 hover:border-amber-500/50 active:scale-95 transition-all duration-300"
+                className={`flex items-center gap-1.5 px-3 py-1.5 border rounded-xl text-xs font-bold active:scale-95 transition-all duration-300 ${
+                  isDark
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50'
+                    : 'bg-amber-100 border-amber-300/60 text-amber-800 hover:bg-amber-200 hover:border-amber-400'
+                }`}
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{isHi ? "नया मंत्र" : "Add Mantra"}</span>
               </button>
               {mantrasLoading && (
-                <span className="text-[11px] text-white/30 animate-pulse">{isHi ? "लोड हो रहा है..." : "Loading..."}</span>
+                <span className={`text-[11px] animate-pulse ${isDark ? 'text-white/30' : 'text-stone-400'}`}>{isHi ? "लोड हो रहा है..." : "Loading..."}</span>
               )}
             </div>
           </div>
@@ -665,15 +730,21 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                         });
                       }
                     }}
-                    className={`group relative w-full flex items-center rounded-[1.5rem] border p-5 text-left shadow-lg cursor-pointer transition-all duration-300 ${
-                      isLastChanted
-                        ? "border-amber-500/60 bg-[#1a110d]/90 shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-                        : "border-white/5 bg-[#120a06]/40 hover:border-orange-500/20 hover:bg-black/45"
+                    className={`group relative w-full flex items-center rounded-[1.5rem] border p-5 text-left cursor-pointer transition-all duration-300 ${
+                      isDark
+                        ? isLastChanted
+                          ? 'border-amber-500/60 bg-[#1a110d]/90 shadow-[0_0_20px_rgba(245,158,11,0.15)] shadow-lg'
+                          : 'border-white/5 bg-[#120a06]/40 hover:border-orange-500/20 hover:bg-black/45 shadow-lg'
+                        : isLastChanted
+                          ? 'border-amber-400/70 bg-amber-50 shadow-[0_4px_20px_rgba(245,158,11,0.18)] shadow-md'
+                          : 'border-stone-200/80 bg-white hover:border-amber-300 hover:bg-amber-50/60 shadow-md hover:shadow-amber-200/50'
                     }`}
                   >
                     {/* Left side: Circular avatar of the deity */}
-                    <div className={`relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full border bg-black/40 flex items-center justify-center shadow-inner mr-5 transition-colors duration-300 ${
-                      isLastChanted ? "border-amber-500/50" : "border-white/5"
+                    <div className={`relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full border flex items-center justify-center shadow-inner mr-5 transition-colors duration-300 ${
+                      isDark
+                        ? isLastChanted ? 'border-amber-500/50 bg-black/40' : 'border-white/5 bg-black/40'
+                        : isLastChanted ? 'border-amber-400/60 bg-amber-100/60' : 'border-stone-200 bg-stone-50'
                     }`}>
                       {image ? (
                         <img
@@ -682,18 +753,28 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                         />
                       ) : (
-                        <span className="text-2xl text-orange-400 font-display">ॐ</span>
+                        <span className={`text-2xl font-display ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>ॐ</span>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+                      <div className={`absolute inset-0 bg-gradient-to-t ${
+                        isDark ? 'from-black/25 to-transparent' : 'from-amber-900/10 to-transparent'
+                      }`} />
                     </div>
 
                     {/* Middle: Name details and stats row */}
                     <div className="flex-1 min-w-0">
                       <div>
-                        <h4 className="font-serif text-base sm:text-[18px] font-bold text-white group-hover:text-orange-400 transition-colors leading-tight">
+                        <h4 className={`font-serif text-base sm:text-[18px] font-bold leading-tight transition-colors ${
+                          isDark
+                            ? 'text-white group-hover:text-orange-400'
+                            : isLastChanted
+                              ? 'text-amber-900 group-hover:text-amber-700'
+                              : 'text-stone-800 group-hover:text-amber-800'
+                        }`}>
                           {isHi ? m.name_hindi : m.name_english}
                         </h4>
-                        <p className="text-[11px] sm:text-[12px] text-white/40 font-medium mt-0.5 truncate">
+                        <p className={`text-[11px] sm:text-[12px] font-medium mt-0.5 truncate ${
+                          isDark ? 'text-white/40' : isLastChanted ? 'text-amber-700/70' : 'text-stone-500'
+                        }`}>
                           {m.name_english}
                         </p>
                       </div>
@@ -701,16 +782,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       {/* Stats row */}
                       <div className="mt-3 flex items-center gap-6 sm:gap-10 w-full">
                         <div>
-                          <p className="text-sm sm:text-base font-bold text-amber-500">{cardData.today}</p>
-                          <p className="text-[9px] sm:text-[10px] text-white/30 font-bold uppercase tracking-wider mt-0.5">{isHi ? "आज" : "Today"}</p>
+                          <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-amber-500' : 'text-amber-600'}`}>{cardData.today}</p>
+                          <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 ${isDark ? 'text-white/30' : 'text-stone-400'}`}>{isHi ? "आज" : "Today"}</p>
                         </div>
                         <div>
-                          <p className="text-sm sm:text-base font-bold text-white/90">{cardData.chants.toLocaleString()}</p>
-                          <p className="text-[9px] sm:text-[10px] text-white/30 font-bold uppercase tracking-wider mt-0.5">{isHi ? "कुल" : "Lifetime"}</p>
+                          <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white/90' : 'text-stone-700'}`}>{cardData.chants.toLocaleString()}</p>
+                          <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 ${isDark ? 'text-white/30' : 'text-stone-400'}`}>{isHi ? "कुल" : "Lifetime"}</p>
                         </div>
                         <div>
-                          <p className="text-sm sm:text-base font-bold text-white/90">{cardData.streak}d</p>
-                          <p className="text-[9px] sm:text-[10px] text-white/30 font-bold uppercase tracking-wider mt-0.5">{isHi ? "दिन" : "Streak"}</p>
+                          <p className={`text-sm sm:text-base font-bold ${isDark ? 'text-white/90' : 'text-stone-700'}`}>{cardData.streak}d</p>
+                          <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-0.5 ${isDark ? 'text-white/30' : 'text-stone-400'}`}>{isHi ? "दिन" : "Streak"}</p>
                         </div>
                       </div>
                     </div>
@@ -731,7 +812,9 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
-                      <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-orange-400 transition-colors" />
+                      <ChevronRight className={`w-5 h-5 transition-colors ${
+                        isDark ? 'text-white/20 group-hover:text-orange-400' : 'text-stone-300 group-hover:text-amber-600'
+                      }`} />
                     </div>
                   </motion.div>
                 );
@@ -742,37 +825,48 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
 
         {/* BEGINNERS GUIDE */}
         <div className="max-w-3xl mx-auto w-full">
-          {/* Column: शुरुआती साधकों के लिए */}
           <section className="w-full">
-            <div className="relative bg-[#130d0a]/60 backdrop-blur-xl border border-amber-500/15 rounded-[2rem] overflow-hidden shadow-2xl">
+            <div className={`relative backdrop-blur-xl border rounded-[2rem] overflow-hidden shadow-xl transition-all duration-300 ${
+              isDark
+                ? 'bg-[#130d0a]/60 border-amber-500/15 shadow-black/50'
+                : 'bg-white border-amber-200/70 shadow-amber-100/80'
+            }`}>
               
-              {/* Devotional Background WebP Image */}
-              <div className="absolute inset-0 z-0 select-none pointer-events-none">
-                <img 
-                  src={devotionalBackground} 
-                  alt="Devotional Background" 
-                  className="w-full h-full object-cover object-center opacity-30" 
-                />
-                <div className="absolute inset-0 bg-[#0c0705]/85" />
-              </div>
+              {/* Background only in dark */}
+              {isDark && (
+                <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                  <img 
+                    src={devotionalBackground} 
+                    alt="Devotional Background" 
+                    className="w-full h-full object-cover object-center opacity-30" 
+                  />
+                  <div className="absolute inset-0 bg-[#0c0705]/85" />
+                </div>
+              )}
 
               {/* Header */}
               <button
                 onClick={() => setIsBeginnerOpen(!isBeginnerOpen)}
-                className="relative z-10 w-full flex items-center justify-between p-6 hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors"
+                className={`relative z-10 w-full flex items-center justify-between p-6 transition-colors ${
+                  isDark ? 'hover:bg-white/[0.02] active:bg-white/[0.04]' : 'hover:bg-amber-50/60 active:bg-amber-100/60'
+                }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-400">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${
+                    isDark ? 'bg-amber-500/10 border-amber-500/25 text-amber-400' : 'bg-amber-100 border-amber-300/60 text-amber-700'
+                  }`}>
                     <UserRound className="w-5 h-5" />
                   </div>
-                  <h3 className="text-base md:text-lg font-bold text-white text-left tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                  <h3 className={`text-base md:text-lg font-bold text-left tracking-wide ${
+                    isDark ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]' : 'text-amber-900'
+                  }`}>
                     {isHi ? "शुरुआती साधकों के लिए" : "For Beginners"}
                   </h3>
                 </div>
                 <motion.div
                   animate={{ rotate: isBeginnerOpen ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
-                  className="text-amber-400"
+                  className={isDark ? 'text-amber-400' : 'text-amber-600'}
                 >
                   <ChevronDown className="w-5 h-5" />
                 </motion.div>
@@ -786,10 +880,11 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="border-t border-white/5 relative"
+                    className={`border-t relative ${
+                      isDark ? 'border-white/5' : 'border-amber-200/50'
+                    }`}
                   >
                     <div className="p-6 space-y-4.5 relative z-10 max-w-[80%] sm:max-w-[75%]">
-                      {/* Checklist items with Emojis and PinkLotusSvg decoration */}
                       {[
                         {
                           hi: "🧘 एक मंत्र चुनें और नियमित समय तय करें ✨",
@@ -810,20 +905,24 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-start gap-4 py-0.5">
                           <PinkLotusSvg className="w-5 h-3 shrink-0 mt-1.5" fill="#ec4899" opacity={0.95} />
-                          <span className="text-sm sm:text-base md:text-[17px] text-white font-bold leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                          <span className={`text-sm sm:text-base md:text-[17px] font-bold leading-relaxed ${
+                            isDark ? 'text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]' : 'text-stone-700'
+                          }`}>
                             {isHi ? item.hi : item.en}
                           </span>
                         </div>
                       ))}
                     </div>
 
-                    {/* Decorative Diya / Mandala absolute background on the right - NO ANIMATION */}
+                    {/* Decorative right side ornament */}
                     <div className="absolute right-0 bottom-0 top-0 w-[25%] opacity-30 md:opacity-50 flex items-center justify-center pointer-events-none select-none overflow-hidden">
                       <div className="relative w-36 h-36 flex items-center justify-center">
-                        {/* Mandala outline */}
-                        <div className="absolute inset-0 rounded-full border border-dashed border-amber-500/20" />
-                        <div className="absolute inset-4 rounded-full border border-amber-500/15" />
-                        {/* Static Lotus Representation (NO candle animation) */}
+                        <div className={`absolute inset-0 rounded-full border border-dashed ${
+                          isDark ? 'border-amber-500/20' : 'border-amber-400/30'
+                        }`} />
+                        <div className={`absolute inset-4 rounded-full border ${
+                          isDark ? 'border-amber-500/15' : 'border-amber-400/20'
+                        }`} />
                         <div className="absolute flex items-center justify-center">
                           <PinkLotusSvg className="w-10 h-8 shrink-0" fill="#fbbf24" opacity={0.9} />
                         </div>
@@ -838,76 +937,52 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
 
         {/* FULL WIDTH ROW: मंत्र जाप के लाभ */}
         <section id="japa-benefits" className="space-y-6 scroll-mt-24">
-          <h3 className="text-lg md:text-xl font-bold text-amber-400 text-center flex items-center justify-center gap-2">
-            <span className="text-amber-600">—◆—</span>
+          <h3 className={`text-lg md:text-xl font-bold text-center flex items-center justify-center gap-2 ${
+            isDark ? 'text-amber-400' : 'text-amber-800'
+          }`}>
+            <span className={isDark ? 'text-amber-600' : 'text-amber-500'}>—◆—</span>
             {isHi ? "मंत्र जाप के लाभ" : "Benefits of Mantra Japa"}
-            <span className="text-amber-600">—◆—</span>
+            <span className={isDark ? 'text-amber-600' : 'text-amber-500'}>—◆—</span>
           </h3>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {/* Card 1: Mental Peace */}
-            <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-white/5 hover:border-amber-500/20 rounded-[1.25rem] sm:rounded-[1.5rem] p-3.5 sm:p-6 flex flex-col items-center text-center space-y-2.5 sm:space-y-4 transition-all duration-300 hover:-translate-y-1 shadow-lg group">
-              <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)] group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all">
-                <YogiIcon className="w-5 h-5 sm:w-7 sm:h-7" />
+            {[
+              { icon: YogiIcon, titleHi: "मानसिक शांति", titleEn: "Mental Peace", descHi: "मन के विचार शांत होते हैं और तनाव कम होता है।", descEn: "Calms thoughts, eases the mind, and reduces daily stress." },
+              { icon: Target, titleHi: "एकाग्रता में वृद्धि", titleEn: "Enhanced Focus", descHi: "एकाग्रता, स्मरण शक्ति और ध्यान की क्षमता बढ़ती है।", descEn: "Improves concentration, memory retention, and focus." },
+              { icon: Sun, titleHi: "सकारात्मक ऊर्जा", titleEn: "Positive Energy", descHi: "नकारात्मकता दूर होती है और सकारात्मक ऊर्जा मिलती है।", descEn: "Dispels negative vibes and fills you with positive energy." },
+              { icon: Heart, titleHi: "आध्यात्मिक उन्नति", titleEn: "Spiritual Growth", descHi: "ईश्वर से जुड़ाव गहरा होता है और आध्यात्मिक विकास होता है।", descEn: "Deepens connection with the divine and triggers inner growth." },
+            ].map((card, idx) => (
+              <div key={idx} className={`backdrop-blur-xl border rounded-[1.25rem] sm:rounded-[1.5rem] p-3.5 sm:p-6 flex flex-col items-center text-center space-y-2.5 sm:space-y-4 transition-all duration-300 hover:-translate-y-1 shadow-lg group ${
+                isDark
+                  ? 'bg-[#130d0a]/60 border-white/5 hover:border-amber-500/20'
+                  : 'bg-white border-stone-200/80 hover:border-amber-300 hover:shadow-amber-100/80'
+              }`}>
+                <div className={`flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl border transition-all ${
+                  isDark
+                    ? 'bg-amber-500/5 border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)] group-hover:bg-amber-500/10 group-hover:border-amber-500/30'
+                    : 'bg-amber-100 border-amber-200/80 text-amber-700 group-hover:bg-amber-200 group-hover:border-amber-300'
+                }`}>
+                  <card.icon className="w-5 h-5 sm:w-7 sm:h-7" />
+                </div>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <h4 className={`font-bold text-[13px] leading-snug sm:text-base transition-colors ${
+                    isDark ? 'text-white group-hover:text-amber-400' : 'text-stone-800 group-hover:text-amber-700'
+                  }`}>
+                    {isHi ? card.titleHi : card.titleEn}
+                  </h4>
+                  <p className={`text-[10px] sm:text-xs md:text-sm leading-relaxed ${
+                    isDark ? 'text-amber-100/50' : 'text-stone-500'
+                  }`}>
+                    {isHi ? card.descHi : card.descEn}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <h4 className="font-bold text-white text-[13px] leading-snug sm:text-base group-hover:text-amber-400 transition-colors">
-                  {isHi ? "मानसिक शांति" : "Mental Peace"}
-                </h4>
-                <p className="text-[10px] sm:text-xs md:text-sm text-amber-100/50 leading-relaxed">
-                  {isHi ? "मन के विचार शांत होते हैं और तनाव कम होता है।" : "Calms thoughts, eases the mind, and reduces daily stress."}
-                </p>
-              </div>
-            </div>
-
-            {/* Card 2: Enhanced Focus */}
-            <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-white/5 hover:border-amber-500/20 rounded-[1.25rem] sm:rounded-[1.5rem] p-3.5 sm:p-6 flex flex-col items-center text-center space-y-2.5 sm:space-y-4 transition-all duration-300 hover:-translate-y-1 shadow-lg group">
-              <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)] group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all">
-                <Target className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <h4 className="font-bold text-white text-[13px] leading-snug sm:text-base group-hover:text-amber-400 transition-colors">
-                  {isHi ? "एकाग्रता में वृद्धि" : "Enhanced Focus"}
-                </h4>
-                <p className="text-[10px] sm:text-xs md:text-sm text-amber-100/50 leading-relaxed">
-                  {isHi ? "एकाग्रता, स्मरण शक्ति और ध्यान की क्षमता बढ़ती है।" : "Improves concentration, memory retention, and focus."}
-                </p>
-              </div>
-            </div>
-
-            {/* Card 3: Positive Energy */}
-            <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-white/5 hover:border-amber-500/20 rounded-[1.25rem] sm:rounded-[1.5rem] p-3.5 sm:p-6 flex flex-col items-center text-center space-y-2.5 sm:space-y-4 transition-all duration-300 hover:-translate-y-1 shadow-lg group">
-              <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)] group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all">
-                <Sun className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <h4 className="font-bold text-white text-[13px] leading-snug sm:text-base group-hover:text-amber-400 transition-colors">
-                  {isHi ? "सकारात्मक ऊर्जा" : "Positive Energy"}
-                </h4>
-                <p className="text-[10px] sm:text-xs md:text-sm text-amber-100/50 leading-relaxed">
-                  {isHi ? "नकारात्मकता दूर होती है और सकारात्मक ऊर्जा मिलती है।" : "Dispels negative vibes and fills you with positive energy."}
-                </p>
-              </div>
-            </div>
-
-            {/* Card 4: Spiritual Growth */}
-            <div className="bg-[#130d0a]/60 backdrop-blur-xl border border-white/5 hover:border-amber-500/20 rounded-[1.25rem] sm:rounded-[1.5rem] p-3.5 sm:p-6 flex flex-col items-center text-center space-y-2.5 sm:space-y-4 transition-all duration-300 hover:-translate-y-1 shadow-lg group">
-              <div className="flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.05)] group-hover:bg-amber-500/10 group-hover:border-amber-500/30 transition-all">
-                <Heart className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <h4 className="font-bold text-white text-[13px] leading-snug sm:text-base group-hover:text-amber-400 transition-colors">
-                  {isHi ? "आध्यात्मिक उन्नति" : "Spiritual Growth"}
-                </h4>
-                <p className="text-[10px] sm:text-xs md:text-sm text-amber-100/50 leading-relaxed">
-                  {isHi ? "ईश्वर से जुड़ाव गहरा होता है और आध्यात्मिक विकास होता है।" : "Deepens connection with the divine and triggers inner growth."}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
 
-      </div>
+        </div>{/* end max-w inner */}
+      </div>{/* end scrollable */}
 
       {/* ─── ADD CUSTOM MANTRA MODAL ────────────────────────────── */}
       <AnimatePresence>
@@ -917,7 +992,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-[#180f0a] to-[#0a0503] p-6 shadow-2xl"
+              className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-6 shadow-2xl ${isDark ? "border-amber-500/20 bg-gradient-to-b from-[#180f0a] to-[#0a0503]" : "border-stone-200 bg-white"}`}
             >
               {/* Close Button */}
               <button
@@ -926,21 +1001,21 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                   setCustomMantraHindi("");
                   setCustomMantraEnglish("");
                 }}
-                className="absolute top-4 right-4 p-2 text-white/40 hover:text-white/80 hover:bg-white/5 rounded-full transition-all"
+                className={`absolute top-4 right-4 p-2 rounded-full transition-all ${isDark ? "text-white/40 hover:text-white/80 hover:bg-white/5" : "text-stone-400 hover:text-stone-800 hover:bg-stone-100"}`}
               >
                 <X className="w-4 h-4" />
               </button>
 
               <div className="flex items-center gap-2.5 mb-6">
                 <PinkLotusSvg className="w-5 h-3 shrink-0" fill="#ec4899" opacity={0.95} />
-                <h3 className="text-lg font-bold text-white font-display">
+                <h3 className={`text-lg font-bold font-display ${isDark ? "text-white" : "text-stone-900"}`}>
                   {isHi ? "अपना मंत्र जोड़ें" : "Add Custom Mantra"}
                 </h3>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-amber-400/80 uppercase tracking-wider mb-1.5">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${isDark ? "text-amber-400/80" : "text-orange-700"}`}>
                     {isHi ? "मंत्र (हिंदी में)" : "Mantra (in Hindi)"}
                   </label>
                   <input
@@ -948,12 +1023,12 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                     value={customMantraHindi}
                     onChange={(e) => setCustomMantraHindi(e.target.value)}
                     placeholder={isHi ? "उदा. ॐ नमः शिवाय" : "e.g., ॐ नमः शिवाय"}
-                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none transition-all text-sm"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none transition-all text-sm ${isDark ? "bg-black/40 border-white/10 text-white placeholder-white/20 focus:border-amber-500/50" : "bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-orange-500"}`}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-amber-400/80 uppercase tracking-wider mb-1.5">
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-1.5 ${isDark ? "text-amber-400/80" : "text-orange-700"}`}>
                     {isHi ? "मंत्र (अंग्रेजी/अनुवाद)" : "Mantra (in English/Transliteration)"}
                   </label>
                   <input
@@ -961,7 +1036,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                     value={customMantraEnglish}
                     onChange={(e) => setCustomMantraEnglish(e.target.value)}
                     placeholder={isHi ? "उदा. Om Namah Shivaya" : "e.g., Om Namah Shivaya"}
-                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none transition-all text-sm"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none transition-all text-sm ${isDark ? "bg-black/40 border-white/10 text-white placeholder-white/20 focus:border-amber-500/50" : "bg-stone-50 border-stone-300 text-stone-900 placeholder-stone-400 focus:border-orange-500"}`}
                   />
                 </div>
 
@@ -972,7 +1047,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       setCustomMantraHindi("");
                       setCustomMantraEnglish("");
                     }}
-                    className="flex-1 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-sm font-bold text-white/80 active:scale-95 transition-all"
+                    className={`flex-1 py-3 border rounded-xl text-sm font-bold active:scale-95 transition-all ${isDark ? "bg-white/5 hover:bg-white/10 border-white/5 text-white/80" : "bg-stone-100 hover:bg-stone-200 border-stone-200 text-stone-755 text-stone-700"}`}
                   >
                     {isHi ? "रद्द करें" : "Cancel"}
                   </button>
@@ -989,7 +1064,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       setCustomMantraHindi("");
                       setCustomMantraEnglish("");
                     }}
-                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 rounded-xl text-sm font-bold text-black active:scale-95 transition-all"
+                    className={`flex-1 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all ${isDark ? "bg-amber-500 hover:bg-amber-600 text-black" : "bg-orange-500 hover:bg-orange-600 text-white"}`}
                   >
                     {isHi ? "जोड़ें" : "Add Mantra"}
                   </button>

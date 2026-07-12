@@ -26,6 +26,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTheme } from "@/hooks/useTheme";
 import type { Mantra, JapTotal } from "@/lib/mantraJapa/mantraJapaApi";
 import devotionalBackground from "@/pages/images/devotional_background.webp";
 import devotionalBackground1 from "@/pages/images/devotional_background(1).webp";
@@ -501,6 +502,8 @@ export default function MantraDetailView({
 }: MantraDetailViewProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // State for Audio Player Demo
   const [isPlaying, setIsPlaying] = useState(false);
@@ -635,65 +638,93 @@ export default function MantraDetailView({
     }
   };
 
+  // Theme-aware tokens
+  const bg          = isDark ? "bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202]" : "bg-gradient-to-b from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0]";
+  const textMain    = isDark ? "text-amber-50" : "text-stone-900";
+  const headerBg    = isDark ? "bg-[#1a1008]/95 backdrop-blur-md border-amber-900/20 shadow-[0_2px_12px_rgba(0,0,0,0.4)]" : "bg-[#FDF3E3]/95 backdrop-blur-md border-amber-300/40 shadow-[0_2px_8px_rgba(214,152,74,0.12)]";
+  const headerBtn   = isDark ? "hover:bg-amber-900/30 text-amber-200" : "hover:bg-amber-200/60 text-amber-800";
+  const headerText  = isDark ? "text-amber-100" : "text-amber-900";
+  const sectionBg   = isDark ? "border-amber-500/15 bg-gradient-to-r from-[#170e0a]/40 to-[#0d0705]/45" : "border-stone-200 bg-white shadow-md shadow-orange-100/10";
+  const avatarBg    = isDark ? "bg-[#120a06]/40 border-amber-500/20" : "bg-stone-100 border-stone-200";
+  const badgeBg     = isDark ? "bg-amber-500/[0.03] border-amber-500/10" : "bg-orange-50 border-orange-200";
+  const badgeText   = isDark ? "text-white/30" : "text-stone-500";
+  const cardBg      = isDark ? "bg-[#130d0a]/30 border-amber-500/10" : "bg-white border-stone-200";
+  const subCardBg   = isDark ? "bg-amber-950/10 border-amber-500/15 hover:border-amber-500/30" : "bg-orange-50/50 border-orange-200 hover:border-orange-300";
+  const subCardBg2  = isDark ? "bg-black/20 border-white/5 hover:border-amber-500/20" : "bg-stone-50 border-stone-200 hover:border-stone-300";
+  const subCardText = isDark ? "text-brand-cream/30" : "text-stone-400";
+  const romanText   = isDark ? "text-brand-cream/80" : "text-stone-700";
+  const checkCard   = isDark ? "bg-white/[0.01] border-white/5 hover:bg-white/[0.02]" : "bg-stone-50 border-stone-200 hover:bg-stone-100";
+  const checkIcon   = isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-orange-50 border-orange-200 text-orange-600";
+  const reasonText  = isDark ? "text-amber-100/70" : "text-stone-700";
+  const benefitIcon = isDark ? "bg-amber-500/5 border-amber-500/20 text-amber-400" : "bg-orange-50 border-orange-200 text-orange-600";
+  const stepCard    = isDark ? "bg-black/35 border-white/5 hover:border-amber-500/25" : "bg-stone-50/60 border-stone-200 hover:border-orange-300/40";
+  const stepImgBox  = isDark ? "border-amber-500/10 bg-black/40" : "border-stone-200 bg-stone-100";
+  const stepTitle   = isDark ? "text-amber-400 group-hover:text-amber-300" : "text-orange-800";
+  const stepDesc    = isDark ? "text-brand-cream/65 group-hover:text-brand-cream/85" : "text-stone-600";
+  const mistakesCard = isDark ? "bg-black/20 border-white/5" : "bg-stone-50 border-stone-200";
+  const mistakesText = isDark ? "text-brand-cream/70" : "text-stone-700";
+  const bottomText  = isDark ? "text-white/35" : "text-stone-500";
+
   return (
-    <div className="relative min-h-screen text-amber-50 pb-16 select-none">
-      {/* Full-screen Fixed Background Image Layer */}
-      <div className="fixed inset-0 -z-20 select-none pointer-events-none">
-        {/* Upper Background Image (devotional_background.webp) */}
+    <div className={`relative flex flex-col h-full overflow-hidden ${textMain}`}>
+      {/* Full-screen Absolute Background Image Layer */}
+      <div className="absolute inset-0 -z-10 select-none pointer-events-none">
+        {/* Upper Background Image */}
         <div className="absolute top-0 left-0 right-0 h-[48vh] overflow-hidden">
           <img 
             src={devotionalBackground} 
             alt="Page Background Upper" 
-            className="w-full h-full object-cover object-center opacity-[0.38]" 
+            className={`w-full h-full object-cover object-center ${isDark ? "opacity-[0.38]" : "opacity-[0.04]"}`} 
           />
         </div>
         
-        {/* Lower Background Image (devotional_background(1).webp) */}
+        {/* Lower Background Image */}
         <div className="absolute top-[48vh] bottom-0 left-0 right-0 overflow-hidden">
           <img 
             src={devotionalBackground1} 
             alt="Page Background Lower" 
-            className="w-full h-full object-cover object-center opacity-[0.28]" 
+            className={`w-full h-full object-cover object-center ${isDark ? "opacity-[0.28]" : "opacity-[0.03]"}`} 
           />
         </div>
 
-        {/* Ambient dark warm gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202] opacity-80" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,0.08),transparent)]" />
+        {/* Ambient gradient overlays */}
+        <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? "from-[#0a0503] via-[#0d0705] to-[#040202] opacity-80" : "from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0] opacity-90"}`} />
+        <div className={`absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,${isDark ? "0.08" : "0.04"}),transparent)]`} />
       </div>
 
-      {/* ─── FLOATING BACK & SHARE BUTTONS ──────────────────────── */}
-      <div className="sticky top-0 z-40 bg-[#0a0503]/80 backdrop-blur-md border-b border-white/5 px-4 py-4 flex items-center justify-between w-full">
+      {/* ─── HEADER ───────────────────────────────────────────────── */}
+      <div className={`sticky top-0 z-40 border-b px-4 py-3.5 flex items-center justify-between w-full ${headerBg}`}>
         <button
           onClick={onBack}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-white/5 hover:border-amber-500/30 text-amber-100 active:scale-95 transition-all"
+          className={`flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all ${headerBtn}`}
           aria-label="Back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <h1 className="text-base md:text-lg font-bold font-display text-white truncate max-w-[60%]">
+        <h1 className={`text-base md:text-lg font-bold font-display truncate max-w-[60%] ${headerText}`}>
           {isHi ? mantra.name_hindi : mantra.name_english}
         </h1>
 
         <button
           onClick={handleShare}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 border border-white/10 hover:bg-white/5 hover:border-amber-500/30 text-amber-100 active:scale-95 transition-all"
+          className={`flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all ${headerBtn}`}
           aria-label="Share"
         >
           <Share2 className="w-4 h-4" />
         </button>
       </div>
 
-      {/* ─── MAIN SCROLL CONTAINER ──────────────────────────────── */}
-      <div className="mx-auto max-w-4xl px-4 mt-6 space-y-6">
+      {/* ─── SCROLLABLE CONTENT ────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto max-w-4xl px-4 pt-6 pb-4 space-y-6">
 
         {/* ─── DEITY COVER HEADER SECTION ─────────────────────────── */}
-        <section className="relative overflow-hidden rounded-[2.5rem] border border-amber-500/15 bg-gradient-to-r from-[#170e0a]/40 to-[#0d0705]/45 backdrop-blur-md p-5 sm:p-6 shadow-2xl">
+        <section className={`relative overflow-hidden rounded-[2.5rem] border backdrop-blur-md p-5 sm:p-6 shadow-2xl ${sectionBg}`}>
           <div className="grid grid-cols-12 gap-6 items-center">
             {/* Left: Rounded Deity Image */}
             <div className="col-span-12 sm:col-span-5 flex justify-center">
-              <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border border-amber-500/20 shadow-[0_10px_35px_rgba(0,0,0,0.6)] group">
+              <div className={`relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border shadow-[0_10px_35px_rgba(0,0,0,0.5)] group ${isDark ? "border-amber-500/20 shadow-black" : "border-stone-200 shadow-orange-100"}`}>
                 {image ? (
                   <img
                     src={image}
@@ -701,7 +732,7 @@ export default function MantraDetailView({
                     className="h-full w-full object-cover object-center group-hover:scale-105 transition duration-700"
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#120a06]/40 flex items-center justify-center">
+                  <div className={`h-full w-full flex items-center justify-center ${avatarBg}`}>
                     <span className="text-5xl text-orange-400 font-display">ॐ</span>
                   </div>
                 )}
@@ -712,40 +743,40 @@ export default function MantraDetailView({
             {/* Right: Mantra Titles & Badges */}
             <div className="col-span-12 sm:col-span-7 flex flex-col items-center sm:items-start text-center sm:text-left space-y-3 sm:space-y-4">
               <div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white tracking-wide leading-tight drop-shadow-md">
+                <h2 className={`text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-wide leading-tight ${isDark ? "text-white" : "text-stone-900"}`}>
                   {isHi ? mantra.name_hindi : mantra.name_english}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-amber-400/80 font-bold uppercase tracking-wider mt-1">
+                <p className={`text-[11px] sm:text-xs font-bold uppercase tracking-wider mt-1 ${isDark ? "text-amber-400/80" : "text-amber-600"}`}>
                   {isHi ? `← ${mantra.name_english} →` : `← ${mantra.name_english} →`}
                 </p>
-                <p className="text-xs text-white/40 font-medium mt-1">
-                  {isHi ? (mantra.type === "mantra" ? "मंत्र साधना" : "ध्यान साधना") : (mantra.type === "mantra" ? "Mantra Sadhana" : "Dhyan Sadhana")}
+                <p className={`text-xs font-medium mt-1 ${isDark ? "text-white/40" : "text-stone-500"}`}>
+                  {isHi ? "मंत्र साधना" : "Mantra Sadhana"}
                 </p>
               </div>
 
               {/* Stats Badges */}
               <div className="flex items-center gap-3 pt-1">
                 {/* Total Jap */}
-                <div className="flex items-center gap-2 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 px-3.5 py-2">
+                <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 ${badgeBg}`}>
                   <Activity className="w-4 h-4 text-amber-500 shrink-0" />
                   <div className="text-left">
-                    <p className="text-xs sm:text-sm font-bold text-white leading-none">
+                    <p className={`text-xs sm:text-sm font-bold leading-none ${isDark ? "text-white" : "text-stone-900"}`}>
                       {totalChants.toLocaleString()}
                     </p>
-                    <p className="text-[8px] sm:text-[9px] text-white/30 font-bold uppercase tracking-wide mt-1">
+                    <p className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide mt-1 ${badgeText}`}>
                       {isHi ? "कुल जाप" : "Total Jap"}
                     </p>
                   </div>
                 </div>
 
                 {/* Day Streak */}
-                <div className="flex items-center gap-2 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 px-3.5 py-2">
+                <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 ${badgeBg}`}>
                   <Flame className="w-4 h-4 text-amber-500 shrink-0" />
                   <div className="text-left">
-                    <p className="text-xs sm:text-sm font-bold text-white leading-none">
+                    <p className={`text-xs sm:text-sm font-bold leading-none ${isDark ? "text-white" : "text-stone-900"}`}>
                       {currentStreak}
                     </p>
-                    <p className="text-[8px] sm:text-[9px] text-white/30 font-bold uppercase tracking-wide mt-1">
+                    <p className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide mt-1 ${badgeText}`}>
                       {isHi ? "सिलसिला" : "Day Streak"}
                     </p>
                   </div>
@@ -754,35 +785,36 @@ export default function MantraDetailView({
             </div>
           </div>
         </section>
+
         {/* ─── CARD 0: MANTRA TEXT ────────────────────────────────── */}
-        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center">
+        <section className={`backdrop-blur-md border rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center ${cardBg}`}>
           {/* Background Mandalas */}
           <MandalaBg className="absolute -left-16 -bottom-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
           <MandalaBg className="absolute -right-16 -top-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
 
           <div className="flex flex-col items-center space-y-5 relative z-10">
-            <h3 className="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+            <h3 className={`text-xs md:text-sm font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <span className="text-xl font-display text-amber-500 leading-none">🕉️</span>
               {isHi ? "मूल मंत्र एवं लिप्यांतरण" : "Sacred Text & Transliteration"}
             </h3>
 
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               {/* Devanagari Card */}
-              <div className="bg-amber-950/10 border border-amber-500/15 rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group hover:border-amber-500/30 transition-all duration-300">
-                <div className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider text-amber-500/50">
+              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group transition-all duration-300 ${subCardBg}`}>
+                <div className={`absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider ${isDark ? "text-amber-500/50" : "text-orange-600/60"}`}>
                   {isHi ? "देवनागरी (संस्कृत)" : "Devanagari (Sanskrit)"}
                 </div>
-                <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line mt-3 select-all">
+                <p className={`font-serif text-2xl md:text-3xl lg:text-4xl font-bold leading-normal tracking-wide whitespace-pre-line mt-3 select-all ${isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-orange-950"}`}>
                   {detail.mantraTextHindi || mantra.full_text_hindi}
                 </p>
               </div>
 
               {/* Transliteration Card */}
-              <div className="bg-black/20 border border-white/5 rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group hover:border-amber-500/20 transition-all duration-300">
-                <div className="absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider text-brand-cream/30">
+              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group transition-all duration-300 ${subCardBg2}`}>
+                <div className={`absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider ${subCardText}`}>
                   {isHi ? "रोमन लिप्यांतरण (रोमन लिपि)" : "Roman Transliteration (English)"}
                 </div>
-                <p className="text-base md:text-lg text-brand-cream/80 tracking-wider font-sans italic whitespace-pre-line mt-3 select-all">
+                <p className={`text-base md:text-lg tracking-wider font-sans italic whitespace-pre-line mt-3 select-all ${romanText}`}>
                   {detail.transliteration || mantra.transliteration}
                 </p>
               </div>
@@ -791,18 +823,18 @@ export default function MantraDetailView({
         </section>
 
         {/* ─── CARD 1: MEANING OF MANTRA ─────────────────────────── */}
-        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 relative overflow-hidden shadow-lg">
+        <section className={`backdrop-blur-md border rounded-[2rem] p-6 relative overflow-hidden shadow-lg ${cardBg}`}>
           {/* Background Mandalas */}
           <MandalaBg className="absolute -left-12 -top-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
           <MandalaBg className="absolute -right-12 -bottom-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
 
           <div className="flex flex-col items-center text-center space-y-4 relative z-10">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <BookOpen className="w-4 h-4 text-amber-500" />
               {isHi ? "इस मंत्र का अर्थ" : "Meaning of this Mantra"}
             </h3>
             
-            <p className="font-serif text-lg md:text-xl text-white font-semibold max-w-2xl leading-relaxed italic px-4">
+            <p className={`font-serif text-lg md:text-xl font-semibold max-w-2xl leading-relaxed italic px-4 ${isDark ? "text-white" : "text-stone-850"}`}>
               “ {isHi 
                 ? (mantra.id.startsWith("custom-") ? "यह आपका स्वयं जोड़ा गया मंत्र है। श्रद्धा भाव से इसका जाप करें और अपने मन को परमात्मा में विलीन करें।" : detail.meaningHindi) 
                 : (mantra.id.startsWith("custom-") ? "This is your custom added mantra. Chant with devotion and merge your mind in divine consciousness." : detail.meaningEnglish)} ”
@@ -811,9 +843,9 @@ export default function MantraDetailView({
         </section>
 
         {/* ─── CARD 2: WHY CHANT THIS MANTRA ──────────────────────── */}
-        <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg">
+        <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg ${cardBg}`}>
           <div className="space-y-5">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2">
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <Flower2 className="w-4.5 h-4.5 text-amber-500" />
               {isHi ? "क्यों करें इस मंत्र का जाप?" : "Why Chant this Mantra?"}
             </h3>
@@ -823,12 +855,12 @@ export default function MantraDetailView({
               {(isHi ? detail.whyChantHindi : detail.whyChantEnglish).map((reason, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-3 bg-white/[0.01] border border-white/5 rounded-2xl p-4 transition-all hover:bg-white/[0.02]"
+                  className={`flex items-start gap-3 border rounded-2xl p-4 transition-all ${checkCard}`}
                 >
-                  <div className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 mt-0.5 shadow-sm">
+                  <div className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full border mt-0.5 shadow-sm ${checkIcon}`}>
                     <Check className="w-3.5 h-3.5 stroke-[3px]" />
                   </div>
-                  <span className="text-sm text-amber-100/70 font-medium leading-snug">
+                  <span className={`text-sm font-medium leading-snug ${reasonText}`}>
                     {reason}
                   </span>
                 </div>
@@ -840,8 +872,8 @@ export default function MantraDetailView({
         {/* ─── ROW: BENEFITS AND AUDIO LISTEN ────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Card 3: Benefits (इस मंत्र के लाभ) */}
-          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between shadow-lg">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
+          <section className={`backdrop-blur-md border rounded-[2rem] p-6 flex flex-col justify-between shadow-lg ${cardBg}`}>
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <Sparkles className="w-4.5 h-4.5 text-amber-500" />
               {isHi ? "इस मंत्र के लाभ" : "Benefits of this Mantra"}
             </h3>
@@ -849,40 +881,40 @@ export default function MantraDetailView({
             <div className="grid grid-cols-2 gap-6 max-w-xs mx-auto w-full">
               {/* Yogi / Mental Peace */}
               <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
                   <YogiIcon className="w-7 h-7" />
                 </div>
-                <span className="text-xs font-bold text-white/80">
+                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
                   {isHi ? detail.benefitsHindi[0] : detail.benefitsEnglish[0]}
                 </span>
               </div>
 
               {/* Heart / Emotional Balance */}
               <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
                   <HeartIcon className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-bold text-white/80">
+                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
                   {isHi ? detail.benefitsHindi[1] : detail.benefitsEnglish[1]}
                 </span>
               </div>
 
               {/* Lotus / Spiritual Dev */}
               <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
                   <Flower2 className="w-7 h-7" />
                 </div>
-                <span className="text-xs font-bold text-white/80">
+                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
                   {isHi ? detail.benefitsHindi[2] : detail.benefitsEnglish[2]}
                 </span>
               </div>
 
               {/* Shield / Protection */}
               <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
+                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
                   <ShieldCrossIcon className="w-6 h-6" />
                 </div>
-                <span className="text-xs font-bold text-white/80">
+                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
                   {isHi ? detail.benefitsHindi[3] : detail.benefitsEnglish[3]}
                 </span>
               </div>
@@ -890,12 +922,12 @@ export default function MantraDetailView({
           </section>
 
           {/* Card 4: Audio listen (मंत्र सुनें) */}
-          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 flex flex-col justify-between items-center shadow-lg text-center">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+          <section className={`backdrop-blur-md border rounded-[2rem] p-6 flex flex-col justify-between items-center shadow-lg text-center ${cardBg}`}>
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <Headphones className="w-4 h-4 text-amber-500" />
               {isHi ? "मंत्र सुनें" : "Listen to Mantra"}
             </h3>
-            <p className="text-[11px] sm:text-xs text-white/40 mt-1 font-medium">
+            <p className={`text-[11px] sm:text-xs mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
               {isHi ? "शुद्ध उच्चारण सुनें" : "Listen to pure pronunciation"}
             </p>
 
@@ -950,8 +982,8 @@ export default function MantraDetailView({
         {/* ─── ROW: BEST TIMES AND RECOMMENDED COUNTS ────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Card 5: Best Times (सर्वश्रेष्ठ समय) */}
-          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
+          <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg flex flex-col justify-between ${cardBg}`}>
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <Clock className="w-4 h-4 text-amber-500" />
               {isHi ? "सर्वश्रेष्ठ समय" : "Best Time to Chant"}
             </h3>
@@ -963,10 +995,10 @@ export default function MantraDetailView({
                   <Sun className="w-5.5 h-5.5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-white">
+                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {isHi ? "ब्रह्म मुहूर्त" : "Brahm Muhurat"}
                   </p>
-                  <p className="text-[10px] text-white/50 mt-0.5 leading-none">
+                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
                     4:00 AM - 6:00 AM
                   </p>
                   <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
@@ -981,10 +1013,10 @@ export default function MantraDetailView({
                   <Sun className="w-5.5 h-5.5 animate-pulse" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-white">
+                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {isHi ? "सूर्योदय" : "Sunrise"}
                   </p>
-                  <p className="text-[10px] text-white/50 mt-0.5 leading-none">
+                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
                     6:00 AM - 8:00 AM
                   </p>
                   <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
@@ -999,10 +1031,10 @@ export default function MantraDetailView({
                   <Moon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-white">
+                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {isHi ? "संध्या समय" : "Sunset"}
                   </p>
-                  <p className="text-[10px] text-white/50 mt-0.5 leading-none">
+                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
                     5:00 PM - 9:00 PM
                   </p>
                   <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
@@ -1014,26 +1046,26 @@ export default function MantraDetailView({
           </section>
 
           {/* Card 6: Recommended Chants (अनुशंसित जप संख्या) */}
-          <section className="bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/10 rounded-[2rem] p-6 shadow-lg flex flex-col justify-between">
-            <h3 className="text-sm md:text-base font-bold text-amber-400 uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6">
+          <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg flex flex-col justify-between ${cardBg}`}>
+            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
               <Compass className="w-4.5 h-4.5 text-amber-500" />
               {isHi ? "अनुशंसित जप संख्या" : "Recommended Chants"}
             </h3>
 
-            <div className="grid grid-cols-2 gap-4 divide-x divide-white/5 w-full items-center">
+            <div className={`grid grid-cols-2 gap-4 divide-x w-full items-center ${isDark ? "divide-white/5" : "divide-stone-200"}`}>
               {/* Beginner */}
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/5 border border-amber-500/20 text-amber-500">
                   <span className="text-xs font-bold font-display">108</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">
+                  <p className={`text-xs font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {isHi ? "Beginner" : "Beginner"}
                   </p>
                   <p className="text-lg font-bold text-amber-500 mt-1 leading-none">
                     {detail.recommendedCounts.beginner}
                   </p>
-                  <p className="text-[10px] text-white/40 mt-1 font-medium">
+                  <p className={`text-[10px] mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
                     {isHi ? detail.recommendedCounts.beginnerTimeHindi : detail.recommendedCounts.beginnerTimeEnglish}
                   </p>
                 </div>
@@ -1045,13 +1077,13 @@ export default function MantraDetailView({
                   <span className="text-xs font-bold font-display">1008</span>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">
+                  <p className={`text-xs font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
                     {isHi ? "Advanced" : "Advanced"}
                   </p>
                   <p className="text-lg font-bold text-amber-500 mt-1 leading-none">
                     {detail.recommendedCounts.advanced}
                   </p>
-                  <p className="text-[10px] text-white/40 mt-1 font-medium">
+                  <p className={`text-[10px] mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
                     {isHi ? detail.recommendedCounts.advancedTimeHindi : detail.recommendedCounts.advancedTimeEnglish}
                   </p>
                 </div>
@@ -1060,29 +1092,29 @@ export default function MantraDetailView({
           </section>
         </div>
 
-                {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
-        <section className="relative overflow-hidden bg-[#130d0a]/30 backdrop-blur-md border border-amber-500/15 rounded-[2.5rem] p-6 md:p-8 shadow-2xl">
+        {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
+        <section className={`relative overflow-hidden border rounded-[2.5rem] p-6 md:p-8 shadow-2xl ${isDark ? "bg-[#130d0a]/30 border-amber-500/15" : "bg-white border-stone-200"}`}>
           
           {/* Section Background Image Layer - devotional_background(1).webp */}
           <div className="absolute inset-0 z-0 select-none pointer-events-none">
             <img 
               src={devotionalBackground1} 
               alt="Practice Background" 
-              className="w-full h-full object-cover object-center opacity-30" 
+              className={`w-full h-full object-cover object-center ${isDark ? "opacity-30" : "opacity-[0.03]"}`} 
             />
-            {/* Ambient dark filter to maintain high legibility */}
-            <div className="absolute inset-0 bg-[#0c0705]/85" />
+            {/* Ambient filter to maintain high legibility */}
+            <div className={`absolute inset-0 ${isDark ? "bg-[#0c0705]/85" : "bg-white/90"}`} />
           </div>
 
           <div className="relative z-10 space-y-8">
             {/* Guide Header */}
             <div className="text-center space-y-2.5">
-              <h3 className="text-2xl md:text-3xl font-display font-bold text-amber-400 flex items-center justify-center gap-3">
+              <h3 className={`text-2xl md:text-3xl font-display font-bold flex items-center justify-center gap-3 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
                 <span className="text-amber-600/60 font-light">✦</span>
                 {isHi ? "अभ्यास कैसे करें" : "How To Practice"}
                 <span className="text-amber-600/60 font-light">✦</span>
               </h3>
-              <p className="text-xs md:text-sm font-medium text-brand-cream/50 tracking-wider flex items-center justify-center gap-2 uppercase">
+              <p className={`text-xs md:text-sm font-medium tracking-wider flex items-center justify-center gap-2 uppercase ${isDark ? "text-brand-cream/50" : "text-stone-500"}`}>
                 <span className="text-amber-500/40">◆</span>
                 {isHi ? "सर्वश्रेष्ठ अनुभव के लिए इन चरणों का पालन करें" : "Follow these steps for the best experience"}
                 <span className="text-amber-500/40">◆</span>
@@ -1094,10 +1126,10 @@ export default function MantraDetailView({
               {japaStepsData.map((step) => (
                 <div
                   key={step.num}
-                  className="bg-black/35 border border-white/5 hover:border-amber-500/25 rounded-2xl p-4 md:p-5 flex items-center gap-5 transition-all duration-300 group text-left"
+                  className={`border rounded-2xl p-4 md:p-5 flex items-center gap-5 transition-all duration-300 group text-left ${stepCard}`}
                 >
                   {/* Left: Illustration */}
-                  <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border border-amber-500/10 flex items-center justify-center bg-black/40 group-hover:border-amber-500/25 transition-colors relative">
+                  <div className={`shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border flex items-center justify-center transition-colors relative ${stepImgBox}`}>
                     {step.isSvg ? (
                       <div className="w-full h-full flex items-center justify-center bg-teal-950/10 relative rounded-xl">
                         <div className="absolute inset-0 bg-teal-500/[0.03] rounded-xl" />
@@ -1119,11 +1151,11 @@ export default function MantraDetailView({
                       <span className="w-6 h-6 rounded-full border border-amber-500/30 flex items-center justify-center text-amber-500 font-display font-bold text-xs shrink-0 bg-amber-500/5">
                         {step.num}
                       </span>
-                      <h4 className="font-display font-bold text-base md:text-lg text-amber-400 group-hover:text-amber-300 transition-colors">
+                      <h4 className={`font-display font-bold text-base md:text-lg transition-colors ${stepTitle}`}>
                         {isHi ? step.titleHi : step.titleEn}
                       </h4>
                     </div>
-                    <p className="text-sm text-brand-cream/65 leading-relaxed group-hover:text-brand-cream/85 transition-colors">
+                    <p className={`text-sm transition-colors ${stepDesc}`}>
                       {isHi ? step.descHi : step.descEn}
                     </p>
                     {step.hasAudio && (
@@ -1153,14 +1185,14 @@ export default function MantraDetailView({
             </div>
 
             {/* ─── COMMON MISTAKES SECTION ──────────────────────── */}
-            <div className="border-t border-amber-500/10 pt-8 mt-4">
-              <h4 className="text-center font-display font-bold text-lg md:text-xl text-amber-400 flex items-center justify-center gap-3 mb-6">
+            <div className={`border-t pt-8 mt-4 ${isDark ? "border-amber-500/10" : "border-stone-200"}`}>
+              <h4 className={`text-center font-display font-bold text-lg md:text-xl flex items-center justify-center gap-3 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
                 <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
                 {isHi ? "सामान्य गलतियाँ" : "Common Mistakes"}
                 <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
               </h4>
 
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-black/20 border border-white/5 rounded-2xl p-5 md:p-6">
+              <div className={`flex flex-col md:flex-row items-center justify-between gap-6 border rounded-2xl p-5 md:p-6 ${mistakesCard}`}>
                 {/* Left side: list of mistakes */}
                 <div className="flex-1 space-y-3 w-full text-left">
                   {[
@@ -1173,7 +1205,7 @@ export default function MantraDetailView({
                       <span className="w-5 h-5 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0 text-xs font-bold mt-0.5">
                         ✕
                       </span>
-                      <p className="text-sm text-brand-cream/70 font-medium">
+                      <p className={`text-sm font-medium ${mistakesText}`}>
                         {isHi ? mistake.hi : mistake.en}
                       </p>
                     </div>
@@ -1182,7 +1214,7 @@ export default function MantraDetailView({
 
                 {/* Right side: incense smoke illustration */}
                 <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
-                  {/* Rising smoke wisps using existing .smoke-wisp animation */}
+                  {/* Rising smoke wisps */}
                   <div className="absolute bottom-[3.5rem] w-8 h-20 overflow-visible pointer-events-none flex justify-center z-10">
                     <div className="smoke-wisp absolute bottom-0 w-2 h-16" style={{ animationDelay: '0s' }} />
                     <div className="smoke-wisp absolute bottom-0 w-3 h-14" style={{ animationDelay: '1.5s' }} />
@@ -1201,10 +1233,13 @@ export default function MantraDetailView({
           </div>
         </section>
 
-      </div>
+        </div>{/* end max-w inner */}
+      </div>{/* end scrollable */}
 
-      {/* ─── BOTTOM FLOATING ACTION CTA BUTTON ──────────────────── */}
-      <section className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] md:bottom-4 z-30 pt-4 pb-4 flex flex-col items-center space-y-2 w-full max-w-md mx-auto px-4">
+      {/* ─── BOTTOM CTA BUTTON ─────────────────────────────────────── */}
+      <section className={`shrink-0 z-30 px-4 pt-3 pb-4 flex flex-col items-center space-y-2 border-t ${
+        isDark ? 'bg-[#1a1008]/95 border-amber-900/20 backdrop-blur-md' : 'bg-[#FDF3E3]/95 border-amber-300/40 backdrop-blur-md shadow-[0_-2px_12px_rgba(214,152,74,0.10)]'
+      }`}>
         <button
           onClick={onStartJapa}
           className="w-full group flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-white font-bold px-8 py-4 rounded-3xl shadow-[0_12px_28px_rgba(249,115,22,0.45)] border border-amber-400/20 transition-all duration-300"
@@ -1216,11 +1251,11 @@ export default function MantraDetailView({
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </button>
 
-          <p className="text-[10px] text-white/35 font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center">
-            <ShieldCrossIcon className="w-3.5 h-3.5 text-amber-500/70" />
-            {isHi ? "आपकी साधना सुरक्षित और निजी है" : "Your Sadhana is Secure & Private"}
-          </p>
-        </section>
+        <p className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center ${bottomText}`}>
+          <ShieldCrossIcon className="w-3.5 h-3.5 text-amber-500/70" />
+          {isHi ? "आपकी साधना सुरक्षित और निजी है" : "Your Sadhana is Secure & Private"}
+        </p>
+      </section>
 
     </div>
   );
