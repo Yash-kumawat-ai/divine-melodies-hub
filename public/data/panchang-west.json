@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-12",
+  "date": "2026-07-13",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Triodasi",
-  "tithi_number": 13,
-  "nakshatra": "Rohini - 4",
-  "yoga": "Vriddha",
-  "karana": "Garija",
-  "paksha": "Shukla",
+  "tithi": "Chaturdasi",
+  "tithi_number": 0,
+  "nakshatra": "Mrigasira - 4",
+  "yoga": "Dhruva",
+  "karana": "Visti",
+  "paksha": "Krishna",
   "sunrise": "06:12 AM",
   "sunset": "07:16 PM",
-  "rahu_kaal": "05:38 PM - 07:16 PM",
+  "rahu_kaal": "07:50 AM - 09:28 AM",
   "brahma_muhurat": "04:36 AM - 05:24 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-07-12T06:32:35+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-07-13T06:32:35+05:30"
 }
