@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-14",
+  "date": "2026-07-15",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Amavasya",
-  "tithi_number": 15,
-  "nakshatra": "Punarvasu - 1",
-  "yoga": "Vyagatha",
-  "karana": "Chatushpada",
-  "paksha": "Shukla",
+  "tithi": "Padyami",
+  "tithi_number": 0,
+  "nakshatra": "Pushyami - 1",
+  "yoga": "Harshana",
+  "karana": "Bava",
+  "paksha": "Krishna",
   "sunrise": "05:04 AM",
   "sunset": "06:20 PM",
-  "rahu_kaal": "03:01 PM - 04:40 PM",
+  "rahu_kaal": "10:02 AM - 11:42 AM",
   "brahma_muhurat": "03:28 AM - 04:16 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-07-14T06:21:36+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-07-15T05:42:37+05:30"
 }
