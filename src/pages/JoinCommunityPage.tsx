@@ -261,7 +261,7 @@ export default function JoinCommunityPage() {
       toast.success(isHi ? "टिप्पणी हटा दी गई!" : "Comment deleted!");
       loadPosts();
     } catch {
-      toast.error("Failed to delete comment");
+      toast.error(isHi ? "टिप्पणी हटाने में विफल" : "Failed to delete comment");
     }
   };
 
@@ -307,7 +307,7 @@ export default function JoinCommunityPage() {
       }
       loadPosts();
     } catch {
-      toast.error("Failed to update RSVP");
+      toast.error(isHi ? "RSVP अपडेट करने में असमर्थ" : "Failed to update RSVP");
     }
   };
 
@@ -322,7 +322,7 @@ export default function JoinCommunityPage() {
       toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
       loadPosts();
     } catch {
-      toast.error("Failed to register vote");
+      toast.error(isHi ? "मतदान दर्ज करने में असमर्थ" : "Failed to register vote");
     }
   };
 
@@ -330,11 +330,11 @@ export default function JoinCommunityPage() {
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error("Please log in to create a group");
+      toast.error(isHi ? "समूह बनाने के लिए कृपया लॉग इन करें" : "Please log in to create a group");
       return;
     }
     if (!groupName.trim()) {
-      toast.error("Group name is required");
+      toast.error(isHi ? "समूह का नाम आवश्यक है" : "Group name is required");
       return;
     }
 
@@ -347,7 +347,7 @@ export default function JoinCommunityPage() {
       setCreateGroupOpen(false);
       loadGroups();
     } catch {
-      toast.error("Failed to create group");
+      toast.error(isHi ? "समूह बनाने में असमर्थ" : "Failed to create group");
     } finally {
       setCreatingGroup(false);
     }
@@ -356,7 +356,7 @@ export default function JoinCommunityPage() {
   // Group Join Toggle handler
   const handleToggleGroupJoin = async (group: Group) => {
     if (!user) {
-      toast.error("Please log in to join a group");
+      toast.error(isHi ? "समूह में शामिल होने के लिए कृपया लॉग इन करें" : "Please log in to join a group");
       return;
     }
     try {
@@ -411,18 +411,18 @@ export default function JoinCommunityPage() {
   const handleCopyGroupLink = (group: Group) => {
     const groupLink = `${window.location.origin}/community/groups/${group.slug || group.id}`;
     navigator.clipboard.writeText(groupLink);
-    toast.success("Invitation link copied!");
+    toast.success(isHi ? "आमंत्रण लिंक कॉपी किया गया!" : "Invitation link copied!");
   };
 
   // Group Admin actions (kick member, delete group)
   const handleRemoveMember = async (groupId: string, memberId: string) => {
     try {
       await communityApi.removeGroupMember(groupId, memberId);
-      toast.success("Member removed");
+      toast.success(isHi ? "सदस्य को हटा दिया गया" : "Member removed");
       const members = await communityApi.fetchGroupMembers(groupId);
       setGroupMembers(members);
     } catch {
-      toast.error("Failed to remove member");
+      toast.error(isHi ? "सदस्य को हटाने में असमर्थ" : "Failed to remove member");
     }
   };
 
@@ -434,7 +434,7 @@ export default function JoinCommunityPage() {
         navigate("/join-community");
         loadGroups();
       } catch {
-        toast.error("Failed to delete group");
+        toast.error(isHi ? "समूह को हटाने में असमर्थ" : "Failed to delete group");
       }
     }
   };
@@ -454,15 +454,15 @@ export default function JoinCommunityPage() {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error("Please log in to publish posts");
+      toast.error(isHi ? "पोस्ट प्रकाशित करने के लिए कृपया लॉग इन करें" : "Please log in to publish posts");
       return;
     }
     if (postType !== 'thought' && !postTitle.trim()) {
-      toast.error("Title is required");
+      toast.error(isHi ? "शीर्षक आवश्यक है" : "Title is required");
       return;
     }
     if (!postContent.trim()) {
-      toast.error("Content description is required");
+      toast.error(isHi ? "विवरण सामग्री आवश्यक है" : "Content description is required");
       return;
     }
 
@@ -936,7 +936,7 @@ export default function JoinCommunityPage() {
                           isPostSaved={isSaved(post.id)}
                           onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
-                            if (confirm("Delete this post?")) {
+                            if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
                               await communityApi.softRemovePost(id);
                               loadPosts();
                             }
@@ -1036,12 +1036,46 @@ export default function JoinCommunityPage() {
 
                             <div className="p-5 flex-1 flex flex-col justify-between">
                               <div>
+                                {/* Deity Tag */}
+                                {(() => {
+                                  const getDeityDisplayName = (deityId: string | null) => {
+                                    if (!deityId) return "";
+                                    const mappings: Record<string, { en: string, hi: string }> = {
+                                      "rama": { en: "Rama Ji", hi: "श्री राम जी" },
+                                      "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
+                                      "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
+                                      "shiva": { en: "Shiva Ji", hi: "शिव जी" },
+                                      "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
+                                      "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
+                                      "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
+                                      "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
+                                    };
+                                    const key = deityId.toLowerCase();
+                                    if (mappings[key]) {
+                                      return isHi ? mappings[key].hi : mappings[key].en;
+                                    }
+                                    return deityFound ? deityFound.name : deityId;
+                                  };
+                                  const dName = getDeityDisplayName(group.deity);
+                                  return dName ? (
+                                    <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-md bg-orange-100/70 dark:bg-stone-850 text-orange-700 dark:text-orange-400 mb-2 uppercase tracking-wide">
+                                      {dName}
+                                    </span>
+                                  ) : null;
+                                })()}
+
                                 <h3 className="font-display text-lg font-bold text-orange-950 dark:text-amber-100 leading-snug">
                                   {group.name}
                                 </h3>
-                                <p className="text-xs text-stone-500 mt-0.5">
-                                  {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
-                                </p>
+                                {(group.member_count || 0) >= 5 ? (
+                                  <p className="text-xs text-stone-500 mt-0.5">
+                                    {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
+                                  </p>
+                                ) : (
+                                  <p className="text-xs text-stone-400 italic mt-0.5">
+                                    {isHi ? "नया समूह — आज ही जुड़ें!" : "New group — join today!"}
+                                  </p>
+                                )}
                                 <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
                                   {group.description || (isHi ? "भक्तिमय संगीत और नाम जप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
                                 </p>
@@ -1139,7 +1173,7 @@ export default function JoinCommunityPage() {
                           isPostSaved={isSaved(post.id)}
                           onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
-                            if (confirm("Delete this event post?")) {
+                            if (confirm(isHi ? "क्या आप इस कार्यक्रम पोस्ट को हटाना चाहते हैं?" : "Delete this event post?")) {
                               await communityApi.softRemovePost(id);
                               loadPosts();
                             }
@@ -1451,7 +1485,7 @@ export default function JoinCommunityPage() {
                 onClick={() => handleToggleGroupJoin(selectedGroup)}
                 className="border-stone-500/20 text-rose-600 dark:text-rose-400 bg-white dark:bg-stone-900 hover:bg-stone-500/5 rounded-xl text-xs flex items-center gap-1 h-9 px-4 shadow-sm ml-auto"
               >
-                Leave Group
+                {isHi ? "समूह छोड़ें" : "Leave Group"}
               </Button>
             )}
           </div>
@@ -1460,7 +1494,7 @@ export default function JoinCommunityPage() {
           {showMemberManagement && selectedGroup.created_by === user?.id && (
             <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-sm">
               <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-3 flex items-center gap-1">
-                👥 Member List
+                {isHi ? "👥 सदस्य सूची" : "👥 Member List"}
               </h3>
               <div className="space-y-3 max-h-48 overflow-y-auto">
                 {groupMembers.map(m => (
@@ -1473,7 +1507,7 @@ export default function JoinCommunityPage() {
                         onClick={() => handleRemoveMember(selectedGroup.id, m.user_id)}
                         className="text-rose-600 hover:underline"
                       >
-                        Remove
+                        {isHi ? "हटाएं" : "Remove"}
                       </button>
                     )}
                   </div>
@@ -1552,11 +1586,37 @@ export default function JoinCommunityPage() {
             }
 
             if (displayList.length === 0) {
+              const memberCount = selectedGroup.member_count || 0;
+              let emptyMessage = "";
+              if (memberCount <= 2) {
+                emptyMessage = isHi 
+                  ? "इस संघ की यात्रा अभी शुरू हुई है 🌸 पहला भजन या विचार साझा करके शुरुआत करें।"
+                  : "This Sangh's journey has just begun 🌸 Be the first to share a bhajan or thought.";
+              } else {
+                if (activeGroupTab === 'bhajans') {
+                  emptyMessage = isHi
+                    ? "अभी तक कोई भजन साझा नहीं हुआ — अपना पसंदीदा भजन यहाँ जोड़ें।"
+                    : "No bhajans shared yet — add your favorite bhajan here.";
+                } else if (activeGroupTab === 'requests') {
+                  emptyMessage = isHi
+                    ? "अभी तक कोई भजन अनुरोध नहीं है — यदि आप कोई भजन ढूंढ रहे हैं, तो यहाँ अनुरोध करें।"
+                    : "No bhajan requests yet — if you are looking for a bhajan, request it here.";
+                } else if (activeGroupTab === 'events') {
+                  emptyMessage = isHi
+                    ? "अभी तक कोई कार्यक्रम निर्धारित नहीं है — आगामी सत्संग या उत्सव यहाँ जोड़ें।"
+                    : "No events scheduled yet — add upcoming satsang or festival details here.";
+                } else {
+                  emptyMessage = isHi
+                    ? "अभी तक कोई सत्संग या विचार साझा नहीं हुआ — अपने विचार यहाँ साझा करें।"
+                    : "No thoughts shared yet — share your first reflection here.";
+                }
+              }
+
               return (
-                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
+                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
                   <span className="text-3xl block">🌸</span>
-                  <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3">
-                    No items in this section yet. Share the first one!
+                  <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                    {emptyMessage}
                   </p>
                 </div>
               );
@@ -1586,7 +1646,7 @@ export default function JoinCommunityPage() {
                     isPostSaved={isSaved(post.id)}
                     onToggleSavePost={handleToggleSavePost}
                     onDeletePost={async (id) => {
-                      if (confirm("Delete this post?")) {
+                      if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
                         await communityApi.softRemovePost(id);
                         loadPosts();
                       }
@@ -2210,7 +2270,16 @@ export function PostCard({
                 isDark ? "bg-stone-900 text-stone-400 border-stone-800" : "bg-stone-100 text-stone-600 border-stone-200"
               }`}
             >
-              {post.type.replace('_', ' ')}
+              {(() => {
+                const typesMap: Record<string, { hi: string, en: string }> = {
+                  'bhajan_share': { hi: 'भजन साझा', en: 'Bhajan Share' },
+                  'bhajan_request': { hi: 'भजन अनुरोध', en: 'Bhajan Request' },
+                  'question': { hi: 'जिज्ञासा/प्रश्न', en: 'Question/Poll' },
+                  'event': { hi: 'कार्यक्रम', en: 'Event' },
+                  'thought': { hi: 'विचार', en: 'Thought' }
+                };
+                return isHi ? (typesMap[post.type]?.hi || post.type) : (typesMap[post.type]?.en || post.type.replace('_', ' '));
+              })()}
             </Badge>
             {user?.id === post.author_id && (
               <button 
@@ -2314,7 +2383,7 @@ export function PostCard({
               <div className="min-w-0 flex-1">
                 <span className={`text-[8px] font-bold uppercase tracking-wider block ${
                   isDark ? 'text-stone-400' : 'text-stone-500'
-                }`}>YouTube Link</span>
+                }`}>{isHi ? "यूट्यूब लिंक" : "YouTube Link"}</span>
                 <a 
                   href={post.youtube_url} 
                   target="_blank" 
@@ -2336,7 +2405,16 @@ export function PostCard({
               <div className="flex items-center justify-between mb-3.5">
                 <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
                 <Badge variant="outline" className={"text-[10px] font-extrabold capitalize " + getStatusBadgeColor(post.request_status)}>
-                  {post.request_status.replace('_', ' ')}
+                  {(() => {
+                    const statusMap: Record<string, { hi: string, en: string }> = {
+                      'open': { hi: 'खुला', en: 'Open' },
+                      'lyrics_submitted': { hi: 'उत्तर प्राप्त (लिरिक्स)', en: 'Lyrics Submitted' },
+                      'in_review': { hi: 'समीक्षा में', en: 'In Review' },
+                      'added_to_library': { hi: 'लाइब्रेरी में शामिल', en: 'Added to Library' },
+                      'closed_unresolved': { hi: 'बंद', en: 'Closed Unresolved' }
+                    };
+                    return isHi ? (statusMap[post.request_status]?.hi || post.request_status) : (statusMap[post.request_status]?.en || post.request_status.replace('_', ' '));
+                  })()}
                 </Badge>
               </div>
 
@@ -2406,11 +2484,11 @@ export function PostCard({
               <div className={`flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2 border-b pb-2.5 ${isDark ? 'text-stone-300 border-[#2c2018]' : 'text-stone-700 border-stone-200'}`}>
                 <span className="flex items-center gap-1 text-rose-500">
                   <Calendar className="w-4 h-4" />
-                  {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : "Date/Time not set"}
+                  {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : (isHi ? "तारीख/समय निर्धारित नहीं" : "Date/Time not set")}
                 </span>
                 <span className={`flex items-center gap-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   <MapPin className="w-4 h-4" />
-                  {post.event_location || "Virtual Zoom"}
+                  {post.event_location || (isHi ? "वर्चुअल ज़ूम" : "Virtual Zoom")}
                 </span>
               </div>
 
@@ -2420,14 +2498,14 @@ export function PostCard({
                   isDark ? 'bg-[#1a1410]/50 border-orange-500/10' : 'bg-orange-50/30 border-orange-200/50'
                 }`}>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">Linked Bhajan</span>
-                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-850'}`}>Bhajan Page Reference</span>
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
+                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-850'}`}>{isHi ? "भजन संदर्भ" : "Bhajan Page Reference"}</span>
                   </div>
                   <a 
                     href={"/bhajan/" + post.linked_bhajan_id}
                     className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
                   >
-                    Open lyrics <ChevronRight className="w-3 h-3" />
+                    {isHi ? "बोल खोलें" : "Open lyrics"} <ChevronRight className="w-3 h-3" />
                   </a>
                 </div>
               )}
@@ -2466,7 +2544,7 @@ export function PostCard({
           {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
             <div className={`p-4 rounded-2xl border ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-500 block mb-2">
-                Quick tap option poll
+                {isHi ? "त्वरित मतदान विकल्प" : "Quick tap option poll"}
               </span>
               <div className="space-y-2">
                 {post.question_options.map((opt, index) => {
@@ -2628,7 +2706,7 @@ export function PostCard({
                         {comment.author?.display_name || "Devotee"}
                         {comment.is_lyrics_submission && (
                           <Badge variant="outline" className="text-[7px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
-                            Lyrics Submission
+                            {isHi ? "भजन बोल" : "Lyrics Submission"}
                           </Badge>
                         )}
                       </span>
@@ -2690,14 +2768,14 @@ export function PostCard({
                     className="w-3.5 h-3.5 accent-orange-500"
                   />
                   <label htmlFor={`lyrics-submit-check-${post.id}`} className="text-[10px] font-bold text-stone-400 cursor-pointer select-none">
-                    Submit this comment as the Bhajan Lyrics (moves request to pending review)
+                    {isHi ? "इस टिप्पणी को भजन के बोल के रूप में जमा करें (अनुरोध समीक्षा के लिए चला जाएगा)" : "Submit this comment as the Bhajan Lyrics (moves request to pending review)"}
                   </label>
                 </div>
               )}
             </div>
           ) : (
             <p className="text-[10px] text-stone-500 text-center mt-2">
-              Please log in to participate in the satsang conversation.
+              {isHi ? "सत्संग वार्तालाप में भाग लेने के लिए कृपया लॉग इन करें।" : "Please log in to participate in the satsang conversation."}
             </p>
           )}
         </div>

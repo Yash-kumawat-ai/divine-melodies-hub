@@ -177,7 +177,7 @@ export default function SavedPostsPage() {
       }
       loadPosts();
     } catch {
-      toast.error("Failed to update RSVP");
+      toast.error(isHi ? "RSVP अपडेट करने में असमर्थ" : "Failed to update RSVP");
     }
   };
 
@@ -191,7 +191,7 @@ export default function SavedPostsPage() {
       toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
       loadPosts();
     } catch {
-      toast.error("Failed to register vote");
+      toast.error(isHi ? "मतदान दर्ज करने में असमर्थ" : "Failed to register vote");
     }
   };
 
@@ -205,7 +205,7 @@ export default function SavedPostsPage() {
       toast.success(isHi ? "टिप्पणी हटा दी गई!" : "Comment deleted!");
       loadPosts();
     } catch {
-      toast.error("Failed to delete comment");
+      toast.error(isHi ? "टिप्पणी हटाने में विफल" : "Failed to delete comment");
     }
   };
 

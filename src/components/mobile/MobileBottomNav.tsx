@@ -48,7 +48,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid shrink-0 grid-cols-5 overflow-x-hidden border-t border-white/10 bg-[#0A0A0A]/85 px-1 pt-2 backdrop-blur-xl md:hidden"
+      className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid shrink-0 grid-cols-5 overflow-x-hidden border-t border-[#E8D8C4] bg-[#FFFDF8]/95 dark:border-white/10 dark:bg-[#0d0b08]/90 px-1 pt-2 backdrop-blur-xl md:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
       aria-label="Main navigation"
     >
@@ -64,21 +64,21 @@ export default function MobileBottomNav() {
             className={cn(
               "flex min-w-0 flex-col items-center justify-end gap-0.5 pb-0.5 transition-transform active:scale-95",
               item.accent && "-mt-3",
-              active && !item.accent ? "text-[#FFB300]" : "text-white/50",
+              active && !item.accent ? "text-[#651317]" : "text-[#786252]",
             )}
           >
             <span
               className={cn(
-                "flex items-center justify-center rounded-2xl transition-all",
+                "flex items-center justify-center rounded-2xl transition-all duration-250",
                 item.accent &&
-                  "h-12 w-12 bg-gradient-to-br from-[#FF9F1C] to-[#FFB300] text-[#0A0A0A] shadow-[0_0_24px_rgba(255,159,28,0.55)]",
-                !item.accent && active && "h-9 w-9 bg-[#FF9F1C]/12 shadow-[0_0_14px_rgba(255,179,0,0.3)]",
-                !item.accent && !active && "h-9 w-9",
+                  "h-12 w-12 bg-[#D88A15] border-2 border-[#FFFDF8] dark:border-[#0d0b08] text-white shadow-[0_4px_20px_rgba(216,138,21,0.35)]",
+                !item.accent && active && "h-9 w-9 bg-[rgba(212,164,55,0.12)] text-[#651317]",
+                !item.accent && !active && "h-9 w-9 text-[#786252]",
               )}
             >
-              <Icon className={cn("h-5 w-5", item.accent && "h-6 w-6")} strokeWidth={active ? 2.5 : 2} />
+              <Icon className={cn("h-5 w-5", item.accent ? "h-6 w-6 text-[#FFF9F2]" : active ? "text-[#651317]" : "text-[#786252]")} strokeWidth={active ? 2.5 : 2} />
             </span>
-            <span className={cn("text-[9px] font-medium leading-none", active && "text-[#FFB300]")}>
+            <span className={cn("text-[9px] font-medium leading-none", active ? "text-[#651317]" : "text-[#786252]")}>
               {item.label}
             </span>
           </Link>

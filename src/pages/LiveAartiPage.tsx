@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLiveAarti, getNextAarti } from '@/hooks/useLiveAarti';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,39 @@ import TempleCard from '../components/LiveAarti/TempleCard';
 import WatchModal, { resolveTempleBanner } from '../components/LiveAarti/WatchModal';
 import TodaysTemples from '../components/LiveAarti/TodaysTemples';
 import type { Temple } from '../types/liveAarti';
+import MandalaFrame from '../components/LiveAarti/MandalaFrame';
+
+// Import assets for loading screen
+import mandalaSvg from '@/pages/images/mandala.svg';
+import devotionalBackground from '@/pages/images/devotional_background.webp';
+import whatsappIcon from '@/pages/images/whatsapp-svgrepo-com.svg';
+
+function getMandalaCategory(templeId: string): 'jyotirlinga' | 'hanuman' | 'krishna' | 'lotus' {
+  const id = templeId.toLowerCase();
+  if (id.includes('somnath') || id.includes('kashi') || id.includes('mahakal') || id === 'dd-astro') {
+    return 'jyotirlinga';
+  }
+  if (id.includes('balaji') || id.includes('hanuman') || id.includes('salasar') || id.includes('salangpur')) {
+    return 'hanuman';
+  }
+  if (id.includes('mayapur') || id.includes('krishna') || id.includes('shyam') || id.includes('radha')) {
+    return 'krishna';
+  }
+  return 'lotus';
+}
+
+function getLocalizedLocation(location: string, isHi: boolean): string {
+  if (!isHi) return location.split(',')[1]?.trim() || location;
+  const state = location.split(',')[1]?.trim() || location;
+  switch (state.toLowerCase()) {
+    case 'gujarat': return 'गुजरात';
+    case 'uttar pradesh': return 'उत्तर प्रदेश';
+    case 'rajasthan': return 'राजस्थान';
+    case 'west bengal': return 'पश्चिम बंगाल';
+    case 'national': return 'राष्ट्रीय';
+    default: return state;
+  }
+}
 
 export default function LiveAartiPage() {
   const navigate = useNavigate();
@@ -15,6 +48,23 @@ export default function LiveAartiPage() {
   const { liveNow, startingSoon, upcoming, todaysTemples, allTemples, isLoading } = useLiveAarti();
   const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+
+  const handleWhatsAppShare = () => {
+    const url = window.location.href;
+    const shareText = isHi 
+      ? `राघवम पर लाइव आरती दर्शन करें: ${url}` 
+      : `Watch Live Aarti Darshan on Raghavam: ${url}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+  };
+
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   const text = {
     title: isHi ? 'लाइव आरती दर्शन' : 'Live Aarti Darshan',
@@ -63,20 +113,69 @@ export default function LiveAartiPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FCF6E8] text-[#543D2B] dark:bg-[#0a0705] dark:text-amber-50 flex flex-col items-center justify-center p-4">
-        <div className="space-y-6 text-center animate-pulse">
-          <div className="relative flex items-center justify-center mx-auto h-20 w-20">
-            <div className="absolute inset-0 rounded-full border-4 border-orange-500/10 border-t-[#E06D14] dark:border-white/5 dark:border-t-amber-400 animate-spin" />
-            <span className="text-3xl animate-bounce">🕉</span>
+      <div className="relative min-h-screen bg-[#FDF9F3] text-[#543D2B] dark:bg-[#0a0705] dark:text-amber-50 flex flex-col items-center justify-center p-6 overflow-hidden">
+        
+        {/* Devotional background watermark (opacity 3% in light, 5% in dark) */}
+        <div className="absolute inset-0 z-0 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
+          <img 
+            src={devotionalBackground} 
+            alt="" 
+            className="w-full h-full object-cover object-center" 
+          />
+        </div>
+
+        {/* Large rotating mandala watermark in the center background */}
+        <img 
+          src={mandalaSvg} 
+          alt="" 
+          className="absolute w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] pointer-events-none select-none z-0 opacity-10 dark:opacity-15 animate-spin" 
+          style={{ 
+            animationDuration: '50s', 
+            filter: 'invert(35%) sepia(25%) saturate(300%) hue-rotate(355%) brightness(90%) contrast(85%)' 
+          }}
+        />
+
+        {/* Outer radial glow effect */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.06)_0%,transparent_70%)] dark:bg-[radial-gradient(circle_at_center,rgba(251,146,60,0.03)_0%,transparent_70%)] pointer-events-none z-0" />
+
+        {/* Main Content Card (Glassmorphic) */}
+        <div className="relative z-10 max-w-sm w-full text-center space-y-8 p-8 rounded-[32px] border border-[#EAD7C3]/50 dark:border-white/5 bg-white/40 dark:bg-white/[0.01] backdrop-blur-md shadow-2xl dark:shadow-black/60">
+          
+          {/* Custom Dual-Ring Spinner */}
+          <div className="relative flex items-center justify-center mx-auto h-24 w-24">
+            {/* Outer Ring: Rotating Clockwise */}
+            <div className="absolute inset-0 rounded-full border-2 border-dashed border-amber-500/25 border-t-amber-600 dark:border-amber-500/10 dark:border-t-amber-400 animate-spin" style={{ animationDuration: '3s' }} />
+            
+            {/* Inner Ring: Rotating Counter-Clockwise */}
+            <div className="absolute inset-2 rounded-full border border-dashed border-orange-500/35 border-b-orange-600 dark:border-orange-500/10 dark:border-b-amber-500 animate-spin" style={{ animationDuration: '1.8s', animationDirection: 'reverse' }} />
+            
+            {/* Core Circular Avatar with Om */}
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-100 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/20 border border-amber-300/40 dark:border-amber-500/25 flex items-center justify-center shadow-[inset_0_2px_8px_rgba(251,146,60,0.12)]">
+              <span className="text-3xl text-amber-700 dark:text-amber-300 animate-pulse font-serif font-black select-none">
+                ॐ
+              </span>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold font-display text-[#543D2B] dark:text-white">
-              {isHi ? 'लाइव आरती की पुष्टि की जा रही है...' : 'Verifying Live Darshan...'}
-            </h2>
-            <p className="text-xs text-[#543D2B]/60 dark:text-zinc-500 max-w-xs mx-auto">
+
+          {/* Loading texts */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-xl sm:text-2xl font-black font-display text-[#4A2F20] dark:text-white tracking-wide leading-tight">
+                {isHi ? 'लाइव आरती की पुष्टि की जा रही है...' : 'Verifying Live Darshan...'}
+              </h2>
+              {/* Elegant small separator line */}
+              <div className="flex items-center justify-center gap-1.5 py-1">
+                <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-[#B27A1C]/50" />
+                <span className="text-[10px] text-[#B27A1C]">✦</span>
+                <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-[#B27A1C]/50" />
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-[#543D2B]/85 dark:text-zinc-400 font-medium leading-relaxed max-w-xs mx-auto">
               {isHi ? 'भारत के प्रमुख मंदिरों से सीधे प्रसारण की नवीनतम स्थिति जांची जा रही है।' : 'Checking active stream statuses from major temples.'}
             </p>
           </div>
+          
         </div>
       </div>
     );
@@ -86,25 +185,82 @@ export default function LiveAartiPage() {
     <div className="min-h-screen bg-[#FCF6E8] text-[#543D2B] dark:bg-[#0a0705] dark:text-amber-50 p-4 md:p-8 pb-24 transition-colors duration-300">
       <div className="max-w-6xl mx-auto space-y-10">
         
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 dark:bg-white/5 border border-[#EAD7C3] dark:border-white/10 hover:bg-white/80 dark:hover:bg-white/10 text-[#543D2B] dark:text-amber-50 shadow-sm transition-all active:scale-95"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span>{text.back}</span>
-          </button>
-        </div>
 
-        {/* Title Section */}
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-5xl font-display font-bold text-[#543D2B] dark:text-white tracking-tight">
-            {text.title}
-          </h1>
-          <p className="text-sm md:text-base text-[#543D2B]/70 dark:text-zinc-400">
-            {text.subtitle}
-          </p>
+         {/* Centered Devotional Header */}
+        <div className="relative overflow-hidden rounded-[24px] border border-[#EAD7C3]/60 dark:border-white/5 bg-white/30 dark:bg-white/[0.01] backdrop-blur-sm p-5 md:p-8 text-center shadow-sm">
+          
+          {/* Background Mandala watermarks (left and right edges, darkened) */}
+          <img 
+            src={mandalaSvg} 
+            alt="" 
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none -translate-x-12"
+          />
+          <img 
+            src={mandalaSvg} 
+            alt="" 
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none translate-x-12"
+          />
+
+          {/* Top Controls Row */}
+          <div className="flex items-center justify-between w-full mb-3 relative z-10">
+            {/* Left: Circular Back Button */}
+            <button
+              onClick={() => navigate('/')}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white/70 dark:bg-black/30 border border-[#EAD7C3]/80 dark:border-white/10 text-[#543D2B] dark:text-amber-50 shadow-sm hover:bg-white dark:hover:bg-white/10 active:scale-90 transition-all"
+              aria-label={isHi ? 'पीछे जाएं' : 'Back'}
+            >
+              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+            </button>
+
+            {/* Right: Circular WhatsApp Share Button */}
+            <button
+              onClick={handleWhatsAppShare}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 text-[#25D366] shadow-sm active:scale-90 transition-all"
+              aria-label={isHi ? 'व्हाट्सएप पर साझा करें' : 'Share on WhatsApp'}
+            >
+              <img src={whatsappIcon} alt="WhatsApp" className="w-6 h-6 object-contain" />
+            </button>
+          </div>
+
+          {/* Center Temple Icon & Titles */}
+          <div className="flex flex-col items-center relative z-10">
+            {/* Shikhara Temple Icon */}
+            <svg className="w-12 h-12 text-[#B27A1C] dark:text-amber-400 mb-2 drop-shadow-sm" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M32 4 L28 12 L36 12 Z" fill="currentColor" opacity="0.15" />
+              <path d="M28 12 L24 24 L40 24 L36 12 Z" fill="currentColor" opacity="0.2" />
+              <path d="M24 24 L18 44 L46 44 L40 24 Z" fill="currentColor" opacity="0.25" />
+              <path d="M18 44 L12 56 L52 56 L46 44 Z" fill="currentColor" opacity="0.3" />
+              <line x1="32" y1="4" x2="32" y2="56" stroke="currentColor" strokeWidth="1.2" />
+              <circle cx="32" cy="3" r="1.5" fill="currentColor" />
+              <line x1="28" y1="12" x2="36" y2="12" stroke="currentColor" />
+              <line x1="24" y1="24" x2="40" y2="24" stroke="currentColor" />
+              <line x1="18" y1="44" x2="46" y2="44" stroke="currentColor" />
+              <line x1="12" y1="56" x2="52" y2="56" stroke="currentColor" />
+              <path d="M32 3 L37 6 L32 8" fill="currentColor" />
+            </svg>
+
+            <h1 className="text-2xl md:text-4xl font-display font-black text-[#4A2F20] dark:text-white tracking-wide">
+              {text.title}
+            </h1>
+
+            {/* Subtitle with horizontal lines */}
+            <div className="flex items-center justify-center gap-3 mt-1.5">
+              <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-[#B27A1C]/50" />
+              <p className="text-xs sm:text-sm text-[#543D2B]/75 dark:text-zinc-400 font-medium">
+                {text.subtitle}
+              </p>
+              <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-[#B27A1C]/50" />
+            </div>
+
+            {/* Scroll Divider Ornament */}
+            <svg className="w-24 h-4 text-[#B27A1C]/50 dark:text-amber-500/40 mt-2" viewBox="0 0 100 20" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M10 10 C35 10, 40 15, 45 10 C47 9, 48 6, 46 5 C44 4, 40 6, 42 8 C44 10, 48 11, 50 10 C52 11, 56 10, 58 8 C60 6, 56 4, 54 5 C52 6, 53 9, 55 10 C60 15, 65 10, 90 10" strokeLinecap="round" />
+              <circle cx="10" cy="10" r="1.2" fill="currentColor" />
+              <circle cx="90" cy="10" r="1.2" fill="currentColor" />
+              <circle cx="50" cy="10" r="1.8" fill="currentColor" />
+            </svg>
+          </div>
+
         </div>
 
         {/* SECTION 0: 🛕 लाइव मंदिर (Live Temples Strip) */}
@@ -116,82 +272,103 @@ export default function LiveAartiPage() {
 
             {/* Mobile: Horizontal scroll circle bubbles */}
             <div 
-              className="flex md:hidden gap-8 overflow-x-auto pb-4 pt-1 px-1 -mx-4 px-4 scroll-smooth snap-x snap-mandatory"
+              className="flex md:hidden gap-5 overflow-x-auto pb-4 pt-2 -mx-4 px-4 scroll-smooth snap-x snap-mandatory"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {allTemples.filter(t => t.status === 'LIVE').map((temple) => {
                 const templeName = isHi ? temple.nameHindi : temple.name;
-                const shortName = isHi 
-                  ? (temple.nameHindi.length > 8 ? temple.nameHindi.slice(0, 7) + '...' : temple.nameHindi)
-                  : (temple.name.length > 12 ? temple.name.slice(0, 10) + '...' : temple.name);
+                const stateText = getLocalizedLocation(temple.location, isHi);
                 return (
                   <div
                     key={`mobile-story-${temple.id}`}
                     onClick={() => handleTempleClick(temple)}
-                    className="flex flex-col items-center gap-1.5 shrink-0 snap-start cursor-pointer group select-none"
+                    className="flex flex-col items-center shrink-0 snap-start cursor-pointer group select-none relative pb-2 w-[130px]"
                   >
-                    <div className="relative">
-                      <span className="absolute -inset-1 rounded-full bg-gradient-to-tr from-red-600 via-orange-500 to-amber-500 animate-pulse opacity-80 blur-[1px]" />
-                      <div className="h-16 w-16 rounded-full p-[2.5px] bg-[#FCF6E8] dark:bg-[#0a0705] border-2 border-red-500 transition-all duration-300 group-hover:scale-105 group-hover:shadow-md flex items-center justify-center">
-                        <div className="h-full w-full rounded-full overflow-hidden">
-                          <img src={resolveTempleBanner(temple.id)} alt={templeName} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300" loading="lazy" />
-                        </div>
-                      </div>
-                      <span className="absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 border-2 border-[#FCF6E8] dark:border-[#0a0705]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
-                      </span>
+                    {/* Circle with Mandala Frame */}
+                    <div className="relative z-20 -mb-[14px]">
+                      <MandalaFrame
+                        category={getMandalaCategory(temple.id)}
+                        isLive={temple.status === 'LIVE'}
+                        isDark={isDark}
+                        className="w-[96px] h-[96px] transition-transform duration-300 group-hover:scale-105"
+                      >
+                        <img 
+                          src={resolveTempleBanner(temple.id)} 
+                          alt={templeName} 
+                          className="h-full w-full object-cover" 
+                          loading="lazy" 
+                        />
+                      </MandalaFrame>
                     </div>
-                    <span className="text-[11px] font-bold text-center text-[#543D2B]/80 dark:text-zinc-300 group-hover:text-[#E06D14] dark:group-hover:text-amber-100 transition-colors max-w-[70px] truncate">
-                      {shortName}
-                    </span>
+
+                    {/* Overlapping Info Card */}
+                    <div className="relative z-10 w-full pt-7 pb-4 px-3 rounded-[20px] border border-[#EAD7C3]/60 dark:border-white/5 bg-[#FFFDF8]/90 dark:bg-black/35 shadow-sm text-center flex flex-col items-center gap-1 min-h-[96px] justify-between">
+                      <div className="flex flex-col items-center w-full">
+                        <span className="text-[12px] font-bold text-[#543D2B] dark:text-amber-50 leading-tight truncate w-full px-1">
+                          {templeName}
+                        </span>
+                        <span className="text-[10px] font-medium text-[#8C6D53] dark:text-zinc-400 mt-0.5 truncate w-full px-1">
+                          {stateText}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center gap-1.5 text-[11px] font-black tracking-widest text-[#FF3B30] mt-1.5">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3B30] opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF3B30]" />
+                        </span>
+                        <span>LIVE</span>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
 
             {/* Desktop: Elegant horizontal card row */}
-            <div className="hidden md:flex flex-wrap gap-5">
+            <div className="hidden md:flex flex-wrap gap-6 pt-2">
               {allTemples.filter(t => t.status === 'LIVE').map((temple) => {
                 const templeName = isHi ? temple.nameHindi : temple.name;
-                const deityText = isHi ? temple.deityHindi : temple.deity;
+                const stateText = getLocalizedLocation(temple.location, isHi);
                 return (
                   <div
                     key={`desktop-card-${temple.id}`}
                     onClick={() => handleTempleClick(temple)}
-                    className="relative flex items-center gap-4 cursor-pointer group rounded-2xl border border-[#EAD7C3] dark:border-white/10 bg-white/70 dark:bg-white/[0.03] hover:bg-white dark:hover:bg-white/[0.06] shadow-sm hover:shadow-md transition-all duration-300 px-4 py-3 min-w-[220px] max-w-[280px] overflow-hidden"
+                    className="flex flex-col items-center shrink-0 cursor-pointer group select-none relative pb-2 w-[140px]"
                   >
-                    {/* Accent top bar */}
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 opacity-80" />
-
-                    {/* Temple image circle */}
-                    <div className="relative shrink-0">
-                      <span className="absolute -inset-0.5 rounded-full bg-gradient-to-tr from-red-500 to-amber-400 animate-pulse opacity-70 blur-[2px]" />
-                      <div className="relative h-14 w-14 rounded-full border-2 border-red-500 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-                        <img
-                          src={resolveTempleBanner(temple.id)}
-                          alt={templeName}
-                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          loading="lazy"
+                    {/* Circle with Mandala Frame */}
+                    <div className="relative z-20 -mb-[14px]">
+                      <MandalaFrame
+                        category={getMandalaCategory(temple.id)}
+                        isLive={temple.status === 'LIVE'}
+                        isDark={isDark}
+                        className="w-[104px] h-[104px] transition-transform duration-300 group-hover:scale-105"
+                      >
+                        <img 
+                          src={resolveTempleBanner(temple.id)} 
+                          alt={templeName} 
+                          className="h-full w-full object-cover" 
+                          loading="lazy" 
                         />
-                      </div>
-                      {/* Live dot */}
-                      <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 border-2 border-white dark:border-[#0a0705]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
-                      </span>
+                      </MandalaFrame>
                     </div>
 
-                    {/* Text */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="inline-flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest text-red-500 dark:text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full">
-                          <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                          LIVE
+                    {/* Overlapping Info Card */}
+                    <div className="relative z-10 w-full pt-7 pb-4 px-3 rounded-[20px] border border-[#EAD7C3]/60 dark:border-[#d4a853]/15 bg-[#FFFDF8]/90 dark:bg-black/35 shadow-sm hover:shadow-md transition-all duration-300 text-center flex flex-col items-center gap-1 min-h-[100px] justify-between">
+                      <div className="flex flex-col items-center w-full">
+                        <span className="text-[12.5px] font-bold text-[#543D2B] dark:text-amber-50 leading-tight truncate w-full px-1">
+                          {templeName}
+                        </span>
+                        <span className="text-[10px] font-medium text-[#8C6D53] dark:text-zinc-400 mt-0.5 truncate w-full px-1">
+                          {stateText}
                         </span>
                       </div>
-                      <p className="text-sm font-bold text-[#543D2B] dark:text-white group-hover:text-[#E06D14] dark:group-hover:text-amber-100 transition-colors truncate leading-tight">
-                        {templeName}
-                      </p>
-                      <p className="text-[11px] text-[#543D2B]/55 dark:text-zinc-500 truncate">{deityText}</p>
+                      <div className="flex items-center justify-center gap-1.5 text-[11px] font-black tracking-widest text-[#FF3B30] mt-1.5">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3B30] opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF3B30]" />
+                        </span>
+                        <span>LIVE</span>
+                      </div>
                     </div>
                   </div>
                 );

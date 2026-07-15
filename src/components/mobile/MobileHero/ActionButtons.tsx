@@ -8,21 +8,21 @@ export function ActionButtons() {
   const isHi = language === 'hi';
 
   return (
-    <div className="w-full mt-[12px] grid grid-cols-2 gap-[12px]">
+    <div className="w-full grid grid-cols-2 gap-[12px]">
       <button 
         onClick={() => navigate('/all-bhajans')}
-        className="h-[48px] rounded-full bg-gradient-to-r from-[#FF9A1F] to-[#F97316] text-white text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(249,115,22,0.2)] active:scale-95 transition-transform"
+        className="btn-royal-primary h-[48px] rounded-[16px] text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(74,14,18,0.1)] active:scale-95 transition-all"
       >
-        <Play className="w-4.5 h-4.5 fill-white stroke-none" />
+        <Play className="w-4.5 h-4.5 fill-white stroke-none text-white" />
         <span>{isHi ? 'भजन खोजें' : 'Bhajan Search'}</span>
       </button>
       
       <button 
         onClick={() => navigate('/live-aarti')}
-        className="h-[48px] rounded-full bg-[#2C1810] text-white text-sm font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+        className="btn-royal-secondary h-[48px] rounded-[16px] text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(74,14,18,0.03)] active:scale-95 transition-all"
       >
-        <span className="relative flex h-4.5 w-4.5 items-center justify-center rounded-full bg-sky-600 border border-white/30 shadow-inner shrink-0">
-          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+        <span className="relative flex h-4 w-4 items-center justify-center rounded-full bg-rose-700/20 border border-rose-700/30 shrink-0">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#651317] animate-pulse" />
         </span>
         <span>{isHi ? 'लाइव दर्शन' : 'Live Darshan'}</span>
       </button>

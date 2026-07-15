@@ -581,16 +581,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             <img 
               src={devotionalBackground} 
               alt="Devotional Background" 
-              className="w-full h-full object-cover object-center" 
+              className="w-full h-full object-cover object-center blur-[1px]" 
             />
             {isDark ? (
               <>
-                <div className="absolute inset-0 bg-[#0c0705]/82 backdrop-blur-[0.5px]" />
+                <div className="absolute inset-0 bg-[#0c0705]/82" />
                 <div className="absolute inset-0 bg-gradient-to-b from-[#0c0705]/30 via-transparent to-[#0c0705]/95" />
               </>
             ) : (
               <>
-                <div className="absolute inset-0 bg-white/85 backdrop-blur-[1px]" />
+                <div className="absolute inset-0 bg-white/85" />
                 <div className="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-white/40 to-amber-50/80" />
               </>
             )}

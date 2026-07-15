@@ -22,7 +22,8 @@ export default function AppShell() {
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");
-  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage;
+  const isLiveAarti = resolvedPath === "/live-aarti" || resolvedPath === "/aarti";
+  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");

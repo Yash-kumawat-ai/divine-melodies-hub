@@ -113,13 +113,13 @@ export function RamVaniCard() {
   };
 
   return (
-    <div className="w-full mt-[20px] flex flex-col select-none z-10">
+    <div className="w-full mt-[16px] flex flex-col select-none z-10">
       {/* Unified Card Container with Mandala Backdrop & Warm Premium Beige Tone */}
       <div 
-        className="relative w-full p-4 pt-3.5 pb-3 rounded-[24px] bg-[#FFFDF6] dark:bg-[#1E1710] border border-[#EAD7C3] dark:border-zinc-800/80 shadow-[0_12px_30px_rgba(95,72,38,0.06)] flex flex-col items-center overflow-hidden"
+        className="relative w-full p-3 pt-2.5 pb-2 rounded-[24px] bg-[#FFFDF6] dark:bg-[#1E1710] border border-[#EAD7C3] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(95,72,38,0.04)] flex flex-col items-center overflow-hidden"
       >
         {/* Adjusted Mandala Watermark Background at Bottom-Right Corner */}
-        <div className="absolute right-[-16px] bottom-[-16px] w-36 h-36 pointer-events-none select-none z-0 overflow-hidden opacity-[0.12] dark:opacity-[0.05]">
+        <div className="absolute right-[-20px] bottom-[-20px] w-32 h-32 pointer-events-none select-none z-0 overflow-hidden opacity-[0.09] dark:opacity-[0.04]">
           <img 
             src={mandalaSvg} 
             alt="Mandala decoration" 
@@ -127,7 +127,7 @@ export function RamVaniCard() {
           />
         </div>
         {/* Adjusted Mandala Watermark Background at Bottom-Left Corner */}
-        <div className="absolute left-[-16px] bottom-[-16px] w-36 h-36 pointer-events-none select-none z-0 overflow-hidden opacity-[0.12] dark:opacity-[0.05]">
+        <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 pointer-events-none select-none z-0 overflow-hidden opacity-[0.09] dark:opacity-[0.04]">
           <img 
             src={mandalaSvg} 
             alt="Mandala decoration" 
@@ -139,37 +139,37 @@ export function RamVaniCard() {
         <div className="relative z-10 w-full flex flex-col items-center">
           
           {/* Main Row: Doha & Info on the left, Vertical Divider, Buttons Card Panel on the right */}
-          <div className="w-full flex flex-row items-stretch gap-3 mt-0.5 min-h-[110px]">
+          <div className="w-full flex flex-row items-stretch gap-2.5 mt-0.5">
             
             {/* Left Spacer to keep the Doha centered */}
-            <div className="w-[66px] xs:w-[76px] shrink-0 hidden xs:block" />
+            <div className="w-[54px] xs:w-[60px] shrink-0 hidden xs:block" />
 
             {/* Left Column: Title, Doha, and Source */}
-            <div className="flex-1 flex flex-col items-center justify-center py-1">
+            <div className="flex-1 flex flex-col items-center justify-center py-0.5">
               
               {/* Header Row with Lotuses flanking the title in the center */}
-              <div className="w-full flex items-center justify-center gap-3 mb-2 px-2">
+              <div className="w-full flex items-center justify-center gap-2 mb-1.5 px-1">
                 <img 
                   src={abhijitMuhuratLotus} 
                   alt="Lotus" 
-                  className="w-4 h-4 xs:w-4.5 xs:h-4.5 object-contain select-none pointer-events-none opacity-80" 
+                  className="w-3.5 h-3.5 object-contain select-none pointer-events-none opacity-80" 
                 />
-                <span className="text-[#E06D14] font-serif text-[14px] xs:text-[16px] font-extrabold tracking-wide text-center">
+                <span className="text-[#651317] dark:text-[#E6C46A] font-serif text-[13px] xs:text-[14px] font-extrabold tracking-wide text-center">
                   ✦ {isHi ? "आज की राम वाणी" : "Today's Ram Vani"} ✦
                 </span>
                 <img 
                   src={abhijitMuhuratLotus} 
                   alt="Lotus" 
-                  className="w-4 h-4 xs:w-4.5 xs:h-4.5 object-contain select-none pointer-events-none opacity-80" 
+                  className="w-3.5 h-3.5 object-contain select-none pointer-events-none opacity-80" 
                 />
               </div>
 
               {/* Doha Text */}
-              <div className="flex flex-col items-center justify-center gap-1.5 w-full my-1">
+              <div className="flex flex-col items-center justify-center gap-1.5 w-full my-0.5">
                 {currentDoha.doha.map((line, idx) => (
                   <p 
                     key={idx} 
-                    className="text-[#3A2412] dark:text-[#F3E2C8] font-serif font-bold text-center select-text leading-relaxed text-[13px] xs:text-[15px] sm:text-base px-2 break-keep"
+                    className="text-[#3A2412] dark:text-[#F3E2C8] font-serif font-extrabold text-center select-text leading-relaxed text-[16px] xs:text-[18px] sm:text-xl px-1 break-keep"
                   >
                     {line.trim()}
                   </p>
@@ -177,49 +177,49 @@ export function RamVaniCard() {
               </div>
 
               {/* Source Author */}
-              <span className="text-amber-700/85 dark:text-amber-500/80 font-serif text-[11px] xs:text-[12px] italic mt-1.5 select-text text-center">
+              <span className="text-[#7B6048] dark:text-stone-400 font-serif text-[11px] xs:text-[11.5px] italic mt-1 select-text text-center">
                 — {currentDoha.source.trim()}
               </span>
 
             </div>
 
             {/* Vertical Divider Line that separates Doha and Buttons */}
-            <div className="w-[1px] bg-[#EAD7C3]/65 dark:bg-zinc-800/65 self-stretch my-2 shrink-0" />
+            <div className="w-[1px] bg-[#EAD7C3]/50 dark:bg-zinc-800/50 self-stretch my-1 shrink-0" />
 
             {/* Right Column: Premium Buttons Card Panel */}
-            <div className="flex flex-col items-center justify-center gap-2.5 pl-1 pr-0.5 shrink-0 py-1 w-[66px] xs:w-[76px]">
+            <div className="flex flex-col items-center justify-center gap-2 pl-0.5 pr-0.5 shrink-0 py-0.5 w-[54px] xs:w-[60px]">
               
               {/* Meaning Toggle Card Button */}
               <button
                 onClick={() => setShowMeaning(!showMeaning)}
-                className={`flex flex-col items-center justify-center w-[66px] h-[66px] xs:w-[76px] xs:h-[76px] rounded-2xl border transition-all active:scale-95 ${
+                className={`flex flex-col items-center justify-center w-[54px] h-[54px] xs:w-[60px] xs:h-[60px] rounded-[16px] border transition-all active:scale-95 ${
                   showMeaning 
-                    ? 'border-[#E06D14] bg-[#E06D14]/5 dark:bg-[#E06D14]/15 text-[#E06D14] shadow-sm' 
-                    : 'border-[#F3DFCD] bg-[#FFFDFC]/90 dark:bg-[#1E1710]/50 dark:border-zinc-800/90 text-[#E06D14] hover:border-[#E06D14]/40 shadow-[0_2px_8px_rgba(95,72,38,0.03)]'
+                    ? 'border-[#651317] bg-[rgba(212,164,55,0.12)] text-[#651317] shadow-sm' 
+                    : 'border-[#D9C6A8] bg-[#FFFDF8] dark:bg-[#1E1710]/50 dark:border-zinc-800/90 text-[#651317] hover:border-[#651317]/40 shadow-[0_2px_6px_rgba(74,14,18,0.02)]'
                 }`}
               >
-                <BookOpen className="w-[20px] h-[20px] xs:w-[24px] xs:h-[24px] stroke-[1.75]" />
-                <span className="text-[8.5px] xs:text-[9.5px] font-bold text-[#543D2B] dark:text-stone-300 mt-1 select-none whitespace-nowrap">
-                  {isHi ? "अर्थ देखें" : "View Meaning"}
+                <BookOpen className="w-[18px] h-[18px] xs:w-[20px] xs:h-[20px] stroke-[2]" />
+                <span className="text-[8px] xs:text-[9px] font-bold text-[#7B6048] dark:text-stone-300 mt-0.5 select-none whitespace-nowrap">
+                  {isHi ? "अर्थ" : "Meaning"}
                 </span>
               </button>
 
               {/* Copy Card Button */}
               <button
                 onClick={handleCopy}
-                className={`flex flex-col items-center justify-center w-[66px] h-[66px] xs:w-[76px] xs:h-[76px] rounded-2xl border transition-all active:scale-95 ${
+                className={`flex flex-col items-center justify-center w-[54px] h-[54px] xs:w-[60px] xs:h-[60px] rounded-[16px] border transition-all active:scale-95 ${
                   isCopied 
-                    ? 'border-green-500 bg-green-500/5 dark:bg-green-500/15 text-green-600 dark:text-green-400 shadow-sm' 
-                    : 'border-[#F3DFCD] bg-[#FFFDFC]/90 dark:bg-[#1E1710]/50 dark:border-zinc-800/90 text-[#E06D14] hover:border-[#E06D14]/40 shadow-[0_2px_8px_rgba(95,72,38,0.03)]'
+                    ? 'border-green-600 bg-green-500/5 text-green-600 shadow-sm' 
+                    : 'border-[#D9C6A8] bg-[#FFFDF8] dark:bg-[#1E1710]/50 dark:border-zinc-800/90 text-[#651317] hover:border-[#651317]/40 shadow-[0_2px_6px_rgba(74,14,18,0.02)]'
                 }`}
               >
                 {isCopied ? (
-                  <Check className="w-[20px] h-[20px] xs:w-[24px] xs:h-[24px] stroke-[1.75] text-green-600 dark:text-green-400" />
+                  <Check className="w-[18px] h-[18px] xs:w-[20px] xs:h-[20px] stroke-[2] text-green-600" />
                 ) : (
-                  <Copy className="w-[20px] h-[20px] xs:w-[24px] xs:h-[24px] stroke-[1.75]" />
+                  <Copy className="w-[18px] h-[18px] xs:w-[20px] xs:h-[20px] stroke-[2]" />
                 )}
-                <span className="text-[8.5px] xs:text-[9.5px] font-bold text-[#543D2B] dark:text-stone-300 mt-1 select-none whitespace-nowrap">
-                  {isCopied ? (isHi ? "कॉपी हुआ" : "Copied!") : (isHi ? "कॉपी करें" : "Copy")}
+                <span className="text-[8px] xs:text-[9px] font-bold text-[#7B6048] dark:text-stone-300 mt-0.5 select-none whitespace-nowrap">
+                  {isCopied ? (isHi ? "कॉपी हुआ" : "Copied!") : (isHi ? "कॉपी" : "Copy")}
                 </span>
               </button>
 

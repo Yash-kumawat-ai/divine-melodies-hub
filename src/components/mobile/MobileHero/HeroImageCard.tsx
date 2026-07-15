@@ -8,7 +8,7 @@ export function HeroImageCard() {
 
   return (
     <div 
-      className="relative w-full h-[260px] rounded-[24px] overflow-hidden bg-[#161008] border border-[#F3E2C8]/10 select-none"
+      className="relative w-full h-[195px] rounded-[24px] overflow-hidden bg-[#161008] border border-[#F3E2C8]/10 select-none"
       style={{
         boxShadow: '0 12px 35px rgba(0,0,0,0.10)'
       }}
@@ -33,16 +33,22 @@ export function HeroImageCard() {
       />
 
       {/* Welcome Text in top left faded area */}
-      <div className="absolute top-[22px] left-[20px] z-20 max-w-[45%] flex flex-col justify-start text-left">
+      <div 
+        className="absolute left-[16px] top-1/2 -translate-y-1/2 z-20 max-w-[48%] flex flex-col justify-center text-left bg-gradient-to-br from-black/55 to-black/35 border border-[#F3E2C8]/15 rounded-[18px] p-3.5"
+        style={{
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)'
+        }}
+      >
         <h2 
-          className="font-serif font-bold text-amber-100 leading-[1.25] truncate select-text"
-          style={{ fontSize: '24px', fontWeight: 700 }}
+          className="font-serif font-black text-amber-50 leading-[1.25] select-text"
+          style={{ fontSize: '18px' }}
         >
           {isHi ? "श्रीराम के चरणों में" : "At the Feet"}
         </h2>
+        <div className="w-10 h-[1.5px] bg-gradient-to-r from-amber-400 to-transparent my-1.5" />
         <p 
-          className="font-medium text-amber-200/85 mt-1 select-text truncate"
-          style={{ fontSize: '14px', fontWeight: 500, opacity: 0.85 }}
+          className="font-sans font-bold text-amber-300 tracking-wide select-text uppercase"
+          style={{ fontSize: '11px' }}
         >
           {isHi ? "आपका स्वागत है" : "of Shri Rama"}
         </p>

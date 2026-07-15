@@ -988,7 +988,7 @@ padding-bottom: 1rem;
     } 
 
     .relative.z-10.w-full.px-3.py-2.pb-\[calc\(1rem\+env\(safe-area-inset-bottom\)\)\].md\:pb-3.select-none{
-          padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
           margin-bottom: 2rem;
     }
   }
@@ -1015,3 +1015,240 @@ padding-bottom: 1rem;
 img.w-full.h-full.object-cover.fixed.opacity-\[0\.25\].scale-\[1\.01\].transition-opacity.duration-1000.blur-\[1px\]{
   opacity: 1;
 }
+
+@layer components {
+  /* Royal Temple Buttons */
+  .btn-royal-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    background: linear-gradient(135deg, #6A1418 0%, #5C1115 100%);
+    color: #FFF9F2 !important;
+    border: 1px solid rgba(230, 196, 106, 0.25);
+    border-radius: 16px;
+    height: 54px;
+    padding: 0 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 6px 14px rgba(74, 14, 18, 0.14);
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .btn-royal-primary:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 8px 18px rgba(74, 14, 18, 0.18);
+    background: #5C1115;
+  }
+  .btn-royal-primary:active:not(:disabled) {
+    transform: scale(0.98);
+    background: #4A0E12;
+  }
+  .btn-royal-primary:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #E6C46A, 0 0 0 4px #FFF9F2 !important;
+  }
+  .btn-royal-primary:disabled {
+    opacity: 0.5 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    pointer-events: none !important;
+  }
+  .btn-royal-primary svg {
+    color: #FFF9F2 !important;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .btn-royal-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    background-color: #FFFDF8;
+    color: #651317 !important;
+    border: 1px solid #D9C6A8;
+    border-radius: 16px;
+    height: 54px;
+    padding: 0 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 6px 14px rgba(74, 14, 18, 0.04);
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .btn-royal-secondary:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 8px 18px rgba(74, 14, 18, 0.08);
+    background-color: #FFF9F2;
+  }
+  .btn-royal-secondary:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-royal-secondary:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #E6C46A, 0 0 0 4px #FFF9F2 !important;
+  }
+  .btn-royal-secondary:disabled {
+    opacity: 0.5 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    pointer-events: none !important;
+  }
+  .btn-royal-secondary svg {
+    color: #651317 !important;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .btn-royal-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    background-color: transparent;
+    color: #651317 !important;
+    border: none;
+    border-radius: 16px;
+    height: 54px;
+    padding: 0 1.5rem;
+    font-weight: 600;
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .btn-royal-ghost:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.01);
+    background-color: rgba(106, 20, 24, 0.04);
+  }
+  .btn-royal-ghost:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-royal-ghost:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #E6C46A !important;
+  }
+  .btn-royal-ghost:disabled {
+    opacity: 0.5 !important;
+    transform: none !important;
+    pointer-events: none !important;
+  }
+  .btn-royal-ghost svg {
+    color: #651317 !important;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  /* Royal Temple Chips / Pills */
+  .chip-royal-selected {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+    background-color: #6A1418;
+    color: #FFF9F2 !important;
+    border: 1px solid rgba(230, 196, 106, 0.45);
+    border-radius: 9999px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(74, 14, 18, 0.12);
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .chip-royal-selected svg {
+    color: #FFF9F2 !important;
+  }
+
+  .chip-royal-unselected {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+    background-color: #FFFDF8;
+    color: #3A2418 !important;
+    border: 1px solid #E8D8C4;
+    border-radius: 9999px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .chip-royal-unselected:hover {
+    background-color: #FFF9F2;
+    border-color: #D9C6A8;
+  }
+
+  /* Royal Temple Icon Buttons */
+  .btn-royal-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+    background-color: #FFFDF8;
+    border: 1px solid #E8D8C4;
+    color: #6A1418 !important;
+    box-shadow: 0 4px 12px rgba(74, 14, 18, 0.05);
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .btn-royal-icon:hover:not(:disabled) {
+    background-color: #FFF9F2;
+    border-color: #D9C6A8;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 6px 16px rgba(74, 14, 18, 0.1);
+  }
+  .btn-royal-icon:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn-royal-icon svg {
+    width: 22px;
+    height: 22px;
+    color: #6A1418 !important;
+  }
+
+  /* Royal Temple Floating Action Button (FAB) */
+  .fab-royal-diya {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 9999px;
+    background-color: #651317;
+    border: 2px solid #F0CF72;
+    color: #FFF9F2 !important;
+    box-shadow: 0 0 20px rgba(212, 164, 55, 0.35);
+    transition: all 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .fab-royal-diya:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 0 28px rgba(212, 164, 55, 0.5);
+  }
+  .fab-royal-diya:active {
+    transform: scale(0.98);
+  }
+  .fab-royal-diya svg {
+    width: 26px;
+    height: 26px;
+    color: #FFF9F2 !important;
+  }
+
+  /* Active / Inactive Nav highlight */
+  .nav-royal-active {
+    color: #651317 !important;
+    background-color: rgba(212, 164, 55, 0.12) !important;
+    border-radius: 12px;
+  }
+  .nav-royal-inactive {
+    color: #786252 !important;
+  }
+}
+
+span.truncate.font-bold {
+    font-size: 17px;
+    color: rgb(74 14 18);
+}
+

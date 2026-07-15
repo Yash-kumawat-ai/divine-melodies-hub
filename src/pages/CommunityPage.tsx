@@ -664,6 +664,35 @@ export default function CommunityPage() {
 
                       <div className="p-5 flex-1 flex flex-col justify-between">
                         <div>
+                          {/* Deity Tag */}
+                          {(() => {
+                            const getDeityDisplayName = (deityId: string | null) => {
+                              if (!deityId) return "";
+                              const mappings: Record<string, { en: string, hi: string }> = {
+                                "rama": { en: "Rama Ji", hi: "श्री राम जी" },
+                                "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
+                                "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
+                                "shiva": { en: "Shiva Ji", hi: "शिव जी" },
+                                "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
+                                "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
+                                "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
+                                "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
+                              };
+                              const key = deityId.toLowerCase();
+                              if (mappings[key]) {
+                                return isHi ? mappings[key].hi : mappings[key].en;
+                              }
+                              const found = DEITY_IMAGES.find((d) => d.id === key || d.src.includes(deityId));
+                              return found ? found.name : deityId;
+                            };
+                            const dName = getDeityDisplayName(group.image_url);
+                            return dName ? (
+                              <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-md bg-orange-100/70 dark:bg-stone-800 text-orange-700 dark:text-orange-400 mb-2 uppercase tracking-wide">
+                                {dName}
+                              </span>
+                            ) : null;
+                          })()}
+
                           <div className="flex items-start justify-between gap-2">
                             <h3 className="font-display text-lg font-bold text-amber-950 dark:text-amber-100 leading-snug">
                               {group.name}
@@ -684,34 +713,42 @@ export default function CommunityPage() {
                             </p>
                           )}
 
-                          {/* Goal Target Progress Bar */}
-                          <div className="mt-4">
-                            <div className="flex items-center justify-between text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">
-                              <span>{isHi ? "सामूहिक लक्ष्य प्रगति" : "Goal Progress"}</span>
-                              <span className="font-bold text-amber-600 dark:text-amber-400">
-                                {progressPercent}% ({group.total_chants >= 100000 
-                                  ? `${(group.total_chants / 100000).toFixed(1)}L` 
-                                  : group.total_chants?.toLocaleString()} / {group.target_count >= 100000 
-                                  ? `${(group.target_count / 100000).toFixed(1)}L` 
-                                  : group.target_count?.toLocaleString()})
-                              </span>
+                          {/* Goal Target Progress Bar - Only visible if group has >= 5 members */}
+                          {(group.member_count || 0) >= 5 && (
+                            <div className="mt-4">
+                              <div className="flex items-center justify-between text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">
+                                <span>{isHi ? "सामूहिक लक्ष्य प्रगति" : "Goal Progress"}</span>
+                                <span className="font-bold text-amber-600 dark:text-amber-400">
+                                  {progressPercent}% ({group.total_chants >= 100000 
+                                    ? `${(group.total_chants / 100000).toFixed(1)}L` 
+                                    : group.total_chants?.toLocaleString()} / {group.target_count >= 100000 
+                                    ? `${(group.target_count / 100000).toFixed(1)}L` 
+                                    : group.target_count?.toLocaleString()})
+                                </span>
+                              </div>
+                              <div className="w-full h-2 rounded-full bg-amber-500/10 overflow-hidden">
+                                <div 
+                                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
+                                  style={{ width: `${progressPercent}%` }}
+                                />
+                              </div>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-amber-500/10 overflow-hidden">
-                              <div 
-                                className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
-                                style={{ width: `${progressPercent}%` }}
-                              />
-                            </div>
-                          </div>
+                          )}
                         </div>
 
                         <div className="mt-5 pt-3.5 border-t border-amber-500/10 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                            <span className="flex items-center gap-1">
-                              <Users className="w-3.5 h-3.5 text-orange-500" />
-                              {group.member_count} {isHi ? "भक्त" : "Devotees"}
-                            </span>
-                          </div>
+                          {(group.member_count || 0) >= 5 ? (
+                            <div className="flex items-center gap-2.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-3.5 h-3.5 text-orange-500" />
+                                {group.member_count} {isHi ? "भक्त" : "Devotees"}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2.5 text-[10px] font-semibold text-stone-400 italic">
+                              {isHi ? "नया संघ - अभी जुड़ें!" : "New sangh - join now!"}
+                            </div>
+                          )}
 
                           <button
                             onClick={() => handleGroupMembership(group)}
@@ -747,8 +784,8 @@ export default function CommunityPage() {
           <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <span>
             {isHi
-              ? "7 दिनों तक बिना किसी सदस्य वाले समूहों को स्वचालित रूप से संग्रहीत किया जा सकता है।"
-              : "Groups without members for 7 days may be automatically archived."}
+              ? "7 दिनों तक कोई गतिविधि (पोस्ट या जाप) न होने पर समूह को स्वतः संग्रहीत किया जा सकता है।"
+              : "Groups with no activity (posts or chants) for 7 days may be automatically archived."}
           </span>
         </div>
 

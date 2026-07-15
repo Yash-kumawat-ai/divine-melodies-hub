@@ -212,7 +212,7 @@ export interface PosterTypography {
  */
 export const getPosterTypography = (
   lang: string,
-  aspect: 'square' | 'vertical',
+  aspect: 'square' | 'vertical' | 'status',
   isPoster: boolean = true
 ): PosterTypography => {
   const isSquare = aspect === 'square';

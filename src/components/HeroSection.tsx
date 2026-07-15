@@ -24,13 +24,18 @@ export function HeroSection({ stats }: HeroSectionProps) {
   const isHi = language === 'hi';
 
   return ( 
-    <section className="hero-section w-full px-4 sm:px-6 md:px-8 lg:px-10 py-4 md:py-8 bg-[#FFF9F3] dark:bg-background md:bg-background"> 
+    <section className="hero-section w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-3.5 pb-1 md:py-8 bg-[#FFFDF8] dark:bg-background md:bg-background"> 
       
       {/* ── MOBILE HERO REDESIGN (max-width: 768px) ── */}
       <div className="md:hidden flex flex-col w-full text-left">
         <HeroImageCard />
-        <SearchCard />
-        <ActionButtons />
+        
+        {/* Unified Search & Action Buttons Panel */}
+        <div className="w-full mt-3.5 p-3.5 rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] flex flex-col gap-3">
+          <SearchCard />
+          <ActionButtons />
+        </div>
+
         <RamMarquee />
         <RamVaniCard />
       </div>
@@ -95,16 +100,16 @@ export function HeroSection({ stats }: HeroSectionProps) {
             transition={{ delay: 0.62 }}
             className="w-full max-w-sm sm:max-w-lg md:max-w-xl mb-6 relative shrink-0 cursor-pointer text-left"
           >
-            <div className="relative flex items-center bg-white dark:bg-[#1E1710] border border-orange-200/50 dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all duration-300 p-1.5 pl-6 pr-2">
-              <Search className="w-5 h-5 text-[#FF6A00] shrink-0 mr-3 select-none" />
+            <div className="relative flex items-center bg-[#FFFDF8] dark:bg-[#1E1710] border border-[#E8D8C4] dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 p-1.5 pl-6 pr-2">
+              <Search className="w-5 h-5 text-[#651317] shrink-0 mr-3 select-none" />
               <input
                 type="text"
                 readOnly
                 placeholder={isHi ? "भजन, कीर्तन या कलाकार खोजें..." : "Search bhajans, kirtans or artists..."}
-                className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-stone-700 dark:text-foreground text-sm md:text-base placeholder:text-stone-400 dark:placeholder:text-muted-foreground/60 py-2 md:py-2.5 cursor-pointer select-none"
+                className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-[#3A2418] dark:text-foreground text-sm md:text-base placeholder:text-[#786252]/60 py-2 md:py-2.5 cursor-pointer select-none"
               />
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#FF6A00] text-white shadow-sm shrink-0">
-                <Mic className="h-5 w-5" />
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#651317] text-white shadow-sm shrink-0">
+                <Mic className="h-5 w-5 text-[#FFF9F2]" />
               </div>
             </div>
           </motion.div>
@@ -118,15 +123,15 @@ export function HeroSection({ stats }: HeroSectionProps) {
           > 
             <button 
               onClick={() => navigate('/all-bhajans')} 
-              className="group flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-bold px-8 py-3.5 rounded-full shadow-[0_8px_24px_-6px_rgba(249,115,22,0.7)] transition-all duration-300 text-sm md:text-base cursor-pointer"
+              className="group flex items-center gap-2 bg-[#651317] hover:bg-[#5C1115] active:scale-95 text-[#FFF9F2] font-bold px-8 py-3.5 rounded-full shadow-[0_6px_14px_rgba(74,14,18,0.14)] transition-all duration-300 text-sm md:text-base cursor-pointer"
             > 
-              <Play className="w-4.5 h-4.5 fill-white stroke-none group-hover:scale-110 transition-transform" /> 
+              <Play className="w-4.5 h-4.5 fill-white stroke-none group-hover:scale-110 transition-transform text-[#FFF9F2]" /> 
               {isHi ? 'भजन खोजें' : 'Explore Bhajans'}
             </button>
 
             <button 
               onClick={() => navigate('/meditation?practice=mantra_jap_home')} 
-              className="group flex items-center gap-2 bg-white/12 hover:bg-white/20 backdrop-blur-sm border border-white/30 hover:border-white/55 active:scale-95 text-white font-bold px-8 py-3.5 rounded-full transition-all duration-300 text-sm md:text-base cursor-pointer"
+              className="group flex items-center gap-2 bg-[#FFFDF8] hover:bg-[#FFF9F2] border border-[#E8D8C4] active:scale-95 text-[#651317] font-bold px-8 py-3.5 rounded-full shadow-[0_6px_14px_rgba(74,14,18,0.04)] transition-all duration-300 text-sm md:text-base cursor-pointer"
             > 
               🧿 {isHi ? 'जाप शुरू करें' : 'Start Chanting'}
             </button>

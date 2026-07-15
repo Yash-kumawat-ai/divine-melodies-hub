@@ -26,7 +26,7 @@ import type { NaradActionResult } from "@/lib/narad/naradIntents";
 
 type UiState = "closed" | "voice" | "chat" | "japa" | "action" | "offering";
 
-const FAB_SIZE = 72;
+const FAB_SIZE = 60;
 const HEADER_ORB_SIZE = 120;
 
 /**
@@ -577,7 +577,7 @@ export default function NaradFloatingWidget() {
       <div
         className={cn(
           "pointer-events-none fixed z-[140] flex flex-col items-end",
-          "bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] md:bottom-[max(1rem,env(safe-area-inset-bottom))]",
+          "bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-6",
         )}
       >
         {!(open && isMobile) && (
