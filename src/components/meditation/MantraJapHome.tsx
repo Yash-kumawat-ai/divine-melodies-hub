@@ -464,6 +464,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 targetCount: String(opts.targetCount),
                 practiceMode: opts.practiceMode,
                 sankalp: opts.sankalpText,
+                groupId: opts.groupId ? String(opts.groupId) : "",
               });
             }}
           />

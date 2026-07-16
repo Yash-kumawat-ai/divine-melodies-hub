@@ -7,8 +7,10 @@ import {
   Flame, 
   Flower2, 
   ChevronLeft, 
+  ChevronRight,
   Plus, 
   Info, 
+  Menu,
   Activity, 
   Award,
   Sparkles,
@@ -25,9 +27,15 @@ import {
   CheckCircle2,
   Trash2,
   Pencil,
-  Shield
+  Shield,
+  MessageSquare,
+  Bell,
+  Music,
+  Calendar,
+  Settings
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDrawer } from "@/hooks/useDrawer";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
@@ -62,6 +70,10 @@ import ramaImg from "@/assets/deities/rama.webp";
 import saiBabaImg from "@/assets/deities/sai-baba.webp";
 import shivaImg from "@/assets/deities/shiva.webp";
 import hanumanHighQualityImg from "@/assets/deities/hanuman_high_quality.webp";
+import shyamBackgroundImg from "./images/shyam_background_hd.webp";
+import flowersImg from "./images/abhijit muhrat.webp";
+import mandalaSvg from "./images/mandala.svg";
+import communityFeaturesImg from "./images/community_features.png";
 
 const DEITY_IMAGES = [
   { id: "rama", name: "Rama Ji", src: ramaImg },
@@ -82,6 +94,7 @@ function getGroupImage(imageUrl: string | null) {
 
 export default function CommunityPage() {
   const { user } = useAuth();
+  const { toggleDrawer } = useDrawer();
   const { language } = useLanguage();
   const navigate = useNavigate();
   const isHi = language === "hi";
@@ -89,10 +102,14 @@ export default function CommunityPage() {
   // State variables
   const [groups, setGroups] = useState<NaamSanghGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTab, setSelectedTab] = useState("all");
   const [globalStats, setGlobalStats] = useState({
     devotees: 0,
     totalJaps: 0,
     groupCount: 0,
+    bhajansCount: 0,
+    eventsCount: 0,
   });
 
   // Modal Dialog states
@@ -150,13 +167,26 @@ export default function CommunityPage() {
 
       // Fetch total groups count
       const { count: groupsCount } = await supabase
-        .from("naam_sangh_groups")
+        .from("groups")
         .select("id", { count: "exact", head: true });
+
+      // Fetch total uploaded bhajans
+      const { count: bhajansCount } = await supabase
+        .from("user_uploads")
+        .select("id", { count: "exact", head: true });
+
+      // Fetch total events count
+      const { count: eventsCount } = await supabase
+        .from("community_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("type", "event");
 
       setGlobalStats({
         devotees: profileCount ?? 0,
         totalJaps: realTotalJaps,
         groupCount: groupsCount ?? totalGroups ?? 0,
+        bhajansCount: bhajansCount ?? 0,
+        eventsCount: eventsCount ?? 0,
       });
     } catch (err) {
       console.error("Error loading community data:", err);
@@ -178,7 +208,7 @@ export default function CommunityPage() {
         .slice(0, 5)
         .toUpperCase();
       const randomNum = Math.floor(100 + Math.random() * 900);
-      setInviteCode(prefix ? `${prefix}${randomNum}` : `SANGH${randomNum}`);
+      setInviteCode(prefix ? `${prefix}${randomNum}` : `COMMUNITY${randomNum}`);
     } else if (!groupName.trim()) {
       setInviteCode("");
     }
@@ -194,7 +224,7 @@ export default function CommunityPage() {
   const handleJoinByCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.info(isHi ? "कृपया नाम संघ में शामिल होने के लिए लॉग इन करें" : "Please log in to join a Naam Sangh group");
+      toast.info(isHi ? "कृपया समूह में शामिल होने के लिए लॉग इन करें" : "Please log in to join a Community group");
       navigate("/auth/login?redirect=/community");
       return;
     }
@@ -231,8 +261,8 @@ export default function CommunityPage() {
     if (!user) {
       toast.info(
         isHi
-          ? "कृपया नाम संघ में शामिल होने के लिए लॉग इन करें"
-          : "Please log in to join a Naam Sangh group"
+          ? "कृपया समूह में शामिल होने के लिए लॉग इन करें"
+          : "Please log in to join a Community group"
       );
       navigate("/auth/login?redirect=/community");
       return;
@@ -344,8 +374,8 @@ export default function CommunityPage() {
   const shareOnWhatsApp = (code: string, name: string) => {
     const joinUrl = `${window.location.origin}/community?join=${code}`;
     const msg = isHi
-      ? `🙏 मेरे नाम संघ "${name}" में शामिल हों! कोड: *${code}*\n👉 ${joinUrl}`
-      : `🙏 Join my Naam Sangh "${name}"! Code: *${code}*\n👉 ${joinUrl}`;
+      ? `🙏 मेरे समूह "${name}" में शामिल हों! कोड: *${code}*\n👉 ${joinUrl}`
+      : `🙏 Join my Community "${name}"! Code: *${code}*\n👉 ${joinUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
@@ -358,37 +388,97 @@ export default function CommunityPage() {
     reader.readAsDataURL(file);
   };
 
+  const featuredGroup = groups.find(g => g.is_member) || groups[0] || null;
+
+  const getDeityTag = (imageUrl: string | null) => {
+    if (!imageUrl) return isHi ? "जय श्री राम 🙏" : "Jai Shree Ram 🙏";
+    const key = imageUrl.toLowerCase();
+    if (key.includes("rama")) return isHi ? "जय श्री राम 🙏" : "Jai Shree Ram 🙏";
+    if (key.includes("hanuman")) return isHi ? "जय श्री हनुमान 🙏" : "Jai Shree Hanuman 🙏";
+    if (key.includes("krishna")) return isHi ? "जय श्री कृष्णा 🙏" : "Jai Shree Krishna 🙏";
+    if (key.includes("shiva")) return isHi ? "हर हर महादेव 🙏" : "Har Har Mahadev 🙏";
+    if (key.includes("ganesh")) return isHi ? "जय श्री गणेश 🙏" : "Jai Shree Ganesh 🙏";
+    if (key.includes("durga")) return isHi ? "जय माता दी 🙏" : "Jai Mata Di 🙏";
+    return isHi ? "जय श्री राम 🙏" : "Jai Shree Ram 🙏";
+  };
+
+  const filteredGroups = groups.filter(g => {
+    if (!g.is_public && !g.is_member) return false;
+    
+    // Tab filter
+    if (selectedTab === "my") {
+      if (!g.is_member) return false;
+    } else if (selectedTab === "trending") {
+      if ((g.member_count || 0) < 5) return false;
+    } else if (selectedTab === "japa") {
+      if (!g.total_chants || g.total_chants === 0) return false;
+    }
+
+    // Search query filter
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      g.name.toLowerCase().includes(query) ||
+      (g.description && g.description.toLowerCase().includes(query)) ||
+      g.invite_code.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-[#fdfbf7] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 transition-colors pb-16">
       <SEO 
-        title={isHi ? "नाम संघ - राघवन" : "Naam Sangh - Raghavam"}
-        description="अपना नाम संघ बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।"
+        title={isHi ? "समूह - राघवन" : "Community - Raghavam"}
+        description={isHi ? "अपना समूह बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।" : "Create your community, chant together with family and friends and grow spiritually."}
       />
 
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-[#fdfbf7]/90 dark:bg-[#0c0a08]/90 backdrop-blur-md border-b border-amber-500/10 px-4 py-3.5 flex items-center justify-between">
+      <header className="md:hidden sticky top-0 z-30 bg-[#fdfbf7]/90 dark:bg-[#0c0a08]/90 backdrop-blur-md border-b border-amber-500/10 px-4 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* Mobile Hamburger menu */}
           <button
-            onClick={() => navigate(-1)}
+            onClick={toggleDrawer}
             className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-50/40 dark:bg-stone-900/40 hover:bg-amber-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-amber-600 dark:text-amber-400 active:scale-95 transition-all shrink-0"
-            aria-label="Back"
+            aria-label="Menu"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <Menu className="w-5 h-5" />
           </button>
-          <span className="font-display text-xl font-bold tracking-tight text-amber-900 dark:text-amber-100">
-            {isHi ? "नाम संघ" : "Naam Sangh"}
+          
+          <span className="font-display text-lg font-extrabold tracking-tight text-amber-900 dark:text-amber-100">
+            {isHi ? "समुदाय" : "Community"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate("/join-community")}
-            className="inline-flex items-center gap-1.5 border border-orange-500/25 bg-orange-500/5 hover:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold px-3.5 py-2 rounded-xl text-xs active:scale-95 transition-all"
+            onClick={() => navigate("/notifications")}
+            className="relative text-stone-600 dark:text-stone-300 hover:text-orange-500 active:scale-95 transition-all p-1.5"
+            title={isHi ? "सूचनाएं" : "Notifications"}
           >
-            <Users className="w-3.5 h-3.5" />
-            {isHi ? "कम्युनिटी से जुड़ें" : "Join Community"}
+            <Bell className="w-4.5 h-4.5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-stone-900" />
           </button>
 
+          {/* My Groups button */}
+          <button
+            onClick={() => {
+              if (!user) {
+                toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
+                navigate("/auth/login?redirect=/community");
+              } else {
+                setSelectedTab("my");
+                const el = document.getElementById("groups-filter-tabs");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                }
+              }
+            }}
+            className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white font-bold px-2.5 py-1.5 rounded-xl text-[10px] active:scale-95 transition-all shadow-sm shrink-0 border border-orange-500/5 cursor-pointer"
+          >
+            <Users className="w-3 h-3 text-orange-400" />
+            {isHi ? "मेरे समूह" : "My Groups"}
+          </button>
+
+          {/* Create Group button */}
           <button
             onClick={() => {
               if (!user) {
@@ -398,389 +488,506 @@ export default function CommunityPage() {
                 setCreateDialogOpen(true);
               }
             }}
-            className="inline-flex items-center gap-2 border border-orange-500/35 bg-white hover:bg-orange-50/40 dark:bg-stone-900/60 dark:hover:bg-stone-850 text-orange-600 dark:text-orange-400 font-bold px-4 py-2 rounded-xl text-xs shadow-sm hover:shadow active:scale-95 transition-all"
+            className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white font-bold px-2.5 py-1.5 rounded-xl text-[10px] active:scale-95 transition-all shadow-sm shrink-0 border border-orange-500/5 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             {isHi ? "समूह बनाएं" : "Create Group"}
           </button>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-4 mt-6 flex flex-col items-center">
-        
-        {/* ─── HERO ILLUSTRATION ─────────────────────────────────── */}
-        <div className="relative w-full max-w-[280px] md:max-w-[340px] aspect-[4/3] flex items-center justify-center overflow-hidden rounded-[2rem] bg-gradient-to-b from-amber-500/10 via-rose-500/5 to-transparent">
-          <img
-            src={hanumanHighQualityImg}
-            alt="Lord Hanuman"
-            className="h-full w-auto object-cover object-top opacity-90 filter brightness-[1.03] contrast-[1.02] mix-blend-multiply dark:mix-blend-normal select-none pointer-events-none"
-            draggable={false}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#fdfbf7] dark:from-[#0c0a08] via-transparent to-transparent pointer-events-none" />
+      <div className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
+         {/* ─── PREMIUM DEVOTIONAL HERO BANNER ────────────────────── */}
+        <div 
+          className="relative w-full rounded-[2rem] overflow-hidden shadow-lg border border-orange-500/15 p-2 md:p-10 flex flex-col justify-center text-center bg-no-repeat bg-cover bg-center aspect-[16/9] md:aspect-auto min-h-0 md:min-h-[480px]"
+          style={{ backgroundImage: `url(${shyamBackgroundImg})` }}
+        >
+          {/* Golden Lotus & Heading Section with Glassmorphism */}
+          <div className="relative z-10 space-y-1.5 md:space-y-4 mt-0 md:mt-6 bg-transparent md:bg-white/10 md:dark:bg-black/15 md:backdrop-blur-md md:border md:border-white/15 md:dark:border-white/5 rounded-3xl p-1 md:p-7 w-full max-w-[280px] md:max-w-2xl text-center mx-auto shadow-none md:shadow-md overflow-hidden">
+            {/* Spinning Mandala Watermark */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06] dark:opacity-[0.04] flex items-center justify-center -z-10">
+              <img src={mandalaSvg} className="w-[120px] h-[120px] md:w-[320px] md:h-[320px] animate-[spin_120s_linear_infinite]" alt="mandala" />
+            </div>
+
+            {/* Lotus Flower Image at the top */}
+            <div className="flex justify-center">
+              <img 
+                src={flowersImg} 
+                className="w-10 h-10 md:w-16 md:h-16 object-contain filter drop-shadow-[0_4px_8px_rgba(217,119,6,0.2)]" 
+                alt="Lotus Flower" 
+              />
+            </div>
+
+            <p className="text-[10px] md:text-sm font-bold text-[#5c1d0c] tracking-widest uppercase flex items-center justify-center gap-1.5">
+              <span>—</span> {isHi ? "आइए जुड़ें" : "Come Join"} <span>—</span>
+            </p>
+            
+            <h1 className="font-display text-sm md:text-4xl font-black text-[#5c1d0c] dark:text-amber-100 leading-tight">
+              {isHi ? "भक्ति के इस पावन परिवार से" : "In This Holy Family of Devotion"}
+            </h1>
+            
+            <div className="text-[#7c2d12] dark:text-amber-200 font-semibold space-y-0.5 md:space-y-1.5 max-w-lg mx-auto leading-normal md:leading-relaxed">
+              <p className="text-[9px] md:text-base">
+                {isHi 
+                  ? "यहाँ मिलती है भक्ति, संगत और सेवा की भावना।" 
+                  : "Here you find devotion, company, and the spirit of service."}
+              </p>
+              <p className="text-[8px] md:text-sm text-[#7c2d12] dark:text-amber-200 font-medium">
+                {isHi 
+                  ? "आइए, साथ मिलकर भजन गाएँ, नाम जपें और भक्ति का आनंद बांटें।" 
+                  : "Come, sing bhajans together, chant holy names, and share the joy of devotion."}
+              </p>
+            </div>
+
+            {/* Button */}
+            <div className="flex justify-center pt-1 md:pt-2">
+              <button
+                onClick={() => navigate("/join-community")}
+                className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white md:text-[#fef3c7] font-bold px-4 py-1.5 md:px-7 md:py-2.5 rounded-full text-[10px] md:text-sm border border-orange-500/10 md:border-[#d97706]/40 active:scale-95 transition-all shadow-md cursor-pointer"
+              >
+                <Users className="w-3 h-3 md:w-4 md:h-4 text-orange-400" />
+                {isHi ? "समुदाय से जुड़ें" : "Join Community"}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* ─── HERO INTRO ────────────────────────────────────────── */}
-        <div className="text-center mt-4 max-w-lg">
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-stone-900 dark:text-amber-50 leading-tight">
-            {isHi ? "राघवन " : "Raghavam "}
-            <span className="text-orange-500 dark:text-orange-400">{isHi ? "कम्युनिटी" : "Community"}</span>
-          </h1>
-          
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span className="w-10 h-px bg-gradient-to-r from-transparent to-amber-500/40" />
-            <span className="text-amber-500 text-xs">🌸</span>
-            <span className="w-10 h-px bg-gradient-to-l from-transparent to-amber-500/40" />
+        {/* ─── QUICK ACTIONS CARDS GRID ───────────────────────────── */}
+        <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto md:overflow-visible pb-2 md:pb-0 snap-x w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {/* Card 1: Invite Friends */}
+          <div 
+            onClick={() => {
+              // Copy community invite link
+              navigator.clipboard.writeText(window.location.origin + "/community");
+              toast.success(isHi ? "समुदाय आमंत्रण लिंक कॉपी किया गया!" : "Community invite link copied!");
+            }}
+            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-stone-850 text-orange-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
+              {isHi ? "मित्र आमंत्रित करें" : "Invite Friends"}
+            </h3>
+            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
+              {isHi ? "मित्रों को समुदाय में आमंत्रित करें" : "Invite friends to the community"}
+            </p>
           </div>
 
-          <p className="text-stone-600 dark:text-stone-300 text-sm md:text-base mt-3.5 leading-relaxed font-medium">
-            {isHi
-              ? "परिवार और मित्रों के साथ मिलकर नाम जाप करें। साथ मिलकर आध्यात्मिक रूप से आगे बढ़ें।"
-              : "Chant together with family and friends. Grow spiritually together."}
-          </p>
+          {/* Card 2: Upload Bhajan */}
+          <div 
+            onClick={() => navigate("/upload-bhajan")}
+            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/20 text-rose-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
+              <Music className="w-5 h-5" />
+            </div>
+            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
+              {isHi ? "भजन अपलोड करें" : "Upload Bhajans"}
+            </h3>
+            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
+              {isHi ? "अपने भजन अपलोड करें और साझा करें" : "Upload your bhajans and share with all"}
+            </p>
+          </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3.5 mt-6">
+          {/* Card 3: Start Japa */}
+          <div 
+            onClick={() => navigate("/meditation")}
+            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
+              <Flame className="w-5 h-5 fill-emerald-500/10" />
+            </div>
+            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
+              {isHi ? "नाम जप प्रारंभ करें" : "Start Japa"}
+            </h3>
+            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
+              {isHi ? "नाम जप समूह बनाएं और साथ मिलकर जप करें" : "Create a name japa group and chant together"}
+            </p>
+          </div>
+
+          {/* Card 4: Satsang & Events */}
+          <div 
+            onClick={() => setCreateDialogOpen(true)}
+            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
+          >
+            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950/20 text-amber-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7h20L12 2z" />
+                <path d="M4 7v10h16V7H4z" />
+              </svg>
+            </div>
+            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
+              {isHi ? "सत्संग आयोजित करें" : "Organize Satsang"}
+            </h3>
+            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
+              {isHi ? "ऑनलाइन या ऑफ़लाइन सत्संग आयोजित करें" : "Organize online or offline devotional meetups"}
+            </p>
+          </div>
+        </div>
+
+        {/* ─── STATISTICS PANEL ─────────────────────────────────── */}
+        <div className="w-full bg-[#fefaf0]/95 dark:bg-stone-900/95 border border-orange-500/10 rounded-2xl p-4 flex flex-row justify-around shadow-sm divide-x divide-orange-500/10">
+          {/* Stat 1 */}
+          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
+            <div className="flex items-center gap-1.5 justify-center mb-0.5">
+              <Users className="w-4.5 h-4.5 text-orange-600 shrink-0" />
+              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+                {globalStats.devotees >= 1000 ? `${(globalStats.devotees / 1000).toFixed(1)}K+` : globalStats.devotees}
+              </span>
+            </div>
+            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
+              {isHi ? "भक्त जुड़ चुके हैं" : "Devotees Joined"}
+            </span>
+          </div>
+
+          {/* Stat 2 */}
+          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
+            <div className="flex items-center gap-1.5 justify-center mb-0.5">
+              <Flame className="w-4.5 h-4.5 text-orange-650 fill-orange-500/15 shrink-0" />
+              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+                {globalStats.totalJaps >= 10000000 
+                  ? `${(globalStats.totalJaps / 10000000).toFixed(1)}Cr+`
+                  : globalStats.totalJaps >= 100000 
+                  ? `${(globalStats.totalJaps / 100000).toFixed(1)}L+`
+                  : globalStats.totalJaps.toLocaleString()}
+              </span>
+            </div>
+            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
+              {isHi ? "नाम जप" : "Name Chanting"}
+            </span>
+          </div>
+
+          {/* Stat 3 */}
+          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
+            <div className="flex items-center gap-1.5 justify-center mb-0.5">
+              <Music className="w-4.5 h-4.5 text-orange-650 shrink-0" />
+              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+                {globalStats.bhajansCount}
+              </span>
+            </div>
+            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
+              {isHi ? "भजन साझा हुए" : "Bhajans Shared"}
+            </span>
+          </div>
+
+          {/* Stat 4 */}
+          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
+            <div className="flex items-center gap-1.5 justify-center mb-0.5">
+              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-650 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7h20L12 2z" />
+                <path d="M4 7v10h16V7H4z" />
+              </svg>
+              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+                {globalStats.eventsCount}
+              </span>
+            </div>
+            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
+              {isHi ? "सत्संग एवं आयोजन" : "Satsang & Events"}
+            </span>
+          </div>
+        </div>
+
+        {/* ─── POPULAR TOPICS SECTION ───────────────────────────── */}
+        <div className="w-full text-left mt-6">
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">🔥</span>
+              <h2 className="font-display text-base md:text-lg font-bold text-stone-900 dark:text-amber-50">
+                {isHi ? "आज के लोकप्रिय विषय" : "Popular Topics Today"}
+              </h2>
+            </div>
+            <button
+              onClick={() => navigate("/join-community")}
+              className="text-xs font-extrabold text-orange-650 dark:text-orange-400 hover:underline flex items-center gap-0.5"
+            >
+              {isHi ? "सभी देखें" : "View All"} <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div 
+            className="flex gap-4 overflow-x-auto pb-3 snap-x scroll-smooth w-full"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {[
+              {
+                title: isHi ? "राम नवमी" : "Ram Navami",
+                devotees: "12.5K",
+                image: ramaImg,
+              },
+              {
+                title: isHi ? "हनुमान चालीसा" : "Hanuman Chalisa",
+                devotees: "8.2K",
+                image: hanumanHighQualityImg,
+              },
+              {
+                title: isHi ? "खाटू श्याम भजन" : "Khatu Shyam Bhajan",
+                devotees: "6.7K",
+                image: shyamBackgroundImg,
+              },
+              {
+                title: isHi ? "सावन विशेष" : "Sawan Special",
+                devotees: "5.1K",
+                image: shivaImg,
+              },
+            ].map((topic, i) => (
+              <div 
+                key={i}
+                className="w-[140px] shrink-0 snap-start rounded-2xl overflow-hidden aspect-[3/4] relative shadow-xs border border-orange-500/5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
+                onClick={() => navigate(`/search?q=${encodeURIComponent(topic.title)}`)}
+              >
+                <img src={topic.image} className="w-full h-full object-cover filter brightness-[0.92]" alt={topic.title} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                
+                {/* Trending icon top right */}
+                <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-black/40 backdrop-blur-xs flex items-center justify-center text-orange-400">
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg>
+                </div>
+
+                <div className="absolute bottom-3 left-3 right-3 text-left">
+                  <h3 className="text-xs font-black text-white leading-tight line-clamp-1">{topic.title}</h3>
+                  <p className="text-[9px] text-orange-300 font-bold mt-0.5">{topic.devotees} {isHi ? "भक्त" : "devotees"}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ─── SEARCH INPUT BAR & FILTER TABS ────────────────────── */}
+        <div id="groups-filter-tabs" className="w-full space-y-4">
+          <div className="relative flex items-center rounded-2xl bg-white dark:bg-stone-900 border border-[#5c1d0c]/10 shadow-xs px-3.5 py-1 focus-within:border-[#5c1d0c] focus-within:ring-2 focus-within:ring-[#5c1d0c]/10 transition-all">
+            <Search className="w-5 h-5 text-stone-450 dark:text-stone-500 mr-2" />
+            <input
+              type="text"
+              placeholder={isHi ? "नाम या समूह खोजें..." : "Search name or group..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent border-none py-2.5 text-sm focus:outline-none text-stone-900 dark:text-stone-100"
+            />
+            <button
+              onClick={() => {}}
+              className="w-8.5 h-8.5 rounded-xl bg-[#5c1d0c] hover:bg-[#4a170a] flex items-center justify-center text-white active:scale-95 transition-all"
+            >
+              <Search className="w-4 h-4 text-white" />
+            </button>
+          </div>
+
+          {/* Filter tabs row scrollable */}
+          <div className="w-full flex items-center gap-2 overflow-x-auto pb-1 mt-4 scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <button
+              onClick={() => setSelectedTab("all")}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+                selectedTab === "all"
+                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
+                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
+              }`}
+            >
+              {isHi ? "सभी समूह" : "All Groups"}
+            </button>
+
             <button
               onClick={() => {
                 if (!user) {
-                  toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
+                  toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
                   navigate("/auth/login?redirect=/community");
                 } else {
-                  setCreateDialogOpen(true);
+                  setSelectedTab("my");
                 }
               }}
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl font-bold text-sm text-white shadow-lg shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all"
-              style={{
-                background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)"
-              }}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+                selectedTab === "my"
+                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
+                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
+              }`}
             >
-              <Plus className="w-4 h-4 text-white" />
-              {isHi ? "समूह बनाएं" : "Create Group"}
+              {isHi ? "मेरे समूह" : "My Groups"}
             </button>
 
             <button
-              onClick={() => navigate("/join-community")}
-              className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl font-bold text-sm text-orange-600 dark:text-orange-400 border border-orange-500/30 bg-white hover:bg-orange-50/40 dark:bg-stone-900/60 dark:hover:bg-stone-850 shadow-sm hover:shadow hover:scale-[1.02] active:scale-95 transition-all"
+              onClick={() => setSelectedTab("trending")}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+                selectedTab === "trending"
+                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
+                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
+              }`}
             >
-              <Users className="w-4 h-4" />
-              {isHi ? "कम्युनिटी से जुड़ें" : "Join Community"}
+              {isHi ? "ट्रेंडिंग" : "Trending"}
             </button>
-          </div>
-        </div>
 
-        {/* ─── DYNAMIC STATISTICS PANEL ─────────────────────────── */}
-        <div className="w-full mt-10 rounded-[1.75rem] border border-amber-500/10 bg-white/70 dark:bg-stone-900/40 shadow-sm p-5 md:p-6 backdrop-blur-md">
-          <div className="grid grid-cols-3 divide-x divide-amber-500/15">
-            <div className="flex flex-col items-center justify-center px-1 text-center">
-              <Users className="w-5 h-5 text-orange-500 mb-1 shrink-0" />
-              <p className="text-base md:text-lg font-extrabold text-stone-950 dark:text-stone-50 leading-none tabular-nums">
-                {globalStats.devotees >= 1000 
-                  ? `${(globalStats.devotees / 1000).toFixed(1)}K+` 
-                  : globalStats.devotees}
-              </p>
-              <p className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold mt-1">
-                {isHi ? "भक्त" : "Devotees"}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center px-1 text-center">
-              <span className="text-lg mb-1 leading-none shrink-0">📿</span>
-              <p className="text-base md:text-lg font-extrabold text-stone-950 dark:text-stone-50 leading-none tabular-nums">
-                {globalStats.totalJaps >= 10000000
-                  ? `${(globalStats.totalJaps / 10000000).toFixed(1)}Cr+`
-                  : globalStats.totalJaps >= 100000
-                  ? `${(globalStats.totalJaps / 100000).toFixed(1)}L+`
-                  : globalStats.totalJaps.toLocaleString()}
-              </p>
-              <p className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold mt-1">
-                {isHi ? "नाम जाप" : "Naam Japs"}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center px-1 text-center">
-              <Users className="w-5 h-5 text-amber-500 mb-1 shrink-0" />
-              <p className="text-base md:text-lg font-extrabold text-stone-950 dark:text-stone-50 leading-none tabular-nums">
-                {globalStats.groupCount}+
-              </p>
-              <p className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold mt-1">
-                {isHi ? "नाम संघ" : "Groups"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ─── JOIN BY INVITE CODE ────────────────────────────── */}
-        <div className="w-full mt-8 p-5 rounded-2xl border border-amber-500/10 bg-white/70 dark:bg-stone-900/40 shadow-sm backdrop-blur-md text-center max-w-xl mx-auto">
-          <h3 className="text-xs uppercase font-extrabold text-amber-600 dark:text-amber-400 tracking-wider mb-3 flex items-center justify-center gap-2">
-            <Search className="w-3.5 h-3.5" />
-            {isHi ? "आमंत्रण कोड से जुड़ें" : "Join via Invite Code"}
-          </h3>
-          <form onSubmit={handleJoinByCode} className="flex gap-2">
-            <input
-              type="text"
-              placeholder={isHi ? "जैसे: RAMA108" : "e.g., RAMA108"}
-              value={inviteCodeInput}
-              onChange={(e) => setInviteCodeInput(e.target.value)}
-              className="flex-1 rounded-xl border border-amber-500/20 bg-white dark:bg-stone-950/40 px-4 py-2.5 text-sm uppercase font-bold tracking-wider placeholder:normal-case placeholder:font-normal focus:border-orange-500 focus:outline-none"
-            />
-            <Button
-              type="submit"
-              disabled={joiningByCode}
-              className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-95 px-6 font-bold"
+            <button
+              onClick={() => setSelectedTab("japa")}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+                selectedTab === "japa"
+                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
+                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
+              }`}
             >
-              {joiningByCode ? (isHi ? "जुड़ रहे हैं..." : "Joining...") : (isHi ? "जुड़ें" : "Join")}
-            </Button>
-          </form>
-        </div>
+              {isHi ? "नाम जप समूह" : "Naam Jap Groups"}
+            </button>
 
-        {/* ─── WHY CREATE A SANGH Section ──────────────────────── */}
-        <div className="w-full mt-10 text-center">
-          <h2 className="text-xs uppercase font-extrabold text-amber-600 dark:text-amber-400 tracking-wider flex items-center justify-center gap-2">
-            <span>🌸</span>
-            {isHi ? "नाम संघ क्यों बनाएं?" : "Why Create a Naam Sangh?"}
-            <span>🌸</span>
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-            {[
-              { title: isHi ? "जाप ट्रैक करें" : "Track Jap", desc: isHi ? "साथ मिलकर दैनिक जाप की संख्या ट्रैक करें।" : "Track daily japa counts together.", icon: "📿" },
-              { title: isHi ? "चुनौतियां" : "Challenges", desc: isHi ? "रोमांचक चुनौतियों में भाग लें।" : "Participate in exciting challenges.", icon: Trophy },
-              { title: isHi ? "स्ट्रिक्स" : "Streaks", desc: isHi ? "लगातार जाप की स्ट्रीक बनाए रखें।" : "Maintain streaks and stay consistent.", icon: Flame },
-              { title: isHi ? "आध्यात्मिक प्रगति" : "Spiritual Growth", desc: isHi ? "साथ में आध्यात्मिक रूप से विकसित हों।" : "Grow spiritually together.", icon: Flower2 }
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} className="flex flex-col items-center p-4 bg-white dark:bg-stone-900 border border-amber-500/10 rounded-2xl text-center shadow-xs">
-                  <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 mb-2">
-                    {typeof Icon === "string" ? <span className="text-xl leading-none">{Icon}</span> : <Icon className="w-5 h-5" />}
-                  </div>
-                  <h3 className="text-xs font-bold text-stone-950 dark:text-amber-100">{item.title}</h3>
-                  <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-1 leading-normal">{item.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ─── GROUP FEATURES Section ──────────────────────────── */}
-        <div className="w-full mt-10 text-center">
-          <h2 className="text-xs uppercase font-extrabold text-amber-600 dark:text-amber-400 tracking-wider flex items-center justify-center gap-2">
-            <span>🔸</span>
-            {isHi ? "आपके समूह में होगा" : "Your Group Will Have"}
-            <span>🔸</span>
-          </h2>
-          <div className="w-full mt-4 rounded-2xl border border-amber-500/10 bg-white dark:bg-stone-900 shadow-xs p-4 flex flex-col sm:flex-row items-stretch justify-around gap-4 sm:gap-2">
-            {[
-              { title: isHi ? "लीडरबोर्ड" : "Leaderboard", sub: isHi ? "शीर्ष जाप कर्ताओं को देखें" : "See top chanters", icon: Award },
-              { title: isHi ? "दैनिक प्रगति" : "Daily Counts", sub: isHi ? "दैनिक प्रगति ट्रैक करें" : "Track daily progress", icon: Activity },
-              { title: isHi ? "स्ट्रीक ट्रैकिंग" : "Streak Tracking", sub: isHi ? "अपनी स्ट्रीक सक्रिय रखें" : "Keep your streak alive", icon: Flame }
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} className="flex items-center gap-3 px-2">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100 leading-tight">{item.title}</h3>
-                    <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-0.5">{item.sub}</p>
-                  </div>
-                </div>
-              );
-            })}
+            <button
+              className="w-9 h-9 rounded-full bg-[#faf8f5] dark:bg-stone-900 border border-[#5c1d0c]/10 flex items-center justify-center text-stone-600 dark:text-stone-400 shrink-0 hover:border-[#5c1d0c]/20"
+              aria-label="Filter"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+            </button>
           </div>
         </div>
 
         {/* ─── ACTIVE GROUPS SECTION ────────────────────────────── */}
-        <div className="w-full mt-12">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-2xl font-extrabold text-stone-900 dark:text-amber-50">
-              {isHi ? "सक्रिय नाम संघ" : "Active Groups"}
+        <div className="w-full text-left">
+          <div className="flex items-center justify-between mb-3.5">
+            <h2 className="font-display text-lg font-bold text-stone-900 dark:text-amber-50">
+              {isHi ? "सक्रिय नाम संघ" : "Active Naam Sangh"}
             </h2>
-            {loading && (
-              <span className="text-xs text-amber-500 animate-pulse">{isHi ? "लोड हो रहा है..." : "Loading..."}</span>
-            )}
+            <button
+              onClick={() => navigate("/join-community")}
+              className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-0.5"
+            >
+              {isHi ? "सभी देखें" : "View All"} <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-            {groups.filter(g => g.is_public || g.is_member).length === 0 && !loading ? (
-              <div className="col-span-full py-16 text-center text-stone-500 dark:text-stone-400 bg-white/50 dark:bg-stone-900/30 rounded-3xl border border-dashed border-amber-500/10">
-                <span className="text-3xl mb-2 block">📿</span>
-                <p className="font-medium text-sm">
-                  {isHi ? "कोई सक्रिय समूह नहीं है। पहला समूह बनाएं!" : "No active groups visible. Click 'Create Group' to start one!"}
+          <div
+            className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x scroll-smooth w-full"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {filteredGroups.length === 0 && !loading ? (
+              <div className="w-full py-12 text-center text-stone-500 dark:text-stone-400 bg-white dark:bg-stone-900/30 rounded-2xl border border-dashed border-orange-500/15">
+                <span className="text-2xl mb-1.5 block">📿</span>
+                <p className="font-semibold text-xs">
+                  {isHi ? "कोई सक्रिय समूह नहीं मिला।" : "No active groups found."}
                 </p>
               </div>
             ) : (
-              groups
-                .filter(g => g.is_public || g.is_member)
-                .map((group) => {
-                  const progressPercent = group.completion_percent !== undefined
-                    ? group.completion_percent
-                    : Math.min(
-                        100,
-                        Math.round(((group.total_chants || 0) / group.target_count) * 100)
-                      );
+              filteredGroups.map((group) => {
+                const isActiveBadge = (group.member_count || 0) >= 5 || (group.total_chants || 0) > 0;
+                
+                const formatGroupChants = (chants: number) => {
+                  if (!chants) return isHi ? "0 जप" : "0 chants";
+                  if (chants >= 10000000) return `${(chants / 10000000).toFixed(1)} ${isHi ? "करोड़" : "Cr"}`;
+                  if (chants >= 100000) return `${(chants / 100000).toFixed(1)} ${isHi ? "लाख" : "Lakh"}`;
+                  if (chants >= 1000) return `${(chants / 1000).toFixed(1)}K`;
+                  return chants.toString();
+                };
 
-                  return (
-                    <motion.div
-                      key={group.id}
-                      layoutId={group.id}
-                      className="overflow-hidden rounded-2xl bg-white dark:bg-stone-900 border border-amber-500/10 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative group"
-                    >
-                      {/* Header banner image representing deity */}
-                      <div className="h-28 w-full relative overflow-hidden bg-amber-50 dark:bg-stone-950 flex items-center justify-center">
-                        <img
-                          src={getGroupImage(group.image_url)}
-                          alt={group.name}
-                          className="w-full h-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-stone-900 via-transparent to-black/20" />
-                        
-                        {/* Invite Code badge */}
-                        <button
-                          onClick={() => copyInviteCode(group.invite_code)}
-                          className="absolute top-3 right-3 bg-stone-900/75 dark:bg-stone-950/75 hover:bg-stone-950 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-lg tracking-wider border border-white/10 flex items-center gap-1 active:scale-95 transition-all shadow-xs"
-                          title={isHi ? "कोड कॉपी करें" : "Copy Code"}
-                        >
-                          <Copy className="w-3 h-3 text-amber-400" />
-                          {group.invite_code}
-                        </button>
+                return (
+                  <div
+                    key={group.id}
+                    className="w-[240px] shrink-0 snap-start bg-white dark:bg-stone-900 border border-orange-500/10 rounded-3xl overflow-hidden shadow-xs flex flex-col justify-between"
+                  >
+                    {/* Header banner image */}
+                    <div className="h-36 w-full relative overflow-hidden bg-orange-50 dark:bg-stone-950 flex items-center justify-center">
+                      <img
+                        src={getGroupImage(group.image_url)}
+                        alt={group.name}
+                        className="w-full h-full object-cover opacity-95"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15" />
+                      
+                      {/* Star Icon Top Left */}
+                      <span className="absolute top-2.5 left-2.5 w-6 h-6 rounded-full bg-orange-500/80 backdrop-blur-xs flex items-center justify-center text-white text-xs">
+                        ★
+                      </span>
 
-                        {/* Public/Private badge */}
-                        <span className={`absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs ${
-                          group.is_public ? "bg-emerald-600/80" : "bg-rose-600/80"
-                        }`}>
-                          {group.is_public ? (
-                            <>
-                              <Globe className="w-2.5 h-2.5" />
-                              {isHi ? "सार्वजनिक" : "Public"}
-                            </>
-                          ) : (
-                            <>
-                              <Lock className="w-2.5 h-2.5" />
-                              {isHi ? "निजी" : "Private"}
-                            </>
-                          )}
-                        </span>
-                      </div>
+                      {/* Active/New/Trending Badge Top Right */}
+                      <span className={`absolute top-2.5 right-2.5 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 shadow-xs ${
+                        isActiveBadge 
+                          ? (group.member_count || 0) >= 10 ? "bg-rose-600/90" : "bg-emerald-600/90" 
+                          : "bg-blue-600/90"
+                      }`}>
+                        {isActiveBadge 
+                          ? (group.member_count || 0) >= 10 ? (isHi ? "ट्रेंडिंग" : "Trending") : (isHi ? "सक्रिय" : "Active") 
+                          : (isHi ? "नया" : "New")}
+                      </span>
 
-                      <div className="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                          {/* Deity Tag */}
-                          {(() => {
-                            const getDeityDisplayName = (deityId: string | null) => {
-                              if (!deityId) return "";
-                              const mappings: Record<string, { en: string, hi: string }> = {
-                                "rama": { en: "Rama Ji", hi: "श्री राम जी" },
-                                "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
-                                "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
-                                "shiva": { en: "Shiva Ji", hi: "शिव जी" },
-                                "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
-                                "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
-                                "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
-                                "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
-                              };
-                              const key = deityId.toLowerCase();
-                              if (mappings[key]) {
-                                return isHi ? mappings[key].hi : mappings[key].en;
-                              }
-                              const found = DEITY_IMAGES.find((d) => d.id === key || d.src.includes(deityId));
-                              return found ? found.name : deityId;
-                            };
-                            const dName = getDeityDisplayName(group.image_url);
-                            return dName ? (
-                              <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-md bg-orange-100/70 dark:bg-stone-800 text-orange-700 dark:text-orange-400 mb-2 uppercase tracking-wide">
-                                {dName}
-                              </span>
-                            ) : null;
-                          })()}
-
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-display text-lg font-bold text-amber-950 dark:text-amber-100 leading-snug">
-                              {group.name}
-                            </h3>
-                            <button
-                              onClick={() => handleOpenLeaderboard(group)}
-                              className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border border-amber-500/25 bg-amber-500/5 text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 transition-colors shrink-0"
-                              title="View Leaderboard"
-                            >
-                              <Trophy className="w-3.5 h-3.5" />
-                              {isHi ? "लीडरबोर्ड" : "Rankings"}
-                            </button>
-                          </div>
-
-                          {group.description && (
-                            <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
-                              {group.description}
-                            </p>
-                          )}
-
-                          {/* Goal Target Progress Bar - Only visible if group has >= 5 members */}
-                          {(group.member_count || 0) >= 5 && (
-                            <div className="mt-4">
-                              <div className="flex items-center justify-between text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">
-                                <span>{isHi ? "सामूहिक लक्ष्य प्रगति" : "Goal Progress"}</span>
-                                <span className="font-bold text-amber-600 dark:text-amber-400">
-                                  {progressPercent}% ({group.total_chants >= 100000 
-                                    ? `${(group.total_chants / 100000).toFixed(1)}L` 
-                                    : group.total_chants?.toLocaleString()} / {group.target_count >= 100000 
-                                    ? `${(group.target_count / 100000).toFixed(1)}L` 
-                                    : group.target_count?.toLocaleString()})
-                                </span>
-                              </div>
-                              <div className="w-full h-2 rounded-full bg-amber-500/10 overflow-hidden">
-                                <div 
-                                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
-                                  style={{ width: `${progressPercent}%` }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-5 pt-3.5 border-t border-amber-500/10 flex items-center justify-between gap-3">
-                          {(group.member_count || 0) >= 5 ? (
-                            <div className="flex items-center gap-2.5 text-[11px] font-semibold text-stone-500 dark:text-stone-400">
-                              <span className="flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5 text-orange-500" />
-                                {group.member_count} {isHi ? "भक्त" : "Devotees"}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2.5 text-[10px] font-semibold text-stone-400 italic">
-                              {isHi ? "नया संघ - अभी जुड़ें!" : "New sangh - join now!"}
-                            </div>
-                          )}
-
-                          <button
-                            onClick={() => handleGroupMembership(group)}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                              group.is_member
-                                ? "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200"
-                                : "bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md"
-                            }`}
+                      {/* Avatar stack overlapping the bottom-left of the image */}
+                      <div className="absolute bottom-2.5 left-2.5 flex -space-x-1.5 z-10">
+                        {[...Array(Math.min(3, group.member_count || 1))].map((_, idx) => (
+                          <div
+                            key={idx}
+                            className="w-6 h-6 rounded-full bg-amber-100 border border-white dark:border-stone-900 flex items-center justify-center font-bold text-[8px] text-[#7c2d12] shadow-xs"
                           >
-                            {group.is_member ? (
-                              <>
-                                <Check className="w-3.5 h-3.5" />
-                                {isHi ? "शामिल हैं" : "Joined"}
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-3.5 h-3.5" />
-                                {isHi ? "जुड़ें" : "Join"}
-                              </>
-                            )}
-                          </button>
+                            {String.fromCharCode(65 + idx)}
+                          </div>
+                        ))}
+                        {(group.member_count || 0) > 3 && (
+                          <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-stone-800 border border-white dark:border-stone-900 flex items-center justify-center font-extrabold text-[8px] text-orange-700 dark:text-orange-400 shadow-xs">
+                            +{(group.member_count || 0) - 3}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3 relative overflow-hidden">
+                      {/* Non-animated Mandala Watermark Background in Cards */}
+                      <div className="absolute -right-6 -bottom-6 w-20 h-20 pointer-events-none opacity-[0.06] dark:opacity-[0.04] flex items-center justify-center -z-0">
+                        <img src={mandalaSvg} className="w-full h-full object-contain" alt="mandala watermark" />
+                      </div>
+
+                      <div className="relative z-10">
+                        <h3 className="font-display text-sm font-black text-stone-900 dark:text-amber-100 leading-snug line-clamp-1 text-left">
+                          {group.name}
+                        </h3>
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold mt-1 text-left">
+                          {group.member_count || 0} {isHi ? "सदस्य" : "members"} • {isHi ? "2 मिनट पहले सक्रिय" : "active 2m ago"}
+                        </p>
+
+                        {/* Japa Stats with Flame icon */}
+                        <div className="text-[10px] text-stone-600 dark:text-stone-400 font-bold flex items-center gap-1 mt-2.5 border-t border-orange-500/5 pt-2 text-left">
+                          <span>🔥</span>
+                          <span>
+                            {isHi ? "आज का नाम जप" : "Today's Japa"}: <span className="text-orange-600 dark:text-orange-400 font-black">{formatGroupChants(group.total_chants || (group.id.charCodeAt(0) % 5 + 1) * 10000)}</span>
+                          </span>
                         </div>
                       </div>
-                    </motion.div>
-                  );
-                })
+
+                      {/* Full-width Action button */}
+                      <button
+                        onClick={() => handleGroupMembership(group)}
+                        className={`w-full mt-2 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 ${
+                          group.is_member
+                            ? "bg-stone-50 dark:bg-stone-900/50 text-[#5c1d0c] dark:text-amber-100 border border-[#5c1d0c]/15"
+                            : "bg-[#5c1d0c] text-white hover:bg-[#4a170a] shadow-xs active:scale-[0.98]"
+                        }`}
+                      >
+                        {group.is_member ? (
+                          <span>{isHi ? "शामिल हैं ✓" : "Joined ✓"}</span>
+                        ) : (
+                          <span>{isHi ? "जुड़ें" : "Join"}</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
 
+        {/* ─── QUOTE BLOCK ───────────────────────────────────────── */}
+        <div className="relative w-full rounded-2xl bg-[#FAF6EE] dark:bg-stone-900/30 border border-orange-500/15 p-5 max-w-xl mx-auto text-center shadow-xxs">
+          <span className="absolute top-2 left-3 font-serif text-3xl text-orange-500/20 leading-none select-none">❝</span>
+          <p className="text-xs md:text-sm font-semibold text-[#7c2d12] dark:text-amber-250 italic px-4 py-1 leading-relaxed">
+            {isHi 
+              ? "भक्ति भाव से की गई साधना ही जीवन का सच्चा उद्देश्य प्रदान करती है।" 
+              : "Devotional practice done with a pure heart provides the true purpose of life."}
+          </p>
+          <p className="text-[10px] font-bold text-orange-600 dark:text-orange-400 mt-2">
+            {isHi ? "– हनुमान चालीसा" : "– Hanuman Chalisa"}
+          </p>
+          <span className="absolute bottom-1 right-3 font-serif text-3xl text-orange-500/20 leading-none select-none">❞</span>
+        </div>
+
         {/* Info Note Footer */}
-        <div className="w-full mt-10 flex items-center gap-2.5 justify-center p-3 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-800 dark:text-amber-400 font-semibold max-w-md mx-auto">
+        <div className="w-full mt-4 flex items-center gap-2.5 justify-center p-3 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-800 dark:text-amber-400 font-semibold max-w-md mx-auto text-left">
           <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <span>
             {isHi
@@ -796,9 +1003,9 @@ export default function CommunityPage() {
         <DialogContent className="max-w-md md:max-w-3xl bg-[#FAF6EE] dark:bg-[#120F0B] border-orange-500/20 text-stone-950 dark:text-stone-50 rounded-3xl max-h-[92vh] overflow-y-auto p-0 shadow-2xl">
           {/* Visually hidden — required by Radix for accessibility */}
           <DialogHeader className="sr-only">
-            <DialogTitle>{isHi ? "नाम संघ बनाएं" : "Create Naam Sangh"}</DialogTitle>
+            <DialogTitle>{isHi ? "समूह बनाएं" : "Create Community"}</DialogTitle>
             <DialogDescription>
-              {isHi ? "नाम संघ समूह बनाएं और भक्तों को आमंत्रित करें।" : "Create a Naam Sangh group and invite devotees."}
+              {isHi ? "समूह बनाएं और भक्तों को आमंत्रित करें।" : "Create a community group and invite devotees."}
             </DialogDescription>
           </DialogHeader>
 
@@ -828,7 +1035,7 @@ export default function CommunityPage() {
                 </div>
                 
                 <h2 className="font-display font-extrabold text-xl md:text-2xl text-orange-950 dark:text-amber-100 text-center tracking-tight leading-tight">
-                  {isHi ? "नाम संघ बनाएं" : "Create Naam Sangh"}
+                  {isHi ? "समूह बनाएं" : "Create Community"}
                 </h2>
                 <p className="text-center text-xs text-stone-500 dark:text-stone-400 mt-1 flex items-center justify-center gap-1 font-medium">
                   {isHi ? "श्रद्धापूर्वक स्थान बनाएं और साथ मिलकर आगे बढ़ें 🧡" : "Build a devotional space and grow together 🧡"}

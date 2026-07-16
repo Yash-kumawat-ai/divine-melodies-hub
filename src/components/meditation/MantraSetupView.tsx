@@ -23,6 +23,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
+import { fetchGroups } from "@/lib/naamSangh/naamSanghApi";
 import meditationHighQuality from "@/pages/images/meditation_high_quality.webp";
 import devotionalBackground from "@/pages/images/devotional_background.webp";
 
@@ -227,6 +228,7 @@ type MantraSetupViewProps = {
     sankalpText: string;
     targetCount: number;
     practiceMode: "mala" | "tap" | "voice" | "guided";
+    groupId?: string | null;
   }) => void;
 };
 
@@ -247,6 +249,19 @@ export default function MantraSetupView({
   const [practiceMode, setPracticeMode] = useState<"mala" | "tap" | "voice" | "guided">("mala");
   const [isSankalpSheetOpen, setIsSankalpSheetOpen] = useState(false);
   const [isGoalSheetOpen, setIsGoalSheetOpen] = useState(false);
+  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
+  const { user } = useAuth();
+
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchGroups(user.id).then((groups) => {
+        const joined = groups.filter(g => g.is_member);
+        setUserGroups(joined);
+      });
+    }
+  }, [user?.id]);
 
   // ─── OPTIONS CONFIGURATION ──────────────────────────────────────
   const sankalpOptions = useMemo(() => [
@@ -335,6 +350,7 @@ export default function MantraSetupView({
       sankalpText: currentSankalpText,
       targetCount,
       practiceMode,
+      groupId: selectedGroupId,
     });
   };
 
@@ -501,6 +517,63 @@ export default function MantraSetupView({
                 <ChevronDown className="w-4 h-4 text-amber-500/60" />
               </button>
             </div>
+
+            {/* GROUP SELECTOR */}
+            {user && userGroups.length > 0 && (
+              <div className="space-y-1 md:space-y-1.5">
+                <label className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wider block ${labelClass}`}>
+                  {isHi ? "साधना गंतव्य (समूह)" : "Log Japa For"}
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedGroupId(null)}
+                    className={`flex-1 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all ${
+                      selectedGroupId === null
+                        ? isDark
+                          ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                          : "bg-orange-50 border-orange-500 text-orange-850 shadow-sm"
+                        : isDark
+                          ? "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                    }`}
+                  >
+                    👤 {isHi ? "व्यक्तिगत" : "Personal"}
+                  </button>
+                  
+                  <div className="relative flex-1">
+                    <select
+                      value={selectedGroupId || ""}
+                      onChange={(e) => setSelectedGroupId(e.target.value || null)}
+                      className={`w-full py-2.5 pl-3 pr-8 rounded-xl border text-xs font-bold transition-all focus:outline-none appearance-none cursor-pointer ${
+                        selectedGroupId !== null
+                          ? isDark
+                            ? "bg-amber-950/20 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                            : "bg-orange-50 border-orange-500 text-orange-850 shadow-sm"
+                          : isDark
+                            ? "bg-[#0d0704]/60 border-stone-850 text-stone-400 hover:border-amber-500/20"
+                            : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                      }`}
+                    >
+                      <option value="" className={isDark ? "bg-stone-900 text-stone-300" : "bg-white text-stone-700"}>
+                        {isHi ? "👥 समूह चुनें..." : "👥 Select Group..."}
+                      </option>
+                      {userGroups.map((g) => (
+                        <option 
+                          key={g.id} 
+                          value={g.id}
+                          className={isDark ? "bg-stone-900 text-stone-300" : "bg-white text-stone-700"}
+                        >
+                          {g.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-amber-500">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* PRACTICE MODE */}
             <div className="space-y-1.5 md:space-y-2">

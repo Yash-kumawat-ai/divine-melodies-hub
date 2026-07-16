@@ -1252,3 +1252,13 @@ span.truncate.font-bold {
     color: rgb(74 14 18);
 }
 
+@media (min-width: 768px) {
+    .md\:max-w-2xl {
+        max-width: 30rem !important;
+    }
+}
+.bg-\[\#faf8f5\] {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 246 233);
+}
+

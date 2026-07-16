@@ -31,6 +31,12 @@ export interface Group {
   created_at: string;
   member_count?: number;
   is_member?: boolean;
+  image_url?: string | null;
+  invite_code?: string | null;
+  target_count?: number;
+  is_public?: boolean;
+  total_chants?: number;
+  completion_percent?: number;
 }
 
 export interface GroupMember {
@@ -157,9 +163,28 @@ export const communityApi = {
         throw error;
       }
 
+      // Fetch cached total_japs and completion_percent from progress table
+      const { data: progressData } = await supabase
+        .from("naam_sangh_progress")
+        .select("group_id, total_japs, completion_percent");
+
+      const progressMap = new Map(
+        progressData?.map((p) => [
+          p.group_id,
+          { total_japs: Number(p.total_japs), completion_percent: Number(p.completion_percent) }
+        ]) ?? []
+      );
+
       return (data || []).map((g: any) => {
         const members = g.group_members || [];
         const isMember = currentUserId ? members.some((m: any) => m.user_id === currentUserId) : false;
+        
+        const progressInfo = progressMap.get(g.id);
+        const totalChants = progressInfo?.total_japs || 0;
+        const completionPercent = progressInfo?.completion_percent !== undefined
+          ? progressInfo.completion_percent
+          : Math.min(100, Math.round((totalChants / (g.target_count || 100000)) * 100));
+
         return {
           id: g.id,
           name: g.name,
@@ -170,6 +195,12 @@ export const communityApi = {
           created_at: g.created_at,
           member_count: members.length,
           is_member: isMember,
+          image_url: g.image_url,
+          invite_code: g.invite_code,
+          target_count: g.target_count,
+          is_public: g.is_public !== undefined ? g.is_public : true,
+          total_chants: totalChants,
+          completion_percent: completionPercent
         };
       });
     } catch (err: any) {

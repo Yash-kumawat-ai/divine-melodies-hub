@@ -131,7 +131,7 @@ export default function Header() {
   const mobileHeaderLinks = [
     { to: "/panchang", label: t("panchang"), icon: CalendarDays, match: (path: string) => path.startsWith("/panchang") },
     { to: "/meditation", label: t("meditation"), icon: Flower2, match: (path: string) => path.startsWith("/meditation") },
-    { to: "/community", label: language === 'hi' ? 'नाम संघ' : 'Naam Sangh', icon: Users, match: (path: string) => path.startsWith("/community") },
+    { to: "/community", label: language === 'hi' ? 'समूह' : 'Community', icon: Users, match: (path: string) => path.startsWith("/community") },
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
     { to: "/wallpaper", label: language === 'hi' ? 'वॉलपेपर' : 'Wallpapers', icon: Image, match: (path: string) => path.startsWith("/wallpaper") },
     { to: "/shorts", label: language === 'hi' ? 'शॉर्ट्स' : 'Shorts', icon: Film, match: (path: string) => path.startsWith("/shorts") },
@@ -243,7 +243,7 @@ export default function Header() {
             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
           >
             <Users className="w-3 h-3" />
-            {language === 'hi' ? 'नाम संघ' : 'Naam Sangh'}
+            {language === 'hi' ? 'समूह' : 'Community'}
           </Link>
 
           {/* More ▼ dropdown */}

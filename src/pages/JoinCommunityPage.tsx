@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight,
-  Leaf, Music, BookOpen, HelpCircle, Bookmark
+  Leaf, Music, BookOpen, HelpCircle, Bookmark, Lock
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -341,7 +341,7 @@ export default function JoinCommunityPage() {
     try {
       setCreatingGroup(true);
       await communityApi.createGroup(groupName.trim(), groupDesc.trim(), groupDeity, user.id);
-      toast.success(isHi ? "नाम संघ समूह सफलतापूर्वक बनाया गया!" : "Naam Sangh group created successfully!");
+      toast.success(isHi ? "समूह सफलतापूर्वक बनाया गया!" : "Community group created successfully!");
       setGroupName("");
       setGroupDesc("");
       setCreateGroupOpen(false);
@@ -403,7 +403,7 @@ export default function JoinCommunityPage() {
   // Share group invitation link on WhatsApp
   const handleWhatsAppInvite = (group: Group) => {
     const groupLink = `${window.location.origin}/community/groups/${group.slug || group.id}`;
-    const text = `🙏 Jai Shri Ram\n\nI created a Naam Sangh on Hari Kirtan.\n\nLet's share bhajans, devotional thoughts and grow spiritually together.\n\nJoin Here:\n${groupLink}`;
+    const text = `🙏 Jai Shri Ram\n\nI created a Community on Hari Kirtan.\n\nLet's share bhajans, devotional thoughts and grow spiritually together.\n\nJoin Here:\n${groupLink}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -637,7 +637,7 @@ export default function JoinCommunityPage() {
                 <div className="flex items-center gap-2 pb-2 border-b border-orange-500/10">
                   <Users className="w-4.5 h-4.5 text-orange-500" />
                   <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider">
-                    {isHi ? "मेरे नाम संघ" : "My Naam Sangh"}
+                    {isHi ? "मेरे समूह" : "My Communities"}
                   </h3>
                 </div>
 
@@ -685,7 +685,7 @@ export default function JoinCommunityPage() {
                   className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-orange-500/25 text-orange-600 dark:text-orange-400 hover:border-orange-500/50 hover:bg-orange-500/5 text-xs font-bold transition-all mt-2"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>{isHi ? "नाम संघ बनाएं" : "Create Naam Sangh"}</span>
+                  <span>{isHi ? "समूह बनाएं" : "Create Community"}</span>
                 </button>
               </div>
             </div>
@@ -697,7 +697,7 @@ export default function JoinCommunityPage() {
               <div className="flex border-b border-orange-500/10 mb-6 gap-2 overflow-x-auto scrollbar-none">
                 {[
                   { id: 'feed', label: isHi ? 'सत्संग फीड' : 'Satsang Feed', icon: MessageSquare },
-                  { id: 'groups', label: isHi ? 'नाम संघ' : 'Naam Sangh Groups', icon: Users },
+                  { id: 'groups', label: isHi ? 'समूह' : 'Communities', icon: Users },
                   { id: 'events', label: isHi ? 'धार्मिक कार्यक्रम' : 'Satsang Events', icon: Calendar }
                 ].map(tab => {
                   const Icon = tab.icon;
@@ -1028,9 +1028,20 @@ export default function JoinCommunityPage() {
                               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-stone-900 via-transparent to-black/20" />
                               
                               {/* Public/Private badge */}
-                              <span className="absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs bg-emerald-600/80">
-                                <Globe className="w-2.5 h-2.5" />
-                                {isHi ? "सार्वजनिक" : "Public"}
+                              <span className={`absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs ${
+                                group.is_public ? "bg-emerald-600/80" : "bg-rose-600/80"
+                              }`}>
+                                {group.is_public ? (
+                                  <>
+                                    <Globe className="w-2.5 h-2.5" />
+                                    {isHi ? "सार्वजनिक" : "Public"}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock className="w-2.5 h-2.5" />
+                                    {isHi ? "निजी" : "Private"}
+                                  </>
+                                )}
                               </span>
                             </div>
 
@@ -1079,6 +1090,28 @@ export default function JoinCommunityPage() {
                                 <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
                                   {group.description || (isHi ? "भक्तिमय संगीत और नाम जप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
                                 </p>
+
+                                {/* Goal Target Progress Bar */}
+                                {group.target_count && group.target_count > 0 && (
+                                  <div className="mt-3.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
+                                    <div className="flex items-center justify-between text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">
+                                      <span>{isHi ? "सामूहिक लक्ष्य प्रगति" : "Goal Progress"}</span>
+                                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                                        {group.completion_percent}% ({group.total_chants && group.total_chants >= 100000 
+                                          ? `${(group.total_chants / 100000).toFixed(1)}L` 
+                                          : (group.total_chants || 0).toLocaleString()} / {group.target_count >= 100000 
+                                          ? `${(group.target_count / 100000).toFixed(1)}L` 
+                                          : group.target_count.toLocaleString()})
+                                      </span>
+                                    </div>
+                                    <div className="w-full h-1.5 rounded-full bg-amber-500/10 overflow-hidden">
+                                      <div 
+                                        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
+                                        style={{ width: `${group.completion_percent}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -1321,7 +1354,7 @@ export default function JoinCommunityPage() {
                 <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-orange-500/10">
                     <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider flex items-center gap-1">
-                      👥 {isHi ? "सक्रिय नाम संघ" : "Active Naam Sangh"}
+                      👥 {isHi ? "सक्रिय समूह" : "Active Communities"}
                     </h3>
                     <button 
                       onClick={() => setActiveTab('groups')}
@@ -1423,8 +1456,10 @@ export default function JoinCommunityPage() {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent flex flex-col justify-end p-6">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-extrabold tracking-wider bg-orange-500 text-white px-2 py-0.5 rounded-md">
-                  {isHi ? "सार्वजनिक" : "Public Group"}
+                <span className={`text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-md text-white ${
+                  selectedGroup.is_public ? "bg-emerald-600" : "bg-rose-600"
+                }`}>
+                  {selectedGroup.is_public ? (isHi ? "सार्वजनिक" : "Public Group") : (isHi ? "निजी समूह" : "Private Group")}
                 </span>
                 <span className="text-[10px] uppercase font-extrabold tracking-wider bg-stone-900/60 text-stone-200 px-2 py-0.5 rounded-md">
                   {selectedGroup.deity}
@@ -1526,6 +1561,31 @@ export default function JoinCommunityPage() {
             </p>
           </div>
 
+          {/* Chanting Goal Progress Box */}
+          {selectedGroup.target_count && selectedGroup.target_count > 0 && (
+            <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-xs">
+              <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-2">
+                📿 {isHi ? "सामूहिक नाम जप प्रगति" : "Group Chanting Progress"}
+              </h3>
+              <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
+                <span>{isHi ? "प्रगति लक्ष्य" : "Goal Progress"}</span>
+                <span className="font-bold text-orange-600 dark:text-orange-400">
+                  {selectedGroup.completion_percent}% ({selectedGroup.total_chants && selectedGroup.total_chants >= 100000 
+                    ? `${(selectedGroup.total_chants / 100000).toFixed(1)}L` 
+                    : (selectedGroup.total_chants || 0).toLocaleString()} / {selectedGroup.target_count >= 100000 
+                    ? `${(selectedGroup.target_count / 100000).toFixed(1)}L` 
+                    : selectedGroup.target_count.toLocaleString()})
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-orange-500/10 overflow-hidden">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
+                  style={{ width: `${selectedGroup.completion_percent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Group Content Tabs */}
           <div className="flex border-b border-orange-500/10 mb-6 gap-2">
             {[
@@ -1590,8 +1650,8 @@ export default function JoinCommunityPage() {
               let emptyMessage = "";
               if (memberCount <= 2) {
                 emptyMessage = isHi 
-                  ? "इस संघ की यात्रा अभी शुरू हुई है 🌸 पहला भजन या विचार साझा करके शुरुआत करें।"
-                  : "This Sangh's journey has just begun 🌸 Be the first to share a bhajan or thought.";
+                  ? "इस समूह की यात्रा अभी शुरू हुई है 🌸 पहला भजन या विचार साझा करके शुरुआत करें।"
+                  : "This Community's journey has just begun 🌸 Be the first to share a bhajan or thought.";
               } else {
                 if (activeGroupTab === 'bhajans') {
                   emptyMessage = isHi
@@ -1914,9 +1974,9 @@ export default function JoinCommunityPage() {
         <DialogContent className="max-w-md bg-[#FAF6EE] dark:bg-[#120F0B] border-orange-500/20 text-stone-950 dark:text-stone-50 rounded-3xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl shadow-orange-950/10">
           {/* Visually hidden — required by Radix for accessibility */}
           <DialogHeader className="sr-only">
-            <DialogTitle>{isHi ? "नाम संघ समूह बनाएं" : "Create Naam Sangh Group"}</DialogTitle>
+            <DialogTitle>{isHi ? "समूह बनाएं" : "Create Community Group"}</DialogTitle>
             <DialogDescription>
-              {isHi ? "नाम संघ समूह बनाएं और भक्तों को आमंत्रित करें।" : "Create a Naam Sangh group and invite devotees."}
+              {isHi ? "समूह बनाएं और भक्तों को आमंत्रित करें।" : "Create a community group and invite devotees."}
             </DialogDescription>
           </DialogHeader>
 
@@ -1935,7 +1995,7 @@ export default function JoinCommunityPage() {
             </div>
             
             <h2 className="font-display font-extrabold text-xl md:text-2xl text-orange-950 dark:text-amber-100 text-center tracking-tight leading-tight">
-              {isHi ? "नाम संघ बनाएं" : "Create Naam Sangh Group"}
+              {isHi ? "समूह बनाएं" : "Create Community Group"}
             </h2>
             <p className="text-center text-xs text-stone-500 dark:text-stone-400 mt-1 flex items-center justify-center gap-1 font-medium">
               {isHi ? "श्रद्धापूर्वक स्थान बनाएं और साथ मिलकर आगे बढ़ें 🧡" : "Build a devotional space and grow together 🧡"}

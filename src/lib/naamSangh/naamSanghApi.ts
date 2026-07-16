@@ -121,7 +121,7 @@ function getLocalGroups(currentUserId?: string): NaamSanghGroup[] {
 export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGroup[]> {
   try {
     const { data: groups, error: groupsError } = await supabase
-      .from("naam_sangh_groups")
+      .from("groups")
       .select("*")
       .order("created_at", { ascending: false });
 
@@ -129,7 +129,7 @@ export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGrou
 
     // Fetch memberships to check if current user is member
     const { data: memberships } = await supabase
-      .from("naam_sangh_members")
+      .from("group_members")
       .select("group_id, user_id");
 
     // Fetch cached total_japs and completion_percent from progress table
@@ -180,7 +180,7 @@ export async function createGroup(params: {
 }): Promise<NaamSanghGroup> {
   try {
     const { data, error } = await supabase
-      .from("naam_sangh_groups")
+      .from("groups")
       .insert({
         name: params.name,
         description: params.description || null,
@@ -197,10 +197,11 @@ export async function createGroup(params: {
 
     // Auto-join the creator to the group
     await supabase
-      .from("naam_sangh_members")
+      .from("group_members")
       .insert({
         group_id: data.id,
         user_id: params.createdBy,
+        role: "admin",
       });
 
     return {
@@ -254,10 +255,11 @@ export async function createGroup(params: {
 export async function joinGroup(groupId: string, userId: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("naam_sangh_members")
+      .from("group_members")
       .insert({
         group_id: groupId,
         user_id: userId,
+        role: "member",
       });
 
     if (error) throw error;
@@ -285,7 +287,7 @@ export async function joinGroup(groupId: string, userId: string): Promise<boolea
 export async function joinGroupByInviteCode(inviteCode: string, userId: string): Promise<NaamSanghGroup> {
   try {
     const { data: group, error: findError } = await supabase
-      .from("naam_sangh_groups")
+      .from("groups")
       .select("*")
       .eq("invite_code", inviteCode.trim().toUpperCase())
       .single();
@@ -295,10 +297,11 @@ export async function joinGroupByInviteCode(inviteCode: string, userId: string):
     }
 
     const { error: joinError } = await supabase
-      .from("naam_sangh_members")
+      .from("group_members")
       .insert({
         group_id: group.id,
         user_id: userId,
+        role: "member",
       });
 
     if (joinError && !joinError.message.includes("duplicate")) {
@@ -344,7 +347,7 @@ export async function joinGroupByInviteCode(inviteCode: string, userId: string):
 export async function leaveGroup(groupId: string, userId: string): Promise<boolean> {
   try {
     const { error } = await supabase
-      .from("naam_sangh_members")
+      .from("group_members")
       .delete()
       .eq("group_id", groupId)
       .eq("user_id", userId);

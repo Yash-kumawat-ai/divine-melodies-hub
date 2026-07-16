@@ -81,6 +81,7 @@ function MantraJapaCounterView() {
   const targetCount = Number(searchParams.get("targetCount") || "108");
   const practiceMode = (searchParams.get("practiceMode") || "mala") as "mala" | "tap" | "voice" | "guided";
   const sankalpText = searchParams.get("sankalp") || "";
+  const groupId = searchParams.get("groupId") || null;
 
   const { mantras, completeSession, refresh, mantrasLoading } = useMantraJapa();
 
@@ -132,6 +133,7 @@ function MantraJapaCounterView() {
             targetCount: targetCount,
             actualCount: actualCount,
             durationSeconds: durationSeconds,
+            groupId: groupId,
           });
         } catch (err) {
           console.error("Error saving Japa session:", err);

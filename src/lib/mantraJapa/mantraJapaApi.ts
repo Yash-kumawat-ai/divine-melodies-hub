@@ -142,6 +142,7 @@ export async function completeJapSession(params: {
   targetCount: number;
   actualCount: number;
   durationSeconds: number;
+  groupId?: string | null;
 }): Promise<CompleteSessionResult> {
   const { data, error } = await supabase.rpc("complete_jap_session", {
     p_user_id: params.userId,
@@ -153,7 +154,26 @@ export async function completeJapSession(params: {
   });
 
   if (error) throw error;
-  return data as CompleteSessionResult;
+  
+  const result = data as CompleteSessionResult;
+
+  // If a groupId is specified, associate the session with the group (fires trigger safely via single update)
+  if (params.groupId && result.session_id) {
+    try {
+      const { error: updateErr } = await supabase
+        .from("user_jap_sessions")
+        .update({
+          group_id: params.groupId
+        })
+        .eq("id", result.session_id);
+
+      if (updateErr) throw updateErr;
+    } catch (err) {
+      console.error("Failed to scope jap session to group:", err);
+    }
+  }
+
+  return result;
 }
 
 /** Fetch user's sankalpas */

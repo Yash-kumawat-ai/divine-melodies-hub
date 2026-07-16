@@ -23,7 +23,9 @@ export default function AppShell() {
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");
   const isLiveAarti = resolvedPath === "/live-aarti" || resolvedPath === "/aarti";
-  const hideHeader = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti;
+  const isCommunityPage = resolvedPath.startsWith("/community") || resolvedPath === "/join-community";
+  const hideHeaderGlobally = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti;
+  const hideHeaderMobileOnly = isCommunityPage;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");
@@ -52,7 +54,11 @@ export default function AppShell() {
         (isFullScreenApp || isShortsPage) ? "h-dvh overflow-hidden" : "min-h-dvh"
       )}
     >
-      {!hideHeader && <Header />}
+      {!hideHeaderGlobally && (
+        <div className={cn(hideHeaderMobileOnly && "hidden md:block")}>
+          <Header />
+        </div>
+      )}
       <main
         className={cn(
           "flex-1",

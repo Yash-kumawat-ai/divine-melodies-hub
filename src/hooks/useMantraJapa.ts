@@ -402,6 +402,7 @@ export function useMantraJapa() {
       targetCount: number;
       actualCount: number;
       durationSeconds: number;
+      groupId?: string | null;
     }) => {
       if (isGuest) {
         // Guest mode: use localStorage
@@ -424,6 +425,7 @@ export function useMantraJapa() {
         targetCount: params.targetCount,
         actualCount: params.actualCount,
         durationSeconds: params.durationSeconds,
+        groupId: params.groupId,
       });
     },
     onSuccess: () => {
