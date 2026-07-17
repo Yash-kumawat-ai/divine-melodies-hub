@@ -6,7 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useLikedBhajans } from '@/hooks/useLikedBhajans';
 import { useSavedPosts } from '@/hooks/useSavedPosts';
 import BhajanCard from '@/components/BhajanCard';
-import { PostCard } from '@/pages/JoinCommunityPage';
+import { PostCard } from '@/components/community/PostCard';
 import { communityApi, type CommunityPost, type PostComment } from '@/lib/community/communityApi';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
