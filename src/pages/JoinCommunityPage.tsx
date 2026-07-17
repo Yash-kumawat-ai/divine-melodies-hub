@@ -795,32 +795,35 @@ export default function JoinCommunityPage() {
                 <div className="space-y-6">
                   
                   {/* Digital Satsang Premium Banner */}
-                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-stone-950 via-[#2d1c10] to-stone-950 border border-orange-500/25 p-6 md:p-8 flex items-center justify-between shadow-xl min-h-[140px] select-none text-left">
-                    <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#1a0e07] via-[#2d1508] to-[#1a0e07] border border-orange-500/20 p-6 md:p-8 flex items-center justify-between shadow-2xl min-h-[140px] select-none text-left">
+                    {/* warm ambient glows */}
+                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-orange-600/8 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-amber-500/6 rounded-full blur-2xl pointer-events-none" />
                     
                     <div className="relative z-10 space-y-2 max-w-md md:max-w-lg">
-                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-amber-100 tracking-tight drop-shadow-md">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">🪷 {isHi ? "सत्संग में आपका स्वागत है" : "Welcome to Satsang"}</p>
+                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-amber-50 tracking-tight">
                         {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
                       </h2>
-                      <p className="text-xs md:text-sm text-stone-300 font-medium tracking-wide leading-relaxed">
+                      <p className="text-xs md:text-sm text-amber-200/60 font-medium tracking-wide leading-relaxed">
                         {isHi 
                           ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
                           : "Share Bhajans • Connect with Devotees • Advance Devotion"}
                       </p>
                       <div className="flex items-center gap-2 pt-1">
-                        <span className="w-12 h-px bg-amber-500/30" />
-                        <span className="text-amber-500 text-[10px]">🌸</span>
-                        <span className="w-12 h-px bg-amber-500/30" />
+                        <span className="w-16 h-px bg-gradient-to-r from-transparent to-amber-500/40" />
+                        <span className="text-amber-500/50 text-[10px]">✦</span>
+                        <span className="w-16 h-px bg-gradient-to-l from-transparent to-amber-500/40" />
                       </div>
                     </div>
 
                     <div className="relative flex items-center justify-center shrink-0 pr-2">
-                      <div className="absolute w-24 h-24 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
+                      <div className="absolute w-28 h-28 bg-amber-500/15 rounded-full blur-2xl animate-pulse" />
                       <div className="relative z-10 flex flex-col items-center gap-1">
-                        <span className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500 drop-shadow-[0_2px_12px_rgba(245,158,11,0.5)]">
+                        <span className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-orange-500 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)] select-none">
                           ॐ
                         </span>
-                        <span className="text-xl md:text-2xl mt-0.5 filter drop-shadow-[0_2px_6px_rgba(244,63,94,0.3)]">🪷</span>
+                        <span className="text-xl md:text-2xl mt-0.5 filter drop-shadow-[0_2px_8px_rgba(244,63,94,0.4)] select-none">🪷</span>
                       </div>
                     </div>
                   </div>
@@ -923,9 +926,11 @@ export default function JoinCommunityPage() {
                         }`}>
                           {isHi ? "क्या आपको कोई भजन नहीं मिल रहा? यहाँ अनुरोध करें और भक्तों से सहायता लें।" : "Can't find a bhajan? Request it here and get lyrics from other devotees."}
                         </p>
-                        <p className="text-[9px] text-purple-500 font-bold flex items-center gap-1 pt-1">
-                          ✦ {isHi ? "आज 23 नए अनुरोध" : "23 new requests today"}
-                        </p>
+                        {posts.filter(p => p.type === 'bhajan_request').length > 0 && (
+                          <p className="text-[9px] text-purple-500 font-bold flex items-center gap-1 pt-1">
+                            ✦ {posts.filter(p => p.type === 'bhajan_request').length} {isHi ? "सक्रिय अनुरोध" : "active requests"}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -1095,18 +1100,19 @@ export default function JoinCommunityPage() {
                                   (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
                                 const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
                                 return (
-                                  <img
+                                 <img
                                     src={cardCoverSrc}
                                     alt={group.name}
-                                    className="w-full h-full object-cover opacity-100 transition-transform duration-500 group-hover:scale-105"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    loading="lazy"
                                   />
                                 );
                               })()}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
                               
                               {/* Public/Private badge */}
-                              <span className={`absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs ${
-                                group.is_public ? "bg-emerald-600/80" : "bg-rose-600/80"
+                              <span className={`absolute top-3 left-3 text-[9px] font-bold px-2.5 py-1 rounded-full text-white/90 flex items-center gap-1.5 backdrop-blur-md border border-white/10 ${
+                                group.is_public ? "bg-emerald-600/70" : "bg-rose-700/70"
                               }`}>
                                 {group.is_public ? (
                                   <>
@@ -1225,7 +1231,7 @@ export default function JoinCommunityPage() {
                                   </Button>
                                   <Button
                                     onClick={() => handleToggleGroupJoin(group)}
-                                    className="flex-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-sm shadow-emerald-500/15 flex items-center justify-center gap-1"
+                                    className="flex-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
                                   >
                                     <Plus className="w-3.5 h-3.5" />
                                     {isHi ? "शामिल हों" : "Join"}

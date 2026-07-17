@@ -133,7 +133,7 @@ export function SatsangFeedTab({
           setPostType("thought");
           setCreatePostOpen(true);
         }}
-        className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer select-none"
+        className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 hover:shadow-sm cursor-pointer select-none transition-all"
         role="button"
         aria-label={
           isHi
