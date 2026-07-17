@@ -172,26 +172,6 @@ export default function JoinCommunityPage() {
   const [eventLinkedBhajan, setEventLinkedBhajan] = useState<number | null>(null);
   const [publishingPost, setPublishingPost] = useState(false);
 
-  // Comments state + handlers — managed by useCommunityPostActions hook
-  const {
-    expandedCommentsPostId,
-    commentsMap,
-    newCommentText,
-    setNewCommentText,
-    commentIsLyricsSubmit,
-    setCommentIsLyricsSubmit,
-    loadingCommentsPostIds,
-    handleToggleComments,
-    handleAddComment,
-    handleDeleteComment,
-    handleToggleReaction,
-    handleToggleRsvp,
-    handleVoteOption,
-    setCommentsMap,
-    setExpandedCommentsPostId,
-    setLoadingCommentsPostIds,
-  } = useCommunityPostActions({ user, profile, isHi, loadPosts, setPosts });
-
   // Japa logging states & hook
   const { mantras, completeSession } = useMantraJapa();
   const [logChantsOpen, setLogChantsOpen] = useState(false);
@@ -232,6 +212,26 @@ export default function JoinCommunityPage() {
     const { data } = await queryUserUploads({ includeUnapproved: false });
     if (data) setMyBhajans(data);
   };
+
+  // Comments state + handlers — managed by useCommunityPostActions hook
+  const {
+    expandedCommentsPostId,
+    commentsMap,
+    newCommentText,
+    setNewCommentText,
+    commentIsLyricsSubmit,
+    setCommentIsLyricsSubmit,
+    loadingCommentsPostIds,
+    handleToggleComments,
+    handleAddComment,
+    handleDeleteComment,
+    handleToggleReaction,
+    handleToggleRsvp,
+    handleVoteOption,
+    setCommentsMap,
+    setExpandedCommentsPostId,
+    setLoadingCommentsPostIds,
+  } = useCommunityPostActions({ user, profile, isHi, loadPosts, setPosts });
 
   useEffect(() => {
     loadPosts();
