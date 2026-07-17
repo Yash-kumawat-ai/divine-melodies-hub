@@ -10,7 +10,6 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { useSavedPosts } from "@/hooks/useSavedPosts";
 import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember } from "@/lib/community/communityApi";
-import { uploadToCloudinary } from "@/lib/cloudinary";
 import { queryUserUploads } from "@/lib/supabaseQueries";
 import { toast } from "sonner";
 import { SEO } from "@/components/SEO";
@@ -24,6 +23,8 @@ import { SatsangFeedTab } from "@/components/community/SatsangFeedTab";
 import { DevoteesTab } from "@/components/community/DevoteesTab";
 import { GroupHall } from "@/components/community/GroupHall";
 import { CreateGroupDialog } from "@/components/community/CreateGroupDialog";
+import { CreatePostDialog } from "@/components/community/CreatePostDialog";
+import { useCreatePost } from "@/hooks/useCreatePost";
 import { useCommunityPostActions } from "@/hooks/useCommunityPostActions";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import { fetchGroupRankings } from "@/lib/naamSangh/naamSanghApi";
@@ -130,7 +131,6 @@ export default function JoinCommunityPage() {
   const [loadingGroups, setLoadingGroups] = useState(true);
   
   // Modals
-  const [createPostOpen, setCreatePostOpen] = useState(false);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   
@@ -158,20 +158,6 @@ export default function JoinCommunityPage() {
   const [feedFilter, setFeedFilter] = useState<string>("All");
 
   // Post Creator form states
-  const [postType, setPostType] = useState<'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event'>('thought');
-  const [postTitle, setPostTitle] = useState("");
-  const [postContent, setPostContent] = useState("");
-  const [postImageFile, setPostImageFile] = useState<File | null>(null);
-  const [postImagePreview, setPostImagePreview] = useState<string | null>(null);
-  const [postYoutubeUrl, setPostYoutubeUrl] = useState("");
-  // Quick-tap options for Question type
-  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
-  // Event fields
-  const [eventDate, setEventDate] = useState("");
-  const [eventTime, setEventTime] = useState("");
-  const [eventLocation, setEventLocation] = useState("");
-  const [eventLinkedBhajan, setEventLinkedBhajan] = useState<number | null>(null);
-  const [publishingPost, setPublishingPost] = useState(false);
 
   // Japa logging states & hook
   const { mantras, completeSession } = useMantraJapa();
@@ -233,6 +219,32 @@ export default function JoinCommunityPage() {
     setExpandedCommentsPostId,
     setLoadingCommentsPostIds,
   } = useCommunityPostActions({ user, profile, isHi, loadPosts, setPosts });
+  const {
+    createPostOpen,
+    setCreatePostOpen,
+    postType,
+    setPostType,
+    postTitle,
+    setPostTitle,
+    postContent,
+    setPostContent,
+    postImagePreview,
+    postYoutubeUrl,
+    setPostYoutubeUrl,
+    pollOptions,
+    setPollOptions,
+    eventDate,
+    setEventDate,
+    eventTime,
+    setEventTime,
+    postLocation,
+    setPostLocation,
+    eventLinkedBhajan,
+    setEventLinkedBhajan,
+    publishingPost,
+    handleImageChange,
+    handleCreatePost,
+  } = useCreatePost({ user, isHi, selectedGroup, loadPosts });
 
   useEffect(() => {
     loadPosts();
@@ -509,89 +521,10 @@ export default function JoinCommunityPage() {
   };
 
   // Cloudinary image upload helper
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPostImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setPostImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
 
   // Post Creator submit handler
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) {
-      toast.error(isHi ? "पोस्ट प्रकाशित करने के लिए कृपया लॉग इन करें" : "Please log in to publish posts");
-      return;
-    }
-    if (postType !== 'thought' && !postTitle.trim()) {
-      toast.error(isHi ? "शीर्षक आवश्यक है" : "Title is required");
-      return;
-    }
-    if (!postContent.trim()) {
-      toast.error(isHi ? "विवरण सामग्री आवश्यक है" : "Content description is required");
-      return;
-    }
-
-    try {
-      setPublishingPost(true);
-      let imageUrl = null;
-      if (postImageFile) {
-        imageUrl = await uploadToCloudinary(postImageFile, 'lyrics');
-      }
-
-      const options = postType === 'question' 
-        ? pollOptions.filter(o => o.trim())
-        : null;
-
-      let eventDt = null;
-      if (postType === 'event' && eventDate) {
-        eventDt = new Date(`${eventDate}T${eventTime || '00:00'}`).toISOString();
-      }
-
-      await communityApi.createPost({
-        group_id: selectedGroup?.id || null,
-        author_id: user.id,
-        type: postType,
-        title: postTitle.trim() || null,
-        content: postContent.trim(),
-        image_url: imageUrl,
-        youtube_url: postYoutubeUrl.trim() || null,
-        question_options: options,
-        event_datetime: eventDt,
-        event_location: postLocation.trim() || null,
-        linked_bhajan_id: eventLinkedBhajan
-      });
-
-      toast.success(isHi ? "भक्तिमय पोस्ट प्रकाशित की गई!" : "Devotional post published!");
-      
-      // Reset forms
-      setPostTitle("");
-      setPostContent("");
-      setPostImageFile(null);
-      setPostImagePreview(null);
-      setPostYoutubeUrl("");
-      setPollOptions(["", ""]);
-      setEventDate("");
-      setEventTime("");
-      setEventLocation("");
-      setEventLinkedBhajan(null);
-      setCreatePostOpen(false);
-
-      loadPosts();
-    } catch (err: any) {
-      console.error("Post creation error:", err);
-      const errMsg = err?.message || err?.details || JSON.stringify(err);
-      toast.error(isHi ? `पोस्ट प्रकाशित करने में असमर्थ: ${errMsg}` : `Failed to publish post: ${errMsg}`);
-    } finally {
-      setPublishingPost(false);
-    }
-  };
 
   // Event location state field
-  const [postLocation, setPostLocation] = useState("");
 
   // Computed views filter
   const filteredPosts = useMemo(() => {
@@ -1724,247 +1657,34 @@ export default function JoinCommunityPage() {
       </Dialog>
 
       {/* ─── MODAL: CREATE POST ─────────────────────────────────── */}
-      <Dialog open={createPostOpen} onOpenChange={setCreatePostOpen}>
-        <DialogContent className="max-w-md bg-[#FAF6EE] dark:bg-[#0f0d0a] border-orange-500/20 text-stone-950 dark:text-stone-50 rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display font-extrabold text-lg text-orange-950 dark:text-amber-100 text-center">
-              {isHi ? "भक्तिमय पोस्ट बनाएं" : "Create Devotional Post"}
-            </DialogTitle>
-            <DialogDescription className="text-center text-xs text-stone-500 mt-1">
-              Select post type and fill the devotional details below.
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* Post Type Selector Grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 my-4">
-            {[
-              { id: 'thought', label: isHi ? 'विचार' : 'Thought', icon: '🌿' },
-              { id: 'bhajan_share', label: isHi ? 'भजन शेयर' : 'Share', icon: '🎵' },
-              { id: 'bhajan_request', label: isHi ? 'अनुरोध' : 'Request', icon: '📿' },
-              { id: 'question', label: isHi ? 'प्रश्न' : 'Question', icon: '❓' },
-              { id: 'event', label: isHi ? 'कार्यक्रम' : 'Event', icon: '📅' }
-            ].map(type => (
-              <button
-                key={type.id}
-                type="button"
-                onClick={() => setPostType(type.id as any)}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all ${
-                  postType === type.id 
-                    ? "bg-orange-500 border-orange-600 text-white scale-[1.02] shadow-xs" 
-                    : "bg-white dark:bg-stone-900 border-orange-500/10 text-stone-700 dark:text-stone-300 hover:bg-orange-50"
-                }`}
-              >
-                <span className="text-lg leading-none">{type.icon}</span>
-                <span className="text-[9px] font-extrabold tracking-tight uppercase whitespace-nowrap">{type.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <form onSubmit={handleCreatePost} className="space-y-4">
-            {/* Title (for Bhajan Share, Request, Event) */}
-            {postType !== 'thought' && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 dark:text-stone-300">
-                  {postType === 'bhajan_share' && (isHi ? "भजन शीर्षक" : "Bhajan Title")}
-                  {postType === 'bhajan_request' && (isHi ? "अनुरोधित भजन का नाम" : "Requested Bhajan Title")}
-                  {postType === 'question' && (isHi ? "प्रश्न का विषय (संक्षिप्त)" : "Question / Topic")}
-                  {postType === 'event' && (isHi ? "सत्संग / कार्यक्रम का नाम" : "Event Title")}
-                </label>
-                <Input 
-                  type="text"
-                  placeholder={postType === 'bhajan_request' ? "e.g., Kunj Bihari Aarti" : "e.g., Ram Ji Ka Satsang"}
-                  value={postTitle}
-                  onChange={(e) => setPostTitle(e.target.value)}
-                  required
-                  className="border-orange-500/20 bg-white dark:bg-stone-950/40 rounded-xl font-bold"
-                />
-              </div>
-            )}
-
-            {/* Content Textarea */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-600 dark:text-stone-300">
-                {postType === 'thought' && (isHi ? "अपने विचार लिखें" : "Write your devotional thought")}
-                {postType === 'bhajan_share' && (isHi ? "भजन की पंक्तियाँ या वर्णन" : "Lyrics excerpt or description")}
-                {postType === 'bhajan_request' && (isHi ? "विवरण (भजन के बोल, राग या कोई संकेत)" : "Provide hints, singer name, or details")}
-                {postType === 'question' && (isHi ? "अपना प्रश्न यहाँ पूछें" : "Write your question here")}
-                {postType === 'event' && (isHi ? "कार्यक्रम विवरण" : "Event Description")}
-              </label>
-              <textarea
-                rows={4}
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                required
-                className="w-full text-sm rounded-xl border border-orange-500/20 bg-white dark:bg-stone-950/40 p-3 focus:border-orange-500 focus:outline-none placeholder:text-stone-400"
-                placeholder={postType === 'thought' ? "भक्ति के बारे में कुछ लिखें..." : "विवरण दर्ज करें..."}
-              />
-            </div>
-
-            {/* Custom Image Upload (Cloudinary) */}
-            {(postType === 'bhajan_share' || postType === 'event') && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
-                  {postType === 'event' ? "Event Poster Image" : "Add Image (Optional)"}
-                </label>
-                <div className="flex items-center gap-3">
-                  <Input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden" 
-                    id="post-image-file" 
-                  />
-                  <label 
-                    htmlFor="post-image-file"
-                    className="px-4 py-2 bg-white dark:bg-stone-900 border border-orange-500/25 hover:bg-orange-50 text-orange-600 dark:text-orange-400 font-bold text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1 hover:scale-98 active:scale-95 transition-all shrink-0"
-                  >
-                    Upload Photo
-                  </label>
-                  {postImagePreview && (
-                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-orange-500/10 shrink-0">
-                      <img src={postImagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Youtube URL (Bhajan Share only) */}
-            {postType === 'bhajan_share' && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 dark:text-stone-300">
-                  YouTube Link (Optional)
-                </label>
-                <Input 
-                  type="url"
-                  placeholder="https://youtube.com/watch?v=..."
-                  value={postYoutubeUrl}
-                  onChange={(e) => setPostYoutubeUrl(e.target.value)}
-                  className="border-orange-500/20 bg-white dark:bg-stone-950/40 rounded-xl"
-                />
-              </div>
-            )}
-
-            {/* Quick-tap choices for Questions */}
-            {postType === 'question' && (
-              <div className="space-y-2 bg-orange-500/5 p-3.5 rounded-2xl border border-orange-500/10">
-                <span className="text-xs font-bold text-orange-950 dark:text-amber-100 block">
-                  Quick-tap choices (optional)
-                </span>
-                <div className="space-y-1.5">
-                  {pollOptions.map((opt, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        type="text"
-                        placeholder={`Option ${index + 1}`}
-                        value={opt}
-                        onChange={(e) => {
-                          const updated = [...pollOptions];
-                          updated[index] = e.target.value;
-                          setPollOptions(updated);
-                        }}
-                        className="h-8.5 text-xs rounded-lg"
-                      />
-                      {pollOptions.length > 2 && (
-                        <button
-                          type="button"
-                          onClick={() => setPollOptions(pollOptions.filter((_, idx) => idx !== index))}
-                          className="text-rose-600 hover:text-rose-700 text-xs px-1"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {pollOptions.length < 4 && (
-                    <button
-                      type="button"
-                      onClick={() => setPollOptions([...pollOptions, ""])}
-                      className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline"
-                    >
-                      + Add Option
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Event Specific Parameters */}
-            {postType === 'event' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-orange-500/5 p-4 rounded-2xl border border-orange-500/10">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-600 dark:text-stone-300">Date</label>
-                  <Input 
-                    type="date"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    required
-                    className="border-orange-500/20 bg-white rounded-lg h-9 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-600 dark:text-stone-300">Time</label>
-                  <Input 
-                    type="time"
-                    value={eventTime}
-                    onChange={(e) => setEventTime(e.target.value)}
-                    required
-                    className="border-orange-500/20 bg-white rounded-lg h-9 text-xs"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-stone-600 dark:text-stone-300">Location</label>
-                  <Input 
-                    type="text"
-                    placeholder="e.g., Radha Krishna Temple, Kunj Gali"
-                    value={postLocation}
-                    onChange={(e) => setPostLocation(e.target.value)}
-                    required
-                    className="border-orange-500/20 bg-white rounded-lg h-9 text-xs"
-                  />
-                </div>
-                
-                {/* Linked library bhajan (optional) */}
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-stone-600 dark:text-stone-300">
-                    Attach library bhajan (Optional)
-                  </label>
-                  <select
-                    value={eventLinkedBhajan || ""}
-                    onChange={(e) => setEventLinkedBhajan(e.target.value ? Number(e.target.value) : null)}
-                    className="w-full text-xs rounded-lg border border-orange-500/20 bg-white p-2.5"
-                  >
-                    <option value="">-- None --</option>
-                    {myBhajans.map(b => (
-                      <option key={b.id} value={b.id}>
-                        {b.title} ({b.singer_name})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3 pt-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCreatePostOpen(false)}
-                className="flex-1 rounded-xl border border-stone-200 dark:border-stone-700"
-              >
-                {isHi ? "रद्द करें" : "Cancel"}
-              </Button>
-              <Button
-                type="submit"
-                disabled={publishingPost}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl"
-              >
-                {publishingPost ? (isHi ? "प्रकाशित हो रहा..." : "Publishing...") : (isHi ? "प्रकाशित करें" : "Publish")}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CreatePostDialog
+        open={createPostOpen}
+        onOpenChange={setCreatePostOpen}
+        isHi={isHi}
+        postType={postType}
+        setPostType={setPostType}
+        postTitle={postTitle}
+        setPostTitle={setPostTitle}
+        postContent={postContent}
+        setPostContent={setPostContent}
+        postImagePreview={postImagePreview}
+        postYoutubeUrl={postYoutubeUrl}
+        setPostYoutubeUrl={setPostYoutubeUrl}
+        pollOptions={pollOptions}
+        setPollOptions={setPollOptions}
+        eventDate={eventDate}
+        setEventDate={setEventDate}
+        eventTime={eventTime}
+        setEventTime={setEventTime}
+        postLocation={postLocation}
+        setPostLocation={setPostLocation}
+        eventLinkedBhajan={eventLinkedBhajan}
+        setEventLinkedBhajan={setEventLinkedBhajan}
+        myBhajans={myBhajans}
+        publishingPost={publishingPost}
+        handleImageChange={handleImageChange}
+        onSubmit={handleCreatePost}
+      />
 
       {/* ─── MODAL: CREATE GROUP ────────────────────────────────── */}
       <CreateGroupDialog
