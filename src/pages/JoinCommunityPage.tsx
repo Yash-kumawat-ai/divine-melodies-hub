@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight,
-  Leaf, Music, BookOpen, HelpCircle, Bookmark, Lock
+  Leaf, Music, BookOpen, HelpCircle, Bookmark, Lock, Award, Megaphone, Flame, Loader2, Share2, MessageCircle, CheckCircle2, Volume2, Eye
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -18,6 +18,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PostCard } from "@/components/community/PostCard";
+import { EventsTab } from "@/components/community/EventsTab";
+import { useMantraJapa } from "@/hooks/useMantraJapa";
+import { fetchGroupRankings } from "@/lib/naamSangh/naamSanghApi";
+import { supabase } from "@/lib/supabaseClient";
+
+// Curated Widescreen Cover Images for groups
+import RamCover from "./images/lord_ram_high_quality.webp";
+import ShivaCover from "./images/shiv_temple_hd.webp";
+import KrishnaCover from "./images/krishna_mobile_wallpaper.webp";
+import HanumanCover from "./images/hanuman_community_banner_high_quality.webp";
+import DefaultCover from "./images/hindu_temple_sunset_widescreen_high_quality.webp";
+import litDiyaImg from "./images/lit_diya.png";
+import templeBellImg from "./images/temple_bell.png";
+import omWebp from "./images/om.webp";
+import mandalaBeige from "./images/mandala-beige.svg";
 
 // Large deity avatars for group creation
 import durgaImg from "@/assets/deities/durga.webp";
@@ -39,6 +55,45 @@ const DEITIES = [
   { id: "lakshmi", name: "Lakshmi Ma", src: lakshmiImg },
   { id: "sai-baba", name: "Sai Baba", src: saiBabaImg },
 ];
+
+const resolveCover = (deity: string) => {
+  const d = deity?.toLowerCase();
+  if (d === "rama") return RamCover;
+  if (d === "shiva") return ShivaCover;
+  if (d === "krishna") return KrishnaCover;
+  if (d === "hanuman") return HanumanCover;
+  return DefaultCover;
+};
+
+function EventCountdown({ datetime }: { datetime: string }) {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; mins: number } | null>(null);
+
+  useEffect(() => {
+    const calcTime = () => {
+      const diff = new Date(datetime).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft(null);
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      setTimeLeft({ days, hours, mins });
+    };
+
+    calcTime();
+    const interval = setInterval(calcTime, 60000);
+    return () => clearInterval(interval);
+  }, [datetime]);
+
+  if (!timeLeft) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-md font-extrabold text-[10px] tracking-wide uppercase">
+      ⏳ {timeLeft.days > 0 ? `${timeLeft.days}d ` : ""}{timeLeft.hours}h {timeLeft.mins}m left
+    </span>
+  );
+}
 
 export default function JoinCommunityPage() {
   const navigate = useNavigate();
@@ -75,10 +130,12 @@ export default function JoinCommunityPage() {
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   
   // Group view details state
-  const [groupViewOpen, setGroupViewOpen] = useState(false);
+  const [groupViewOpen, setGroupViewOpen] = useState(!!slug);
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
-  const [activeGroupTab, setActiveGroupTab] = useState<'feed' | 'bhajans' | 'requests' | 'events' | 'members'>('feed');
+  const [activeGroupTab, setActiveGroupTab] = useState<'feed' | 'bhajans' | 'requests' | 'events' | 'members' | 'gallery'>('feed');
   const [showMemberManagement, setShowMemberManagement] = useState(false);
+  const [bhajanSearch, setBhajanSearch] = useState("");
+  const [bhajanSort, setBhajanSort] = useState("newest");
 
   // Group Details Search and Create State
   const [groupSearch, setGroupSearch] = useState("");
@@ -117,6 +174,18 @@ export default function JoinCommunityPage() {
   const [newCommentText, setNewCommentText] = useState("");
   const [commentIsLyricsSubmit, setCommentIsLyricsSubmit] = useState(false);
   const [loadingCommentsPostIds, setLoadingCommentsPostIds] = useState<Record<string, boolean>>({});
+
+  // Japa logging states & hook
+  const { mantras, completeSession } = useMantraJapa();
+  const [logChantsOpen, setLogChantsOpen] = useState(false);
+  const [chantsToLog, setChantsToLog] = useState(108);
+  const [customSankalp, setCustomSankalp] = useState("");
+  const [loggingChants, setLoggingChants] = useState(false);
+
+  // Group stats, rankings and announcements
+  const [groupRankings, setGroupRankings] = useState<any[]>([]);
+  const [loadingRankings, setLoadingRankings] = useState(false);
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<string[]>([]);
 
   // Debounced search for groups
   const [debouncedGroupSearch, setDebouncedGroupSearch] = useState("");
@@ -183,6 +252,16 @@ export default function JoinCommunityPage() {
           });
           setGroupViewOpen(true);
           communityApi.fetchGroupMembers(group.id).then(members => setGroupMembers(members));
+          
+          // Load rankings
+          setLoadingRankings(true);
+          fetchGroupRankings(group.id).then(rankings => {
+            setGroupRankings(rankings);
+            setLoadingRankings(false);
+          }).catch(err => {
+            console.error("Error loading group rankings:", err);
+            setLoadingRankings(false);
+          });
         } else {
           setGroupViewOpen(false);
           setSelectedGroup(null);
@@ -193,6 +272,108 @@ export default function JoinCommunityPage() {
       setSelectedGroup(null);
     }
   }, [slug, groups]);
+
+  // Log group chants handler (calls useMantraJapa mutation)
+  const handleLogGroupChants = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGroup || !user) {
+      toast.error(isHi ? "नाम जप जोड़ने के लिए कृपया लॉगिन करें।" : "Please log in to log group chants.");
+      return;
+    }
+    setLoggingChants(true);
+    try {
+      const groupDeity = selectedGroup.deity?.toLowerCase();
+      // Find matching mantra in database
+      const matchingMantra = mantras.find(m => m.deity?.toLowerCase() === groupDeity) || mantras[0];
+      if (!matchingMantra) {
+        throw new Error("No matching mantra found in library.");
+      }
+
+      await completeSession({
+        userId: user.id,
+        mantraId: matchingMantra.id,
+        sankalp: customSankalp || undefined,
+        targetCount: chantsToLog,
+        actualCount: chantsToLog,
+        durationSeconds: Math.round(chantsToLog * 0.8),
+        groupId: selectedGroup.id
+      });
+
+      toast.success(isHi 
+        ? `सफलतापूर्वक ${chantsToLog} नाम जप जोड़े गए! 📿` 
+        : `Successfully logged ${chantsToLog} chants to the group! 📿`
+      );
+      setLogChantsOpen(false);
+      setCustomSankalp("");
+      setChantsToLog(108);
+
+      // Refresh groups list & rankings
+      loadGroups();
+      const rankings = await fetchGroupRankings(selectedGroup.id);
+      setGroupRankings(rankings);
+    } catch (err: any) {
+      console.error("Error logging group chants:", err);
+      toast.error(isHi ? "नाम जप जोड़ने में असमर्थ।" : "Failed to log chants.");
+    } finally {
+      setLoggingChants(false);
+    }
+  };
+
+  // Realtime subscription for group updates (posts, comments, likes, members, progress)
+  useEffect(() => {
+    if (!selectedGroup?.id) return;
+
+    const channel = supabase
+      .channel(`group-realtime-${selectedGroup.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'community_posts', filter: `group_id=eq.${selectedGroup.id}` },
+        () => {
+          loadPosts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'post_comments' },
+        () => {
+          loadPosts();
+          if (expandedCommentsPostId) {
+            communityApi.fetchComments(expandedCommentsPostId).then(comments => {
+              setCommentsMap(prev => ({ ...prev, [expandedCommentsPostId]: comments }));
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'post_reactions' },
+        () => {
+          loadPosts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'group_members', filter: `group_id=eq.${selectedGroup.id}` },
+        () => {
+          communityApi.fetchGroupMembers(selectedGroup.id).then(members => setGroupMembers(members));
+          fetchGroupRankings(selectedGroup.id).then(rankings => setGroupRankings(rankings));
+          loadGroups();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'naam_sangh_progress', filter: `group_id=eq.${selectedGroup.id}` },
+        () => {
+          loadGroups();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+      supabase.removeChannel(channel);
+    };
+  }, [selectedGroup?.id, expandedCommentsPostId]);
 
   // Comments toggle handler
   const handleToggleComments = async (postId: string) => {
@@ -965,9 +1146,9 @@ export default function JoinCommunityPage() {
                     </div>
                     <button
                       onClick={() => setCreateGroupOpen(true)}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md shadow-orange-500/15 hover:shadow-lg hover:shadow-orange-500/25 hover:scale-[1.01] active:scale-95 transition-all shrink-0"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md shadow-red-950/15 hover:shadow-lg hover:shadow-red-950/25 hover:scale-[1.01] active:scale-95 transition-all shrink-0"
                       style={{
-                        background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)"
+                        background: "linear-gradient(135deg, #8B1E23 0%, #651317 100%)"
                       }}
                     >
                       <Plus className="w-4 h-4 text-white" />
@@ -1019,13 +1200,23 @@ export default function JoinCommunityPage() {
                             className="overflow-hidden rounded-2xl bg-white dark:bg-stone-900 border border-orange-500/10 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative group"
                           >
                             {/* Header banner image representing deity */}
-                            <div className="h-28 w-full relative overflow-hidden bg-amber-50 dark:bg-stone-950 flex items-center justify-center">
-                              <img
-                                src={deityFound ? deityFound.src : "/placeholder-deity.jpg"}
-                                alt={group.name}
-                                className="w-full h-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-stone-900 via-transparent to-black/20" />
+                            <div className="h-36 w-full relative overflow-hidden bg-amber-50 dark:bg-stone-950 flex items-center justify-center">
+                              {(() => {
+                                const hasValidGroupImg = group.image_url && 
+                                  group.image_url.trim() !== "" && 
+                                  group.image_url !== "null" && 
+                                  group.image_url !== "undefined" && 
+                                  (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
+                                const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
+                                return (
+                                  <img
+                                    src={cardCoverSrc}
+                                    alt={group.name}
+                                    className="w-full h-full object-cover opacity-100 transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                );
+                              })()}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
                               
                               {/* Public/Private badge */}
                               <span className={`absolute top-3 left-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 backdrop-blur-xs shadow-xs ${
@@ -1045,7 +1236,11 @@ export default function JoinCommunityPage() {
                               </span>
                             </div>
 
-                            <div className="p-5 flex-1 flex flex-col justify-between">
+                            <div className="p-5 flex-1 flex flex-col justify-between relative overflow-hidden">
+                              {/* Background beige mandala decoration */}
+                              <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.05] dark:opacity-[0.02] pointer-events-none w-24 h-24">
+                                <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+                              </div>
                               <div>
                                 {/* Deity Tag */}
                                 {(() => {
@@ -1116,23 +1311,41 @@ export default function JoinCommunityPage() {
                             </div>
 
                             <div className="flex gap-2.5 mt-5 border-t border-orange-500/5 pt-3.5">
-                              <Button
-                                variant="outline"
-                                onClick={() => handleOpenGroupDetails(group)}
-                                className="flex-1 text-xs font-bold border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/5 rounded-xl h-9"
-                              >
-                                {group.is_member ? (isHi ? "समूह देखें" : "View") : (isHi ? "विवरण देखें" : "Details")}
-                              </Button>
-                              <Button
-                                onClick={() => handleToggleGroupJoin(group)}
-                                className={`flex-1 text-xs font-bold rounded-xl h-9 ${
-                                  group.is_member 
-                                    ? "bg-stone-100 dark:bg-stone-850 text-stone-700 dark:text-stone-300 hover:bg-stone-200" 
-                                    : "bg-orange-500 hover:bg-orange-600 text-white"
-                                }`}
-                              >
-                                {group.is_member ? (isHi ? "शामिल हैं" : "Joined") : (isHi ? "शामिल हों" : "Join")}
-                              </Button>
+                              {group.is_member ? (
+                                <>
+                                  <Button
+                                    onClick={() => handleOpenGroupDetails(group)}
+                                    className="flex-1 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-9 shadow-sm shadow-orange-500/15"
+                                  >
+                                    {isHi ? "समूह देखें" : "View Group"}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => handleToggleGroupJoin(group)}
+                                    className="flex-1 text-xs font-bold border border-stone-250 dark:border-stone-800 text-stone-500 dark:text-stone-400 bg-stone-50/50 dark:bg-stone-900/50 rounded-xl h-9 flex items-center justify-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 hover:border-rose-500/20"
+                                  >
+                                    <Check className="w-3.5 h-3.5 text-orange-600" />
+                                    {isHi ? "शामिल हैं" : "Joined"}
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => handleOpenGroupDetails(group)}
+                                    className="flex-1 text-xs font-bold border border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/5 rounded-xl h-9"
+                                  >
+                                    {isHi ? "विवरण देखें" : "Details"}
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleToggleGroupJoin(group)}
+                                    className="flex-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-sm shadow-emerald-500/15 flex items-center justify-center gap-1"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    {isHi ? "शामिल हों" : "Join"}
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </div>
                         );
@@ -1441,283 +1654,1076 @@ export default function JoinCommunityPage() {
         </div>
       )}
 
-      {/* ─── GROUP DETAIL FULLSCREEN SUB-VIEW ────────────────────── */}
-      {groupViewOpen && selectedGroup && (
-        <div className="max-w-4xl mx-auto px-4 mt-6">
-          
-          {/* Deity Banner Jumbotron */}
-          <div className="relative rounded-3xl overflow-hidden h-40 border border-orange-500/10 bg-orange-100 dark:bg-stone-900 shadow-xs flex items-center justify-center mb-6">
-            {DEITIES.find(d => d.id === selectedGroup.deity) && (
-              <img 
-                src={DEITIES.find(d => d.id === selectedGroup.deity)?.src} 
-                alt={selectedGroup.name}
-                className="w-full h-full object-cover object-top opacity-20 filter blur-xs scale-105 pointer-events-none"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent flex flex-col justify-end p-6">
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-md text-white ${
-                  selectedGroup.is_public ? "bg-emerald-600" : "bg-rose-600"
-                }`}>
-                  {selectedGroup.is_public ? (isHi ? "सार्वजनिक" : "Public Group") : (isHi ? "निजी समूह" : "Private Group")}
-                </span>
-                <span className="text-[10px] uppercase font-extrabold tracking-wider bg-stone-900/60 text-stone-200 px-2 py-0.5 rounded-md">
-                  {selectedGroup.deity}
-                </span>
-              </div>
-              <h2 className="font-display font-extrabold text-xl md:text-2xl text-white mt-1.5 leading-none">
-                {selectedGroup.name}
-              </h2>
-              <p className="text-stone-200 text-xs mt-1.5 font-medium">
-                {selectedGroup.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
-              </p>
-            </div>
-          </div>
-
-          {/* Action Row */}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            <Button
-              onClick={() => handleWhatsAppInvite(selectedGroup)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 h-9 px-4 shadow-sm"
-            >
-              <Send className="w-3.5 h-3.5" />
-              {isHi ? "व्हाट्सएप आमंत्रण" : "Invite WhatsApp"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleCopyGroupLink(selectedGroup)}
-              className="border-orange-500/20 text-orange-600 dark:text-orange-400 bg-white dark:bg-stone-900 hover:bg-orange-500/5 rounded-xl text-xs flex items-center gap-1 h-9 px-4 shadow-sm"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              {isHi ? "लिंक कॉपी करें" : "Copy Link"}
-            </Button>
-
-            {/* If Creator/Admin */}
-            {selectedGroup.created_by === user?.id && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMemberManagement(!showMemberManagement)}
-                  className="border-stone-500/20 text-stone-600 dark:text-stone-300 bg-white dark:bg-stone-900 hover:bg-stone-500/5 rounded-xl text-xs flex items-center gap-1 h-9 px-4 shadow-sm ml-auto"
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  {isHi ? "सदस्य सूची" : "Manage Members"}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleDeleteGroupAction(selectedGroup.id)}
-                  className="text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-xs flex items-center gap-1 h-9 px-3"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  {isHi ? "समूह हटाएं" : "Delete Group"}
-                </Button>
-              </>
-            )}
-
-            {selectedGroup.created_by !== user?.id && (
-              <Button
-                variant="outline"
-                onClick={() => handleToggleGroupJoin(selectedGroup)}
-                className="border-stone-500/20 text-rose-600 dark:text-rose-400 bg-white dark:bg-stone-900 hover:bg-stone-500/5 rounded-xl text-xs flex items-center gap-1 h-9 px-4 shadow-sm ml-auto"
-              >
-                {isHi ? "समूह छोड़ें" : "Leave Group"}
-              </Button>
-            )}
-          </div>
-
-          {/* Members manager panel */}
-          {showMemberManagement && selectedGroup.created_by === user?.id && (
-            <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-sm">
-              <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-3 flex items-center gap-1">
-                {isHi ? "👥 सदस्य सूची" : "👥 Member List"}
-              </h3>
-              <div className="space-y-3 max-h-48 overflow-y-auto">
-                {groupMembers.map(m => (
-                  <div key={m.user_id} className="flex items-center justify-between text-xs py-1">
-                    <span className="font-medium text-stone-700 dark:text-stone-300">
-                      {m.profile?.display_name || "Devotee"} {m.role === 'admin' && "(Admin)"}
-                    </span>
-                    {m.role !== 'admin' && (
-                      <button 
-                        onClick={() => handleRemoveMember(selectedGroup.id, m.user_id)}
-                        className="text-rose-600 hover:underline"
-                      >
-                        {isHi ? "हटाएं" : "Remove"}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* About Section */}
-          <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-xs">
-            <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-2">
-              🌿 {isHi ? "समूह विवरण" : "About this Community"}
-            </h3>
-            <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-medium">
-              {selectedGroup.description || (isHi ? "कोई विवरण उपलब्ध नहीं है।" : "No description provided.")}
-            </p>
-          </div>
-
-          {/* Chanting Goal Progress Box */}
-          {selectedGroup.target_count && selectedGroup.target_count > 0 && (
-            <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-xs">
-              <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-2">
-                📿 {isHi ? "सामूहिक नाम जप प्रगति" : "Group Chanting Progress"}
-              </h3>
-              <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
-                <span>{isHi ? "प्रगति लक्ष्य" : "Goal Progress"}</span>
-                <span className="font-bold text-orange-600 dark:text-orange-400">
-                  {selectedGroup.completion_percent}% ({selectedGroup.total_chants && selectedGroup.total_chants >= 100000 
-                    ? `${(selectedGroup.total_chants / 100000).toFixed(1)}L` 
-                    : (selectedGroup.total_chants || 0).toLocaleString()} / {selectedGroup.target_count >= 100000 
-                    ? `${(selectedGroup.target_count / 100000).toFixed(1)}L` 
-                    : selectedGroup.target_count.toLocaleString()})
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-orange-500/10 overflow-hidden">
-                <div 
-                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
-                  style={{ width: `${selectedGroup.completion_percent}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Group Content Tabs */}
-          <div className="flex border-b border-orange-500/10 mb-6 gap-2">
-            {[
-              { id: 'feed', label: isHi ? 'सत्संग' : 'Satsang' },
-              { id: 'bhajans', label: isHi ? 'भजन शेयर' : 'Bhajans' },
-              { id: 'requests', label: isHi ? 'भजन अनुरोध' : 'Requests' },
-              { id: 'events', label: isHi ? 'कार्यक्रम' : 'Events' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveGroupTab(tab.id as any)}
-                className={`relative pb-3 px-3 font-bold text-xs transition-all ${
-                  activeGroupTab === tab.id ? "text-orange-600 dark:text-orange-400" : "text-stone-500 dark:text-stone-400"
-                }`}
-              >
-                {tab.label}
-                {activeGroupTab === tab.id && (
-                  <motion.div 
-                    layoutId="group-tab-line"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-                  />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Group-specific Feed Composer CTA */}
-          <div 
-            onClick={() => {
-              // Pre-select post type according to activeGroupTab
-              if (activeGroupTab === 'bhajans') setPostType('bhajan_share');
-              else if (activeGroupTab === 'requests') setPostType('bhajan_request');
-              else if (activeGroupTab === 'events') setPostType('event');
-              else setPostType('thought');
-              setCreatePostOpen(true);
-            }}
-            className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer mb-6"
-          >
-            <span className="text-stone-400 text-xs font-medium">
-              {isHi ? "इस समूह में कुछ साझा करें..." : "Post to this group..."}
-            </span>
-            <Button size="icon" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-8 h-8 shrink-0">
-              <Plus className="w-4.5 h-4.5" />
-            </Button>
-          </div>
-
-          {/* Feed Filter logic for group items */}
-          {(() => {
-            const groupPosts = posts.filter(p => p.group_id === selectedGroup.id);
-            let displayList = groupPosts;
-            
-            if (activeGroupTab === 'bhajans') {
-              displayList = groupPosts.filter(p => p.type === 'bhajan_share');
-            } else if (activeGroupTab === 'requests') {
-              displayList = groupPosts.filter(p => p.type === 'bhajan_request');
-            } else if (activeGroupTab === 'events') {
-              displayList = groupPosts.filter(p => p.type === 'event');
-            }
-
-            if (displayList.length === 0) {
-              const memberCount = selectedGroup.member_count || 0;
-              let emptyMessage = "";
-              if (memberCount <= 2) {
-                emptyMessage = isHi 
-                  ? "इस समूह की यात्रा अभी शुरू हुई है 🌸 पहला भजन या विचार साझा करके शुरुआत करें।"
-                  : "This Community's journey has just begun 🌸 Be the first to share a bhajan or thought.";
-              } else {
-                if (activeGroupTab === 'bhajans') {
-                  emptyMessage = isHi
-                    ? "अभी तक कोई भजन साझा नहीं हुआ — अपना पसंदीदा भजन यहाँ जोड़ें।"
-                    : "No bhajans shared yet — add your favorite bhajan here.";
-                } else if (activeGroupTab === 'requests') {
-                  emptyMessage = isHi
-                    ? "अभी तक कोई भजन अनुरोध नहीं है — यदि आप कोई भजन ढूंढ रहे हैं, तो यहाँ अनुरोध करें।"
-                    : "No bhajan requests yet — if you are looking for a bhajan, request it here.";
-                } else if (activeGroupTab === 'events') {
-                  emptyMessage = isHi
-                    ? "अभी तक कोई कार्यक्रम निर्धारित नहीं है — आगामी सत्संग या उत्सव यहाँ जोड़ें।"
-                    : "No events scheduled yet — add upcoming satsang or festival details here.";
-                } else {
-                  emptyMessage = isHi
-                    ? "अभी तक कोई सत्संग या विचार साझा नहीं हुआ — अपने विचार यहाँ साझा करें।"
-                    : "No thoughts shared yet — share your first reflection here.";
-                }
-              }
-
-              return (
-                <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
-                  <span className="text-3xl block">🌸</span>
-                  <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
-                    {emptyMessage}
-                  </p>
-                </div>
-              );
-            }
-
-            return (
-              <div className="space-y-4">
-                {displayList.map(post => (
-                  <PostCard 
-                    key={post.id} 
-                    post={post}
-                    user={user}
-                    isHi={isHi}
-                    comments={commentsMap[post.id] || []}
-                    isCommentsExpanded={expandedCommentsPostId === post.id}
-                    onToggleComments={handleToggleComments}
-                    onToggleReaction={handleToggleReaction}
-                    onToggleRsvp={handleToggleRsvp}
-                    onVoteOption={handleVoteOption}
-                    onDeleteComment={handleDeleteComment}
-                    onAddComment={handleAddComment}
-                    newCommentText={newCommentText}
-                    setNewCommentText={setNewCommentText}
-                    commentIsLyricsSubmit={commentIsLyricsSubmit}
-                    setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                    isLoadingComments={loadingCommentsPostIds[post.id]}
-                    isPostSaved={isSaved(post.id)}
-                    onToggleSavePost={handleToggleSavePost}
-                    onDeletePost={async (id) => {
-                      if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
-                        await communityApi.softRemovePost(id);
-                        loadPosts();
-                      }
-                    }}
-                  />
-                ))}
-              </div>
-            );
-          })()}
+      {/* If we are loading the group for the slug, show a loading spinner */}
+      {groupViewOpen && !selectedGroup && (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-[#5c1d0c] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">
+            {isHi ? "समूह लोड हो रहा है..." : "Loading group..."}
+          </p>
         </div>
       )}
+
+      {/* ─── GROUP DETAIL FULLSCREEN SUB-VIEW ────────────────────── */}
+      {groupViewOpen && selectedGroup && (() => {
+        const groupPosts = posts.filter(p => p.group_id === selectedGroup.id);
+        const groupAnnouncements = groupPosts.filter(p => {
+          const isCreator = p.author_id === selectedGroup.created_by;
+          const isAdmin = groupMembers.find(m => m.user_id === p.author_id)?.role === 'admin';
+          return (isCreator || isAdmin) && (p.type === 'thought' || p.type === 'event') && !dismissedAnnouncements.includes(p.id);
+        });
+        const adminMembers = groupMembers.filter(m => m.role === 'admin' || m.user_id === selectedGroup.created_by);
+        const creatorName = adminMembers.length > 0
+          ? adminMembers.map(a => a.profile?.display_name || (isHi ? "भक्त" : "Devotee")).join(", ")
+          : (isHi ? "प्रशासक" : "Admin");
+        const activeMembersCount = groupRankings.filter(r => r.total_chants > 0).length;
+        
+        // Calculate today activity items
+        const todayActivityItems = [];
+        const isToday = (dateStr: string) => new Date(dateStr).toDateString() === new Date().toDateString();
+        
+        const newBhajansToday = groupPosts.filter(p => p.type === 'bhajan_share' && isToday(p.created_at)).length;
+        if (newBhajansToday > 0) {
+          todayActivityItems.push({ title: isHi ? `${newBhajansToday} नए भजन साझा` : `${newBhajansToday} new bhajans shared`, icon: '🎵' });
+        }
+
+        const newRequestsToday = groupPosts.filter(p => p.type === 'bhajan_request' && isToday(p.created_at)).length;
+        if (newRequestsToday > 0) {
+          todayActivityItems.push({ title: isHi ? `${newRequestsToday} नए भजन अनुरोध` : `${newRequestsToday} new bhajan requests`, icon: '📿' });
+        }
+
+        const newEventsToday = groupPosts.filter(p => p.type === 'event' && isToday(p.created_at)).length;
+        if (newEventsToday > 0) {
+          todayActivityItems.push({ title: isHi ? `${newEventsToday} नए कार्यक्रम` : `${newEventsToday} new events`, icon: '📅' });
+        }
+
+        const newThoughtsToday = groupPosts.filter(p => p.type === 'thought' && isToday(p.created_at)).length;
+        if (newThoughtsToday > 0) {
+          todayActivityItems.push({ title: isHi ? `${newThoughtsToday} नए विचार` : `${newThoughtsToday} new thoughts`, icon: '🌿' });
+        }
+
+        const newMembersToday = groupMembers.filter(m => isToday(m.joined_at)).length;
+        if (newMembersToday > 0) {
+          todayActivityItems.push({ title: isHi ? `${newMembersToday} नए भक्त जुड़े` : `${newMembersToday} new devotees joined`, icon: '👥' });
+        }
+
+        // Filter and sort bhajans shared by group
+        let filteredBhajans = groupPosts.filter(p => p.type === 'bhajan_share');
+        if (bhajanSearch.trim()) {
+          const q = bhajanSearch.toLowerCase();
+          filteredBhajans = filteredBhajans.filter(p => p.title?.toLowerCase().includes(q) || p.content?.toLowerCase().includes(q));
+        }
+        if (bhajanSort === 'newest') {
+          filteredBhajans = [...filteredBhajans].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        } else if (bhajanSort === 'popular') {
+          filteredBhajans = [...filteredBhajans].sort((a, b) => (b.reaction_count || 0) - (a.reaction_count || 0));
+        } else if (bhajanSort === 'comments') {
+          filteredBhajans = [...filteredBhajans].sort((a, b) => (b.comment_count || 0) - (a.comment_count || 0));
+        }
+
+        const deityInfo = DEITIES.find(d => d.id?.toLowerCase() === selectedGroup.deity?.toLowerCase());
+        const hasValidImageUrl = selectedGroup.image_url && 
+          selectedGroup.image_url.trim() !== "" && 
+          selectedGroup.image_url !== "null" && 
+          selectedGroup.image_url !== "undefined" && 
+          (selectedGroup.image_url.startsWith("http") || selectedGroup.image_url.startsWith("/") || selectedGroup.image_url.startsWith("data:"));
+
+        const coverSrc = hasValidImageUrl ? selectedGroup.image_url! : resolveCover(selectedGroup.deity);
+        const avatarSrc = hasValidImageUrl ? selectedGroup.image_url! : (deityInfo?.src || DefaultCover);
+
+        return (
+          <div className="max-w-5xl mx-auto px-4 mt-6 pb-20">
+            
+            {/* Temple Jumbotron Banner (Hero Section) */}
+            <div className="relative rounded-3xl overflow-hidden h-52 border border-amber-500/20 bg-orange-100 dark:bg-stone-950 shadow-md flex items-center justify-center mb-6">
+              <img 
+                src={coverSrc} 
+                alt={selectedGroup.name}
+                className="w-full h-full object-cover object-center opacity-85 dark:opacity-40"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-6">
+                
+                {/* Group Badges */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded-md text-white flex items-center gap-0.5 ${
+                    selectedGroup.is_public ? "bg-emerald-600/90" : "bg-rose-600/90"
+                  }`}>
+                    <Globe className="w-3 h-3" />
+                    {selectedGroup.is_public ? (isHi ? "सार्वजनिक समूह" : "Public Group") : (isHi ? "निजी समूह" : "Private Group")}
+                  </span>
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider bg-amber-500 text-amber-955 text-amber-950 px-2 py-0.5 rounded-md font-display font-black flex items-center gap-0.5">
+                    <Sparkles className="w-3 h-3 animate-pulse" />
+                    {selectedGroup.deity?.toUpperCase()}
+                  </span>
+                  {selectedGroup.invite_code && (
+                    <span className="text-[10px] font-extrabold tracking-wider bg-stone-900/70 text-stone-200 border border-stone-700/30 px-2 py-0.5 rounded-md font-mono">
+                      CODE: {selectedGroup.invite_code}
+                    </span>
+                  )}
+                </div>
+
+                {/* Group Typography */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
+                    <h2 className="font-display font-black text-2xl md:text-3xl text-white leading-tight drop-shadow-md flex items-center gap-2">
+                      {selectedGroup.name}
+                    </h2>
+                    <p className="text-amber-100/90 text-xs mt-1.5 font-medium flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>👥 {selectedGroup.member_count} {isHi ? "श्रद्धालु" : "Devotees"}</span>
+                      <span>•</span>
+                      <span>🔥 {loadingRankings ? "..." : activeMembersCount} {isHi ? "सक्रिय भक्त" : "Active Chanting"}</span>
+                      <span>•</span>
+                      <span>📅 {isHi ? "प्रारंभ तिथि" : "Created"} {new Date(selectedGroup.created_at || Date.now()).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </p>
+                  </div>
+                  
+                  {/* Admin info */}
+                  <div className="text-left md:text-right shrink-0">
+                    <span className="text-[9px] uppercase tracking-wider text-amber-200/75 block font-bold">{isHi ? "समूह प्रशासक (एडमिन)" : "TEMPLE ADMIN"}</span>
+                    <span className="text-xs font-bold text-white truncate max-w-xs block">{creatorName}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Row */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 mb-6 w-full">
+              <Button
+                onClick={() => handleWhatsAppInvite(selectedGroup)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto px-4 shadow-sm"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {isHi ? "व्हाट्सएप आमंत्रण" : "Invite WhatsApp"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleCopyGroupLink(selectedGroup)}
+                className="border-orange-500/20 text-orange-600 dark:text-orange-400 bg-white dark:bg-stone-900 hover:bg-orange-500/5 rounded-xl text-xs flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto px-4 shadow-sm"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                {isHi ? "लिंक कॉपी करें" : "Copy Link"}
+              </Button>
+
+              {/* If Creator/Admin */}
+              {selectedGroup.created_by === user?.id ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowMemberManagement(!showMemberManagement)}
+                    className="border-stone-500/20 text-stone-600 dark:text-stone-300 bg-white dark:bg-stone-900 hover:bg-stone-500/5 rounded-xl text-xs flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto px-4 shadow-sm sm:ml-auto"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    {isHi ? "प्रशासक डैशबोर्ड" : "Admin Dashboard"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDeleteGroupAction(selectedGroup.id)}
+                    className="border-rose-500/20 hover:border-rose-500/40 text-rose-600 bg-white dark:bg-stone-900 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-xs flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto px-3"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {isHi ? "समूह हटाएं" : "Delete Group"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => handleToggleGroupJoin(selectedGroup)}
+                  className="border-stone-500/20 text-rose-600 dark:text-rose-400 bg-white dark:bg-stone-900 hover:bg-stone-500/5 rounded-xl text-xs flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto px-4 shadow-sm sm:ml-auto col-span-2 sm:col-span-1"
+                >
+                  {isHi ? "समूह छोड़ें" : "Leave Group"}
+                </Button>
+              )}
+            </div>
+
+            {/* Members manager panel */}
+            {showMemberManagement && selectedGroup.created_by === user?.id && (
+              <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-sm animate-[accordion-down_0.2s_ease-out]">
+                <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-3 flex items-center gap-1">
+                  👥 {isHi ? "सदस्य सूची" : "Member List"}
+                </h3>
+                <div className="space-y-3 max-h-48 overflow-y-auto">
+                  {groupMembers.map(m => (
+                    <div key={m.user_id} className="flex items-center justify-between text-xs py-1.5 border-b border-stone-50 dark:border-stone-950 last:border-b-0">
+                      <span className="font-bold text-stone-700 dark:text-stone-300">
+                        {m.profile?.display_name || "Devotee"} {m.role === 'admin' && <span className="text-[10px] text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded font-black ml-1 uppercase">Admin</span>}
+                      </span>
+                      {m.role !== 'admin' && (
+                        <button 
+                          onClick={() => handleRemoveMember(selectedGroup.id, m.user_id)}
+                          className="text-rose-600 hover:underline font-bold"
+                        >
+                          {isHi ? "हटाएं" : "Remove"}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* About Section */}
+            <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 mb-6 shadow-xs relative overflow-hidden">
+              {/* Background beige mandala decoration */}
+              <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.08] dark:opacity-[0.03] pointer-events-none w-24 h-24">
+                <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+              </div>
+              <h3 className="font-display font-bold text-sm text-orange-950 dark:text-amber-100 mb-2 relative z-10">
+                🌿 {isHi ? "समूह विवरण" : "About this Community"}
+              </h3>
+              <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed font-medium relative z-10">
+                {selectedGroup.description || (isHi ? "कोई विवरण उपलब्ध नहीं है।" : "No description provided.")}
+              </p>
+            </div>
+
+            {/* Chanting Goal Progress Altar (Today's Activity) */}
+            {selectedGroup.target_count && selectedGroup.target_count > 0 && (
+              <div className="bg-white dark:bg-stone-900 border border-amber-500/20 rounded-3xl p-6 shadow-md relative overflow-hidden mb-6">
+                
+                {/* Slow-rotating decorative background mandala SVG */}
+                <div className="absolute right-0 bottom-0 translate-x-12 translate-y-12 opacity-[0.08] dark:opacity-[0.03] pointer-events-none w-48 h-48">
+                  <img src={mandalaBeige} className="w-full h-full object-contain animate-[spin_60s_linear_infinite]" alt="" />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                  <div className="flex items-center gap-4">
+                    <div className="relative shrink-0 flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/15">
+                      {/* Animated Om Webp */}
+                      <img 
+                        src={omWebp} 
+                        alt="Om" 
+                        className="w-14 h-14 object-contain"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-extrabold text-sm text-orange-955 text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
+                        📿 {isHi ? "सामूहिक नाम जप यज्ञ" : "Group Chanting Yajna"}
+                      </h4>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                        {isHi ? "भक्तों द्वारा सामूहिक रूप से पूर्ण किए गए जप" : "Devotees chanting together towards collective target"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-full md:w-64 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400">
+                      <span>{isHi ? "यज्ञ लक्ष्य प्रगति" : "Yajna Progress"}</span>
+                      <span className="font-bold text-orange-600 dark:text-orange-400">
+                        {selectedGroup.completion_percent}% ({selectedGroup.total_chants && selectedGroup.total_chants >= 100000 
+                          ? `${(selectedGroup.total_chants / 100000).toFixed(1)}L` 
+                          : (selectedGroup.total_chants || 0).toLocaleString()} / {selectedGroup.target_count >= 100000 
+                          ? `${(selectedGroup.target_count / 100000).toFixed(1)}L` 
+                          : selectedGroup.target_count.toLocaleString()})
+                      </span>
+                    </div>
+                    <div className="w-full h-3 rounded-full bg-orange-500/10 overflow-hidden border border-orange-500/5">
+                      <div 
+                        className="h-full rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 transition-all duration-500" 
+                        style={{ width: `${selectedGroup.completion_percent}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Actions Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+              <button
+                onClick={() => setActiveGroupTab('feed')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'feed'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">🌿</span>
+                <span className="text-xs font-bold block">{isHi ? "डिजिटल सत्संग" : "Digital Satsang"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "चर्चा और विचार" : "Discussions & feed"}</span>
+              </button>
+
+              <button
+                onClick={() => setLogChantsOpen(true)}
+                className="p-4 rounded-2xl border text-left bg-[#FAF6EE] dark:bg-[#1a1410] border-amber-500/30 hover:border-amber-500/50 hover:-translate-y-0.5 transition-all duration-350 shadow-xs"
+              >
+                <span className="text-xl mb-1.5 block">📿</span>
+                <span className="text-xs font-bold text-amber-850 dark:text-amber-300 block">{isHi ? "सामूहिक नाम जप" : "Log Chants"}</span>
+                <span className="text-[10px] text-amber-700/80 dark:text-amber-400 block mt-0.5 leading-tight">{isHi ? "यज्ञ में जप जोड़ें" : "Contribute chants"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveGroupTab('bhajans')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'bhajans'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">🎵</span>
+                <span className="text-xs font-bold block">{isHi ? "भजन संग्रह" : "Read Bhajans"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "समूह द्वारा साझा" : "Shared by community"}</span>
+              </button>
+
+              <button
+                onClick={() => navigate("/upload-bhajan")}
+                className="p-4 rounded-2xl border text-left bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 hover:-translate-y-0.5 transition-all duration-350 shadow-xs"
+              >
+                <span className="text-xl mb-1.5 block">📤</span>
+                <span className="text-xs font-bold text-stone-800 dark:text-stone-200 block">{isHi ? "भजन अपलोड करें" : "Upload Bhajan"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "नया भजन जोड़ें" : "Add to library"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveGroupTab('events')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'events'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">📅</span>
+                <span className="text-xs font-bold block">{isHi ? "सत्संग कार्यक्रम" : "Satsang Events"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "उत्सव और प्रार्थना" : "Festivals & RSVP"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveGroupTab('members')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'members'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">🏆</span>
+                <span className="text-xs font-bold block">{isHi ? "भक्त लीडरबोर्ड" : "Devotee Leaderboard"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "शीर्ष नाम जपक" : "Top contributors"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveGroupTab('gallery')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'gallery'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">🌸</span>
+                <span className="text-xs font-bold block">{isHi ? "पवित्र गैलरी" : "Temple Gallery"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "दर्शन और चित्र" : "Devotional media"}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveGroupTab('requests')}
+                className={`p-4 rounded-2xl border text-left transition-all duration-350 hover:-translate-y-0.5 shadow-xs ${
+                  activeGroupTab === 'requests'
+                    ? "bg-[#651317] border-[#4A0E12] text-[#FFF9F2] shadow-md shadow-red-955/20"
+                    : "bg-white dark:bg-stone-900 border-amber-500/10 hover:border-amber-500/20 text-stone-800 dark:text-stone-200"
+                }`}
+              >
+                <span className="text-xl mb-1.5 block">🙏</span>
+                <span className="text-xs font-bold block">{isHi ? "भजन अनुरोध" : "Bhajan Requests"}</span>
+                <span className="text-[10px] opacity-60 block mt-0.5 leading-tight">{isHi ? "बोल या धुन मांगें" : "Request missing lyrics"}</span>
+              </button>
+            </div>
+
+            {/* Today's Temple Activity Banner */}
+            {todayActivityItems.length > 0 && (
+              <div className="bg-[#FAF6EE] dark:bg-[#1a1410] border border-amber-500/20 rounded-3xl p-5 mb-8 shadow-xs relative overflow-hidden">
+                {/* Background beige mandala decoration */}
+                <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.08] dark:opacity-[0.03] pointer-events-none w-24 h-24">
+                  <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+                </div>
+                <h3 className="font-display font-extrabold text-sm text-[#543D2B] dark:text-amber-100 flex items-center gap-1.5 border-b border-amber-500/10 pb-2 mb-3 relative z-10">
+                  🔱 {isHi ? "आज की मंदिर हलचल (सत्संग)" : "Today's Temple Activity"}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 relative z-10">
+                  {todayActivityItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-[#543D2B] dark:text-amber-250 bg-white/70 dark:bg-stone-950/40 p-2.5 rounded-xl border border-amber-500/10">
+                      <span className="text-base leading-none">{item.icon}</span>
+                      <span>{item.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Group Content Tabs */}
+            <div className="flex border-b border-orange-500/10 mb-6 gap-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+              {[
+                { id: 'feed', label: isHi ? 'सत्संग (चर्चा)' : 'Satsang Feed' },
+                { id: 'bhajans', label: isHi ? 'भजन संग्रह' : 'Community Bhajans' },
+                { id: 'requests', label: isHi ? 'भजन अनुरोध' : 'Requests' },
+                { id: 'events', label: isHi ? 'सत्संग कार्यक्रम' : 'Events' },
+                { id: 'members', label: isHi ? 'भक्त और लीडरबोर्ड' : 'Devotees & Leaderboard' },
+                { id: 'gallery', label: isHi ? 'पवित्र गैलरी' : 'Sacred Gallery' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveGroupTab(tab.id as any)}
+                  className={`relative pb-3 px-3 font-bold text-xs transition-all ${
+                    activeGroupTab === tab.id 
+                      ? "text-orange-600 dark:text-orange-400 font-extrabold border-b-2 border-orange-500" 
+                      : "text-stone-500 dark:text-stone-400"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* TAB 1: SATSANG FEED */}
+            {activeGroupTab === 'feed' && (
+              <div className="space-y-6">
+                
+                {/* Pinned Announcements from Admin */}
+                {groupAnnouncements.length > 0 && (
+                  <div className="space-y-3">
+                    {groupAnnouncements.map(announce => (
+                      <div 
+                        key={announce.id} 
+                        className="bg-gradient-to-r from-amber-500/10 to-orange-500/15 border-2 border-amber-400/40 rounded-3xl p-5 relative shadow-xs flex gap-3.5 items-start overflow-hidden"
+                      >
+                        {/* Background beige mandala decoration */}
+                        <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.08] dark:opacity-[0.03] pointer-events-none w-24 h-24">
+                          <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+                        </div>
+                        <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/20 text-orange-600 border border-amber-400/20 relative z-10">
+                          <Megaphone className="w-5 h-5 animate-pulse" />
+                        </div>
+                        <div className="flex-1 min-w-0 relative z-10">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-orange-600 flex items-center gap-1">
+                              📢 {isHi ? "समूह घोषणा" : "Group Announcement"}
+                            </span>
+                            <button 
+                              onClick={() => setDismissedAnnouncements(prev => [...prev, announce.id])}
+                              className="text-stone-400 hover:text-stone-650 dark:hover:text-stone-250 transition-colors"
+                              aria-label="Dismiss announcement"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <h4 className="font-display font-bold text-sm text-stone-900 dark:text-amber-100 mt-1">{announce.title}</h4>
+                          <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 line-clamp-3 leading-relaxed font-medium">{announce.content}</p>
+                          <button 
+                            onClick={() => {
+                              handleToggleComments(announce.id);
+                            }}
+                            className="text-orange-600 dark:text-amber-400 hover:underline font-extrabold text-[10px] uppercase tracking-wide mt-2 block text-left"
+                          >
+                            {isHi ? "पूर्ण विवरण पढ़ें और उत्तर दें" : "View Announcement & Reply"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Feed Composer CTA */}
+                <div 
+                  onClick={() => {
+                    setPostType('thought');
+                    setCreatePostOpen(true);
+                  }}
+                  className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer"
+                >
+                  <span className="text-stone-400 text-xs font-medium">
+                    {isHi ? "सत्संग में अपने विचार साझा करें..." : "Share a thought, mantra quote or question..."}
+                  </span>
+                  <Button size="icon" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-8 h-8 shrink-0">
+                    <Plus className="w-4.5 h-4.5" />
+                  </Button>
+                </div>
+
+                {/* Posts List */}
+                {(() => {
+                  const feedList = groupPosts.filter(p => p.type !== 'event' && p.type !== 'bhajan_share' && p.type !== 'bhajan_request');
+                  if (feedList.length === 0) {
+                    return (
+                      <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
+                        <span className="text-3xl block">🌿</span>
+                        <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                          {isHi 
+                            ? "अभी तक कोई सत्संग चर्चा या विचार साझा नहीं हुआ। पहला विचार साझा करें!" 
+                            : "No thoughts or discussions shared yet. Start the satsang by writing a post!"}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-4">
+                      {feedList.map(post => (
+                        <PostCard 
+                          key={post.id} 
+                          post={post}
+                          user={user}
+                          isHi={isHi}
+                          comments={commentsMap[post.id] || []}
+                          isCommentsExpanded={expandedCommentsPostId === post.id}
+                          onToggleComments={handleToggleComments}
+                          onToggleReaction={handleToggleReaction}
+                          onToggleRsvp={handleToggleRsvp}
+                          onVoteOption={handleVoteOption}
+                          onDeleteComment={handleDeleteComment}
+                          onAddComment={handleAddComment}
+                          newCommentText={newCommentText}
+                          setNewCommentText={setNewCommentText}
+                          commentIsLyricsSubmit={commentIsLyricsSubmit}
+                          setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          isLoadingComments={loadingCommentsPostIds[post.id]}
+                          isPostSaved={isSaved(post.id)}
+                          onToggleSavePost={handleToggleSavePost}
+                          onDeletePost={async (id) => {
+                            if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+                              await communityApi.softRemovePost(id);
+                              loadPosts();
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAB 2: BHAJANS */}
+            {activeGroupTab === 'bhajans' && (
+              <div className="space-y-6">
+                
+                {/* Search & Sort Panel */}
+                <div className="flex flex-col sm:flex-row gap-3 bg-white dark:bg-stone-900 border border-orange-500/10 p-4 rounded-2xl shadow-xs">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
+                    <Input 
+                      type="text"
+                      placeholder={isHi ? "भजन खोजें..." : "Search shared bhajans..."}
+                      value={bhajanSearch}
+                      onChange={(e) => setBhajanSearch(e.target.value)}
+                      className="pl-9 h-9 border-orange-500/10 rounded-xl"
+                    />
+                  </div>
+                  <select
+                    value={bhajanSort}
+                    onChange={(e) => setBhajanSort(e.target.value)}
+                    className="h-9 rounded-xl border border-orange-500/10 bg-white dark:bg-stone-950 px-3 py-1 text-xs font-bold text-stone-750 dark:text-stone-300 w-full sm:w-40"
+                  >
+                    <option value="newest">{isHi ? "नवीनतम" : "Newest"}</option>
+                    <option value="popular">{isHi ? "लोकप्रिय" : "Popular"}</option>
+                    <option value="comments">{isHi ? "चर्चित" : "Most Commented"}</option>
+                  </select>
+                </div>
+
+                {/* Bhajan Composer CTA */}
+                <div 
+                  onClick={() => {
+                    setPostType('bhajan_share');
+                    setCreatePostOpen(true);
+                  }}
+                  className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer"
+                >
+                  <span className="text-stone-400 text-xs font-medium">
+                    {isHi ? "इस समूह में कोई भजन साझा करें..." : "Share a bhajan lyrics link or YouTube video..."}
+                  </span>
+                  <Button size="icon" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-8 h-8 shrink-0">
+                    <Plus className="w-4.5 h-4.5" />
+                  </Button>
+                </div>
+
+                {filteredBhajans.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
+                    <span className="text-3xl block">🎵</span>
+                    <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                      {isHi 
+                        ? "कोई भजन नहीं मिला। भजन साझा करने वाले पहले व्यक्ति बनें!" 
+                        : "No shared bhajans found. Be the first to share a devotional melody!"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredBhajans.map(post => (
+                      <PostCard 
+                        key={post.id} 
+                        post={post}
+                        user={user}
+                        isHi={isHi}
+                        comments={commentsMap[post.id] || []}
+                        isCommentsExpanded={expandedCommentsPostId === post.id}
+                        onToggleComments={handleToggleComments}
+                        onToggleReaction={handleToggleReaction}
+                        onToggleRsvp={handleToggleRsvp}
+                        onVoteOption={handleVoteOption}
+                        onDeleteComment={handleDeleteComment}
+                        onAddComment={handleAddComment}
+                        newCommentText={newCommentText}
+                        setNewCommentText={setNewCommentText}
+                        commentIsLyricsSubmit={commentIsLyricsSubmit}
+                        setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                        isLoadingComments={loadingCommentsPostIds[post.id]}
+                        isPostSaved={isSaved(post.id)}
+                        onToggleSavePost={handleToggleSavePost}
+                        onDeletePost={async (id) => {
+                          if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+                            await communityApi.softRemovePost(id);
+                            loadPosts();
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: BHAJAN REQUESTS */}
+            {activeGroupTab === 'requests' && (
+              <div className="space-y-6">
+                
+                {/* Request Composer CTA */}
+                <div 
+                  onClick={() => {
+                    setPostType('bhajan_request');
+                    setCreatePostOpen(true);
+                  }}
+                  className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 cursor-pointer"
+                >
+                  <span className="text-stone-400 text-xs font-medium">
+                    {isHi ? "किसी दुर्लभ भजन के बोल या जानकारी का अनुरोध करें..." : "Request a bhajan's lyrics or chords..."}
+                  </span>
+                  <Button size="icon" className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-8 h-8 shrink-0">
+                    <Plus className="w-4.5 h-4.5" />
+                  </Button>
+                </div>
+
+                {(() => {
+                  const requestPosts = groupPosts.filter(p => p.type === 'bhajan_request');
+                  if (requestPosts.length === 0) {
+                    return (
+                      <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
+                        <span className="text-3xl block">📿</span>
+                        <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                          {isHi 
+                            ? "अभी तक कोई भजन अनुरोध नहीं है। यदि आप कोई भजन खोज रहे हैं, तो अनुरोध दर्ज करें।" 
+                            : "No bhajan requests in this group yet. Request a rare lyrics transcription here."}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="space-y-4">
+                      {requestPosts.map(post => (
+                        <PostCard 
+                          key={post.id} 
+                          post={post}
+                          user={user}
+                          isHi={isHi}
+                          comments={commentsMap[post.id] || []}
+                          isCommentsExpanded={expandedCommentsPostId === post.id}
+                          onToggleComments={handleToggleComments}
+                          onToggleReaction={handleToggleReaction}
+                          onToggleRsvp={handleToggleRsvp}
+                          onVoteOption={handleVoteOption}
+                          onDeleteComment={handleDeleteComment}
+                          onAddComment={handleAddComment}
+                          newCommentText={newCommentText}
+                          setNewCommentText={setNewCommentText}
+                          commentIsLyricsSubmit={commentIsLyricsSubmit}
+                          setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                          isLoadingComments={loadingCommentsPostIds[post.id]}
+                          isPostSaved={isSaved(post.id)}
+                          onToggleSavePost={handleToggleSavePost}
+                          onDeletePost={async (id) => {
+                            if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+                              await communityApi.softRemovePost(id);
+                              loadPosts();
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAB 4: EVENTS */}
+            {activeGroupTab === 'events' && (
+              <EventsTab 
+                isHi={isHi}
+                groupPosts={groupPosts}
+                user={user}
+                commentsMap={commentsMap}
+                expandedCommentsPostId={expandedCommentsPostId}
+                newCommentText={newCommentText}
+                setNewCommentText={setNewCommentText}
+                commentIsLyricsSubmit={commentIsLyricsSubmit}
+                setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                loadingCommentsPostIds={loadingCommentsPostIds}
+                isSaved={isSaved}
+                handleToggleComments={handleToggleComments}
+                handleToggleReaction={handleToggleReaction}
+                handleToggleRsvp={handleToggleRsvp}
+                handleVoteOption={handleVoteOption}
+                handleDeleteComment={handleDeleteComment}
+                handleAddComment={handleAddComment}
+                handleToggleSavePost={handleToggleSavePost}
+                loadPosts={loadPosts}
+                setPostType={setPostType}
+                setCreatePostOpen={setCreatePostOpen}
+              />
+            )}
+
+            {/* TAB 5: MEMBERS & LEADERBOARD */}
+            {activeGroupTab === 'members' && (
+              <div className="space-y-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  
+                  {/* Devotees Chanting Rankings */}
+                  <div className="md:col-span-2 space-y-4">
+                    <h3 className="font-display font-extrabold text-sm text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
+                      🏆 {isHi ? "जप यज्ञ लीडरबोर्ड" : "Japa Yajna Leaderboard"}
+                    </h3>
+                    
+                    {loadingRankings ? (
+                      <div className="space-y-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="h-14 bg-stone-100 dark:bg-stone-900 rounded-xl animate-pulse" />
+                        ))}
+                      </div>
+                    ) : groupRankings.length > 0 ? (
+                      <div className="space-y-6">
+                        
+                        {/* Top 3 podium */}
+                        <div className="grid grid-cols-3 gap-3 md:gap-4 pt-4 pb-2">
+                          {/* Rank 2 */}
+                          {groupRankings[1] && (
+                            <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-white/40 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 shadow-xs relative">
+                              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-slate-355 bg-slate-300 text-slate-800 flex items-center justify-center font-bold text-xs shadow-md border-2 border-white dark:border-stone-900">2</span>
+                              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-300 mb-2 shadow-inner">
+                                {groupRankings[1].avatar_url ? (
+                                  <img src={groupRankings[1].avatar_url} alt={groupRankings[1].display_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-slate-200 dark:bg-stone-850 flex items-center justify-center text-xs font-bold text-slate-500">
+                                    {groupRankings[1].display_name[0]}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[10px] md:text-xs font-bold text-stone-700 dark:text-stone-300 truncate w-full">{groupRankings[1].display_name}</span>
+                              <span className="text-[9px] font-extrabold text-slate-550 text-slate-500 block mt-0.5">{groupRankings[1].total_chants.toLocaleString()} {isHi ? "जप" : "japs"}</span>
+                            </div>
+                          )}
+
+                          {/* Rank 1 */}
+                          {groupRankings[0] && (
+                            <div className="flex flex-col items-center justify-end text-center p-4 rounded-2xl bg-gradient-to-b from-amber-500/15 to-amber-500/5 dark:from-amber-500/5 border-2 border-amber-400 shadow-md relative scale-[1.05] z-10">
+                              <span className="absolute -top-4.5 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center font-extrabold text-sm shadow-lg border-2 border-white dark:border-stone-900 animate-pulse">👑</span>
+                              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400 mb-2 shadow-lg">
+                                {groupRankings[0].avatar_url ? (
+                                  <img src={groupRankings[0].avatar_url} alt={groupRankings[0].display_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center text-sm font-bold text-amber-600">
+                                    {groupRankings[0].display_name[0]}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-xs md:text-sm font-extrabold text-stone-900 dark:text-amber-100 truncate w-full">{groupRankings[0].display_name}</span>
+                              <span className="text-[10px] md:text-xs font-extrabold text-orange-650 text-orange-600 dark:text-amber-400 block mt-0.5">{groupRankings[0].total_chants.toLocaleString()} {isHi ? "जप" : "japs"}</span>
+                            </div>
+                          )}
+
+                          {/* Rank 3 */}
+                          {groupRankings[2] && (
+                            <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-white/40 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 shadow-xs relative">
+                              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-amber-700 text-amber-100 flex items-center justify-center font-bold text-xs shadow-md border-2 border-white dark:border-stone-900">3</span>
+                              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-700 mb-2 shadow-inner">
+                                {groupRankings[2].avatar_url ? (
+                                  <img src={groupRankings[2].avatar_url} alt={groupRankings[2].display_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-amber-50 dark:bg-stone-850 flex items-center justify-center text-xs font-bold text-amber-755 text-amber-700">
+                                    {groupRankings[2].display_name[0]}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[10px] md:text-xs font-bold text-stone-700 dark:text-stone-300 truncate w-full">{groupRankings[2].display_name}</span>
+                              <span className="text-[9px] font-extrabold text-amber-750 block mt-0.5">{groupRankings[2].total_chants.toLocaleString()} {isHi ? "जप" : "japs"}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Standings table */}
+                        <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl overflow-hidden shadow-xs">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="bg-stone-50 dark:bg-stone-950 text-stone-500 dark:text-stone-400 font-bold border-b border-orange-500/10">
+                                  <th className="py-3 px-4 w-12 text-center">{isHi ? "स्थान" : "Rank"}</th>
+                                  <th className="py-3 px-4">{isHi ? "श्रद्धालु" : "Devotee"}</th>
+                                  <th className="py-3 px-4 text-center">{isHi ? "नियम" : "Streak"}</th>
+                                  <th className="py-3 px-4 text-right">{isHi ? "साप्ताहिक" : "Weekly"}</th>
+                                  <th className="py-3 px-4 text-right">{isHi ? "कुल जप" : "Total"}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-stone-100 dark:divide-stone-950 font-medium">
+                                {groupRankings.map((row, index) => (
+                                  <tr 
+                                    key={row.user_id} 
+                                    className={`hover:bg-orange-500/5 transition-colors ${
+                                      user?.id === row.user_id ? "bg-amber-500/5 text-orange-950 dark:text-amber-100 font-extrabold" : ""
+                                    }`}
+                                  >
+                                    <td className="py-3 px-4 text-center font-extrabold text-stone-400 dark:text-stone-500">{index + 1}</td>
+                                    <td className="py-3 px-4 flex items-center gap-2">
+                                      <div className="w-7 h-7 rounded-full overflow-hidden bg-stone-100 dark:bg-stone-950 border border-stone-200 shrink-0">
+                                        {row.avatar_url ? (
+                                          <img src={row.avatar_url} alt={row.display_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-stone-500">
+                                            {row.display_name[0]}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <span className="truncate">{row.display_name}</span>
+                                    </td>
+                                    <td className="py-3 px-4 text-center">
+                                      {row.current_streak > 0 ? (
+                                        <span className="inline-flex items-center gap-0.5 text-orange-500 font-extrabold">
+                                          <Flame className="w-3.5 h-3.5 fill-orange-500" />
+                                          {row.current_streak}d
+                                        </span>
+                                      ) : (
+                                        <span className="text-stone-400 font-medium">-</span>
+                                      )}
+                                    </td>
+                                    <td className="py-3 px-4 text-right text-stone-500 dark:text-stone-400">{row.weekly_japs?.toLocaleString() || 0}</td>
+                                    <td className="py-3 px-4 text-right font-extrabold text-stone-850 dark:text-stone-200">{row.total_chants.toLocaleString()}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
+                        <span className="text-3xl block">📿</span>
+                        <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                          {isHi 
+                            ? "अभी तक कोई नाम जप नहीं हुआ। सामूहिक जप शुरू करने वाले पहले बनें!" 
+                            : "No chants logged yet. Be the first to start the chanting yajna!"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Devotees directory (Flat List) */}
+                  <div className="space-y-4">
+                    <h3 className="font-display font-extrabold text-sm text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
+                      👥 {isHi ? "देव परिवार (सदस्य)" : "Devotee Family"}
+                    </h3>
+                    <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 divide-y divide-stone-100 dark:divide-stone-950 shadow-xs max-h-[480px] overflow-y-auto font-sans">
+                      {groupMembers.map(m => (
+                        <div key={m.user_id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-xs">
+                          <div className="flex items-center gap-2 min-w-0 font-medium">
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-stone-100 dark:bg-stone-950 border border-stone-200 shrink-0">
+                              {m.profile?.avatar_url ? (
+                                <img src={m.profile.avatar_url} alt={m.profile.display_name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-stone-500">
+                                  {(m.profile?.display_name || "D")[0]}
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-bold text-stone-850 dark:text-stone-200 block truncate">{m.profile?.display_name || "Devotee"}</span>
+                              <span className="text-[10px] text-stone-400 block truncate">Joined {new Date(m.joined_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className={`text-[9px] py-0 px-1.5 font-bold uppercase ${
+                            m.role === 'admin' ? 'border-amber-400 text-amber-500 bg-amber-500/5' : 'border-stone-200 text-stone-400'
+                          }`}>
+                            {m.role === 'admin' ? (isHi ? 'प्रशासक' : 'Admin') : (isHi ? 'भक्त' : 'Devotee')}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 6: SACRED GALLERY */}
+            {activeGroupTab === 'gallery' && (
+              <div className="space-y-4">
+                <h3 className="font-display font-extrabold text-sm text-orange-950 dark:text-amber-100 flex items-center gap-1.5">
+                  🌸 {isHi ? "दिव्य दर्शन गैलरी" : "Temple Darshan Gallery"}
+                </h3>
+                
+                {(() => {
+                  const mediaPosts = groupPosts.filter(p => p.image_url);
+                  if (mediaPosts.length === 0) {
+                    return (
+                      <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
+                        <span className="text-3xl block">🌸</span>
+                        <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                          {isHi 
+                            ? "इस समूह में अभी तक कोई चित्र या दर्शन साझा नहीं किया गया है।" 
+                            : "No images or temple darshans shared in this group yet."}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {mediaPosts.map(post => (
+                        <div 
+                          key={post.id} 
+                          onClick={() => {
+                            handleToggleComments(post.id);
+                            setActiveGroupTab('feed');
+                          }}
+                          className="group relative aspect-square rounded-2xl overflow-hidden border border-orange-500/10 bg-stone-100 dark:bg-stone-950 cursor-pointer shadow-xs hover:border-orange-500/30 transition-all hover:scale-[0.98]"
+                        >
+                          <img 
+                            src={post.image_url!} 
+                            alt="Darshan" 
+                            className="w-full h-full object-cover transition-transform duration-505 transition-transform duration-500 group-hover:scale-105" 
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 font-sans">
+                            <span className="text-[10px] text-amber-250 font-bold truncate">@{post.author?.display_name || "Devotee"}</span>
+                            <span className="text-[8px] text-stone-300 truncate mt-0.5">{new Date(post.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+          </div>
+        );
+      })()}
+      
+      {/* ─── MODAL: LOG CHANTS TO GROUP ─────────────────────────── */}
+      <Dialog open={logChantsOpen} onOpenChange={setLogChantsOpen}>
+        <DialogContent className="max-w-md bg-[#FAF6EE] dark:bg-[#0f0d0a] border-amber-500/20 text-stone-950 dark:text-stone-50 rounded-3xl p-6 shadow-2xl">
+          <DialogHeader className="font-sans">
+            <DialogTitle className="font-display font-extrabold text-lg text-orange-950 dark:text-amber-100 text-center flex items-center justify-center gap-1.5">
+              📿 {isHi ? "नाम जप समर्पण" : "Log Chants to Yajna"}
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-stone-500 mt-1">
+              {isHi 
+                ? `${selectedGroup?.name} के सामूहिक जप यज्ञ में अपना जप समर्पण करें`
+                : `Contribute your chanting rounds to ${selectedGroup?.name}'s collective target`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleLogGroupChants} className="space-y-5 mt-4 font-sans">
+            
+            {/* Display group's deity mantra details */}
+            {(() => {
+              const groupDeity = selectedGroup?.deity?.toLowerCase();
+              const matchingMantra = mantras?.find(m => m.deity?.toLowerCase() === groupDeity) || mantras?.[0];
+              return (
+                <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 text-center">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-amber-600 block">{isHi ? "समर्पित मंत्र" : "Target Mantra"}</span>
+                  <span className="text-base font-extrabold text-orange-950 dark:text-amber-100 block mt-1">
+                    {isHi ? matchingMantra?.name_hindi : matchingMantra?.name_english}
+                  </span>
+                  {matchingMantra?.full_text_hindi && (
+                    <p className="text-xs text-stone-500 dark:text-stone-400 italic mt-1.5 leading-relaxed font-hindi">
+                      "{matchingMantra.full_text_hindi}"
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Chants count selection */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
+                {isHi ? "जप संख्या (संख्या)" : "Number of Chants"}
+              </label>
+              <Input 
+                type="number"
+                min={1}
+                value={chantsToLog}
+                onChange={(e) => setChantsToLog(Math.max(1, Number(e.target.value)))}
+                required
+                className="border-amber-500/20 bg-white dark:bg-stone-950/40 rounded-xl font-extrabold text-center text-base h-11"
+              />
+              
+              {/* Quick tap round values */}
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {[
+                  { label: isHi ? "१ माला (१०८)" : "1 Mala (108)", val: 108 },
+                  { label: isHi ? "५ माला (५४०)" : "5 Malas (540)", val: 540 },
+                  { label: isHi ? "११ माला (११८८)" : "11 Malas (1188)", val: 1188 }
+                ].map(opt => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setChantsToLog(opt.val)}
+                    className={`py-1.5 rounded-lg border text-[10px] font-extrabold transition-all ${
+                      chantsToLog === opt.val
+                        ? "bg-amber-500 border-amber-600 text-white"
+                        : "bg-white dark:bg-stone-900 border-amber-500/10 text-stone-600 dark:text-stone-300 hover:bg-amber-500/5"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Sankalp input */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-stone-600 dark:text-stone-300">
+                {isHi ? "संकल्प (वैकल्पिक)" : "Sankalp / Intention (Optional)"}
+              </label>
+              <textarea
+                rows={2}
+                value={customSankalp}
+                onChange={(e) => setCustomSankalp(e.target.value)}
+                className="w-full text-xs rounded-xl border border-amber-500/20 bg-white dark:bg-stone-950/40 p-3 focus:border-amber-500 focus:outline-none placeholder:text-stone-400 leading-relaxed font-medium"
+                placeholder={isHi ? "जैसे: लोक शांति हेतु, पारिवारिक स्वास्थ्य हेतु..." : "e.g., For family peace, gratitude..."}
+              />
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setLogChantsOpen(false)}
+                className="flex-1 rounded-xl border border-stone-200 dark:border-stone-700"
+              >
+                {isHi ? "रद्द करें" : "Cancel"}
+              </Button>
+              <Button
+                type="submit"
+                disabled={loggingChants}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl flex items-center justify-center gap-1"
+              >
+                {loggingChants ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    {isHi ? "समर्पण हो रहा..." : "Submitting..."}
+                  </>
+                ) : (
+                  <>
+                    <span>📿</span>
+                    {isHi ? "जप समर्पित करें" : "Log Chants"}
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* ─── MODAL: CREATE POST ─────────────────────────────────── */}
       <Dialog open={createPostOpen} onOpenChange={setCreatePostOpen}>
@@ -2181,685 +3187,5 @@ export default function JoinCommunityPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-// ─── POST CARD SUB-COMPONENT ──────────────────────────────────────────
-
-export interface PostCardProps {
-  post: CommunityPost;
-  user: any;
-  isHi: boolean;
-  comments: PostComment[];
-  isCommentsExpanded: boolean;
-  onToggleComments: (postId: string) => void;
-  onToggleReaction: (postId: string) => void;
-  onToggleRsvp: (postId: string, currentRsvp: 'interested' | 'going' | null, clickedRsvp: 'interested' | 'going') => void;
-  onVoteOption: (postId: string, optionIndex: number) => void;
-  onDeleteComment: (postId: string, commentId: string) => void;
-  onAddComment: (postId: string) => void;
-  onDeletePost: (postId: string) => void;
-  newCommentText: string;
-  setNewCommentText: (text: string) => void;
-  commentIsLyricsSubmit: boolean;
-  setCommentIsLyricsSubmit: (val: boolean) => void;
-  isLoadingComments?: boolean;
-  isPostSaved: boolean;
-  onToggleSavePost: (postId: string) => void;
-}
-
-export function PostCard({
-  post, user, isHi, comments, isCommentsExpanded, onToggleComments, onToggleReaction, onToggleRsvp, onVoteOption, onDeleteComment, onAddComment, onDeletePost, newCommentText, setNewCommentText, commentIsLyricsSubmit, setCommentIsLyricsSubmit,
-  isLoadingComments = false,
-  isPostSaved,
-  onToggleSavePost
-}: PostCardProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-  
-  // Format DateTime
-  const formatTime = (isoString: string) => {
-    const diffMs = new Date().getTime() - new Date(isoString).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffMins < 1) return isHi ? "अभी" : "just now";
-    if (diffMins < 60) return isHi ? `${diffMins} मिनट पहले` : `${diffMins}m ago`;
-    if (diffHours < 24) return isHi ? `${diffHours} घंटे पहले` : `${diffHours}h ago`;
-    return new Date(isoString).toLocaleDateString();
-  };
-
-  const getAuthorBadge = (role?: string) => {
-    if (!role) return { label: isHi ? "भक्त" : "Devotee", icon: "🌸", colorClass: "text-amber-500" };
-    const r = role.toLowerCase();
-    if (r.includes("admin") || r.includes("acharya")) return { label: isHi ? "आचार्य" : "Acharya", icon: "🔱", colorClass: "text-orange-500 font-bold" };
-    if (r.includes("mod") || r.includes("satsangi")) return { label: isHi ? "सत्संगी" : "Satsangi", icon: "📿", colorClass: "text-amber-400" };
-    if (r.includes("sadhak")) return { label: isHi ? "साधक" : "Sadhak", icon: "🌿", colorClass: "text-emerald-400" };
-    return { label: isHi ? "भक्त" : "Devotee", icon: "🌸", colorClass: "text-amber-500" };
-  };
-
-  const authorBadge = getAuthorBadge(post.author?.role);
-
-  const getDeityImgForPost = (postId: string) => {
-    const list = [ramaImg, hanumanImg, krishnaImg, shivaImg, ganeshImg, durgaImg, lakshmiImg, saiBabaImg];
-    let num = 0;
-    for (let i = 0; i < postId.length; i++) {
-      num += postId.charCodeAt(i);
-    }
-    return list[num % list.length];
-  };
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'bg-[#181310] border-[#2c2018] text-stone-400';
-      case 'lyrics_submitted': return 'bg-blue-950/40 border-blue-900/40 text-blue-400';
-      case 'in_review': return 'bg-amber-950/40 border-amber-900/40 text-amber-400';
-      case 'added_to_library': return 'bg-emerald-950/40 border-emerald-900/40 text-emerald-400';
-      case 'closed_unresolved': return 'bg-rose-950/40 border-rose-900/40 text-rose-400';
-      default: return 'bg-stone-900 text-stone-400';
-    }
-  };
-
-  const highlightSacredText = (text: string) => {
-    if (!text) return "";
-    const keywords = ["108", "Hanuman Chalisa", "हनुमान चालीसा", "जय श्री राम", "जय श्री कृष्णा", "Jai Shree Ram", "Jai Shri Ram", "Hari Bol", "Hare Krishna"];
-    const escapedKeywords = keywords.map(k => k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'));
-    const regex = new RegExp(`(${escapedKeywords.join('|')})`, 'gi');
-    
-    const parts = text.split(regex);
-    return parts.map((part, index) => {
-      const isKeyword = keywords.some(k => k.toLowerCase() === part.toLowerCase());
-      if (isKeyword) {
-        return <span key={index} className="text-amber-400 font-bold">{part}</span>;
-      }
-      return part;
-    });
-  };
-
-  return (
-    <div className={`rounded-[24px] p-5 hover:border-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.07)] transition-all flex flex-col gap-4 text-left shadow-lg border ${
-      isDark ? 'bg-[#130f0c] border-[#231b15]' : 'bg-white border-stone-200'
-    }`}>
-      <div>
-        {/* Post Card Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 to-orange-600 shrink-0">
-              <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center font-extrabold text-xs uppercase select-none ${
-                isDark ? 'bg-stone-900 text-orange-400' : 'bg-stone-100 text-orange-600'
-              }`}>
-                {post.author?.avatar_url ? (
-                  <img src={post.author.avatar_url} alt="author" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
-                ) : (
-                  post.author?.display_name?.slice(0, 2).toUpperCase() || "DV"
-                )}
-              </div>
-            </div>
-            <div>
-              <span className={`font-display font-bold text-xs flex items-center gap-1.5 flex-wrap ${
-                isDark ? 'text-stone-100' : 'text-stone-850'
-              }`}>
-                {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
-                <span className="text-[10px] select-none" title={authorBadge.label}>
-                  {authorBadge.icon}
-                </span>
-                {post.group_name && (
-                  <span className={`text-[10px] font-semibold ${
-                    isDark ? 'text-stone-500' : 'text-stone-400'
-                  }`}>
-                    in <span className="text-orange-400 font-bold">#${post.group_name}</span>
-                  </span>
-                )}
-              </span>
-              <p className={`text-[9px] font-medium tracking-wide mt-0.5 ${
-                isDark ? 'text-stone-400' : 'text-stone-500'
-              }`}>
-                {formatTime(post.created_at)} • <span className={authorBadge.colorClass}>{authorBadge.label}</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Colored Type Tag */}
-            <Badge 
-              variant="outline" 
-              className={`text-[9px] uppercase font-extrabold ${
-                post.type === 'bhajan_share' ? (isDark ? "bg-emerald-950/20 text-emerald-400 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 border-emerald-300/40") :
-                post.type === 'bhajan_request' ? (isDark ? "bg-[#2c2018] text-amber-400 border-amber-500/20" : "bg-amber-50 text-amber-700 border-amber-300/60") :
-                post.type === 'question' ? (isDark ? "bg-blue-950/20 text-blue-400 border-blue-500/20" : "bg-blue-50 text-blue-700 border-blue-300/40") :
-                post.type === 'event' ? (isDark ? "bg-rose-950/20 text-rose-400 border-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-300/40") :
-                isDark ? "bg-stone-900 text-stone-400 border-stone-800" : "bg-stone-100 text-stone-600 border-stone-200"
-              }`}
-            >
-              {(() => {
-                const typesMap: Record<string, { hi: string, en: string }> = {
-                  'bhajan_share': { hi: 'भजन साझा', en: 'Bhajan Share' },
-                  'bhajan_request': { hi: 'भजन अनुरोध', en: 'Bhajan Request' },
-                  'question': { hi: 'जिज्ञासा/प्रश्न', en: 'Question/Poll' },
-                  'event': { hi: 'कार्यक्रम', en: 'Event' },
-                  'thought': { hi: 'विचार', en: 'Thought' }
-                };
-                return isHi ? (typesMap[post.type]?.hi || post.type) : (typesMap[post.type]?.en || post.type.replace('_', ' '));
-              })()}
-            </Badge>
-            {user?.id === post.author_id && (
-              <button 
-                onClick={() => onDeletePost(post.id)}
-                className={`p-1 transition-colors ${
-                  isDark ? 'text-stone-400 hover:text-rose-500' : 'text-stone-500 hover:text-rose-600'
-                }`}
-                title="Delete Post"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Post content and media (stacked vertically like Twitter) */}
-        <div className="mt-3.5 space-y-3.5 text-left w-full">
-          {/* Title */}
-          {post.title && (
-            <h3 className={`font-display font-extrabold text-sm sm:text-base leading-tight ${
-              isDark ? 'text-amber-50' : 'text-stone-850'
-            }`}>
-              {post.title}
-            </h3>
-          )}
-
-          {/* Content text */}
-          {post.content && (
-            <p className={`text-xs sm:text-[13px] whitespace-pre-wrap leading-relaxed ${
-              isDark ? 'text-stone-300' : 'text-stone-600'
-            }`}>
-              {highlightSacredText(post.content)}
-            </p>
-          )}
-
-          {/* Optional Uploaded Image (Full-width, rounded) */}
-          {post.image_url && (
-            <div className={`w-full rounded-2xl overflow-hidden shadow-sm border ${
-              isDark ? 'border-orange-500/10 bg-stone-900/40' : 'border-stone-200 bg-stone-50'
-            }`}>
-              <img 
-                src={post.image_url} 
-                alt="post visual" 
-                className="w-full h-auto max-h-[350px] sm:max-h-[450px] object-cover rounded-2xl" 
-              />
-            </div>
-          )}
-
-          {/* Bhajan share player widget (Only if type is bhajan_share AND youtube_url is present!) */}
-          {post.type === 'bhajan_share' && post.youtube_url && (
-            <div 
-              onClick={() => window.open(post.youtube_url, '_blank')}
-              className={`rounded-2xl p-4 flex items-center gap-3 w-full cursor-pointer transition-all group relative shadow-xs select-none border ${
-                isDark ? 'bg-[#17120e] border-[#2c2018] hover:bg-[#201813]' : 'bg-orange-50/40 border-orange-200/60 hover:bg-orange-100/30'
-              }`}
-            >
-              {/* Deity image */}
-              <div className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border ${
-                isDark ? 'border-orange-500/10 bg-stone-900' : 'border-orange-200/50 bg-white'
-              }`}>
-                <img 
-                  src={getDeityImgForPost(post.id)} 
-                  alt="deity logo" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* Title & wave visualizer */}
-              <div className="min-w-0 flex-1 flex flex-col justify-between text-left">
-                <div>
-                  <span className={`font-bold text-xs sm:text-sm truncate block group-hover:text-orange-500 transition-colors ${
-                    isDark ? 'text-stone-100' : 'text-stone-850'
-                  }`}>
-                    {post.title || (isHi ? "भजन कीर्तन" : "Bhajan Share")}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-orange-400/90 font-medium block truncate mt-0.5">
-                    {isHi ? "भजन श्रवण" : "Devotional Melody"}
-                  </span>
-                </div>
-                {/* Audio Wave Visualizer */}
-                <div className="flex items-end gap-[1.5px] h-3.5 mt-1.5 opacity-80">
-                  {[2, 4, 3, 5, 8, 6, 4, 7, 5, 3, 6, 4, 2, 5, 3, 4, 6, 8, 5, 3].map((h, i) => (
-                    <span key={i} className="w-[1.5px] bg-gradient-to-t from-orange-600 to-amber-400 rounded-full" style={{ height: (h * 1.5) + 'px' }} />
-                  ))}
-                </div>
-              </div>
-              {/* Play Button */}
-              <button
-                className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center shadow-md text-white shrink-0 group-hover:scale-105 transition-all"
-              >
-                <Play className="w-3.5 h-3.5 fill-white text-white translate-x-[0.5px]" />
-              </button>
-            </div>
-          )}
-
-          {/* Embedded YouTube Link (For posts that are NOT bhajan_share but have youtube_url) */}
-          {post.youtube_url && post.type !== 'bhajan_share' && (
-            <div className={`rounded-xl p-2.5 flex items-center justify-between gap-3 max-w-[400px] border ${
-              isDark ? 'border-orange-500/10 bg-[#1a1410]/50' : 'border-stone-200 bg-stone-50'
-            }`}>
-              <Play className="w-6 h-6 text-orange-500 shrink-0 ml-1" />
-              <div className="min-w-0 flex-1">
-                <span className={`text-[8px] font-bold uppercase tracking-wider block ${
-                  isDark ? 'text-stone-400' : 'text-stone-500'
-                }`}>{isHi ? "यूट्यूब लिंक" : "YouTube Link"}</span>
-                <a 
-                  href={post.youtube_url} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  className="text-xs font-semibold text-orange-400 block truncate hover:underline"
-                >
-                  {post.youtube_url}
-                </a>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-            </div>
-          )}
-
-          {/* ── TYPE SPECIFIC RENDERINGS ── */}
-
-          {/* A. Bhajan Request status timeline */}
-          {post.type === 'bhajan_request' && (
-            <div className={`border rounded-2xl p-4 ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
-              <div className="flex items-center justify-between mb-3.5">
-                <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-600'}`}>{isHi ? "अनुरोध स्थिति:" : "Request Pipeline:"}</span>
-                <Badge variant="outline" className={"text-[10px] font-extrabold capitalize " + getStatusBadgeColor(post.request_status)}>
-                  {(() => {
-                    const statusMap: Record<string, { hi: string, en: string }> = {
-                      'open': { hi: 'खुला', en: 'Open' },
-                      'lyrics_submitted': { hi: 'उत्तर प्राप्त (लिरिक्स)', en: 'Lyrics Submitted' },
-                      'in_review': { hi: 'समीक्षा में', en: 'In Review' },
-                      'added_to_library': { hi: 'लाइब्रेरी में शामिल', en: 'Added to Library' },
-                      'closed_unresolved': { hi: 'बंद', en: 'Closed Unresolved' }
-                    };
-                    return isHi ? (statusMap[post.request_status]?.hi || post.request_status) : (statusMap[post.request_status]?.en || post.request_status.replace('_', ' '));
-                  })()}
-                </Badge>
-              </div>
-
-              {/* Celebratory alert banner if resolved and added to library */}
-              {post.request_status === 'added_to_library' && (
-                <div className="mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold p-3 rounded-xl flex items-center gap-2">
-                  <span>🎉</span>
-                  <span>
-                    {isHi ? "भजन को मुख्य लाइब्रेरी में जोड़ दिया गया है!" : "Your request was added to the Library!"}
-                  </span>
-                  {post.resolved_bhajan_id && (
-                    <a 
-                      href={"/bhajan/" + post.resolved_bhajan_id}
-                      className="underline text-emerald-400 ml-auto flex items-center gap-1 shrink-0"
-                    >
-                      View Bhajan <ChevronRight className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              )}
-
-              {/* Status Timeline Circles */}
-              <div className="flex items-center justify-between text-[10px] font-extrabold tracking-tight text-center relative px-2 mb-2">
-                <div className={`absolute top-2 left-6 right-6 h-0.5 -z-10 ${isDark ? 'bg-stone-850' : 'bg-stone-200'}`} />
-                {[
-                  { status: 'open', label: isHi ? 'खुला' : 'Open' },
-                  { status: 'lyrics_submitted', label: isHi ? 'उत्तर प्राप्त' : 'Lyrics' },
-                  { status: 'in_review', label: isHi ? 'समीक्षा' : 'Review' },
-                  { status: 'added_to_library', label: isHi ? 'लाइब्रेरी' : 'Library' }
-                ].map((step, idx) => {
-                  const stages = ['open', 'lyrics_submitted', 'in_review', 'added_to_library'];
-                  const currentIdx = stages.indexOf(post.request_status);
-                  const stepIdx = stages.indexOf(step.status);
-                  const isPassed = stepIdx <= currentIdx && post.request_status !== 'closed_unresolved';
-                  return (
-                    <div key={step.status} className="flex flex-col items-center">
-                      <div className={"w-4 h-4 rounded-full border flex items-center justify-center text-[7.5px] font-bold " + (
-                        isPassed 
-                          ? "bg-orange-500 border-orange-600 text-white" 
-                          : isDark ? "bg-[#130f0c] border-stone-800 text-stone-400" : "bg-white border-stone-200 text-stone-450"
-                      )}>
-                        {isPassed && "✓"}
-                      </div>
-                      <span className={"mt-1 font-semibold " + (isPassed ? "text-orange-400" : isDark ? "text-stone-500" : "text-stone-400")}>
-                        {step.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Lyrics submit CTA */}
-              {post.request_status === 'open' && (
-                <Button 
-                  onClick={() => onToggleComments(post.id)}
-                  className="mt-3.5 w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl h-9 shadow-xs"
-                >
-                  📿 {isHi ? "मुझे इस भजन के बोल पता हैं (उत्तर दें)" : "I Know This Bhajan (Submit Lyrics)"}
-                </Button>
-              )}
-            </div>
-          )}
-
-          {/* B. Event Date and Location detail card */}
-          {post.type === 'event' && (
-            <div className={`border rounded-2xl p-4 space-y-3 ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
-              <div className={`flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2 border-b pb-2.5 ${isDark ? 'text-stone-300 border-[#2c2018]' : 'text-stone-700 border-stone-200'}`}>
-                <span className="flex items-center gap-1 text-rose-500">
-                  <Calendar className="w-4 h-4" />
-                  {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : (isHi ? "तारीख/समय निर्धारित नहीं" : "Date/Time not set")}
-                </span>
-                <span className={`flex items-center gap-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
-                  <MapPin className="w-4 h-4" />
-                  {post.event_location || (isHi ? "वर्चुअल ज़ूम" : "Virtual Zoom")}
-                </span>
-              </div>
-
-              {/* Linked Bhajan */}
-              {post.linked_bhajan_id && (
-                <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                  isDark ? 'bg-[#1a1410]/50 border-orange-500/10' : 'bg-orange-50/30 border-orange-200/50'
-                }`}>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
-                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-850'}`}>{isHi ? "भजन संदर्भ" : "Bhajan Page Reference"}</span>
-                  </div>
-                  <a 
-                    href={"/bhajan/" + post.linked_bhajan_id}
-                    className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
-                  >
-                    {isHi ? "बोल खोलें" : "Open lyrics"} <ChevronRight className="w-3 h-3" />
-                  </a>
-                </div>
-              )}
-
-              {/* RSVP Selection Buttons */}
-              <div className="flex gap-2">
-                {[
-                  { status: 'interested', label: isHi ? 'रुचि है' : 'Interested' },
-                  { status: 'going', label: isHi ? 'शामिल होऊंगा' : 'Going' }
-                ].map(opt => {
-                  const isActive = post.rsvp_status === opt.status;
-                  const count = opt.status === 'interested' 
-                    ? post.rsvps_count?.interested || 0
-                    : post.rsvps_count?.going || 0;
-
-                  return (
-                    <button
-                      key={opt.status}
-                      onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status as any)}
-                      className={"flex-1 flex items-center justify-center gap-2 border px-3 py-2 rounded-xl text-xs font-bold active:scale-98 transition-all " + (
-                        isActive 
-                          ? "bg-rose-500 border-rose-600 text-white shadow-xs" 
-                          : isDark ? "bg-[#1a1410] border-rose-500/15 text-rose-400 hover:bg-rose-500/5" : "bg-rose-50/30 border-rose-200/60 text-rose-600 hover:bg-rose-100/40"
-                      )}
-                    >
-                      <span>{opt.status === 'interested' ? '⭐' : '✓'}</span>
-                      <span>{opt.label} ({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* C. Question poll quick choices render */}
-          {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
-            <div className={`p-4 rounded-2xl border ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-500 block mb-2">
-                {isHi ? "त्वरित मतदान विकल्प" : "Quick tap option poll"}
-              </span>
-              <div className="space-y-2">
-                {post.question_options.map((opt, index) => {
-                  const isVoted = post.user_voted_option === index;
-                  const pct = post.vote_percentages ? post.vote_percentages[index] || 0 : 0;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => onVoteOption(post.id, index)}
-                      className={`w-full relative overflow-hidden text-left p-3 rounded-xl flex items-center justify-between border ${
-                        isDark ? 'border-orange-500/10 bg-[#130f0c] hover:border-orange-500/25' : 'border-stone-200 bg-white hover:border-stone-300'
-                      }`}
-                    >
-                      {/* Percentage Progress Fill */}
-                      <div 
-                        className="absolute left-0 top-0 bottom-0 bg-orange-500/10 transition-all duration-300"
-                        style={{ width: pct + '%' }}
-                      />
-                      
-                      <span className={"text-xs font-bold relative z-10 flex items-center gap-1.5 " + (isVoted ? "text-orange-500" : isDark ? "text-stone-300" : "text-stone-700")}>
-                        {isVoted && "✦"} {opt}
-                      </span>
-                      <span className="text-xs font-bold text-orange-500 relative z-10">{pct}%</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={`flex items-center rounded-full px-5 py-2 w-fit gap-4 mt-3 shadow-inner border ${
-        isDark ? 'bg-[#181310] border-[#281f19]' : 'bg-stone-50 border-stone-200'
-      }`}>
-        {/* Blessings (Like) */}
-        <button
-          onClick={() => onToggleReaction(post.id)}
-          className={`flex items-center gap-2.5 text-left transition-all active:scale-95 group ${post.has_reacted ? 'text-rose-500' : 'text-stone-400'}`}
-        >
-          <Heart className={`w-5 h-5 transition-all ${post.has_reacted ? 'text-rose-500 fill-rose-500 scale-110' : 'text-stone-400 group-hover:text-rose-500'}`} />
-          <div>
-            <p className={`text-xs font-black leading-none transition-colors ${
-              post.has_reacted ? 'text-rose-500' : isDark ? 'text-stone-100' : 'text-stone-850'
-            }`}>{post.reaction_count}</p>
-            <p className={`text-[9px] font-bold mt-0.5 transition-colors ${
-              post.has_reacted ? 'text-rose-400' : isDark ? 'text-stone-400' : 'text-stone-500'
-            }`}>{isHi ? "प्रणाम" : "Blessings"}</p>
-          </div>
-        </button>
-
-        {/* Divider */}
-        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
-
-        {/* Comments */}
-        <button
-          onClick={() => onToggleComments(post.id)}
-          className="flex items-center gap-2.5 text-left transition-all active:scale-95 group"
-        >
-          <MessageSquare className={`w-5 h-5 transition-all ${isCommentsExpanded ? 'text-orange-400 scale-110' : 'text-stone-400 group-hover:text-orange-400'}`} />
-          <div>
-            <p className={`text-xs font-black leading-none ${isDark ? 'text-stone-100' : 'text-stone-850'}`}>{post.comment_count}</p>
-            <p className={`text-[9px] font-bold mt-0.5 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{isHi ? "टिप्पणी" : "Comments"}</p>
-          </div>
-        </button>
-
-        {/* Divider */}
-        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
-
-        {/* Save button */}
-        <button
-          onClick={() => onToggleSavePost(post.id)}
-          className="flex items-center gap-2 text-left transition-all active:scale-95 group"
-        >
-          <Bookmark className={`w-4.5 h-4.5 transition-all ${isPostSaved ? 'text-amber-500 fill-amber-500 scale-110' : 'text-stone-400 group-hover:text-amber-500'}`} />
-          <span className={`text-[11px] font-bold transition-colors ${
-            isPostSaved ? 'text-amber-500' : isDark ? 'text-stone-300 group-hover:text-stone-100' : 'text-stone-600 group-hover:text-stone-850'
-          }`}>{isHi ? "सहेजें" : "Save"}</span>
-        </button>
-
-        {/* Divider */}
-        <span className={`w-px h-6 ${isDark ? 'bg-[#2c2018]' : 'bg-stone-200'}`} />
-
-        {/* Share */}
-        <button
-          onClick={() => {
-            const link = `${window.location.origin}/community/posts/${post.id}`;
-            if (navigator.share) {
-              navigator.share({
-                title: post.title || (isHi ? "भक्तिमय पोस्ट" : "Devotional Post"),
-                text: post.content ? post.content.substring(0, 100) + "..." : (isHi ? "सत्संग पोस्ट देखें" : "Check out this post on Divine Melodies Hub"),
-                url: link
-              }).catch((err) => {
-                if (err.name !== 'AbortError') {
-                  navigator.clipboard.writeText(link);
-                  toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
-                }
-              });
-            } else {
-              navigator.clipboard.writeText(link);
-              toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
-            }
-          }}
-          className="flex items-center gap-2 text-left transition-all active:scale-95 group"
-        >
-          <ExternalLink className={`w-4 h-4 transition-colors ${isDark ? 'text-stone-400 group-hover:text-orange-400' : 'text-stone-500 group-hover:text-orange-500'}`} />
-          <span className={`text-[11px] font-bold transition-colors ${isDark ? 'text-stone-300 group-hover:text-stone-100' : 'text-stone-600 group-hover:text-stone-850'}`}>{isHi ? "साझा करें" : "Share"}</span>
-        </button>
-      </div>
-
-      {/* ─── COLLAPSED COMMENTS PANEL ───────────────────────────── */}
-      {isCommentsExpanded && (
-        <div className={`mt-4 rounded-2xl p-4 border space-y-4 ${
-          isDark ? 'bg-[#120e0c] border-orange-500/5' : 'bg-stone-50/50 border-stone-200/80'
-        }`}>
-          <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
-            <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
-              {isHi ? "वार्तालाप" : "Discussion Thread"}
-            </span>
-          </div>
-
-          {/* Comments List */}
-          <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
-            {isLoadingComments && comments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-stone-400">
-                <Loader2 className="w-5 h-5 animate-spin text-orange-500 mb-2" />
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
-                  {isHi ? "टिप्पणियाँ लोड हो रही हैं..." : "Loading comments..."}
-                </span>
-              </div>
-            ) : comments.length === 0 ? (
-              <div className={`text-center py-6 border border-dashed rounded-xl bg-orange-500/[0.01] ${
-                isDark ? 'border-[#231b15]' : 'border-stone-200'
-              }`}>
-                <p className={`text-xs font-medium ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
-                  {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें! 📿" : "No replies yet. Be the first to reply! 📿"}
-                </p>
-              </div>
-            ) : (
-              comments.map(comment => (
-                <div key={comment.id} className="flex gap-2.5 text-xs items-start group text-left">
-                  {/* Defensive, bulletproof avatar container */}
-                  <div className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-400 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
-                    {comment.author?.avatar_url ? (
-                      <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
-                    ) : (
-                      comment.author?.display_name ? (
-                        comment.author.display_name.slice(0, 2).toUpperCase()
-                      ) : "DV"
-                    )}
-                  </div>
-                  <div className={`p-3 rounded-2xl min-w-0 shadow-xs transition-colors flex-1 border ${
-                    isDark ? 'bg-[#17120f] border-[#231b15] hover:border-orange-500/10' : 'bg-white border-stone-200 hover:border-stone-300'
-                  }`}>
-                    <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
-                      <span className={`font-extrabold flex items-center gap-1.5 flex-wrap ${
-                        isDark ? 'text-stone-100' : 'text-stone-850'
-                      }`}>
-                        {comment.author?.display_name || "Devotee"}
-                        {comment.is_lyrics_submission && (
-                          <Badge variant="outline" className="text-[7px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
-                            {isHi ? "भजन बोल" : "Lyrics Submission"}
-                          </Badge>
-                        )}
-                      </span>
-                      <span className={`text-[8px] font-semibold ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{formatTime(comment.created_at)}</span>
-                    </div>
-                    <p className={`text-xs whitespace-pre-wrap leading-relaxed break-words font-medium ${
-                      isDark ? 'text-stone-300' : 'text-stone-600'
-                    }`}>
-                      {comment.content}
-                    </p>
-                    {user?.id === comment.author_id && (
-                      <button 
-                        onClick={() => onDeleteComment(post.id, comment.id)}
-                        className="text-stone-500 hover:text-rose-500 font-bold text-[8px] mt-2 flex items-center gap-0.5 hover:underline transition-colors ml-auto"
-                      >
-                        <Trash2 className="w-3 h-3 inline" /> {isHi ? "हटाएं" : "Delete"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Comment input form */}
-          {user ? (
-            <div className={`pt-2 border-t ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
-              <div className="flex gap-2">
-                <textarea
-                  rows={2}
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder={
-                    post.type === 'bhajan_request' 
-                      ? (isHi ? "भजन के बोल यहाँ लिखें..." : "Provide lyrics or details here...")
-                      : (isHi ? "अपनी टिप्पणी यहाँ लिखें..." : "Write a response...")
-                  }
-                  className={`flex-1 text-xs rounded-xl p-2.5 focus:outline-none focus:border-orange-500 resize-none border ${
-                    isDark ? 'border-orange-500/10 bg-[#130f0c] text-stone-200' : 'border-stone-200 bg-white text-stone-700'
-                  }`}
-                />
-                <button
-                  onClick={() => onAddComment(post.id)}
-                  disabled={!newCommentText.trim()}
-                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold p-3 rounded-xl flex items-center justify-center hover:scale-98 transition-all shrink-0 w-11 h-11 self-end"
-                >
-                  <Send className="w-4 h-4 text-white" />
-                </button>
-              </div>
-
-              {/* Special checkmark for Bhajan Request comments to submit as lyrics */}
-              {post.type === 'bhajan_request' && post.request_status === 'open' && (
-                <div className="flex items-center gap-2 text-left">
-                  <input 
-                    type="checkbox" 
-                    id={`lyrics-submit-check-${post.id}`}
-                    checked={commentIsLyricsSubmit}
-                    onChange={(e) => setCommentIsLyricsSubmit(e.target.checked)}
-                    className="w-3.5 h-3.5 accent-orange-500"
-                  />
-                  <label htmlFor={`lyrics-submit-check-${post.id}`} className="text-[10px] font-bold text-stone-400 cursor-pointer select-none">
-                    {isHi ? "इस टिप्पणी को भजन के बोल के रूप में जमा करें (अनुरोध समीक्षा के लिए चला जाएगा)" : "Submit this comment as the Bhajan Lyrics (moves request to pending review)"}
-                  </label>
-                </div>
-              )}
-            </div>
-          ) : (
-            <p className="text-[10px] text-stone-500 text-center mt-2">
-              {isHi ? "सत्संग वार्तालाप में भाग लेने के लिए कृपया लॉग इन करें।" : "Please log in to participate in the satsang conversation."}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Simple loader helper
-function Loader2(props: any) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
   );
 }

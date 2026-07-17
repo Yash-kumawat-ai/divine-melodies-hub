@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Plus, 
   Info, 
-  Menu,
   Activity, 
   Award,
   Sparkles,
@@ -434,13 +433,20 @@ export default function CommunityPage() {
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
       <header className="md:hidden sticky top-0 z-30 bg-[#fdfbf7]/90 dark:bg-[#0c0a08]/90 backdrop-blur-md border-b border-amber-500/10 px-4 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Mobile Hamburger menu */}
+          {/* Mobile Back button */}
           <button
-            onClick={toggleDrawer}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate("/");
+              }
+            }}
             className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-50/40 dark:bg-stone-900/40 hover:bg-amber-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-amber-600 dark:text-amber-400 active:scale-95 transition-all shrink-0"
-            aria-label="Menu"
+            aria-label={isHi ? "वापस" : "Back"}
+            title={isHi ? "वापस" : "Back"}
           >
-            <Menu className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
           
           <span className="font-display text-lg font-extrabold tracking-tight text-amber-900 dark:text-amber-100">
@@ -951,15 +957,17 @@ export default function CommunityPage() {
 
                       {/* Full-width Action button */}
                       <button
-                        onClick={() => handleGroupMembership(group)}
-                        className={`w-full mt-2 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 ${
-                          group.is_member
-                            ? "bg-stone-50 dark:bg-stone-900/50 text-[#5c1d0c] dark:text-amber-100 border border-[#5c1d0c]/15"
-                            : "bg-[#5c1d0c] text-white hover:bg-[#4a170a] shadow-xs active:scale-[0.98]"
-                        }`}
+                        onClick={() => {
+                          if (group.is_member) {
+                            navigate(`/community/groups/${group.id}`);
+                          } else {
+                            handleGroupMembership(group);
+                          }
+                        }}
+                        className="w-full mt-2 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer bg-[#5c1d0c] hover:bg-[#4a170a] text-white shadow-xs active:scale-[0.98]"
                       >
                         {group.is_member ? (
-                          <span>{isHi ? "शामिल हैं ✓" : "Joined ✓"}</span>
+                          <span>{isHi ? "समूह देखें" : "View Group"}</span>
                         ) : (
                           <span>{isHi ? "जुड़ें" : "Join"}</span>
                         )}
