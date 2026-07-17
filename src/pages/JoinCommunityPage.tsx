@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PostCard } from "@/components/community/PostCard";
 import { EventsTab } from "@/components/community/EventsTab";
+import { SatsangFeedTab } from "@/components/community/SatsangFeedTab";
+import { DevoteesTab } from "@/components/community/DevoteesTab";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import { fetchGroupRankings } from "@/lib/naamSangh/naamSanghApi";
 import { supabase } from "@/lib/supabaseClient";
@@ -2072,6 +2074,35 @@ export default function JoinCommunityPage() {
 
             {/* TAB 1: SATSANG FEED */}
             {activeGroupTab === 'feed' && (
+              <SatsangFeedTab
+                isHi={isHi}
+                groupPosts={groupPosts}
+                groupAnnouncements={groupAnnouncements}
+                user={user}
+                commentsMap={commentsMap}
+                expandedCommentsPostId={expandedCommentsPostId}
+                newCommentText={newCommentText}
+                setNewCommentText={setNewCommentText}
+                commentIsLyricsSubmit={commentIsLyricsSubmit}
+                setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                loadingCommentsPostIds={loadingCommentsPostIds}
+                isSaved={isSaved}
+                handleToggleComments={handleToggleComments}
+                handleToggleReaction={handleToggleReaction}
+                handleToggleRsvp={handleToggleRsvp}
+                handleVoteOption={handleVoteOption}
+                handleDeleteComment={handleDeleteComment}
+                handleAddComment={handleAddComment}
+                handleToggleSavePost={handleToggleSavePost}
+                loadPosts={loadPosts}
+                setPostType={setPostType}
+                setCreatePostOpen={setCreatePostOpen}
+                setDismissedAnnouncements={setDismissedAnnouncements}
+              />
+            )}
+
+            {/* PLACEHOLDER — replaced inline feed block */}
+            {false && (
               <div className="space-y-6">
                 
                 {/* Pinned Announcements from Admin */}
@@ -2374,6 +2405,16 @@ export default function JoinCommunityPage() {
 
             {/* TAB 5: MEMBERS & LEADERBOARD */}
             {activeGroupTab === 'members' && (
+              <DevoteesTab
+                isHi={isHi}
+                groupRankings={groupRankings}
+                loadingRankings={loadingRankings}
+                groupMembers={groupMembers}
+                currentUserId={user?.id}
+              />
+            )}
+            {/* PLACEHOLDER — replaced inline members block */}
+            {false && (
               <div className="space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
