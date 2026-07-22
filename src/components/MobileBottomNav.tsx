@@ -176,7 +176,7 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[#E8D8C4] bg-[#FFFDF8]/95 dark:border-white/10 dark:bg-[#0d0b08]/90 px-2 pt-2 shadow-[0_-8px_30px_rgba(74,14,18,0.06)] dark:shadow-[0_-8px_35px_rgba(0,0,0,0.45)] backdrop-blur-2xl md:hidden"
+        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[hsl(var(--brand-gold-border))] bg-surface-raised/95 dark:border-white/10 dark:bg-background/90 px-2 pt-2 shadow-3 dark:shadow-floating backdrop-blur-2xl md:hidden"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         aria-label="Main navigation"
       >
@@ -190,18 +190,18 @@ export default function MobileBottomNav() {
                 className={cn(
                   "relative flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-250",
                   item.accent
-                    ? "h-12 w-12 -translate-y-3 rounded-full bg-[#D88A15] border-2 border-[#FFFDF8] dark:border-[#0d0b08] text-white shadow-[0_4px_20px_rgba(216,138,21,0.35)]"
+                    ? "h-12 w-12 -translate-y-3 rounded-full bg-brand-primary border-2 border-surface-raised dark:border-background text-white shadow-1"
                     : active
-                      ? "border-[#D4A437]/20 bg-[rgba(212,164,55,0.12)] text-[#651317]"
-                      : "border-transparent bg-transparent text-[#786252]",
+                      ? "border-[hsl(var(--brand-gold-border))] bg-[rgba(212,164,55,0.12)] text-brand-primary"
+                      : "border-transparent bg-transparent text-muted-foreground",
                 )}
               >
-                <Icon className={cn("h-5 w-5", item.accent ? "h-6 w-6 text-[#FFF9F2]" : active ? "text-[#651317]" : "text-[#786252]")} strokeWidth={active ? 2.6 : 2.15} />
+                <Icon className={cn("h-5 w-5", item.accent ? "h-6 w-6 text-[#FFF9F2]" : active ? "text-brand-primary" : "text-muted-foreground")} strokeWidth={active ? 2.6 : 2.15} />
               </span>
               <span
                 className={cn(
                   "mt-0.5 block max-w-full truncate text-[10px] font-semibold leading-none",
-                  item.accent ? "-mt-1 text-[9px] text-[#786252]" : active ? "text-[#651317]" : "text-[#786252]",
+                  item.accent ? "-mt-1 text-[9px] text-muted-foreground" : active ? "text-brand-primary" : "text-muted-foreground",
                 )}
               >
                 {t(item.labelKey)}
@@ -240,7 +240,7 @@ export default function MobileBottomNav() {
       <Sheet modal={false} open={featuresOpen} onOpenChange={handleFeaturesOpenChange}>
         <SheetContent
           side="bottom"
-          className="mx-auto max-h-[82dvh] w-full max-w-[32rem] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-24px_70px_hsl(20_30%_10%/0.25)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0d0b08]/95"
+          className="mx-auto max-h-[82dvh] w-full max-w-[32rem] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-dialog backdrop-blur-2xl dark:border-white/10 dark:bg-background/95"
         >
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="text-base">{t("features")}</SheetTitle>

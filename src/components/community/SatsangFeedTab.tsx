@@ -115,7 +115,7 @@ export function SatsangFeedTab({
                 </p>
                 <button
                   onClick={() => handleToggleComments(announce.id)}
-                  className="text-orange-600 dark:text-amber-400 hover:underline font-extrabold text-[10px] uppercase tracking-wide mt-2 block text-left"
+                  className="btn-ghost btn-sm uppercase tracking-wide mt-2 block text-left"
                 >
                   {isHi
                     ? "पूर्ण विवरण पढ़ें और उत्तर दें"
@@ -133,7 +133,7 @@ export function SatsangFeedTab({
           setPostType("thought");
           setCreatePostOpen(true);
         }}
-        className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-orange-500/30 hover:shadow-sm cursor-pointer select-none transition-all"
+        className="bg-card border border-[hsl(var(--brand-gold-border))] rounded-2xl p-4 flex items-center justify-between shadow-xs hover:border-[hsl(var(--brand-gold-border))]/50 hover:shadow-sm cursor-pointer select-none transition-all"
         role="button"
         aria-label={
           isHi
@@ -147,8 +147,7 @@ export function SatsangFeedTab({
             : "Share a thought, mantra quote or question..."}
         </span>
         <Button
-          size="icon"
-          className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-8 h-8 shrink-0"
+          className="btn-primary btn-icon shrink-0"
           aria-label="Create post"
         >
           <Plus className="w-4.5 h-4.5" />

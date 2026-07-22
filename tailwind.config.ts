@@ -78,12 +78,33 @@ export default {
         },
         maroon: "hsl(var(--maroon))",
         cream: "hsl(var(--cream))",
+        /* ── UNIFIED BRAND TOKENS ───────────────────────────────────── */
         brand: {
-          saffron: "#FF6B00",
-          gold: "#F5A623",
-          cream: "#FFF8F0",
-          brown: "#3B1F0A",
-          dark: "#1a1006",
+          primary:  "hsl(var(--brand-primary))",
+          hover:    "hsl(var(--brand-primary-hover))",
+          active:   "hsl(var(--brand-primary-active))",
+          gold:     "hsl(var(--brand-gold))",
+          "gold-light": "hsl(var(--brand-gold-light))",
+          /* Keep legacy aliases so old code still works */
+          saffron: "hsl(var(--saffron))",
+          cream:   "hsl(var(--cream))",
+          brown:   "hsl(var(--maroon))",
+          dark:    "hsl(var(--background))",
+        },
+        /* ── SEMANTIC STATUS COLORS ─────────────────────────────────── */
+        success: {
+          DEFAULT:    "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT:    "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        /* ── SURFACE TOKENS ─────────────────────────────────────────── */
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          alt:     "hsl(var(--surface-alt))",
+          raised:  "hsl(var(--surface-raised))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -97,9 +118,22 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm:   "var(--radius-sm)",
+        md:   "var(--radius-md)",
+        lg:   "var(--radius-lg)",
+        xl:   "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+        "3xl": "var(--radius-3xl)",
+        full: "var(--radius-full)",
+      },
+      boxShadow: {
+        "1":       "var(--shadow-1)",
+        "2":       "var(--shadow-2)",
+        "3":       "var(--shadow-3)",
+        "floating": "var(--shadow-floating)",
+        "dialog":  "var(--shadow-dialog)",
+        "gold":    "var(--shadow-gold)",
+        "temple":  "var(--shadow-3)",
       },
       keyframes: {
         "accordion-down": {

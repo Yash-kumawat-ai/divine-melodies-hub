@@ -167,7 +167,7 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="relative flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95 cursor-pointer"
+                className="btn-icon"
                 aria-label={t('language')}
               >
                 <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
@@ -204,7 +204,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setProfileHubOpen(true)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-primary/20 bg-card/80 shadow-sm transition-colors active:scale-95"
+            className="btn-icon"
             aria-label={t('accountMenu')}
           >
             {user ? (
@@ -444,10 +444,8 @@ export default function Header() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "inline-flex h-9 shrink-0 snap-start items-center gap-2 rounded-full border px-3 text-[11px] font-semibold transition-colors",
-                  active
-                    ? "bg-orange-500 text-white border-orange-600 shadow-[0_4px_12px_rgba(234,88,12,0.25)]"
-                    : "border-border/80 bg-card/70 text-foreground",
+                  "tab-item shrink-0 snap-start h-9 rounded-full px-3",
+                  active && "tab-active"
                 )}
                 aria-current={active ? "page" : undefined}
               >

@@ -6,7 +6,7 @@ interface UseCommunityPostActionsInput {
   user: any;
   profile: any;
   isHi: boolean;
-  loadPosts: () => void;
+  loadPosts: (silent?: boolean) => void;
   setPosts: React.Dispatch<React.SetStateAction<CommunityPost[]>>;
 }
 
@@ -113,8 +113,8 @@ export function useCommunityPostActions({
       setNewCommentText("");
       setCommentIsLyricsSubmit(false);
       toast.success(isHi ? "टिप्पणी जोड़ी गई!" : "Comment posted!");
-      // Reload posts to reflect updated comment count & request status
-      loadPosts();
+      // Reload posts to reflect updated comment count & request status in background
+      loadPosts(true);
     } catch (err: any) {
       console.error("Comment submission error:", err);
       const errMsg = err?.message || err?.details || JSON.stringify(err);
@@ -135,7 +135,7 @@ export function useCommunityPostActions({
         [postId]: (prev[postId] || []).filter(c => c.id !== commentId),
       }));
       toast.success(isHi ? "टिप्पणी हटा दी गई!" : "Comment deleted!");
-      loadPosts();
+      loadPosts(true);
     } catch {
       toast.error(isHi ? "टिप्पणी हटाने में विफल" : "Failed to delete comment");
     }
@@ -161,8 +161,8 @@ export function useCommunityPostActions({
     try {
       await communityApi.togglePostReaction(postId, user.id);
     } catch {
-      // Revert optimistic update on failure
-      loadPosts();
+      // Revert optimistic update on failure in background
+      loadPosts(true);
     }
   };
 
@@ -184,7 +184,7 @@ export function useCommunityPostActions({
         await communityApi.rsvpToEvent(postId, user.id, clickedRsvp);
         toast.success(isHi ? "RSVP अपडेट किया गया" : "RSVP updated");
       }
-      loadPosts();
+      loadPosts(true);
     } catch {
       toast.error(isHi ? "RSVP अपडेट करने में असमर्थ" : "Failed to update RSVP");
     }
@@ -199,7 +199,7 @@ export function useCommunityPostActions({
     try {
       await communityApi.voteOnQuestionOption(postId, user.id, optionIndex);
       toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
-      loadPosts();
+      loadPosts(true);
     } catch {
       toast.error(isHi ? "मतदान दर्ज करने में असमर्थ" : "Failed to register vote");
     }

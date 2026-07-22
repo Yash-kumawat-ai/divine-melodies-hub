@@ -78,7 +78,7 @@ export function CreateGroupDialog({
         }
       }}
     >
-      <DialogContent className="max-w-md bg-[#FAF6EE] dark:bg-[#120F0B] border-orange-500/20 text-stone-950 dark:text-stone-50 rounded-3xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl shadow-orange-950/10">
+      <DialogContent className="max-w-md bg-background dark:bg-background border-[hsl(var(--brand-gold-border))] text-foreground rounded-3xl p-6 max-h-[90vh] overflow-y-auto shadow-4">
         {/* Visually hidden — required by Radix for accessibility */}
         <DialogHeader className="sr-only">
           <DialogTitle>{isHi ? "समूह बनाएं" : "Create Community Group"}</DialogTitle>
@@ -277,7 +277,7 @@ export function CreateGroupDialog({
             <Button
               type="submit"
               disabled={creatingGroup || isNameUnique === false}
-              className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+              className="btn-primary btn-full btn-lg gap-2"
             >
               <Sparkles className="w-4 h-4 animate-pulse" />
               <span>
@@ -295,7 +295,7 @@ export function CreateGroupDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="w-full text-center text-xs font-bold text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-250 py-1.5 focus:outline-none transition-colors"
+              className="btn-ghost btn-full text-sm py-2"
             >
               {isHi ? "रद्द करें" : "Cancel"}
             </button>

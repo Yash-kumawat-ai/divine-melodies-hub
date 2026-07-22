@@ -765,18 +765,18 @@ export default function CommunityPage() {
 
         {/* ─── SEARCH INPUT BAR & FILTER TABS ────────────────────── */}
         <div id="groups-filter-tabs" className="w-full space-y-4">
-          <div className="relative flex items-center rounded-2xl bg-white dark:bg-stone-900 border border-[#5c1d0c]/10 shadow-xs px-3.5 py-1 focus-within:border-[#5c1d0c] focus-within:ring-2 focus-within:ring-[#5c1d0c]/10 transition-all">
-            <Search className="w-5 h-5 text-stone-450 dark:text-stone-500 mr-2" />
+          <div className="relative flex items-center rounded-2xl bg-white dark:bg-stone-900 border border-[#5c1d0c]/10 shadow-xs p-1 pl-3.5 pr-1 focus-within:border-[#5c1d0c] focus-within:ring-2 focus-within:ring-[#5c1d0c]/10 transition-all">
+            <Search className="w-5 h-5 text-stone-400 dark:text-stone-500 mr-2 shrink-0 select-none" />
             <input
               type="text"
               placeholder={isHi ? "नाम या समूह खोजें..." : "Search name or group..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none py-2.5 text-sm focus:outline-none text-stone-900 dark:text-stone-100"
+              className="flex-1 bg-transparent border-none py-1.5 text-sm focus:outline-none text-stone-900 dark:text-stone-100"
             />
             <button
               onClick={() => {}}
-              className="w-8.5 h-8.5 rounded-xl bg-[#5c1d0c] hover:bg-[#4a170a] flex items-center justify-center text-white active:scale-95 transition-all"
+              className="w-8 h-8 rounded-xl bg-[#5c1d0c] hover:bg-[#4a170a] flex items-center justify-center text-white active:scale-95 transition-all shrink-0"
             >
               <Search className="w-4 h-4 text-white" />
             </button>
@@ -964,7 +964,7 @@ export default function CommunityPage() {
                             handleGroupMembership(group);
                           }
                         }}
-                        className="w-full mt-2 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 cursor-pointer bg-[#5c1d0c] hover:bg-[#4a170a] text-white shadow-xs active:scale-[0.98]"
+                        className="w-full mt-2 py-2 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-1 cursor-pointer bg-[#5c1d0c] hover:bg-[#4a170a] text-white shadow-xs active:scale-[0.98]"
                       >
                         {group.is_member ? (
                           <span>{isHi ? "समूह देखें" : "View Group"}</span>

@@ -40,6 +40,7 @@ import litDiyaImg from "./images/lit_diya.png";
 import templeBellImg from "./images/temple_bell.png";
 import omWebp from "./images/om.webp";
 import mandalaBeige from "./images/mandala-beige.svg";
+import mandalaGold from "./images/mandala-gold.svg";
 
 // Large deity avatars for group creation
 import durgaImg from "@/assets/deities/durga.webp";
@@ -121,7 +122,7 @@ export default function JoinCommunityPage() {
   };
 
   // Navigation tabs
-  const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'events'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'events'>('groups');
 
   // Core Data
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -579,32 +580,41 @@ export default function JoinCommunityPage() {
       />
 
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-orange-500/10 px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (groupViewOpen) {
-                navigate("/join-community");
-              } else {
-                navigate("/community");
-              }
-            }}
-            className="w-10 h-10 rounded-full border border-orange-500/20 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-orange-600 dark:text-orange-400 active:scale-95 transition-all shrink-0"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="font-display text-xl font-bold tracking-tight text-orange-950 dark:text-amber-50">
-            {groupViewOpen ? selectedGroup?.name : (isHi ? "डिजिटल सत्संग" : "Digital Satsang")}
-          </span>
-        </div>
+      {!groupViewOpen && (
+        <header className="sticky top-0 z-30 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-orange-500/10 px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                if (groupViewOpen) {
+                  navigate("/join-community");
+                } else {
+                  navigate("/community");
+                }
+              }}
+              className="w-10 h-10 rounded-full border border-[#D6A86B]/30 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-[#C88A3D] active:scale-95 transition-all shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="flex flex-col text-left">
+              <span className="font-display text-base md:text-lg font-extrabold tracking-tight text-orange-950 dark:text-amber-50">
+                {groupViewOpen ? selectedGroup?.name : (isHi ? "डिजिटल सत्संग" : "Digital Satsang")}
+              </span>
+              {!groupViewOpen && (
+                <span className="text-[9px] text-[#C88A3D] font-extrabold tracking-wider uppercase mt-0.5 flex items-center gap-1">
+                  ❖ {isHi ? "भक्ति संगीत और नाम जाप का संगम" : "Confluence of Devotional Music & Chants"} ❖
+                </span>
+              )}
+            </div>
+          </div>
 
-        {communityApi.isFallbackActive() && (
-          <Badge variant="outline" className="text-[10px] text-amber-600 dark:text-amber-400 border-amber-500/30 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3 text-amber-500" />
-            Local Sandbox Mode
-          </Badge>
-        )}
-      </header>
+          {groupViewOpen && communityApi.isFallbackActive() && (
+            <Badge variant="outline" className="text-[10px] text-amber-600 dark:text-amber-400 border-amber-500/30 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3 text-amber-500" />
+              Local Sandbox Mode
+            </Badge>
+          )}
+        </header>
+      )}
 
       {/* ─── GUEST LOGIN BLOCK ──────────────────────────────────── */}
       {!user && (
@@ -621,7 +631,7 @@ export default function JoinCommunityPage() {
             </p>
             <Button
               onClick={() => navigate("/auth/login?redirect=/join-community")}
-              className="mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl"
+              className="mt-4 bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-sm font-extrabold py-2.5 px-6 rounded-xl transition-all shadow-md active:scale-95 border-none"
             >
               {isHi ? "लॉग इन करें" : "Log In to Participate"}
             </Button>
@@ -695,12 +705,12 @@ export default function JoinCommunityPage() {
             {/* ─── 2. MIDDLE COLUMN (MAIN CONTENT) ────────────────────── */}
             <div className={`col-span-12 ${activeTab === 'feed' ? 'lg:col-span-6' : 'lg:col-span-9'} space-y-6`}>
               
-              {/* ─── TAB SWITCHER ──────────────────────────────────────── */}
-              <div className="flex border-b border-orange-500/10 mb-6 gap-2 overflow-x-auto scrollbar-none">
+              {/* ─── PILL TAB SWITCHER ─────────────────────────────────── */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 pt-1">
                 {[
-                  { id: 'feed', label: isHi ? 'सत्संग फीड' : 'Satsang Feed', icon: MessageSquare },
-                  { id: 'groups', label: isHi ? 'समूह' : 'Communities', icon: Users },
-                  { id: 'events', label: isHi ? 'धार्मिक कार्यक्रम' : 'Satsang Events', icon: Calendar }
+                  { id: 'groups', label: isHi ? 'समूह' : 'Groups', icon: Users },
+                  { id: 'feed', label: isHi ? 'फीड' : 'Feed', icon: MessageSquare },
+                  { id: 'events', label: isHi ? 'कार्यक्रम' : 'Events', icon: Calendar }
                 ].map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -708,18 +718,14 @@ export default function JoinCommunityPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`relative pb-3 px-4 font-bold text-sm transition-all flex items-center gap-2 whitespace-nowrap ${
-                        isActive ? "text-orange-600 dark:text-orange-400" : "text-stone-500 dark:text-stone-400 hover:text-stone-800"
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all whitespace-nowrap ${
+                        isActive
+                          ? 'bg-[#4E342E] text-white shadow-md shadow-amber-900/20'
+                          : 'bg-white dark:bg-stone-900 text-stone-500 dark:text-stone-400 border border-[#D6A86B]/20 hover:bg-amber-50/50 dark:hover:bg-stone-800'
                       }`}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-3.5 h-3.5" />
                       {tab.label}
-                      {isActive && (
-                        <motion.div 
-                          layoutId="community-tab-line"
-                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"
-                        />
-                      )}
                     </button>
                   );
                 })}
@@ -811,7 +817,7 @@ export default function JoinCommunityPage() {
                       <Button 
                         size="icon" 
                         onClick={() => setCreatePostOpen(true)}
-                        className="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-9 h-9 shadow-md active:scale-95 shrink-0"
+                        className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white rounded-full w-9 h-9 shadow-md active:scale-95 shrink-0 border-none"
                       >
                         <Plus className="w-5 h-5 text-white" />
                       </Button>
@@ -889,10 +895,10 @@ export default function JoinCommunityPage() {
                         <button
                           key={filter}
                           onClick={() => setFeedFilter(filter)}
-                          className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all border shrink-0 ${
+                          className={`px-4 py-2 rounded-full text-sm font-extrabold transition-all border shrink-0 ${
                             isSelected 
-                              ? "bg-orange-500 text-white border-orange-600"
-                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-orange-500/10 hover:bg-orange-500/5"
+                              ? "bg-[#5c1d0c] text-white border-[#5c1d0c] shadow-xs"
+                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-[#5c1d0c]/10 hover:bg-[#5c1d0c]/5"
                           }`}
                         >
                           {filter === "All" ? (isHi ? "सभी पोस्ट" : "All") : filter}
@@ -958,231 +964,345 @@ export default function JoinCommunityPage() {
               {/* ─── TAB 2: GROUPS LIST VIEW ───────────────────────────── */}
               {activeTab === 'groups' && (
                 <div className="space-y-6">
-                  {/* Discover Toolbar */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-stone-400" />
-                      <Input 
-                        type="text"
-                        placeholder={isHi ? "समूह नाम या विवरण खोजें..." : "Search groups..."}
-                        value={groupSearch}
-                        onChange={(e) => setGroupSearch(e.target.value)}
-                        className="pl-10 border-orange-500/15 bg-white dark:bg-stone-900 rounded-xl"
-                      />
-                    </div>
-                    <button
-                      onClick={() => setCreateGroupOpen(true)}
-                      className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs text-white shadow-md shadow-red-950/15 hover:shadow-lg hover:shadow-red-950/25 hover:scale-[1.01] active:scale-95 transition-all shrink-0"
-                      style={{
-                        background: "linear-gradient(135deg, #8B1E23 0%, #651317 100%)"
-                      }}
-                    >
-                      <Plus className="w-4 h-4 text-white" />
-                      {isHi ? "समूह बनाएं" : "Create Group"}
-                    </button>
-                  </div>
+                  {(() => {
+                    const joined = groups.filter(g => g.is_member);
+                    
+                    // Filter unjoined/search result list:
+                    // If searching, show all matching groups. If not searching, show only groups they are NOT members of (discovery).
+                    const exploreList = filteredGroups.filter(g => {
+                      if (debouncedGroupSearch.trim() !== "") return true;
+                      return !g.is_member;
+                    });
 
-                  {/* Subtabs for Groups */}
-                  <div className="flex border-b border-orange-500/10 pb-1.5 mb-4">
-                    <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
-                      {debouncedGroupSearch ? "Search Results" : (isHi ? "सभी भक्ति समूह" : "Devotional Communities")}
-                    </span>
-                  </div>
+                    return (
+                      <>
+                        {/* TOP TOOLBAR: SEARCH & CREATE GROUP */}
+                        <div className="flex items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-[hsl(var(--brand-gold-border))] shadow-1 text-left">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-muted-foreground" />
+                            <Input 
+                              type="text"
+                              placeholder={isHi ? "समूह खोजें..." : "Search groups..."}
+                              value={groupSearch}
+                              onChange={(e) => setGroupSearch(e.target.value)}
+                              className="pl-10 h-9 border-border bg-background rounded-full w-full focus-visible:ring-1 focus-visible:ring-brand-primary"
+                            />
+                          </div>
 
-                  {loadingGroups && (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-                    </div>
-                  )}
-
-                  {/* Empty search */}
-                  {!loadingGroups && filteredGroups.length === 0 && (
-                    <div className="text-center py-16 bg-white dark:bg-stone-900 border border-dashed border-orange-500/20 rounded-2xl">
-                      <span className="text-4xl block">👥</span>
-                      <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
-                        {isHi ? "कोई समूह नहीं मिला।" : "No groups found."}
-                      </p>
-                      <p className="text-xs text-stone-400 mt-1">
-                        {isHi ? "अपना नया भक्ति समूह बनाने वाले पहले व्यक्ति बनें!" : "Be the first to create one!"}
-                      </p>
-                      <Button 
-                        onClick={() => setCreateGroupOpen(true)}
-                        variant="outline" 
-                        className="mt-4 border-orange-500/25 text-orange-600 dark:text-orange-400 rounded-xl"
-                      >
-                        {isHi ? "पहला समूह बनाएं" : "Create Group"}
-                      </Button>
-                    </div>
-                  )}
-
-                  {/* Groups Grid */}
-                  {!loadingGroups && filteredGroups.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-                      {filteredGroups.map(group => {
-                        const deityFound = DEITIES.find(d => d.id === group.deity);
-                        return (
-                          <div 
-                            key={group.id}
-                            className="overflow-hidden rounded-2xl bg-white dark:bg-stone-900 border border-orange-500/10 shadow-xs hover:shadow-md transition-all flex flex-col justify-between relative group"
+                          <Button
+                            onClick={() => setCreateGroupOpen(true)}
+                            className="btn-primary btn-sm shrink-0"
                           >
-                            {/* Header banner image representing deity */}
-                            <div className="h-36 w-full relative overflow-hidden bg-amber-50 dark:bg-stone-950 flex items-center justify-center">
-                              {(() => {
+                            <Plus className="w-4 h-4" />
+                            <span>{isHi ? "नया समूह" : "New Group"}</span>
+                          </Button>
+                        </div>
+
+                        {/* 1. MY JOINED GROUPS SECTION */}
+                        {joined.length > 0 && (
+                          <div className="space-y-4 text-left">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-display font-extrabold text-sm text-brand-primary dark:text-amber-100 uppercase tracking-wider flex items-center gap-1.5">
+                                👥 {isHi ? "मेरे समूह" : "My Communities"}
+                              </h3>
+                              <button 
+                                onClick={() => setGroupSearch("")}
+                                className="text-xs font-bold text-brand-gold hover:underline flex items-center gap-0.5"
+                              >
+                                {isHi ? "सभी देखें" : "See All"} <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                              {joined.map(group => {
+                                const deityFound = DEITIES.find(d => d.id === group.deity);
                                 const hasValidGroupImg = group.image_url && 
                                   group.image_url.trim() !== "" && 
                                   group.image_url !== "null" && 
                                   group.image_url !== "undefined" && 
                                   (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
                                 const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
-                                return (
-                                 <img
-                                    src={cardCoverSrc}
-                                    alt={group.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    loading="lazy"
-                                  />
-                                );
-                              })()}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
-                              
-                              {/* Public/Private badge */}
-                              <span className={`absolute top-3 left-3 text-[9px] font-bold px-2.5 py-1 rounded-full text-white/90 flex items-center gap-1.5 backdrop-blur-md border border-white/10 ${
-                                group.is_public ? "bg-emerald-600/70" : "bg-rose-700/70"
-                              }`}>
-                                {group.is_public ? (
-                                  <>
-                                    <Globe className="w-2.5 h-2.5" />
-                                    {isHi ? "सार्वजनिक" : "Public"}
-                                  </>
-                                ) : (
-                                  <>
-                                    <Lock className="w-2.5 h-2.5" />
-                                    {isHi ? "निजी" : "Private"}
-                                  </>
-                                )}
-                              </span>
-                            </div>
-
-                            <div className="p-5 flex-1 flex flex-col justify-between relative overflow-hidden">
-                              {/* Background beige mandala decoration */}
-                              <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.05] dark:opacity-[0.02] pointer-events-none w-24 h-24">
-                                <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
-                              </div>
-                              <div>
-                                {/* Deity Tag */}
-                                {(() => {
-                                  const getDeityDisplayName = (deityId: string | null) => {
-                                    if (!deityId) return "";
-                                    const mappings: Record<string, { en: string, hi: string }> = {
-                                      "rama": { en: "Rama Ji", hi: "श्री राम जी" },
-                                      "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
-                                      "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
-                                      "shiva": { en: "Shiva Ji", hi: "शिव जी" },
-                                      "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
-                                      "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
-                                      "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
-                                      "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
-                                    };
-                                    const key = deityId.toLowerCase();
-                                    if (mappings[key]) {
-                                      return isHi ? mappings[key].hi : mappings[key].en;
-                                    }
-                                    return deityFound ? deityFound.name : deityId;
+                                
+                                const getDeityDisplayName = (deityId) => {
+                                  if (!deityId) return "";
+                                  const mappings = {
+                                    "rama": { en: "Ram Ji", hi: "श्री राम जी" },
+                                    "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
+                                    "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
+                                    "shiva": { en: "Shiva Ji", hi: "शिव जी" },
+                                    "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
+                                    "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
+                                    "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
+                                    "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
                                   };
-                                  const dName = getDeityDisplayName(group.deity);
-                                  return dName ? (
-                                    <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-md bg-orange-100/70 dark:bg-stone-850 text-orange-700 dark:text-orange-400 mb-2 uppercase tracking-wide">
-                                      {dName}
-                                    </span>
-                                  ) : null;
-                                })()}
+                                  const key = deityId.toLowerCase();
+                                  if (mappings[key]) {
+                                    return isHi ? mappings[key].hi : mappings[key].en;
+                                  }
+                                  return deityFound ? deityFound.name : deityId;
+                                };
 
-                                <h3 className="font-display text-lg font-bold text-orange-950 dark:text-amber-100 leading-snug">
-                                  {group.name}
-                                </h3>
-                                {(group.member_count || 0) >= 5 ? (
-                                  <p className="text-xs text-stone-500 mt-0.5">
-                                    {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
-                                  </p>
-                                ) : (
-                                  <p className="text-xs text-stone-400 italic mt-0.5">
-                                    {isHi ? "नया समूह — आज ही जुड़ें!" : "New group — join today!"}
-                                  </p>
-                                )}
-                                <p className="text-xs text-stone-600 dark:text-stone-300 mt-2 line-clamp-2 leading-relaxed">
-                                  {group.description || (isHi ? "भक्तिमय संगीत और नाम जप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
-                                </p>
-
-                                {/* Goal Target Progress Bar */}
-                                {group.target_count && group.target_count > 0 && (
-                                  <div className="mt-3.5 bg-amber-500/5 p-3 rounded-xl border border-amber-500/10">
-                                    <div className="flex items-center justify-between text-[10px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">
-                                      <span>{isHi ? "सामूहिक लक्ष्य प्रगति" : "Goal Progress"}</span>
-                                      <span className="font-bold text-amber-600 dark:text-amber-400">
-                                        {group.completion_percent}% ({group.total_chants && group.total_chants >= 100000 
-                                          ? `${(group.total_chants / 100000).toFixed(1)}L` 
-                                          : (group.total_chants || 0).toLocaleString()} / {group.target_count >= 100000 
-                                          ? `${(group.target_count / 100000).toFixed(1)}L` 
-                                          : group.target_count.toLocaleString()})
-                                      </span>
-                                    </div>
-                                    <div className="w-full h-1.5 rounded-full bg-amber-500/10 overflow-hidden">
-                                      <div 
-                                        className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500" 
-                                        style={{ width: `${group.completion_percent}%` }}
+                                return (
+                                  <div 
+                                    key={group.id} 
+                                    className="card-interactive overflow-hidden flex flex-col justify-between text-left relative min-h-[290px]"
+                                  >
+                                    {/* Cover Banner at the top of card */}
+                                    <div className="h-32 w-full relative overflow-hidden bg-surface-alt">
+                                      <img
+                                        src={cardCoverSrc}
+                                        alt={group.name}
+                                        className="w-full h-full object-cover"
                                       />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
+                                    </div>
+
+                                    {/* Avatar Overlap */}
+                                    <div className="absolute left-5 top-20 z-20">
+                                      <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-background p-0.5 bg-background shadow-md">
+                                        <img 
+                                          src={deityFound ? deityFound.src : "/placeholder-deity.jpg"} 
+                                          alt={group.name} 
+                                          className="w-full h-full object-cover rounded-full" 
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Subtle background mandala-gold */}
+                                    <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.16] dark:opacity-[0.08] pointer-events-none w-28 h-28 z-0">
+                                      <img src={mandalaGold} className="w-full h-full object-contain" alt="" />
+                                    </div>
+
+                                    {/* Card Content Body */}
+                                    <div className="relative z-10 pt-7 px-5 pb-5 flex-1 flex flex-col justify-between space-y-4">
+                                      <div className="space-y-3">
+                                        {/* Header Title Row */}
+                                        <div className="flex items-center justify-between gap-2 mt-1">
+                                          <h4 className="font-display font-extrabold text-base text-brand-primary truncate leading-snug">
+                                            {group.name}
+                                          </h4>
+                                          <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold uppercase">
+                                            🪷 {getDeityDisplayName(group.deity)}
+                                          </span>
+                                        </div>
+
+                                        <p className="text-xs text-muted-foreground font-bold flex items-center gap-1">
+                                          👥 {group.member_count} {isHi ? "भक्त जुड़े हैं" : "devotees joined"}
+                                        </p>
+
+                                        {/* Group Description */}
+                                        <p className="text-xs text-muted-foreground font-medium line-clamp-2 leading-relaxed">
+                                          {group.description || (isHi ? "भक्तिमय संगीत और नाम जाप साझा करने का स्थान।" : "A space for sharing devotional music and chanting.")}
+                                        </p>
+                                      </div>
+
+                                      {/* Full width button */}
+                                      <div className="pt-2">
+                                        <button
+                                          onClick={() => handleOpenGroupDetails(group)}
+                                          className="btn-primary btn-sm btn-full"
+                                        >
+                                          <span>{isHi ? "समूह देखें" : "See Group"}</span>
+                                          <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex gap-2.5 mt-5 border-t border-orange-500/5 pt-3.5">
-                              {group.is_member ? (
-                                <>
-                                  <Button
-                                    onClick={() => handleOpenGroupDetails(group)}
-                                    className="flex-1 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-9 shadow-sm shadow-orange-500/15"
-                                  >
-                                    {isHi ? "समूह देखें" : "View Group"}
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => handleToggleGroupJoin(group)}
-                                    className="flex-1 text-xs font-bold border border-stone-250 dark:border-stone-800 text-stone-500 dark:text-stone-400 bg-stone-50/50 dark:bg-stone-900/50 rounded-xl h-9 flex items-center justify-center gap-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 hover:border-rose-500/20"
-                                  >
-                                    <Check className="w-3.5 h-3.5 text-orange-600" />
-                                    {isHi ? "शामिल हैं" : "Joined"}
-                                  </Button>
-                                </>
-                              ) : (
-                                <>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => handleOpenGroupDetails(group)}
-                                    className="flex-1 text-xs font-bold border border-orange-500/20 text-orange-600 dark:text-orange-400 hover:bg-orange-500/5 rounded-xl h-9"
-                                  >
-                                    {isHi ? "विवरण देखें" : "Details"}
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleToggleGroupJoin(group)}
-                                    className="flex-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    {isHi ? "शामिल हों" : "Join"}
-                                  </Button>
-                                </>
-                              )}
+                                );
+                              })}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
+                        )}
 
-              {/* ─── TAB 3: EVENTS VIEW ────────────────────────────────── */}
+                        {/* BOTTOM BANNER CARD */}
+                        <div className="bg-gradient-to-r from-amber-500/10 to-brand-gold/5 border border-[hsl(var(--brand-gold-border))] p-4 rounded-3xl flex items-center gap-3 text-left relative overflow-hidden">
+                          <div className="w-10 h-10 rounded-full bg-background border border-[hsl(var(--brand-gold-border))] flex items-center justify-center shrink-0">
+                            <span className="text-lg">🪷</span>
+                          </div>
+                          <p className="text-xs text-brand-primary dark:text-amber-100 font-bold leading-normal">
+                            {isHi 
+                              ? "आइए मिलकर अधिक से अधिक नाम जाप करें और इस लक्ष्य को प्राप्त करें।" 
+                              : "Let us chant as much as possible together and achieve this spiritual goal."}
+                          </p>
+                        </div>
+
+                        {/* FLOATING ACTION BUTTON */}
+                        <button
+                          onClick={() => setCreateGroupOpen(true)}
+                          className="fab-royal-diya z-40 lg:hidden fixed bottom-24 right-6"
+                          title={isHi ? "नया समूह" : "Create Group"}
+                        >
+                          <Plus className="w-6 h-6" />
+                        </button>
+
+                        {/* 2. EXPLORE / DISCOVER COMMUNITIES SECTION */}
+                        <div className="space-y-5 text-left pt-2">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                              <h3 className="font-display font-extrabold text-sm text-brand-primary dark:text-amber-100 uppercase tracking-wider">
+                                🔍 {isHi ? "नए समूह खोजें" : "Explore Groups"}
+                              </h3>
+                            </div>
+                          </div>
+
+                          {loadingGroups && (
+                            <div className="flex items-center justify-center py-12">
+                              <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+                            </div>
+                          )}
+
+                          {/* Empty Search results */}
+                          {!loadingGroups && exploreList.length === 0 && (
+                            <div className="text-center py-12 bg-card border border-dashed border-border rounded-3xl relative overflow-hidden">
+                              <div className="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none w-24 h-24">
+                                <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+                              </div>
+                              <span className="text-3xl block">📿</span>
+                              <p className="text-muted-foreground font-medium text-xs mt-3">
+                                {isHi ? "कोई समूह नहीं मिला।" : "No groups found."}
+                              </p>
+                              <Button 
+                                onClick={() => setCreateGroupOpen(true)}
+                                className="btn-primary btn-sm mt-4"
+                              >
+                                {isHi ? "नया समूह बनाएं" : "Create Group"}
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Suggested Unjoined / Search results listing */}
+                          {!loadingGroups && exploreList.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
+                              {exploreList.map(group => {
+                                const deityFound = DEITIES.find(d => d.id === group.deity);
+                                const hasValidGroupImg = group.image_url && 
+                                  group.image_url.trim() !== "" && 
+                                  group.image_url !== "null" && 
+                                  group.image_url !== "undefined" && 
+                                  (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
+                                const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
+
+                                return (
+                                  <div 
+                                    key={group.id}
+                                    className="overflow-hidden rounded-3xl bg-card border border-border shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group min-h-[290px] text-left"
+                                  >
+                                    {/* Header Banner representing deity */}
+                                    <div className="h-32 w-full relative overflow-hidden bg-surface-alt">
+                                      <img
+                                        src={cardCoverSrc}
+                                        alt={group.name}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
+                                        loading="lazy"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                                      
+                                      {/* Public/Private badge */}
+                                      <span className={`absolute top-3 left-3 text-[9px] font-bold px-2.5 py-1 rounded-full text-white/95 flex items-center gap-1.5 backdrop-blur-md border border-white/10 ${
+                                        group.is_public ? "bg-emerald-600/70" : "bg-rose-700/70"
+                                      }`}>
+                                        <Globe className="w-2.5 h-2.5" />
+                                        {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
+                                      </span>
+                                    </div>
+
+                                    {/* Content Card Body */}
+                                    <div className="p-5 flex-1 flex flex-col justify-between relative overflow-hidden">
+                                      <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.06] dark:opacity-[0.03] pointer-events-none w-24 h-24">
+                                        <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        {/* Deity Indicator tag */}
+                                        {(() => {
+                                          const getDeityDisplayName = (deityId) => {
+                                            if (!deityId) return "";
+                                            const mappings = {
+                                              "rama": { en: "Rama Ji", hi: "श्री राम जी" },
+                                              "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
+                                              "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
+                                              "shiva": { en: "Shiva Ji", hi: "शिव जी" },
+                                              "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
+                                              "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
+                                              "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
+                                              "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
+                                            };
+                                            const key = deityId.toLowerCase();
+                                            if (mappings[key]) {
+                                              return isHi ? mappings[key].hi : mappings[key].en;
+                                            }
+                                            return deityFound ? deityFound.name : deityId;
+                                          };
+                                          const dName = getDeityDisplayName(group.deity);
+                                          return dName ? (
+                                            <span className="inline-block text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold uppercase tracking-wide">
+                                              🪷 {dName}
+                                            </span>
+                                          ) : null;
+                                        })()}
+
+                                        <h3 className="font-display text-base font-extrabold text-brand-primary dark:text-amber-100 leading-snug">
+                                          {group.name}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground font-bold">
+                                          👥 {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
+                                        </p>
+                                        
+                                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                          {group.description || (isHi ? "भक्तिमय संगीत और नाम जाप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
+                                        </p>
+                                      </div>
+
+                                      {/* Action Buttons */}
+                                      <div className="flex gap-2 mt-4 pt-3 border-t border-border">
+                                        {group.is_member ? (
+                                          <>
+                                            <Button
+                                              onClick={() => handleOpenGroupDetails(group)}
+                                              className="btn-primary btn-sm flex-1 text-sm font-extrabold"
+                                            >
+                                              {isHi ? "समूह देखें" : "View Group"}
+                                            </Button>
+                                            <Button
+                                              variant="outline"
+                                              onClick={() => handleToggleGroupJoin(group)}
+                                              className="btn-secondary btn-sm flex-1 text-rose-600 border-rose-500/20 bg-rose-500/5 flex items-center justify-center gap-1 text-sm font-extrabold"
+                                            >
+                                              <Check className="w-3.5 h-3.5" />
+                                              {isHi ? "शामिल हैं" : "Joined"}
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Button
+                                              variant="outline"
+                                              onClick={() => handleOpenGroupDetails(group)}
+                                              className="btn-secondary btn-sm flex-1 text-sm font-extrabold"
+                                            >
+                                              {isHi ? "विवरण देखें" : "Details"}
+                                            </Button>
+                                            <Button
+                                              onClick={() => handleToggleGroupJoin(group)}
+                                              className="btn-primary btn-sm flex-1 flex items-center justify-center gap-1 text-sm font-extrabold"
+                                            >
+                                              <Plus className="w-3.5 h-3.5 text-white" />
+                                              {isHi ? "शामिल हों" : "Join"}
+                                            </Button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}{/* ─── TAB 3: EVENTS VIEW ────────────────────────────────── */}
               {activeTab === 'events' && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between border-b border-orange-500/10 pb-3">
@@ -1199,7 +1319,7 @@ export default function JoinCommunityPage() {
                         setPostType('event');
                         setCreatePostOpen(true);
                       }}
-                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl"
+                      className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-sm font-extrabold rounded-xl"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       {isHi ? "कार्यक्रम जोड़ें" : "Add Event"}
@@ -1217,7 +1337,7 @@ export default function JoinCommunityPage() {
                           setPostType('event');
                           setCreatePostOpen(true);
                         }}
-                        className="mt-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold"
+                        className="mt-4 bg-[#5c1d0c] hover:bg-[#4a170a] text-white rounded-xl text-sm font-extrabold px-4 py-2"
                       >
                         {isHi ? "पहला कार्यक्रम जोड़ें" : "Schedule Event"}
                       </Button>
@@ -1377,7 +1497,7 @@ export default function JoinCommunityPage() {
                                 
                                 <button
                                   onClick={() => onToggleRsvp(evt.id)}
-                                  className="bg-rose-500 hover:bg-rose-600 text-white text-[9.5px] font-extrabold py-1 px-2.5 rounded-lg active:scale-95 transition-all shadow-sm"
+                                  className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-[11px] font-extrabold py-1 px-3 rounded-lg active:scale-95 transition-all shadow-sm"
                                 >
                                   {isHi ? "रुचि दिखाएं" : "Join"}
                                 </button>

@@ -4,23 +4,33 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * DESIGN SYSTEM: 4 button variants. No exceptions.
+ *
+ *  default     → btn-primary   (brand crimson, white text — main CTA)
+ *  secondary   → btn-secondary (white bg, brand text, gold border — secondary action)
+ *  ghost       → btn-ghost     (transparent, brand text — nav, cancel, links)
+ *  destructive → btn-danger    (red semantic — delete, leave, remove ONLY)
+ *
+ * Sizes: default (44px h), sm (36px h), lg (52px h), icon (44×44 circle)
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all duration-250 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "btn-base inline-flex items-center justify-center gap-2 whitespace-nowrap disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "btn-royal-primary",
-        destructive: "bg-red-700 text-white hover:bg-red-800 shadow-[0_6px_14px_rgba(185,28,28,0.15)] hover:translate-y-[-1px] active:translate-y-0",
-        outline: "btn-royal-secondary",
-        secondary: "btn-royal-secondary",
-        ghost: "btn-royal-ghost",
-        link: "text-[#6A1418] underline-offset-4 hover:underline",
+        default:     "btn-primary",
+        secondary:   "btn-secondary",
+        outline:     "btn-secondary",   /* alias — outline maps to secondary */
+        ghost:       "btn-ghost",
+        destructive: "btn-danger",
+        link: "text-brand-primary underline-offset-4 hover:underline bg-transparent border-none shadow-none h-auto p-0",
       },
       size: {
-        default: "h-[54px] px-6 rounded-[16px] text-base [&_svg]:size-[22px]",
-        sm: "h-9 px-4 rounded-[12px] text-xs [&_svg]:size-[16px]",
-        lg: "h-[58px] px-8 rounded-[16px] text-lg [&_svg]:size-[24px]",
-        icon: "btn-royal-icon w-11 h-11",
+        default: "h-11 px-5 text-sm rounded-lg",       /* 44px */
+        sm:      "h-9 px-4 text-[13px] rounded-md",    /* 36px */
+        lg:      "h-[52px] px-7 text-base rounded-lg", /* 52px */
+        icon:    "btn-icon w-11 h-11",
       },
     },
     defaultVariants: {

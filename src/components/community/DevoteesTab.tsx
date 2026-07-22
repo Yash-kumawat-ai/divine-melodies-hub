@@ -40,14 +40,14 @@ export function DevoteesTab({
             <div className="space-y-6">
 
               {/* Top 3 podium */}
-              <div className="grid grid-cols-3 gap-3 md:gap-4 pt-4 pb-2">
-                {/* Rank 2 */}
+              <div className="grid grid-cols-3 gap-3.5 md:gap-5 pt-6 pb-3 items-end">
+                {/* Rank 2 (Silver) */}
                 {groupRankings[1] && (
-                  <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-white/40 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 shadow-xs relative">
-                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center font-bold text-xs shadow-md border-2 border-white dark:border-stone-900">
+                  <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-gradient-to-b from-slate-500/10 via-white/50 to-white/10 dark:from-slate-500/5 dark:via-stone-900/50 dark:to-stone-900/10 border border-slate-300/40 dark:border-stone-850 shadow-md relative group hover:scale-[1.02] transition-all duration-300">
+                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-slate-350 text-slate-800 flex items-center justify-center font-extrabold text-xs shadow-md border-2 border-white dark:border-stone-900 select-none">
                       2
                     </span>
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-300 mb-2 shadow-inner">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-300 mb-2.5 shadow-md group-hover:scale-105 transition-transform duration-300">
                       {groupRankings[1].avatar_url ? (
                         <img
                           src={groupRankings[1].avatar_url}
@@ -56,28 +56,28 @@ export function DevoteesTab({
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full bg-slate-200 dark:bg-stone-850 flex items-center justify-center text-xs font-bold text-slate-500">
+                        <div className="w-full h-full bg-slate-200 dark:bg-stone-800 flex items-center justify-center text-xs font-black text-slate-550">
                           {groupRankings[1].display_name[0]}
                         </div>
                       )}
                     </div>
-                    <span className="text-[10px] md:text-xs font-bold text-stone-700 dark:text-stone-300 truncate w-full">
+                    <span className="text-[10px] md:text-xs font-extrabold text-stone-800 dark:text-stone-300 truncate w-full">
                       {groupRankings[1].display_name}
                     </span>
-                    <span className="text-[9px] font-extrabold text-slate-500 block mt-0.5">
+                    <span className="text-[9.5px] font-black text-slate-500 block mt-0.5 uppercase tracking-tight">
                       {groupRankings[1].total_chants.toLocaleString()}{" "}
                       {isHi ? "जप" : "japs"}
                     </span>
                   </div>
                 )}
 
-                {/* Rank 1 */}
+                {/* Rank 1 (Gold) */}
                 {groupRankings[0] && (
-                  <div className="flex flex-col items-center justify-end text-center p-4 rounded-2xl bg-gradient-to-b from-amber-500/15 to-amber-500/5 dark:from-amber-500/5 border-2 border-amber-400 shadow-md relative scale-[1.05] z-10">
-                    <span className="absolute -top-4.5 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center font-extrabold text-sm shadow-lg border-2 border-white dark:border-stone-900 animate-pulse">
+                  <div className="flex flex-col items-center justify-end text-center p-4 rounded-3xl bg-gradient-to-b from-amber-500/20 via-amber-550/5 to-transparent border-2 border-amber-400 dark:border-amber-400 shadow-lg relative scale-[1.06] z-10 group hover:scale-[1.08] transition-all duration-300">
+                    <span className="absolute -top-4.5 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-gradient-to-tr from-amber-400 to-amber-600 text-white flex items-center justify-center font-extrabold text-sm shadow-lg border-2 border-white dark:border-stone-900 select-none animate-bounce">
                       👑
                     </span>
-                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400 mb-2 shadow-lg">
+                    <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-400 mb-2.5 shadow-lg group-hover:scale-105 transition-transform duration-300">
                       {groupRankings[0].avatar_url ? (
                         <img
                           src={groupRankings[0].avatar_url}
@@ -86,28 +86,28 @@ export function DevoteesTab({
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center text-sm font-bold text-amber-600">
+                        <div className="w-full h-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-sm font-black text-amber-600">
                           {groupRankings[0].display_name[0]}
                         </div>
                       )}
                     </div>
-                    <span className="text-xs md:text-sm font-extrabold text-stone-900 dark:text-amber-100 truncate w-full">
+                    <span className="text-xs md:text-sm font-black text-stone-900 dark:text-amber-100 truncate w-full">
                       {groupRankings[0].display_name}
                     </span>
-                    <span className="text-[10px] md:text-xs font-extrabold text-orange-600 dark:text-amber-400 block mt-0.5">
+                    <span className="text-[10px] md:text-xs font-black text-orange-600 dark:text-amber-400 block mt-0.5 uppercase tracking-wider">
                       {groupRankings[0].total_chants.toLocaleString()}{" "}
                       {isHi ? "जप" : "japs"}
                     </span>
                   </div>
                 )}
 
-                {/* Rank 3 */}
+                {/* Rank 3 (Bronze) */}
                 {groupRankings[2] && (
-                  <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-white/40 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800 shadow-xs relative">
-                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-amber-700 text-amber-100 flex items-center justify-center font-bold text-xs shadow-md border-2 border-white dark:border-stone-900">
+                  <div className="flex flex-col items-center justify-end text-center p-3 rounded-2xl bg-gradient-to-b from-orange-600/10 via-white/50 to-white/10 dark:from-orange-600/5 dark:via-stone-900/50 dark:to-stone-900/10 border border-orange-500/20 dark:border-stone-850 shadow-md relative group hover:scale-[1.02] transition-all duration-300">
+                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-amber-700 text-amber-100 flex items-center justify-center font-extrabold text-xs shadow-md border-2 border-white dark:border-stone-900 select-none">
                       3
                     </span>
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-700 mb-2 shadow-inner">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-705 mb-2.5 shadow-md group-hover:scale-105 transition-transform duration-300">
                       {groupRankings[2].avatar_url ? (
                         <img
                           src={groupRankings[2].avatar_url}
@@ -116,15 +116,15 @@ export function DevoteesTab({
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full bg-amber-50 dark:bg-stone-850 flex items-center justify-center text-xs font-bold text-amber-700">
+                        <div className="w-full h-full bg-amber-50 dark:bg-stone-800 flex items-center justify-center text-xs font-black text-amber-700">
                           {groupRankings[2].display_name[0]}
                         </div>
                       )}
                     </div>
-                    <span className="text-[10px] md:text-xs font-bold text-stone-700 dark:text-stone-300 truncate w-full">
+                    <span className="text-[10px] md:text-xs font-extrabold text-stone-800 dark:text-stone-300 truncate w-full">
                       {groupRankings[2].display_name}
                     </span>
-                    <span className="text-[9px] font-extrabold text-amber-700 block mt-0.5">
+                    <span className="text-[9.5px] font-black text-amber-700 block mt-0.5 uppercase tracking-tight">
                       {groupRankings[2].total_chants.toLocaleString()}{" "}
                       {isHi ? "जप" : "japs"}
                     </span>

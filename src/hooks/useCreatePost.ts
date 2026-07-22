@@ -104,7 +104,7 @@ export function useCreatePost({
       setPollOptions(["", ""]);
       setEventDate("");
       setEventTime("");
-      setEventLocation("");
+      setPostLocation("");
       setEventLinkedBhajan(null);
       setCreatePostOpen(false);
 

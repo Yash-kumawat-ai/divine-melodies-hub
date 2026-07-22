@@ -139,7 +139,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden transition-colors duration-300"
+            className="fixed inset-y-0 left-0 z-[130] flex flex-col overflow-hidden transition-colors duration-300"
             style={{
               width: '85%',
               maxWidth: '360px',
