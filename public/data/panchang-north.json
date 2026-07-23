@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-22",
+  "date": "2026-07-23",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Ashtami",
-  "tithi_number": 8,
-  "nakshatra": "Swathi - 2",
-  "yoga": "Sadhya",
-  "karana": "Bava",
+  "tithi": "Navami",
+  "tithi_number": 9,
+  "nakshatra": "Vishhaka - 1",
+  "yoga": "Subha",
+  "karana": "Kaulava",
   "paksha": "Shukla",
   "sunrise": "05:41 AM",
   "sunset": "07:13 PM",
-  "rahu_kaal": "10:46 AM - 12:27 PM",
+  "rahu_kaal": "12:27 PM - 02:08 PM",
   "brahma_muhurat": "04:05 AM - 04:53 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-07-22T06:24:47+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-07-23T06:28:56+05:30"
 }
