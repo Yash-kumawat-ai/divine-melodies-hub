@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-23",
+  "date": "2026-07-24",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Navami",
-  "tithi_number": 9,
-  "nakshatra": "Vishhaka - 1",
-  "yoga": "Subha",
-  "karana": "Kaulava",
+  "tithi": "Dasimi",
+  "tithi_number": 10,
+  "nakshatra": "Anuradha - 1",
+  "yoga": "Sukla",
+  "karana": "Garija",
   "paksha": "Shukla",
   "sunrise": "05:08 AM",
   "sunset": "06:17 PM",
-  "rahu_kaal": "11:42 AM - 01:21 PM",
+  "rahu_kaal": "01:21 PM - 03:00 PM",
   "brahma_muhurat": "03:32 AM - 04:20 AM",
-  "vara": "Guruvaar",
-  "updated_at": "2026-07-23T06:28:56+05:30"
+  "vara": "Shukravaar",
+  "updated_at": "2026-07-24T06:24:24+05:30"
 }
