@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
 import { queryUserUploads } from '@/lib/supabaseQueries';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
 import { useLanguage } from '@/hooks/useLanguage';
-import VoiceSearchButton from '@/components/VoiceSearchButton';
+import SearchBar from '@/components/SearchBar';
 
 interface UserBhajan {
   id: string;
@@ -94,26 +94,13 @@ export const AllBhajans = () => {
       <section className=" top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4 px-4">
         <div className="container mx-auto max-w-6xl space-y-4">
           {/* Search Bar */}
-          <motion.div className="relative flex items-center bg-white dark:bg-[#1E1710] border border-orange-200/50 dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] focus-within:border-orange-500/50 focus-within:ring-2 focus-within:ring-orange-500/10 transition-all duration-300 p-1.5 pl-6 pr-2">
-            <Search className="w-5 h-5 text-[#FF6A00] shrink-0 mr-3 select-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('searchBhajansOrSingers')}
-              className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-stone-700 dark:text-foreground text-sm md:text-base placeholder:text-stone-400 dark:placeholder:text-muted-foreground/60 py-2"
-            />
-            {search ? (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="mr-2 text-stone-400 hover:text-stone-600 dark:hover:text-white transition-colors focus:outline-none cursor-pointer p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            ) : null}
-            <VoiceSearchButton onResult={(transcript) => setSearch(transcript)} />
-          </motion.div>
+          <SearchBar
+            value={search}
+            onChange={(val) => setSearch(val)}
+            placeholder={t('searchBhajansOrSingers')}
+            onClear={() => setSearch("")}
+            onVoiceResult={(transcript) => setSearch(transcript)}
+          />
 
           {/* Results Count */}
           <div className="text-sm text-muted-foreground">

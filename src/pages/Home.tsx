@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { HeroSection } from '@/components/HeroSection';
 import { PromotionalCarousel } from '@/components/PromotionalCarousel';
+import DevotionalDivider from '@/components/DevotionalDivider';
 import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
@@ -190,52 +191,6 @@ function AnimatedCounter({ target, label }: { target: number; label: string }) {
   );
 }
 
-const DevotionalDivider = ({ language }: { language: string }) => {
-  const isHi = language === 'hi';
-  return (
-    <div className="w-full relative overflow-hidden py-1 select-none my-1 shrink-0">
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes devMarquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .dev-marquee-track {
-          animation: devMarquee 45s linear infinite;
-        }
-      `}} />
-      
-      {/* Top Dotted Line */}
-      <div className="w-full border-t border-dotted border-[#D8A35A]/50" />
-
-      {/* Marquee Content */}
-      <div className="my-1.5 w-full overflow-hidden flex relative z-10">
-        <div className="flex whitespace-nowrap dev-marquee-track gap-4 shrink-0 pr-4">
-          {Array.from({ length: 60 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 shrink-0">
-              <span className="text-[#E8B15C]/90 font-semibold tracking-wide text-sm md:text-[18px]">
-                {isHi ? 'राम' : 'RAM'}
-              </span>
-              <span className="text-[#D8A35A]/60 text-[10px] font-serif">✦</span>
-            </div>
-          ))}
-          {/* Duplicate track for seamless infinite looping */}
-          {Array.from({ length: 60 }).map((_, i) => (
-            <div key={`dup-${i}`} className="flex items-center gap-4 shrink-0" aria-hidden="true">
-              <span className="text-[#E8B15C]/90 font-semibold tracking-wide text-sm md:text-[18px]">
-                {isHi ? 'राम' : 'RAM'}
-              </span>
-              <span className="text-[#D8A35A]/60 text-[10px] font-serif">✦</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom Dotted Line */}
-      <div className="w-full border-t border-dotted border-[#D8A35A]/50" />
-    </div>
-  );
-};
-
 export default function Home() {
   const { t, language } = useLanguage();
   const isHi = language === 'hi';
@@ -258,6 +213,8 @@ export default function Home() {
       accent: "from-sky-600 to-blue-800",
       glow: "59,130,246",
       route: "/panchang",
+      imgBg: "#0a0500",
+      imgScale: 1.42,
     },
     {
       img: meditationImg,
@@ -268,6 +225,8 @@ export default function Home() {
       accent: "from-violet-600 to-purple-900",
       glow: "139,92,246",
       route: "/meditation",
+      imgBg: "#040204",
+      imgScale: 1.42,
     },
     {
       img: templeImg,
@@ -278,6 +237,8 @@ export default function Home() {
       accent: "from-amber-600 to-orange-900",
       glow: "245,158,11",
       route: "/temple",
+      imgBg: "#f5efe4",
+      imgScale: 1.38,
     },
     {
       img: krishnaAIImg,
@@ -288,6 +249,8 @@ export default function Home() {
       accent: "from-emerald-600 to-teal-900",
       glow: "16,185,129",
       route: "/kirtan-ai",
+      imgBg: "#1a0800",
+      imgScale: 1.0,
     },
     {
       img: lyricsImg,
@@ -298,6 +261,8 @@ export default function Home() {
       accent: "from-rose-600 to-pink-900",
       glow: "244,63,94",
       route: "/all-bhajans",
+      imgBg: "#0d0204",
+      imgScale: 1.0,
     },
     {
       img: aartiImg,
@@ -308,6 +273,8 @@ export default function Home() {
       accent: "from-yellow-500 to-amber-800",
       glow: "234,179,8",
       route: "/live-aarti",
+      imgBg: "#0d0204",
+      imgScale: 1.0,
     },
   ];
 
@@ -436,19 +403,16 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div className="bg-[#FFFDF8] dark:bg-background min-h-screen">
       <SEO
         title="Raghavam - Indian Bhajans & Devotional Songs"
         description="Discover, share, and preserve Hindu devotional music. Explore bhajans for Krishna, Shiva, Hanuman, Rama and more."
       />
 
       <HeroSection stats={stats} />
-      <div className="hidden md:block">
-        <DevotionalDivider language={language} />
-      </div>
 
       {/* ── ALL FEATURES — Premium Devotional 12-Feature Grid ── */}
-      <section className="bg-background py-10 md:py-16 px-4 md:px-6">
+      <section className="bg-[#FFFDF8] dark:bg-background py-10 md:py-16 px-4 md:px-6">
         <div className="container mx-auto max-w-5xl">
           {/* Section title */}
           <div className="text-center mb-8 md:mb-12">
@@ -492,7 +456,7 @@ export default function Home() {
                   scale: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
                   default: { delay: i * 0.02, duration: 0.3 }
                 }}
-                className="flex flex-col items-center justify-center p-2.5 md:p-3 rounded-[18px] md:rounded-[24px] bg-gradient-to-b from-[#FFFDF8] to-[#FFF9F2] dark:from-[#1E1710] dark:to-[#150F0A] border border-[#E8D8C4]/60 dark:border-[rgba(201,167,110,0.15)] shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
+                className="flex flex-col items-center justify-center p-2.5 md:p-3 rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:from-[#1E1710] dark:to-[#150F0A] border border-[#E8D8C4]/60 dark:border-[rgba(201,167,110,0.15)] shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
                 style={{
                   transitionDuration: '200ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -542,12 +506,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Promotional Banner Carousel */}
-      <PromotionalCarousel />
+      {/* Devotional Divider Ticker — placed JUST BELOW Raghavam Ki Visheshataayein */}
       <DevotionalDivider language={language} />
 
+      {/* Promotional Banner Carousel */}
+      <PromotionalCarousel />
+
       {/* ── Hanuman Bhakt Community Banner Poster ── */}
-      <section className="px-4 py-6 md:py-10">
+      <section className="px-4 py-6 md:py-10 bg-[#FFFDF8] dark:bg-background">
         <div className="container mx-auto max-w-5xl px-0">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
@@ -587,12 +553,13 @@ export default function Home() {
       </section>
 
       {/* Deity Grid */}
-      <DeityGrid />
-      <DevotionalDivider language={language} />
+      <div className="bg-[#FFFDF8] dark:bg-background">
+        <DeityGrid />
+      </div>
 
       {/* Community Bhajans */}
       {!loading && userBhajans.length > 0 && (
-        <section className="py-16 px-4 bg-background">
+        <section className="py-16 px-4 bg-[#FFFDF8] dark:bg-background">
           <div className="container mx-auto max-w-6xl">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
               {t('communityBhajans')}
@@ -631,7 +598,7 @@ export default function Home() {
       )}
 
       {/* Features */}
-      <section className="py-20 px-4 bg-background relative overflow-hidden">
+      <section className="py-20 px-4 bg-[#FFFDF8] dark:bg-background relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
@@ -667,12 +634,15 @@ export default function Home() {
                 whileHover={{ boxShadow: `0 16px 48px rgba(${f.glow},0.22)` }}
               >
                 {/* Image top half */}
-                <div className="relative w-full aspect-square">
-                  {/* Image fills the full card */}
+                <div className="relative w-full aspect-square" style={{ backgroundColor: f.imgBg }}>
+                  {/* Image fills the full card — scaled up for circular icons to hide corner whitespace */}
                   <img
                     src={f.img}
                     alt={f.title}
-                    className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700"
+                    style={{ transform: `scale(${(f.imgScale ?? 1) * 1.0}) ${f.imgScale > 1 ? '' : ''}`, transformOrigin: 'center center' }}
+                    onMouseOver={e => (e.currentTarget.style.transform = `scale(${((f.imgScale ?? 1) * 1.05)})`)}
+                    onMouseOut={e => (e.currentTarget.style.transform = `scale(${f.imgScale ?? 1})`)}
                   />
                   {/* Gradient overlay — dark at bottom for text contrast */}
                   <div className={`absolute inset-0 bg-gradient-to-t ${f.accent} opacity-60 group-hover:opacity-70 transition-opacity duration-500`} />
@@ -721,7 +691,7 @@ export default function Home() {
       <DevotionalDivider language={language} />
 
       {/* Testimonials */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-20 px-4 bg-[#FFFDF8] dark:bg-background">
         <div className="container mx-auto max-w-5xl">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
             {t('lovedByDevotees')}

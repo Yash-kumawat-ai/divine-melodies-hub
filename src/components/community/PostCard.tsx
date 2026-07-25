@@ -163,23 +163,23 @@ export function PostCard({
                 )}
               </div>
             </div>
-            <div>
-              <span className={`font-display font-extrabold text-sm flex items-center gap-1.5 flex-wrap ${
+            <div className="flex flex-col text-left">
+              <span className={`font-display font-extrabold text-base flex items-center gap-1.5 flex-wrap ${
                 isDark ? 'text-stone-100' : 'text-stone-850'
               }`}>
                 {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
-                <span className="text-[10px] select-none" title={authorBadge.label}>
+                <span className="text-xs select-none" title={authorBadge.label}>
                   {authorBadge.icon}
                 </span>
                 {post.group_name && (
-                  <span className={`text-[10px] font-semibold ${
+                  <span className={`text-xs font-semibold ${
                     isDark ? 'text-stone-500' : 'text-stone-450'
                   }`}>
-                    in <span className="text-orange-500 dark:text-orange-400 font-bold">#{post.group_name}</span>
+                    {isHi ? "में" : "in"} <span className="text-orange-500 dark:text-orange-400 font-bold">#{post.group_name}</span>
                   </span>
                 )}
               </span>
-              <p className={`text-[10px] font-medium tracking-wide mt-0.5 ${
+              <p className={`text-xs font-semibold tracking-wide mt-0.5 ${
                 isDark ? 'text-stone-400' : 'text-stone-500'
               }`}>
                 {formatTime(post.created_at)} • <span className={`${authorBadge.colorClass} font-semibold`}>{authorBadge.label}</span>
@@ -190,7 +190,7 @@ export function PostCard({
           <div className="flex items-center gap-2">
             <Badge 
               variant="outline" 
-              className={`text-[9px] uppercase font-black px-2.5 py-0.5 rounded-full select-none ${
+              className={`text-xs uppercase font-extrabold px-3 py-1 rounded-full select-none ${
                 post.type === 'bhajan_share' ? (isDark ? "bg-emerald-950/20 text-emerald-450 border-emerald-500/25" : "bg-emerald-50 text-emerald-700 border-emerald-300/40") :
                 post.type === 'bhajan_request' ? (isDark ? "bg-[#2c2018] text-amber-400 border-amber-500/25" : "bg-amber-50 text-amber-700 border-amber-300/60") :
                 post.type === 'question' ? (isDark ? "bg-blue-950/20 text-blue-405 border-blue-500/25" : "bg-blue-50 text-blue-700 border-blue-300/40") :
@@ -227,7 +227,7 @@ export function PostCard({
         {/* Post content and media */}
         <div className="mt-3.5 space-y-3.5 text-left w-full">
           {post.title && (
-            <h3 className={`font-display font-extrabold text-sm sm:text-base leading-tight ${
+            <h3 className={`font-display font-extrabold text-base sm:text-lg leading-tight ${
               isDark ? 'text-amber-50' : 'text-stone-850'
             }`}>
               {post.title}
@@ -371,12 +371,12 @@ export function PostCard({
                     <div key={step.status} className="flex flex-col items-center">
                       <div className={"w-4 h-4 rounded-full border flex items-center justify-center text-[7.5px] font-bold " + (
                         isPassed 
-                          ? "bg-orange-500 border-orange-600 text-white" 
+                          ? "bg-[#5c1d0c] border-[#5c1d0c] text-white" 
                           : isDark ? "bg-[#130f0c] border-stone-800 text-stone-400" : "bg-white border-stone-200 text-stone-450"
                       )}>
                         {isPassed && "✓"}
                       </div>
-                      <span className={"mt-1 font-semibold " + (isPassed ? "text-orange-400" : isDark ? "text-stone-500" : "text-stone-400")}>
+                      <span className={"mt-1 font-semibold " + (isPassed ? "text-[#5c1d0c]" : isDark ? "text-stone-500" : "text-stone-400")}>
                         {step.label}
                       </span>
                     </div>
@@ -387,7 +387,7 @@ export function PostCard({
               {post.request_status === 'open' && (
                 <Button 
                   onClick={() => onToggleComments(post.id)}
-                  className="mt-3.5 w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl h-9 shadow-xs"
+                  className="mt-3.5 w-full bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-xs font-bold rounded-xl h-9 shadow-xs"
                 >
                   📿 {isHi ? "मुझे इस भजन के बोल पता हैं (उत्तर दें)" : "I Know This Bhajan (Submit Lyrics)"}
                 </Button>
@@ -397,12 +397,14 @@ export function PostCard({
 
           {post.type === 'event' && (
             <div className={`border rounded-2xl p-4 space-y-3 ${isDark ? 'bg-stone-900/20 border-orange-500/10' : 'bg-stone-50/60 border-stone-200'}`}>
-              <div className={`flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2 border-b pb-2.5 ${isDark ? 'text-stone-300 border-[#2c2018]' : 'text-stone-700 border-stone-200'}`}>
-                <span className="flex items-center gap-1 text-rose-500">
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between text-sm font-bold gap-3 border-b pb-2.5 ${isDark ? 'text-stone-300 border-[#2c2018]' : 'text-stone-700 border-stone-200'}`}>
+                <span className="flex items-center gap-1.5 text-rose-500">
                   <Calendar className="w-4 h-4" />
-                  {post.event_datetime ? new Date(post.event_datetime).toLocaleString() : (isHi ? "तारीख/समय निर्धारित नहीं" : "Date/Time not set")}
+                  {post.event_datetime 
+                    ? new Date(post.event_datetime).toLocaleString(isHi ? 'hi-IN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }) 
+                    : (isHi ? "तारीख/समय निर्धारित नहीं" : "Date/Time not set")}
                 </span>
-                <span className={`flex items-center gap-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                <span className={`flex items-center gap-1.5 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   <MapPin className="w-4 h-4" />
                   {post.event_location || (isHi ? "वर्चुअल ज़ूम" : "Virtual Zoom")}
                 </span>
@@ -410,15 +412,15 @@ export function PostCard({
 
               {post.linked_bhajan_id && (
                 <div className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                  isDark ? 'bg-[#1a1410]/50 border-orange-500/10' : 'bg-orange-50/30 border-orange-200/50'
+                  isDark ? 'bg-[#1a1410]/50 border-[#5c1d0c]/10' : 'bg-orange-50/10 border-stone-200/50'
                 }`}>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-orange-400 block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
-                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-850'}`}>{isHi ? "भजन संदर्भ" : "Bhajan Page Reference"}</span>
+                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#5c1d0c] block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
+                    <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-855'}`}>{isHi ? "भजन संदर्भ" : "Bhajan Page Reference"}</span>
                   </div>
                   <a 
                     href={"/bhajan/" + post.linked_bhajan_id}
-                    className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
+                    className="bg-[#5c1d0c]/10 text-[#5c1d0c] hover:bg-[#5c1d0c]/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
                   >
                     {isHi ? "बोल खोलें" : "Open lyrics"} <ChevronRight className="w-3 h-3" />
                   </a>
@@ -432,8 +434,8 @@ export function PostCard({
                 ].map(opt => {
                   const isActive = post.rsvp_status === opt.status;
                   const count = opt.status === 'interested' 
-                    ? post.rsvps_count?.interested || 0
-                    : post.rsvps_count?.going || 0;
+                     ? post.rsvps_count?.interested || 0
+                     : post.rsvps_count?.going || 0;
 
                   return (
                     <button
@@ -441,8 +443,8 @@ export function PostCard({
                       onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status as any)}
                       className={"flex-1 flex items-center justify-center gap-2 border px-3 py-2 rounded-xl text-xs font-bold active:scale-98 transition-all " + (
                         isActive 
-                          ? "bg-rose-500 border-rose-600 text-white shadow-xs" 
-                          : isDark ? "bg-[#1a1410] border-rose-500/15 text-rose-400 hover:bg-rose-500/5" : "bg-rose-50/30 border-rose-200/60 text-rose-600 hover:bg-rose-100/40"
+                          ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs" 
+                          : isDark ? "bg-[#1a1410] border-[#5c1d0c]/15 text-[#5c1d0c] hover:bg-[#5c1d0c]/5" : "bg-[#FAF6EE]/50 border-stone-200 text-[#5c1d0c] hover:bg-[#5c1d0c]/10"
                       )}
                     >
                       <span>{opt.status === 'interested' ? '⭐' : '✓'}</span>
@@ -569,9 +571,9 @@ export function PostCard({
       {/* ─── COLLAPSED COMMENTS PANEL ───────────────────────────── */}
       {isCommentsExpanded && (
         <div className={`mt-4 rounded-2xl p-4 border space-y-4 ${
-          isDark ? 'bg-[#120e0c] border-orange-500/5' : 'bg-stone-50/50 border-stone-200/80'
+          isDark ? 'bg-[#120e0c] border-[#5c1d0c]/20' : 'bg-[#FAF6EE]/30 border-stone-200'
         }`}>
-          <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
+          <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-[#291e17]' : 'border-stone-200'}`}>
             <span className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               {isHi ? "वार्तालाप" : "Discussion Thread"}
             </span>
@@ -581,14 +583,14 @@ export function PostCard({
           <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
             {isLoadingComments && comments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-stone-400">
-                <Loader2 className="w-5 h-5 animate-spin text-orange-500 mb-2" />
+                <Loader2 className="w-5 h-5 animate-spin text-[#5c1d0c] mb-2" />
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-stone-500">
                   {isHi ? "टिप्पणियाँ लोड हो रही हैं..." : "Loading comments..."}
                 </span>
               </div>
             ) : comments.length === 0 ? (
               <div className={`text-center py-6 border border-dashed rounded-xl bg-orange-500/[0.01] ${
-                isDark ? 'border-[#231b15]' : 'border-stone-200'
+                isDark ? 'border-[#291e17]' : 'border-stone-200'
               }`}>
                 <p className={`text-xs font-medium ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   {isHi ? "कोई टिप्पणी नहीं है। पहली टिप्पणी करें! 📿" : "No replies yet. Be the first to reply! 📿"}
@@ -596,18 +598,18 @@ export function PostCard({
               </div>
             ) : (
               comments.map(comment => (
-                <div key={comment.id} className="flex gap-2.5 text-xs items-start group text-left">
-                  <div className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-orange-950/40 shrink-0 flex items-center justify-center font-bold text-orange-400 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
+                <div key={comment.id} className="flex gap-3 text-xs items-start group text-left relative">
+                  <div className="w-8 h-8 rounded-full bg-orange-950/20 shrink-0 flex items-center justify-center font-bold text-orange-650 ring-2 ring-orange-500/10 shadow-xs overflow-hidden select-none">
                     {comment.author?.avatar_url ? (
-                      <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full max-w-full max-h-full object-cover rounded-full" />
+                      <img src={comment.author.avatar_url} alt="avatar" className="w-full h-full object-cover rounded-full animate-fade-in" />
                     ) : (
                       comment.author?.display_name ? (
                         comment.author.display_name.slice(0, 2).toUpperCase()
                       ) : "DV"
                     )}
                   </div>
-                  <div className={`p-3 rounded-2xl min-w-0 shadow-xs transition-colors flex-1 border ${
-                    isDark ? 'bg-[#17120f] border-[#231b15] hover:border-orange-500/10' : 'bg-white border-stone-200 hover:border-stone-300'
+                  <div className={`relative p-3.5 rounded-2xl min-w-0 shadow-xxs transition-all flex-1 border ${
+                    isDark ? 'bg-[#19130f] border-[#291e17] hover:border-[#5c1d0c]/30' : 'bg-white border-stone-200 hover:border-stone-300'
                   }`}>
                     <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                       <span className={`font-extrabold flex items-center gap-1.5 flex-wrap ${
@@ -615,25 +617,32 @@ export function PostCard({
                       }`}>
                         {comment.author?.display_name || "Devotee"}
                         {comment.is_lyrics_submission && (
-                          <Badge variant="outline" className="text-[7px] bg-emerald-500 text-white font-extrabold uppercase border-emerald-600 scale-90 px-1 py-0 select-none">
+                          <Badge variant="outline" className="text-[7.5px] bg-emerald-600 text-white font-extrabold uppercase border-emerald-700 scale-90 px-1 py-0 select-none">
                             {isHi ? "भजन बोल" : "Lyrics Submission"}
                           </Badge>
                         )}
                       </span>
-                      <span className={`text-[8px] font-semibold ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{formatTime(comment.created_at)}</span>
+                      <span className={`text-[8.5px] font-semibold ${isDark ? 'text-stone-500' : 'text-stone-450'}`}>{formatTime(comment.created_at)}</span>
                     </div>
                     <p className={`text-xs whitespace-pre-wrap leading-relaxed break-words font-medium ${
-                      isDark ? 'text-stone-300' : 'text-stone-600'
+                      isDark ? 'text-stone-300' : 'text-stone-650'
                     }`}>
                       {comment.content}
                     </p>
                     {user?.id === comment.author_id && (
-                      <button 
-                        onClick={() => onDeleteComment(post.id, comment.id)}
-                        className="text-stone-500 hover:text-rose-500 font-bold text-[8px] mt-2 flex items-center gap-0.5 hover:underline transition-colors ml-auto"
-                      >
-                        <Trash2 className="w-3 h-3 inline" /> {isHi ? "हटाएं" : "Delete"}
-                      </button>
+                      <div className="flex justify-end pt-1">
+                        <button 
+                          onClick={() => {
+                            if (confirm(isHi ? "क्या आप सच में इस टिप्पणी को हटाना चाहते हैं?" : "Are you sure you want to delete this comment?")) {
+                              onDeleteComment(post.id, comment.id);
+                            }
+                          }}
+                          className="text-stone-400 hover:text-rose-600 font-bold text-xs flex items-center gap-1 transition-colors hover:underline cursor-pointer py-1 px-2 rounded-lg hover:bg-rose-500/5 mt-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isHi ? "हटाएं" : "Delete"}</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -643,7 +652,7 @@ export function PostCard({
 
           {/* Comment Form */}
           {user ? (
-            <div className={`pt-2 border-t ${isDark ? 'border-[#231b15]' : 'border-stone-200'}`}>
+            <div className={`pt-2 border-t ${isDark ? 'border-[#291e17]' : 'border-stone-200'}`}>
               <div className="flex gap-2">
                 <textarea
                   rows={2}
@@ -654,15 +663,15 @@ export function PostCard({
                       ? (isHi ? "भजन के बोल यहाँ लिखें..." : "Provide lyrics or details here...")
                       : (isHi ? "अपनी टिप्पणी यहाँ लिखें..." : "Write a response...")
                   }
-                  className={`flex-1 text-xs rounded-xl p-2.5 focus:outline-none focus:border-orange-500 resize-none border ${
-                    isDark ? 'border-orange-500/10 bg-[#130f0c] text-stone-200' : 'border-stone-200 bg-white text-stone-700'
+                  className={`flex-1 text-xs rounded-xl p-2.5 focus:outline-none focus:border-[#5c1d0c] focus:ring-1 focus:ring-[#5c1d0c]/10 resize-none border ${
+                    isDark ? 'border-[#5c1d0c]/20 bg-[#130f0c] text-stone-200' : 'border-stone-200 bg-white text-stone-700'
                   }`}
                   aria-label="Comment text content"
                 />
                 <button
                   onClick={() => onAddComment(post.id)}
                   disabled={!newCommentText.trim()}
-                  className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold p-3 rounded-xl flex items-center justify-center hover:scale-98 transition-all shrink-0 w-11 h-11 self-end"
+                  className="bg-[#5c1d0c] hover:bg-[#4a170a] disabled:opacity-40 disabled:hover:bg-[#5c1d0c] text-white font-bold p-3 rounded-xl flex items-center justify-center hover:scale-98 transition-all shrink-0 w-11 h-11 self-end border-none cursor-pointer"
                   aria-label="Submit Comment"
                 >
                   <Send className="w-4 h-4 text-white" />
@@ -676,7 +685,7 @@ export function PostCard({
                     id={`lyrics-submit-check-${post.id}`}
                     checked={commentIsLyricsSubmit}
                     onChange={(e) => setCommentIsLyricsSubmit(e.target.checked)}
-                    className="w-3.5 h-3.5 accent-orange-500 cursor-pointer"
+                    className="w-3.5 h-3.5 accent-[#5c1d0c] cursor-pointer"
                   />
                   <label htmlFor={`lyrics-submit-check-${post.id}`} className="text-[10px] font-bold text-stone-400 cursor-pointer select-none">
                     {isHi ? "इस टिप्पणी को भजन के बोल के रूप में जमा करें (अनुरोध समीक्षा के लिए चला जाएगा)" : "Submit this comment as the Bhajan Lyrics (moves request to pending review)"}

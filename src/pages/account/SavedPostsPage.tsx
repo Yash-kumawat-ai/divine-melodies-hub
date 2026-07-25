@@ -258,56 +258,58 @@ export default function SavedPostsPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#2c2018] bg-[#120e0c] text-stone-300 hover:text-white"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#EFE4D7] dark:border-zinc-800 bg-white dark:bg-[#1E1710] text-[#32251E] dark:text-[#FFFDF8] hover:bg-[#FAF2E8] dark:hover:bg-[#2A1F14] shadow-sm transition-all active:scale-95"
           aria-label={t('back')}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 text-[#6A2C2A] dark:text-[#E8B15C]" />
         </button>
-        <div className="flex items-center gap-2">
-          <Bookmark className="h-5 w-5 fill-amber-500 text-amber-500" />
-          <h1 className="font-display text-xl font-bold text-foreground">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#EFE4D7] dark:border-amber-950/50 shadow-sm">
+            <Bookmark className="h-5 w-5 fill-[#D4A44A] text-[#D4A44A]" />
+          </div>
+          <h1 className="font-serif text-xl sm:text-2xl font-bold text-[#32251E] dark:text-[#FFFDF8]">
             {isHi ? "सहेजे गए विकल्प" : "Saved Options"}
           </h1>
         </div>
       </div>
 
       {!user ? (
-        <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-[#120e0c]/50">
-          <p className="text-muted-foreground">{t('signInToLike')}</p>
-          <Button asChild className="mt-4 rounded-xl">
+        <div className="rounded-2xl border border-dashed border-[#EFE4D7] dark:border-zinc-800/80 p-8 text-center bg-white/80 dark:bg-[#1E1710]/80 shadow-sm backdrop-blur-sm">
+          <p className="text-[#7A6B60] dark:text-[#D4C5B9] font-medium text-sm sm:text-base mb-4">{t('signInToLike')}</p>
+          <Button asChild className="rounded-xl bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white shadow-md px-6 py-2.5">
             <Link to="/auth/login">{t('login')}</Link>
           </Button>
         </div>
       ) : (
         <>
           {/* Sub Tabs */}
-          <div className="flex gap-2 border-b border-[#2c2018] pb-3 mb-6 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 border-b border-[#EFE4D7] dark:border-zinc-800 pb-3.5 mb-6 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab('posts')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border whitespace-nowrap flex items-center gap-1.5 shadow-sm ${
                 activeTab === 'posts'
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
-                  : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
+                  ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 border-transparent shadow-md'
+                  : 'bg-white dark:bg-[#1E1710] text-[#7A6B60] dark:text-[#D4C5B9] border-[#EFE4D7] dark:border-zinc-800 hover:text-[#32251E] dark:hover:text-[#FFFDF8] hover:bg-[#FAF2E8] dark:hover:bg-[#2A1F14]'
               }`}
             >
               🌸 {isHi ? "सहेजे गए पोस्ट" : "Saved Posts"} ({savedPosts.length})
             </button>
             <button
               onClick={() => setActiveTab('bhajans')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border whitespace-nowrap flex items-center gap-1.5 shadow-sm ${
                 activeTab === 'bhajans'
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
-                  : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
+                  ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 border-transparent shadow-md'
+                  : 'bg-white dark:bg-[#1E1710] text-[#7A6B60] dark:text-[#D4C5B9] border-[#EFE4D7] dark:border-zinc-800 hover:text-[#32251E] dark:hover:text-[#FFFDF8] hover:bg-[#FAF2E8] dark:hover:bg-[#2A1F14]'
               }`}
             >
               🎵 {isHi ? "पसंदीदा भजन" : "Liked Bhajans"} ({likedBhajans.length})
             </button>
             <button
               onClick={() => setActiveTab('shorts')}
-              className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border whitespace-nowrap ${
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all border whitespace-nowrap flex items-center gap-1.5 shadow-sm ${
                 activeTab === 'shorts'
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white border-transparent shadow-md'
-                  : 'bg-[#120e0c] text-stone-400 border-[#2c2018] hover:text-stone-200'
+                  ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 border-transparent shadow-md'
+                  : 'bg-white dark:bg-[#1E1710] text-[#7A6B60] dark:text-[#D4C5B9] border-[#EFE4D7] dark:border-zinc-800 hover:text-[#32251E] dark:hover:text-[#FFFDF8] hover:bg-[#FAF2E8] dark:hover:bg-[#2A1F14]'
               }`}
             >
               🎥 {isHi ? "सहेजे गए शॉर्ट्स" : "Saved Shorts"} ({savedShorts.length})
@@ -319,18 +321,21 @@ export default function SavedPostsPage() {
             <>
               {loadingPosts ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-3" />
-                  <span className="text-xs text-stone-400 font-medium">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#6A2C2A] dark:text-[#E8B15C] mb-3" />
+                  <span className="text-xs text-[#7A6B60] dark:text-[#D4C5B9] font-medium">
                     {isHi ? "सहेजे गए पोस्ट लोड हो रहे हैं..." : "Loading saved posts..."}
                   </span>
                 </div>
               ) : savedPosts.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#2c2018] p-12 text-center bg-[#120e0c]/30">
-                  <span className="text-4xl block mb-3">🔖</span>
-                  <p className="text-stone-400 font-medium text-sm">
+                <div className="rounded-2xl border border-dashed border-[#EFE4D7] dark:border-zinc-800/80 p-10 sm:p-14 text-center bg-white/80 dark:bg-[#1E1710]/80 shadow-sm backdrop-blur-sm">
+                  <span className="text-4xl block mb-3 opacity-90">🔖</span>
+                  <p className="text-[#32251E] dark:text-[#FFFDF8] font-semibold text-base mb-1">
                     {isHi ? "अभी तक कोई पोस्ट नहीं सहेजी गई है।" : "No posts saved yet."}
                   </p>
-                  <Button asChild variant="outline" className="mt-4 rounded-xl border-[#2c2018] bg-[#120e0c] text-stone-300 hover:text-white">
+                  <p className="text-[#7A6B60] dark:text-[#D4C5B9] text-xs sm:text-sm font-medium mb-4">
+                    {isHi ? "कम्युनिटी से अपनी पसंदीदा पोस्ट सहेजें" : "Save your favorite posts from the community"}
+                  </p>
+                  <Button asChild variant="outline" className="rounded-xl border-[#EFE4D7] dark:border-zinc-800 bg-[#FCF8F2] dark:bg-[#2A1F14] text-[#6A2C2A] dark:text-[#E8B15C] hover:bg-[#FAF2E8] dark:hover:bg-[#34271A] font-semibold px-5 py-2 shadow-sm transition-all">
                     <Link to="/join-community">{isHi ? "कम्युनिटी देखें" : "Browse Community"}</Link>
                   </Button>
                 </div>
@@ -374,12 +379,15 @@ export default function SavedPostsPage() {
           {activeTab === 'bhajans' && (
             <>
               {likedBhajans.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#2c2018] p-12 text-center bg-[#120e0c]/30">
-                  <span className="text-4xl block mb-3">🎵</span>
-                  <p className="text-stone-400 font-medium text-sm">
+                <div className="rounded-2xl border border-dashed border-[#EFE4D7] dark:border-zinc-800/80 p-10 sm:p-14 text-center bg-white/80 dark:bg-[#1E1710]/80 shadow-sm backdrop-blur-sm">
+                  <span className="text-4xl block mb-3 opacity-90">🎵</span>
+                  <p className="text-[#32251E] dark:text-[#FFFDF8] font-semibold text-base mb-1">
                     {isHi ? "अभी तक कोई भजन पसंद नहीं किया गया है।" : "No liked bhajans yet."}
                   </p>
-                  <Button asChild variant="outline" className="mt-4 rounded-xl border-[#2c2018] bg-[#120e0c] text-stone-300 hover:text-white">
+                  <p className="text-[#7A6B60] dark:text-[#D4C5B9] text-xs sm:text-sm font-medium mb-4">
+                    {isHi ? "अपने मनपसंद भजनों को दिल वाले आइकन से लाइक करें" : "Like your favorite bhajans using the heart icon"}
+                  </p>
+                  <Button asChild variant="outline" className="rounded-xl border-[#EFE4D7] dark:border-zinc-800 bg-[#FCF8F2] dark:bg-[#2A1F14] text-[#6A2C2A] dark:text-[#E8B15C] hover:bg-[#FAF2E8] dark:hover:bg-[#34271A] font-semibold px-5 py-2 shadow-sm transition-all">
                     <Link to="/all-bhajans">{isHi ? "भजन खोजें" : "Browse Bhajans"}</Link>
                   </Button>
                 </div>
@@ -398,18 +406,21 @@ export default function SavedPostsPage() {
             <>
               {loadingShorts ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-3" />
-                  <span className="text-xs text-stone-400 font-medium">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#6A2C2A] dark:text-[#E8B15C] mb-3" />
+                  <span className="text-xs text-[#7A6B60] dark:text-[#D4C5B9] font-medium">
                     {isHi ? "सहेजे गए शॉर्ट्स लोड हो रहे हैं..." : "Loading saved shorts..."}
                   </span>
                 </div>
               ) : savedShorts.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#2c2018] p-12 text-center bg-[#120e0c]/30">
-                  <span className="text-4xl block mb-3">🎥</span>
-                  <p className="text-stone-400 font-medium text-sm">
+                <div className="rounded-2xl border border-dashed border-[#EFE4D7] dark:border-zinc-800/80 p-10 sm:p-14 text-center bg-white/80 dark:bg-[#1E1710]/80 shadow-sm backdrop-blur-sm">
+                  <span className="text-4xl block mb-3 opacity-90">🎥</span>
+                  <p className="text-[#32251E] dark:text-[#FFFDF8] font-semibold text-base mb-1">
                     {isHi ? "अभी तक कोई शॉर्ट्स नहीं सहेजे गए हैं।" : "No shorts saved yet."}
                   </p>
-                  <Button asChild variant="outline" className="mt-4 rounded-xl border-[#2c2018] bg-[#120e0c] text-stone-300 hover:text-white">
+                  <p className="text-[#7A6B60] dark:text-[#D4C5B9] text-xs sm:text-sm font-medium mb-4">
+                    {isHi ? "शॉर्ट्स वीडियो देखते समय उन्हें सहेजें" : "Save short videos while watching"}
+                  </p>
+                  <Button asChild variant="outline" className="rounded-xl border-[#EFE4D7] dark:border-zinc-800 bg-[#FCF8F2] dark:bg-[#2A1F14] text-[#6A2C2A] dark:text-[#E8B15C] hover:bg-[#FAF2E8] dark:hover:bg-[#34271A] font-semibold px-5 py-2 shadow-sm transition-all">
                     <Link to="/shorts">{isHi ? "शॉर्ट्स देखें" : "Browse Shorts"}</Link>
                   </Button>
                 </div>
@@ -419,7 +430,7 @@ export default function SavedPostsPage() {
                     <Link
                       key={short.id}
                       to={`/shorts/${short.video_id}`}
-                      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#2c2018] bg-[#120e0c]/40 hover:border-orange-500/30 transition-all hover:scale-[1.02]"
+                      className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#EFE4D7] dark:border-zinc-800 bg-white dark:bg-[#1E1710] shadow-sm hover:shadow-md transition-all hover:scale-[1.02]"
                     >
                       <div className="aspect-[9/16] relative w-full overflow-hidden bg-stone-950">
                         <img
@@ -428,15 +439,15 @@ export default function SavedPostsPage() {
                           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                        <span className="absolute bottom-2 left-2 text-[10px] font-black uppercase bg-orange-500 text-white px-2 py-0.5 rounded-md shadow-md">
+                        <span className="absolute bottom-2 left-2 text-[10px] font-black uppercase bg-[#7A2D28] text-white px-2 py-0.5 rounded-md shadow-md">
                           {short.channel_name}
                         </span>
                       </div>
-                      <div className="p-2 flex-1 flex flex-col justify-between">
-                        <h3 className="text-xs font-bold text-stone-200 line-clamp-2 leading-snug">
+                      <div className="p-2.5 flex-1 flex flex-col justify-between">
+                        <h3 className="text-xs font-bold text-[#32251E] dark:text-[#FFFDF8] line-clamp-2 leading-snug">
                           {short.title}
                         </h3>
-                        <p className="text-[10px] text-stone-500 mt-1 font-medium truncate">
+                        <p className="text-[10px] text-[#7A6B60] dark:text-[#D4C5B9] mt-1 font-medium truncate">
                           {short.handle}
                         </p>
                       </div>

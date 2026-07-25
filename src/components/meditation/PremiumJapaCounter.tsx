@@ -23,6 +23,7 @@ import {
   Trophy
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTheme } from "@/hooks/useTheme";
 import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -151,6 +152,8 @@ export default function PremiumJapaCounter({
 }: PremiumJapaCounterProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -1890,15 +1893,26 @@ export default function PremiumJapaCounter({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleBackgroundTap}
-      className="fixed inset-0 z-[100] bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] flex flex-col justify-between text-[#fbf6f0] select-none md:overflow-y-auto overflow-y-hidden cursor-pointer"
+      className={`fixed inset-0 z-[100] flex flex-col justify-between select-none md:overflow-y-auto overflow-y-hidden cursor-pointer transition-colors duration-300 ${
+        isDark 
+          ? "bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] text-[#fbf6f0]" 
+          : "bg-gradient-to-b from-[#FFFDF8] via-[#FFFBF0] to-[#FAF5E6] text-[#3A2418]"
+      }`}
     >
       {/* Background radial soft light */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle at 50% 30%, #8e6a23cc, transparent 30%);
-}] pointer-events-none" />
+      <div 
+        className={`absolute inset-0 pointer-events-none ${
+          isDark 
+            ? "bg-[radial-gradient(circle_at_50%_30%,#8e6a2340,transparent_55%)]" 
+            : "bg-[radial-gradient(circle_at_50%_30%,#D8A35A15,transparent_55%)]"
+        }`} 
+      />
 
       {/* Devotional Deity Background Image with Fade */}
       <div 
-        className="absolute top-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.45]"
+        className={`absolute top-0 pointer-events-none overflow-hidden z-0 select-none transition-opacity duration-300 ${
+          isDark ? "opacity-[0.45]" : "opacity-[0.65] mix-blend-multiply"
+        }`}
         style={{
           width: isMobile ? "100%" : "512px",
           left: isMobile ? "0" : "calc(50% - 256px)",
@@ -1915,7 +1929,13 @@ export default function PremiumJapaCounter({
           alt="Deity Background"
         />
         {/* Soft radial overlay on top of image to blend with black background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 via-transparent to-[#050203]/90" />
+        <div 
+          className={`absolute inset-0 transition-colors duration-300 ${
+            isDark 
+              ? "bg-gradient-to-b from-amber-500/5 via-transparent to-[#050203]/90" 
+              : "bg-gradient-to-b from-amber-500/5 via-transparent to-[#FFFDF8]/95"
+          }`} 
+        />
       </div>
 
       {/* ─── HEADER BAR ───────────────────────────────────────────── */}
@@ -1928,17 +1948,25 @@ export default function PremiumJapaCounter({
               onClose(activeMantra.id);
             }
           }}
-          className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
+          className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
+            isDark 
+              ? "border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 text-amber-200/80 hover:text-amber-300" 
+              : "border-[#E8D8C4] hover:border-[#D8A35A] bg-[#FFFDF8]/85 hover:bg-[#FFF9F2] text-[#5C1D0C] hover:text-amber-600 shadow-sm"
+          }`}
           aria-label="Back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
 
         <div className="text-center flex flex-col items-center">
-          <h2 className="font-serif text-[20px] md:text-[23px] font-bold text-amber-400/90 tracking-wide select-none">
+          <h2 className={`font-serif text-[20px] md:text-[23px] font-bold tracking-wide select-none ${
+            isDark ? "text-amber-400/90" : "text-amber-700"
+          }`}>
             || Digital Mala ||
           </h2>
-          <span className="text-sm font-semibold text-amber-500/80 tracking-widest mt-0.5 select-none uppercase font-serif">
+          <span className={`text-sm font-semibold tracking-widest mt-0.5 select-none uppercase font-serif ${
+            isDark ? "text-amber-500/80" : "text-amber-600"
+          }`}>
             {isHi ? activeMantra.name_hindi : activeMantra.name_english}
           </span>
         </div>
@@ -1951,7 +1979,11 @@ export default function PremiumJapaCounter({
             const returnPath = `/meditation?${currentQuery.toString()}`;
             navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
           }}
-          className="w-10 h-10 rounded-full border border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 flex items-center justify-center text-amber-200/80 hover:text-amber-300 active:scale-95 transition-all"
+          className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
+            isDark 
+              ? "border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 text-amber-200/80 hover:text-amber-300" 
+              : "border-[#E8D8C4] hover:border-[#D8A35A] bg-[#FFFDF8]/85 hover:bg-[#FFF9F2] text-[#5C1D0C] hover:text-amber-600 shadow-sm"
+          }`}
           aria-label="Leaderboard"
         >
           <Trophy className="w-5 h-5" />
@@ -1969,19 +2001,7 @@ export default function PremiumJapaCounter({
             height: isMobile ? "280px" : "470px",
           }}
         >
-          {/* Flanking Lotus Flowers (Pink filled with soft glow) */}
-          <div className="absolute left-[-22px] md:left-[-55px] top-[48%] -translate-y-1/2 pointer-events-none z-0 transition-all duration-300">
-            <LotusFlowerSvg 
-              className="w-14 h-14 md:w-24 md:h-24 text-pink-500 fill-pink-500 opacity-[0.82] filter drop-shadow-[0_0_12px_rgba(236,72,153,0.6)] animate-pulse"
-              color="#ec4899"
-            />
-          </div>
-          <div className="absolute right-[-22px] md:right-[-55px] top-[48%] -translate-y-1/2 pointer-events-none z-0 transition-all duration-300">
-            <LotusFlowerSvg 
-              className="w-14 h-14 md:w-24 md:h-24 text-pink-500 fill-pink-500 opacity-[0.82] filter drop-shadow-[0_0_12px_rgba(236,72,153,0.6)] animate-pulse"
-              color="#ec4899"
-            />
-          </div>
+          {/* Flanking Lotuses Removed */}
 
           {/* Rotating Faint Mandala Background in Ring */}
           <div className="absolute inset-6 opacity-[0.04] text-amber-400 pointer-events-none flex items-center justify-center">
@@ -2009,8 +2029,14 @@ export default function PremiumJapaCounter({
                   }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="absolute font-serif text-sm md:text-base text-amber-400 font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px]"
-                  style={{ textShadow: "0 0 12px rgba(245, 158, 11, 0.75)" }}
+                  className={`absolute font-serif text-sm md:text-base font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px] transition-colors duration-200 ${
+                    isDark ? "text-amber-400" : "text-[#591A0D]"
+                  }`}
+                  style={{ 
+                    textShadow: isDark 
+                      ? "0 0 12px rgba(245, 158, 11, 0.75)" 
+                      : "0 0 8px rgba(89, 26, 13, 0.2)" 
+                  }}
                 >
                   {f.text}
                 </motion.div>
@@ -2075,7 +2101,9 @@ export default function PremiumJapaCounter({
                   <div
                     className={`w-full h-full rounded-full transition-all duration-300 ${
                       isActiveBead
-                        ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
+                        ? isDark 
+                          ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
+                          : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
                         : isCompletedBead
                         ? "shadow-[0_0_8px_rgba(245,158,11,0.85)] border border-amber-400/35"
                         : "opacity-45"
@@ -2088,13 +2116,19 @@ export default function PremiumJapaCounter({
                         malaType === "rudraksha"
                           ? undefined
                           : malaType === "tulsi"
-                          ? isCompletedBead ? "#f59e0b" : "#4a2e1d"
-                          : isCompletedBead ? "#facc15" : "#c19a6b",
+                          ? isCompletedBead 
+                            ? "#f59e0b" 
+                            : isDark ? "#4a2e1d" : "#e8d3c4"
+                          : isCompletedBead 
+                          ? "#facc15" 
+                          : isDark ? "#c19a6b" : "#f5e6d3",
                       filter:
                         malaType === "rudraksha"
                           ? isCompletedBead || isActiveBead
                             ? "brightness(1.1) saturate(1.4) contrast(1.1)"
-                            : "brightness(0.35) contrast(1.1) sepia(0.25)"
+                            : isDark
+                            ? "brightness(0.35) contrast(1.1) sepia(0.25)"
+                            : "brightness(0.85) contrast(0.9) sepia(0.2) opacity-50"
                           : undefined,
                     }}
                   />
@@ -2108,10 +2142,16 @@ export default function PremiumJapaCounter({
             <span className="font-serif text-[54px] md:text-[66px] font-semibold text-[#f59e0b] leading-none tracking-tight transition-all tabular-nums drop-shadow-[0_0_12px_rgba(245,158,11,0.22)]">
               {count}
             </span>
-            <span className="text-sm md:text-base font-semibold text-amber-200/40 tracking-wider">
+            <span className={`text-sm md:text-base font-semibold tracking-wider ${
+              isDark ? "text-amber-200/40" : "text-amber-800/60"
+            }`}>
               /{targetCount}
             </span>
-            <div className="mt-2.5 px-3 py-0.5 bg-[#1b0d0a]/60 border border-amber-500/20 rounded-full text-amber-500 text-[10px] md:text-xs font-bold tracking-widest uppercase">
+            <div className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
+              isDark 
+                ? "bg-[#1b0d0a]/60 border-amber-500/20 text-amber-500" 
+                : "bg-amber-500/10 border-amber-500/30 text-amber-700"
+            }`}>
               Round {Math.floor(count / numBeads) + 1}
             </div>
             
@@ -2126,8 +2166,10 @@ export default function PremiumJapaCounter({
         </div>
 
         {/* Sacred Mantra Text Display */}
-        <div className="mt-2.5 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
-          <p className="font-serif text-base sm:text-lg md:text-xl lg:text-2xl text-amber-300 font-bold leading-normal tracking-wide drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)] whitespace-pre-line">
+        <div className="mt-1 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
+          <p className={`font-serif text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-normal tracking-wide whitespace-pre-line ${
+            isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-[#5C1D0C]"
+          }`}>
             {isHi 
               ? activeMantra.full_text_hindi || activeMantra.name_hindi 
               : activeMantra.transliteration || activeMantra.name_english}
@@ -2135,8 +2177,12 @@ export default function PremiumJapaCounter({
         </div>
 
         {/* 2. CHANT INSTRUCTIONS */}
-        <div className="flex items-center gap-3.5 mt-3.5 md:mt-5 text-amber-400/80 font-serif text-[13px] md:text-sm tracking-widest select-none w-full justify-center">
-          <span className="w-8 h-[1px] bg-gradient-to-r from-transparent to-amber-500/40" />
+        <div className={`flex items-center gap-3.5 mt-1.5 md:mt-2.5 font-serif text-[13px] md:text-sm tracking-widest select-none w-full justify-center ${
+          isDark ? "text-amber-400/80" : "text-amber-800"
+        }`}>
+          <span className={`w-8 h-[1px] ${
+            isDark ? "bg-gradient-to-r from-transparent to-amber-500/40" : "bg-gradient-to-r from-transparent to-amber-600/30"
+          }`} />
           <span>
             {(practiceMode as string) === "voice" 
               ? (isHi ? "जाप बोलने पर अपने आप गिना जाएगा" : "Speak to chant automatically") 
@@ -2144,15 +2190,21 @@ export default function PremiumJapaCounter({
               ? (isHi ? "स्वचालित चल रहा है" : "Auto chanting playing") 
               : (isHi ? "जाप के लिए कहीं भी टैप करें" : "Tap anywhere to count")}
           </span>
-          <span className="w-8 h-[1px] bg-gradient-to-l from-transparent to-amber-500/40" />
+          <span className={`w-8 h-[1px] ${
+            isDark ? "bg-gradient-to-l from-transparent to-amber-500/40" : "bg-gradient-to-l from-transparent to-amber-600/30"
+          }`} />
         </div>
 
         {/* Voice frequency canvas visualization in Voice mode */}
         {(practiceMode as string) === "voice" && (
-          <div className="mt-3 w-72 h-8 border border-white/5 bg-black/45 rounded-xl overflow-hidden px-2 py-0.5 flex items-center relative z-10 select-none">
+          <div className={`mt-3 w-72 h-8 border rounded-xl overflow-hidden px-2 py-0.5 flex items-center relative z-10 select-none ${
+            isDark ? "border-white/5 bg-black/45" : "border-[#E8D8C4] bg-white/70"
+          }`}>
             <canvas ref={micWaveCanvasRef} width={280} height={32} className="w-full h-full" />
             {!voiceActive && (
-              <div className="absolute inset-0 flex items-center justify-center text-[9px] text-white/25 uppercase tracking-widest font-semibold">
+              <div className={`absolute inset-0 flex items-center justify-center text-[9px] uppercase tracking-widest font-semibold ${
+                isDark ? "text-white/25" : "text-slate-400/70"
+              }`}>
                 {isHi ? "माइक निष्क्रिय है" : "Mic Inactive"}
               </div>
             )}
@@ -2160,140 +2212,271 @@ export default function PremiumJapaCounter({
         )}
 
         {/* 3. TODAY STATS GRID CARD */}
-        <div className="w-full max-w-sm mt-4 md:mt-8 relative z-10 select-none">
-          <div className="bg-[#130d0a]/40 backdrop-blur-md border border-amber-500/15 rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x divide-amber-500/10">
+        <div className="w-full max-w-sm mt-2 md:mt-4 relative z-10 select-none">
+          <div className={`backdrop-blur-md border rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x ${
+            isDark 
+              ? "bg-[#130d0a]/40 border-amber-500/15 divide-amber-500/10" 
+              : "bg-white/70 border-[#E8D8C4] divide-amber-500/20"
+          }`}>
             {/* Left Col: Today Chants */}
             <div className="flex items-center gap-3 flex-1 justify-center pr-2">
-              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
+                isDark ? "bg-amber-500/10" : "bg-amber-500/15"
+              }`}>
                 <Flame className="w-5 h-5 fill-current" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[10px] text-amber-200/40 font-bold uppercase tracking-wider">Today</span>
-                <span className="text-xl font-bold text-amber-400 font-serif leading-none mt-0.5">{displayTodayChants}</span>
-                <span className="text-[9px] text-amber-200/40 font-semibold uppercase tracking-wide">Chants</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isDark ? "text-amber-200/40" : "text-[#786252]"
+                }`}>Today</span>
+                <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${
+                  isDark ? "text-amber-400" : "text-[#5C1D0C]"
+                }`}>{displayTodayChants}</span>
+                <span className={`text-[9px] font-semibold uppercase tracking-wide ${
+                  isDark ? "text-amber-200/40" : "text-[#786252]/80"
+                }`}>Chants</span>
               </div>
             </div>
 
             {/* Right Col: Rounds Completed */}
             <div className="flex items-center gap-3 flex-1 justify-center pl-2">
-              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
+                isDark ? "bg-amber-500/10" : "bg-amber-500/15"
+              }`}>
                 <RotateCcw className="w-5 h-5 rotate-45" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[10px] text-amber-200/40 font-bold uppercase tracking-wider">Rounds</span>
-                <span className="text-xl font-bold text-amber-400 font-serif leading-none mt-0.5">{displayTodayMalas}</span>
-                <span className="text-[9px] text-amber-200/40 font-semibold uppercase tracking-wide">Completed</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isDark ? "text-amber-200/40" : "text-[#786252]"
+                }`}>Rounds</span>
+                <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${
+                  isDark ? "text-amber-400" : "text-[#5C1D0C]"
+                }`}>{displayTodayMalas}</span>
+                <span className={`text-[9px] font-semibold uppercase tracking-wide ${
+                  isDark ? "text-amber-200/40" : "text-[#786252]/80"
+                }`}>Completed</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* 4. TIME CLOCK */}
-        <div className="mt-2.5 md:mt-4 flex items-center gap-2 text-[11px] md:text-xs text-white/35 font-bold uppercase tracking-widest select-none">
+        <div className={`mt-1.5 md:mt-2 flex items-center gap-2 text-[11px] md:text-xs font-bold uppercase tracking-widest select-none ${
+          isDark ? "text-white/35" : "text-[#786252]/70"
+        }`}>
           <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
           <span>{formatTime(secondsElapsed)}</span>
-          <span className="text-white/20">|</span>
+          <span className={isDark ? "text-white/20" : "text-amber-600/35"}>|</span>
           <span>{Math.min(100, Math.round((count / targetCount) * 100))}%</span>
+        </div>
+
+        {/* 5. CONTROL BUTTONS (Sitting inside to eliminate vertical layout gap) */}
+        <div className="flex items-center justify-center gap-3 mt-4 w-full select-none">
+          <button
+            onClick={handleResetClick}
+            disabled={count === 0}
+            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-sm text-xs font-bold tracking-wide ${
+              isDark 
+                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 disabled:opacity-40 text-amber-100" 
+                : "border-[#591A0D]/40 bg-[#FFFDF8] hover:bg-[#FFF5EB] disabled:opacity-50 text-[#591A0D]"
+            }`}
+          >
+            <RotateCcw className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`} />
+            <span>{isHi ? "पुनः सेट" : "Reset"}</span>
+          </button>
+
+          <button
+            onClick={() => setTimerActive(!timerActive)}
+            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-md text-xs font-bold tracking-wide ${
+              isDark 
+                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 text-amber-100" 
+                : "bg-[#591A0D] border-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] shadow-[0_4px_12px_rgba(89,26,13,0.15)]"
+            }`}
+          >
+            {timerActive ? (
+              <Pause className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-white"}`} />
+            ) : (
+              <Play className={`w-4 h-4 fill-current ${isDark ? "text-amber-100" : "text-white"}`} />
+            )}
+            <span>{timerActive ? (isHi ? "रोकें" : "Pause") : (isHi ? "शुरू करें" : "Resume")}</span>
+          </button>
         </div>
 
       </div>
 
-      {/* ─── BOTTOM CONTROL BAR ───────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-5 pb-2 border-t border-white/5 flex items-center justify-center gap-5 bg-black/10 select-none">
-        <button
-          onClick={handleResetClick}
-          disabled={count === 0}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-amber-500/30 bg-black/40 hover:bg-black/60 disabled:opacity-40 disabled:hover:bg-black/40 text-amber-100 font-bold text-sm tracking-wide transition-all active:scale-95 shadow-sm"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span>{isHi ? "पुनः सेट" : "Reset"}</span>
-        </button>
-
-        <button
-          onClick={() => setTimerActive(!timerActive)}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full border border-amber-500/30 bg-black/40 hover:bg-black/60 text-amber-100 font-bold text-sm tracking-wide transition-all active:scale-95 shadow-sm"
-        >
-          {timerActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-          <span>{timerActive ? (isHi ? "रोकें" : "Pause") : (isHi ? "शुरू करें" : "Resume")}</span>
-        </button>
-      </div>
-
       {/* ─── QUICK SETTINGS BAR (Premium Pill Design) ──────────────── */}
       <div
-        className="relative z-10 w-full px-3 py-2 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
+        className="relative z-10 w-full px-3 py-2 pb-[calc(4.8rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Outer pill container */}
-        <div className="max-w-lg mx-auto rounded-[2rem] bg-[#1a0f08]/80 backdrop-blur-2xl border border-[#3a2010]/60 shadow-[0_4px_32px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,160,60,0.07)] overflow-hidden">
-          <div className="flex items-stretch divide-x divide-[#3a2010]/50">
+        <div className={`max-w-lg mx-auto rounded-[2rem] border overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-colors duration-300 ${
+          isDark 
+            ? "bg-[#1a0f08]/80 border-[#3a2010]/60 shadow-[inset_0_1px_0_rgba(255,160,60,0.07)]" 
+            : "bg-[#FFFDF8]/95 border-[#E8D8C4]"
+        }`}>
+          <div className={`flex items-stretch divide-x ${
+            isDark ? "divide-[#3a2010]/50" : "divide-[#E8D8C4]"
+          }`}>
 
             {/* ── 1. MANTRA ──────────────────────────────────────── */}
             <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3">
-              <img src="/icons/music-player.svg" alt="mantra" className="w-6 h-6 opacity-80" style={{ filter: "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" }} />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              <img 
+                src="/icons/music-player.svg" 
+                alt="mantra" 
+                className="w-6 h-6 opacity-80" 
+                style={{ 
+                  filter: isDark 
+                    ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
+                    : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)" 
+                }} 
+              />
+              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
+                isDark ? "text-white/40" : "text-[#786252]"
+              }`}>
                 {isHi ? "मंत्र" : "Mantra"}
               </span>
-              <span className="text-[10px] font-bold text-amber-400 leading-none text-center max-w-[58px] truncate">
+              <span className={`text-[13px] font-bold leading-none text-center max-w-[58px] truncate ${
+                isDark ? "text-amber-400" : "text-[#5C1D0C]"
+              }`}>
                 {isHi ? activeMantra.name_hindi : activeMantra.name_english}
               </span>
             </div>
 
             {/* ── 2. MALA TYPE ───────────────────────────────────── */}
             <button
-              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
+                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+              }`}
               onClick={() => {
                 const types: Array<"rudraksha" | "tulsi" | "sandalwood"> = ["rudraksha", "tulsi", "sandalwood"];
                 const nextIdx = (types.indexOf(malaType) + 1) % types.length;
                 setMalaType(types[nextIdx]);
               }}
             >
-              <img src="/icons/mala.svg" alt="mala" className="w-6 h-6 opacity-80" style={{ filter: "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" }} />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              <img 
+                src="/icons/mala.svg" 
+                alt="mala" 
+                className="w-6 h-6 opacity-80" 
+                style={{ 
+                  filter: isDark 
+                    ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
+                    : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)" 
+                }} 
+              />
+              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
+                isDark ? "text-white/40" : "text-[#786252]"
+              }`}>
                 {isHi ? "माला" : "Mala Type"}
               </span>
-              <span className="text-[10px] font-bold text-amber-400 leading-none">
+              <span className={`text-[13px] font-bold leading-none ${
+                isDark ? "text-amber-400" : "text-[#5C1D0C]"
+              }`}>
                 {malaType === "rudraksha" ? (isHi ? "रुद्राक्ष" : "Rudraksha") : malaType === "tulsi" ? (isHi ? "तुलसी" : "Tulsi") : (isHi ? "चंदन" : "Sandal")}
               </span>
             </button>
 
             {/* ── 3. SOUND ───────────────────────────────────────── */}
             <button
-              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
+                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+              }`}
               onClick={() => setSoundEnabled(!soundEnabled)}
             >
-              <img src="/icons/sound.svg" alt="sound" className="w-6 h-6" style={{ filter: soundEnabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              <img 
+                src="/icons/sound.svg" 
+                alt="sound" 
+                className="w-6 h-6" 
+                style={{ 
+                  filter: soundEnabled 
+                    ? isDark 
+                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
+                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
+                    : isDark 
+                      ? "invert(40%) sepia(0%) brightness(60%)" 
+                      : "invert(60%) sepia(0%) brightness(75%)" 
+                }} 
+              />
+              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
+                isDark ? "text-white/40" : "text-[#786252]"
+              }`}>
                 {isHi ? "ध्वनि" : "Sound"}
               </span>
-              <span className={`text-[10px] font-black leading-none tracking-wider ${soundEnabled ? "text-[#4ade80]" : "text-white/30"}`}>
+              <span className={`text-[13px] font-bold leading-none tracking-wider ${
+                soundEnabled 
+                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
+                  : isDark ? "text-white/30" : "text-slate-400/60"
+              }`}>
                 {soundEnabled ? "On" : "Off"}
               </span>
             </button>
 
             {/* ── 4. VIBRATION ───────────────────────────────────── */}
             <button
-              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
+                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+              }`}
               onClick={() => setVibrationEnabled(!vibrationEnabled)}
             >
-              <img src="/icons/vibrator.svg" alt="vibration" className="w-6 h-6" style={{ filter: vibrationEnabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              <img 
+                src="/icons/vibrator.svg" 
+                alt="vibration" 
+                className="w-6 h-6" 
+                style={{ 
+                  filter: vibrationEnabled 
+                    ? isDark 
+                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
+                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
+                    : isDark 
+                      ? "invert(40%) sepia(0%) brightness(60%)" 
+                      : "invert(60%) sepia(0%) brightness(75%)" 
+                }} 
+              />
+              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
+                isDark ? "text-white/40" : "text-[#786252]"
+              }`}>
                 {isHi ? "कंपन" : "Vibration"}
               </span>
-              <span className={`text-[10px] font-black leading-none tracking-wider ${vibrationEnabled ? "text-[#4ade80]" : "text-white/30"}`}>
+              <span className={`text-[13px] font-bold leading-none tracking-wider ${
+                vibrationEnabled 
+                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
+                  : isDark ? "text-white/30" : "text-slate-400/60"
+              }`}>
                 {vibrationEnabled ? "On" : "Off"}
               </span>
             </button>
 
             {/* ── 5. AUTO-LOCK ───────────────────────────────────── */}
             <button
-              className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 active:bg-amber-500/5 transition-colors"
+              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
+                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+              }`}
               onClick={() => setAutoLockDisabled(!autoLockDisabled)}
             >
-              <img src="/icons/lock.svg" alt="auto-lock" className="w-6 h-6" style={{ filter: autoLockDisabled ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" : "invert(40%) sepia(0%) brightness(60%)" }} />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest leading-none">
+              <img 
+                src="/icons/lock.svg" 
+                alt="auto-lock" 
+                className="w-6 h-6" 
+                style={{ 
+                  filter: autoLockDisabled 
+                    ? isDark 
+                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
+                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
+                    : isDark 
+                      ? "invert(40%) sepia(0%) brightness(60%)" 
+                      : "invert(60%) sepia(0%) brightness(75%)" 
+                }} 
+              />
+              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
+                isDark ? "text-white/40" : "text-[#786252]"
+              }`}>
                 {isHi ? "स्क्रीन" : "Auto-Lock"}
               </span>
-              <span className={`text-[10px] font-black leading-none tracking-wider ${autoLockDisabled ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+              <span className={`text-[13px] font-bold leading-none tracking-wider ${
+                autoLockDisabled 
+                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
+                  : "text-red-500"
+              }`}>
                 {autoLockDisabled ? "On" : "Off"}
               </span>
             </button>

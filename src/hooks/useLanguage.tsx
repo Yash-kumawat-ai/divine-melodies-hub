@@ -574,7 +574,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     shareViaEmail: 'ईमेल के माध्यम से साझा करें',
     copyShareLink: 'लिंक कॉपी करें',
     linkCopied: 'लिंक कॉपी किया गया!',
-    kirtanAi: 'कीर्तन एआई',
+    kirtanAi: 'कीर्तन प्रवाह',
     elderlyAssistant: 'बुजुर्ग सहायक',
     uploadBhajan: 'अपलोड',
     adminModeration: 'संयोजन कतार',

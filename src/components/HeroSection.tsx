@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Play, Search, Mic } from 'lucide-react'; 
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage';
+import SearchBar from '@/components/SearchBar';
 
 import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import lordRamMobile from '@/pages/images/lord_ram_high_quality.webp';
@@ -61,14 +62,42 @@ export function HeroSection({ stats }: HeroSectionProps) {
         {/* HERO CONTENT */}
         <div className="relative z-10 flex flex-col items-start w-full md:max-w-2xl text-left">
 
+          {/* Gold Lotus Divider */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="flex items-center gap-3 mb-4 select-none justify-start w-full"
+          >
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/60" />
+            <span className="text-amber-600">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-3a3 3 0 0 0-3-3Zm-1.5 8.5c-2.5-1-4-3-4-3s1 3.5-4 4.5Zm3 0c2.5-1 4-3 4-3s-1 3.5-4 4.5ZM12 14c-1.5 2-4.5 3.5-7 4.5 3.5 1 7 .5 7 .5s3.5.5 7-.5c-2.5-1-5.5-2.5-7-4.5Z" />
+              </svg>
+            </span>
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/60" />
+          </motion.div>
+
           {/* Premium Welcome Heading */}
           <motion.h1 
             initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="font-serif text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-200 to-amber-400 leading-tight mb-4 drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] selection:bg-amber-500/30"
+            className="font-serif text-3xl md:text-5xl lg:text-[54px] font-black text-[#5C1D0C] dark:text-[#FFFDF8] leading-[1.2] mb-5 select-text tracking-wide"
           >
-            {isHi ? "श्रीराम के चरणों में आपका स्वागत है।" : "Welcome to the Feet of Shri Rama"}
+            {isHi ? (
+              <>
+                श्रीराम के चरणों में
+                <br />
+                आपका स्वागत है।
+              </>
+            ) : (
+              <>
+                Welcome to the Feet
+                <br />
+                of Shri Rama
+              </>
+            )}
           </motion.h1>
 
           {/* Decorative tag line */}
@@ -76,42 +105,25 @@ export function HeroSection({ stats }: HeroSectionProps) {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.7 }}
-            className="flex items-center justify-start gap-2.5 mb-5 w-auto"
+            className="flex items-center justify-start gap-3.5 mb-8 text-[#786252] dark:text-stone-300 select-none text-[13px] md:text-[15px] font-bold uppercase tracking-[0.2em]"
           >
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/70" />
-            <span
-              className="text-amber-300 text-sm md:text-base tracking-[0.35em] font-black uppercase select-none flex items-center gap-2"
-              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.95)' }}
-            >
-              <span>{isHi ? 'सत्संग' : 'SATSANG'}</span>
-              <span className="text-amber-500 text-[10px]">✦</span>
-              <span>{isHi ? 'भजन' : 'BHAJAN'}</span>
-              <span className="text-amber-500 text-[10px]">✦</span>
-              <span>{isHi ? 'साधना' : 'SADHANA'}</span>
-            </span>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/70" />
+            <span>{isHi ? 'सत्संग' : 'Satsang'}</span>
+            <span className="text-amber-600 text-[10px]">✦</span>
+            <span>{isHi ? 'भजन' : 'Bhajan'}</span>
+            <span className="text-amber-600 text-[10px]">✦</span>
+            <span>{isHi ? 'साधना' : 'Sadhana'}</span>
+            <span className="text-amber-600 text-[10px]">✦</span>
+            <span>{isHi ? 'सेवा' : 'Seva'}</span>
           </motion.div>
 
           {/* WHITE Search Bar */}
           <motion.div
-            onClick={() => navigate('/search')}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.62 }}
-            className="w-full max-w-sm sm:max-w-lg md:max-w-xl mb-6 relative shrink-0 cursor-pointer text-left"
+            className="w-full max-w-sm sm:max-w-lg md:max-w-xl mb-6 relative shrink-0 text-left cursor-pointer"
           >
-            <div className="relative flex items-center bg-[#FFFDF8] dark:bg-[#1E1710] border border-[#E8D8C4] dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 p-1.5 pl-6 pr-2">
-              <Search className="w-5 h-5 text-[#651317] shrink-0 mr-3 select-none" />
-              <input
-                type="text"
-                readOnly
-                placeholder={isHi ? "भजन, कीर्तन या कलाकार खोजें..." : "Search bhajans, kirtans or artists..."}
-                className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-[#3A2418] dark:text-foreground text-sm md:text-base placeholder:text-[#786252]/60 py-2 md:py-2.5 cursor-pointer select-none"
-              />
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#651317] text-white shadow-sm shrink-0">
-                <Mic className="h-5 w-5 text-[#FFF9F2]" />
-              </div>
-            </div>
+            <SearchBar readOnly onClick={() => navigate('/search')} />
           </motion.div>
 
           {/* CTA Buttons */}

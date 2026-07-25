@@ -7,6 +7,7 @@ import {
   Clock3,
   Film,
   Flower2,
+  Home,
   Image,
   Info,
   Landmark,
@@ -15,6 +16,7 @@ import {
   LogOut,
   Moon,
   MoreHorizontal,
+  Music,
   Search,
   ShieldCheck,
   Sparkles,
@@ -49,6 +51,24 @@ import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { cn } from "@/lib/utils";
 import { HamburgerButton } from "@/components/navigation/HamburgerButton";
 
+const MeditationIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="5" r="2" />
+    <path d="M12 7v6" />
+    <path d="M6 10c1.5 2 3.5 3 6 3s4.5-1 6-3" />
+    <path d="M4 18c2.5-2.5 5.5-3 8-3s5.5.5 8 3" />
+    <path d="M2 20c4-1 16-1 20 0" />
+  </svg>
+);
+
 export default function Header() {
   const [profileHubOpen, setProfileHubOpen] = useState(false);
   const [mobileLanguageOpen, setMobileLanguageOpen] = useState(false);
@@ -60,8 +80,42 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === "/";
+
+  const getLinkClass = (path: string) => {
+    const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    return cn(
+      "inline-flex items-center gap-1.5 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium",
+      active 
+        ? "text-brand border-brand rounded-none" 
+        : "text-foreground/80 hover:text-brand hover:bg-brand/5 border-transparent rounded-md"
+    );
+  };
   const { isBhajanModalOpen } = useBhajanModalOpen();
-  const showBack = !isHome && !isBhajanModalOpen;
+  const primaryRoutes = [
+    "/",
+    "/all-bhajans",
+    "/recent-bhajans",
+    "/all-deities",
+    "/meditation",
+    "/panchang",
+    "/kirtan-ai",
+    "/temple",
+    "/pricing",
+    "/blog",
+    "/about",
+    "/privacy",
+    "/terms",
+    "/cookies",
+    "/community",
+    "/shorts",
+    "/wallpaper",
+    "/upload-bhajan",
+    "/aarti",
+    "/live-aarti",
+    "/poster-maker",
+    "/notifications"
+  ];
+  const showBack = !isHome && !isBhajanModalOpen && !primaryRoutes.includes(location.pathname);
 
   useEffect(() => {
     if (!mobileLanguageOpen) {
@@ -140,18 +194,13 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <header className="sticky top-0 z-50 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30">
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
         <div className="flex items-center gap-1 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {/* Hamburger — mobile left corner */}
           <span className="inline-flex md:hidden">
             <HamburgerButton />
           </span>
-          {showBack && (
-            <span className="inline-flex md:hidden">
-              <MobileBackButton />
-            </span>
-          )}
           <Link 
             to="/" 
             className="flex items-center flex-shrink-0 min-w-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 z-10"
@@ -167,7 +216,7 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="btn-icon"
+                className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
                 aria-label={t('language')}
               >
                 <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
@@ -204,11 +253,11 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setProfileHubOpen(true)}
-            className="btn-icon"
+            className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
             aria-label={t('accountMenu')}
           >
             {user ? (
-              <Avatar className="h-8 w-8 border border-primary/25">
+              <Avatar className="h-8 w-8 border-none">
                 <AvatarImage src={profile?.avatar_url} alt={displayName} />
                 <AvatarFallback className="text-xs">{initials}</AvatarFallback>
               </Avatar>
@@ -220,29 +269,26 @@ export default function Header() {
         </div>
 
         {/* ── Desktop Nav ─────────────────────────────────── */}
-        <nav className="hidden md:flex flex-1 justify-center items-center gap-0.5 lg:gap-1 text-[13px] font-medium">
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-1 text-[13px] font-medium">
           {/* Primary links */}
-          <Link to="/" className="px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap">{t('home')}</Link>
-          <Link to="/all-bhajans" className="px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap">{t('browse')}</Link>
-          <Link
-            to="/meditation"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
-          >
-            <Flower2 className="w-3 h-3" />
+          <Link to="/" className={getLinkClass('/')}>
+            <Home className="w-3.5 h-3.5" />
+            {t('home')}
+          </Link>
+          <Link to="/all-bhajans" className={getLinkClass('/all-bhajans')}>
+            <Music className="w-3.5 h-3.5" />
+            {t('browse')}
+          </Link>
+          <Link to="/meditation" className={getLinkClass('/meditation')}>
+            <MeditationIcon className="w-3.5 h-3.5" />
             {t('meditation')}
           </Link>
-          <Link
-            to="/temple"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
-          >
-            <Landmark className="w-3 h-3" />
+          <Link to="/temple" className={getLinkClass('/temple')}>
+            <Landmark className="w-3.5 h-3.5" />
             {t('temple')}
           </Link>
-          <Link
-            to="/community"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
-          >
-            <Users className="w-3 h-3" />
+          <Link to="/community" className={getLinkClass('/community')}>
+            <Users className="w-3.5 h-3.5" />
             {language === 'hi' ? 'समूह' : 'Community'}
           </Link>
 
@@ -251,10 +297,15 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-foreground/80 hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap"
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium",
+                  (location.pathname === '/pricing' || location.pathname === '/about' || location.pathname === '/wallpaper' || location.pathname === '/shorts' || location.pathname === '/recent-bhajans')
+                    ? "text-brand border-brand rounded-none"
+                    : "text-foreground/80 hover:text-brand hover:bg-brand/5 border-transparent rounded-md"
+                )}
               >
                 {language === 'hi' ? 'और' : 'More'}
-                <ChevronDown className="w-3 h-3 opacity-60" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-44 rounded-xl">
@@ -295,42 +346,62 @@ export default function Header() {
           {/* Kirtan AI pill */}
           <Link
             to="/kirtan-ai"
-            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-[11px] font-semibold text-white hover:shadow-md hover:shadow-orange-500/30 transition-all h-7 px-3 ml-1 whitespace-nowrap"
+            className="flex items-center justify-center gap-1.5 rounded-full bg-brand text-[11px] font-semibold text-white hover:bg-brand/90 transition-all h-8 px-4 ml-1.5 whitespace-nowrap shadow-sm hover:shadow leading-none py-0"
           >
-            <Sparkles className="w-3 h-3" />
+            <Sparkles className="w-3.5 h-3.5" />
             {t('kirtanAi')}
           </Link>
 
           {/* Search */}
-          <Link to="/search" className="text-muted-foreground hover:text-primary transition-colors p-1.5 shrink-0 ml-0.5">
+          <Link 
+            to="/search" 
+            className="flex items-center justify-center rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 w-8 shrink-0 ml-1.5 p-0"
+          >
             <Search className="w-4 h-4" />
           </Link>
+
           {/* Theme toggle */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex items-center justify-center rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors h-7 w-7"
+            className="flex items-center justify-center rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 w-8 shrink-0 p-0 focus:outline-none"
             aria-label={theme === 'dark' ? t('switchToLightMode') : t('switchToDarkMode')}
           >
-            {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
 
           {/* Notification bell */}
           {user && <UserNotificationBell userId={user.id} />}
 
-          {/* Language select */}
-          <select
-            value={language}
-            onChange={(e) => handleLanguageChange(e.target.value as typeof language)}
-            className="rounded-md border border-border bg-background text-xs h-7 px-1.5"
-            aria-label={t('language')}
-          >
-            {languageOptions.map((option) => (
-              <option key={option.code} value={option.code}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          {/* Language dropdown (Desktop Custom Dropdown) */}
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-background/50 text-[13px] font-medium text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 px-4 py-0 leading-none focus:outline-none"
+              >
+                <span>{languageOptions.find(option => option.code === language)?.label || 'Language'}</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 rounded-xl">
+              {languageOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.code}
+                  onClick={() => handleLanguageChange(option.code)}
+                  className={cn(
+                    'cursor-pointer font-medium text-xs',
+                    language === option.code && 'bg-brand/10 text-brand',
+                  )}
+                >
+                  {option.label}
+                  {language === option.code ? (
+                    <span className="ml-auto text-xs text-brand">✓</span>
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Avatar + name dropdown */}
           <div className="flex items-center gap-1.5">
@@ -339,19 +410,24 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="relative flex items-center gap-1.5 rounded-full pl-0.5 pr-2 py-0.5 hover:bg-primary/10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="relative flex items-center gap-1.5 rounded-full pl-0.5 pr-2 py-0.5 hover:bg-brand/5 hover:text-brand transition-colors focus:outline-none focus:ring-2 focus:ring-brand"
                   aria-label={t('accountMenu')}
                 >
-                  <Avatar className="border border-primary/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm h-8 w-8">
+                  <Avatar className="border border-brand/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm h-8 w-8">
                     <AvatarImage src={profile?.avatar_url} alt={displayName} />
                     <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                   </Avatar>
                   {user && (
-                    <span className="hidden lg:block text-xs font-medium text-foreground max-w-[80px] truncate">
-                      {displayName.split(' ')[0]}
-                    </span>
+                    <div className="hidden sm:flex flex-col items-start leading-none text-left select-none mr-0.5">
+                      <span className="text-[13px] font-bold text-foreground">
+                        {displayName.split(' ')[0]}
+                      </span>
+                      <span className="text-[10px] font-medium text-orange-600 dark:text-orange-400 mt-0.5">
+                        {language === 'hi' ? 'भक्त' : 'Devotee'}
+                      </span>
+                    </div>
                   )}
-                  <ChevronDown className="hidden lg:block h-3 w-3 text-muted-foreground" />
+                  <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">

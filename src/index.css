@@ -28,11 +28,11 @@
     --brand-gold-border:     40 75% 54% / 0.30; /* default decorative border */
 
     /* ── SEMANTIC SURFACE TOKENS (Light Mode) ─────────────────────────────── */
-    --background:            36 45% 91%;   /* warm parchment background */
+    --background:            40 33% 98%;   /* warm white background (#FFFDF8) */
     --foreground:            20 30% 12%;   /* deep warm charcoal text */
 
-    --surface:               36 65% 98%;   /* pure card surface */
-    --surface-alt:           36 50% 95%;   /* slightly warmer surface */
+    --surface:               40 33% 98%;   /* pure card surface */
+    --surface-alt:           40 33% 98%;   /* slightly warmer surface */
     --surface-raised:        0 0% 100%;    /* elevated/floating surface */
 
     --card:                  36 60% 97%;

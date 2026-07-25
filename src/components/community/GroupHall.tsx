@@ -274,23 +274,23 @@ export function GroupHall({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent flex flex-col justify-end p-5 text-left">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[9px] uppercase font-extrabold tracking-wider bg-emerald-600/90 text-white px-2 py-0.5 rounded-md flex items-center gap-0.5">
+              <span className="text-xs uppercase font-extrabold tracking-wider bg-emerald-600/90 text-white px-2.5 py-0.5 rounded-md flex items-center gap-0.5">
                 {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
               </span>
-              <span className="text-[9px] uppercase font-extrabold tracking-wider bg-[#C89B3C] text-[#2D2D2D] px-2 py-0.5 rounded-md font-bold flex items-center gap-0.5">
+              <span className="text-xs uppercase font-extrabold tracking-wider bg-[#C89B3C] text-[#2D2D2D] px-2.5 py-0.5 rounded-md font-bold flex items-center gap-0.5">
                 🌸 {group.deity?.toUpperCase()}
               </span>
             </div>
 
-            <h2 className="font-serif font-black text-2xl text-white leading-tight drop-shadow-sm truncate">
+            <h2 className="font-serif font-black text-3xl text-white leading-tight drop-shadow-sm truncate">
               {group.name}
             </h2>
-            <p className="text-amber-100/80 text-[10px] mt-0.5 font-bold italic tracking-wide truncate">
+            <p className="text-amber-100/90 text-xs mt-1 font-bold italic tracking-wide truncate">
               ✦ {isHi ? "परस्पर भक्ति साधना और नाम संकीर्तन यज्ञ" : "Collective devotional practice and chanting"} ✦
             </p>
 
             {/* Bottom Statistics Row inside Banner */}
-            <div className="flex items-center gap-3 text-[9px] text-amber-100/70 font-semibold mt-3 pt-2.5 border-t border-white/10">
+            <div className="flex items-center gap-3 text-xs text-amber-100/80 font-semibold mt-3 pt-2.5 border-t border-white/10">
               <span>👥 {group.member_count} {isHi ? "श्रद्धालु" : "Devotees"}</span>
               <span>•</span>
               <span>📿 {(group.total_chants || 0).toLocaleString()} {isHi ? "नाम जाप" : "Chants"}</span>
@@ -303,28 +303,28 @@ export function GroupHall({
 
       {/* 2.5 QUICK HIGHLIGHTS STRIP */}
       <div className="mt-6">
-        <div className="bg-[#FAF6EE] dark:bg-stone-900/60 border border-[#C89B3C]/15 rounded-xl p-3 flex justify-between items-center text-left text-[10px] text-stone-600 dark:text-stone-300">
+        <div className="bg-[#FAF6EE] dark:bg-stone-900/60 border border-[#C89B3C]/15 rounded-xl p-3 flex justify-between items-center text-left text-xs text-stone-600 dark:text-stone-300">
           <div className="flex items-center gap-1.5">
-            <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+            <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
             <div>
-              <span className="font-bold block text-stone-400 uppercase text-[8px] tracking-wider">{isHi ? "दैनिक जाप" : "Daily Jap"}</span>
-              <span className="font-extrabold text-[#7A1F1F] dark:text-amber-100">{isHi ? "1.2K आज" : "1.2K today"}</span>
+              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "दैनिक जाप" : "Daily Jap"}</span>
+              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100">{isHi ? "1.2K आज" : "1.2K today"}</span>
             </div>
           </div>
           <div className="h-6 w-px bg-[#C89B3C]/20" />
           <div className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-[#C89B3C]" />
+            <Calendar className="w-4 h-4 text-[#C89B3C]" />
             <div>
-              <span className="font-bold block text-stone-400 uppercase text-[8px] tracking-wider">{isHi ? "अगला सत्संग" : "Next Satsang"}</span>
-              <span className="font-extrabold text-[#7A1F1F] dark:text-amber-100">{isHi ? "रविवार 5 PM" : "Sunday 5 PM"}</span>
+              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "अगला सत्संग" : "Next Satsang"}</span>
+              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100">{isHi ? "रविवार 5 PM" : "Sunday 5 PM"}</span>
             </div>
           </div>
           <div className="h-6 w-px bg-[#C89B3C]/20" />
           <div className="flex items-center gap-1.5">
-            <Trophy className="w-3.5 h-3.5 text-amber-500" />
+            <Trophy className="w-4 h-4 text-amber-500" />
             <div>
-              <span className="font-bold block text-stone-400 uppercase text-[8px] tracking-wider">{isHi ? "शीर्ष भक्त" : "Top Devotee"}</span>
-              <span className="font-extrabold text-[#7A1F1F] dark:text-amber-100 truncate max-w-[90px] block">{topDevoteeName}</span>
+              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "शीर्ष भक्त" : "Top Devotee"}</span>
+              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100 truncate max-w-[90px] block">{topDevoteeName}</span>
             </div>
           </div>
         </div>
@@ -602,19 +602,19 @@ export function GroupHall({
           style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
         >
           {[
-            { id: 'feed', label: isHi ? 'Satsang' : 'Satsang' },
-            { id: 'bhajans', label: isHi ? 'Bhajan' : 'Bhajan' },
-            { id: 'requests', label: isHi ? 'Prayer' : 'Prayer' },
-            { id: 'events', label: isHi ? 'Events' : 'Events' },
-            { id: 'gallery', label: isHi ? 'Gallery' : 'Gallery' },
-            { id: 'members', label: isHi ? 'Members' : 'Members' },
+            { id: 'feed', label: isHi ? 'सत्संग' : 'Satsang' },
+            { id: 'bhajans', label: isHi ? 'भजन' : 'Bhajan' },
+            { id: 'requests', label: isHi ? 'प्रार्थना/अनुरोध' : 'Requests' },
+            { id: 'events', label: isHi ? 'कार्यक्रम' : 'Events' },
+            { id: 'gallery', label: isHi ? 'गैलरी' : 'Gallery' },
+            { id: 'members', label: isHi ? 'सदस्य' : 'Members' },
           ].map(tab => {
             const isActive = activeGroupTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveGroupTab(tab.id as any)}
-                className={`tab-item ${isActive ? "tab-active" : ""}`}
+                className={`tab-item ${isActive ? "tab-active" : ""} text-sm font-bold transition-all duration-200`}
               >
                 {tab.label}
               </button>

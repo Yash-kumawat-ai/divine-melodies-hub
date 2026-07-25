@@ -718,13 +718,13 @@ export default function JoinCommunityPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs transition-all whitespace-nowrap ${
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-extrabold text-sm transition-all whitespace-nowrap border ${
                         isActive
-                          ? 'bg-[#4E342E] text-white shadow-md shadow-amber-900/20'
-                          : 'bg-white dark:bg-stone-900 text-stone-500 dark:text-stone-400 border border-[#D6A86B]/20 hover:bg-amber-50/50 dark:hover:bg-stone-800'
+                          ? 'bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-md shadow-orange-950/20'
+                          : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-[#5c1d0c]/15 hover:bg-[#5c1d0c]/5'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-4 h-4" />
                       {tab.label}
                     </button>
                   );
@@ -736,25 +736,25 @@ export default function JoinCommunityPage() {
                 <div className="space-y-6">
                   
                   {/* Digital Satsang Premium Banner */}
-                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#1a0e07] via-[#2d1508] to-[#1a0e07] border border-orange-500/20 p-6 md:p-8 flex items-center justify-between shadow-2xl min-h-[140px] select-none text-left">
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#FAF6EE] via-[#fefbf7] to-[#FAF6EE] border border-orange-500/25 p-6 md:p-8 flex items-center justify-between shadow-xs min-h-[140px] select-none text-left">
                     {/* warm ambient glows */}
-                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-orange-600/8 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-amber-500/6 rounded-full blur-2xl pointer-events-none" />
+                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-orange-600/4 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-amber-500/4 rounded-full blur-2xl pointer-events-none" />
                     
                     <div className="relative z-10 space-y-2 max-w-md md:max-w-lg">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">🪷 {isHi ? "सत्संग में आपका स्वागत है" : "Welcome to Satsang"}</p>
-                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-amber-50 tracking-tight">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-700">🪷 {isHi ? "सत्संग में आपका स्वागत है" : "Welcome to Satsang"}</p>
+                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-orange-950 tracking-tight">
                         {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
                       </h2>
-                      <p className="text-xs md:text-sm text-amber-200/60 font-medium tracking-wide leading-relaxed">
+                      <p className="text-xs md:text-sm text-stone-600 dark:text-stone-300 font-semibold tracking-wide leading-relaxed">
                         {isHi 
                           ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
                           : "Share Bhajans • Connect with Devotees • Advance Devotion"}
                       </p>
                       <div className="flex items-center gap-2 pt-1">
-                        <span className="w-16 h-px bg-gradient-to-r from-transparent to-amber-500/40" />
-                        <span className="text-amber-500/50 text-[10px]">✦</span>
-                        <span className="w-16 h-px bg-gradient-to-l from-transparent to-amber-500/40" />
+                        <span className="w-16 h-px bg-gradient-to-r from-transparent to-orange-500/20" />
+                        <span className="text-orange-500/40 text-[10px]">✦</span>
+                        <span className="w-16 h-px bg-gradient-to-l from-transparent to-orange-500/20" />
                       </div>
                     </div>
 
@@ -799,7 +799,7 @@ export default function JoinCommunityPage() {
                   </div>
 
                   {/* Mobile Post Composer (Hidden on desktop) */}
-                  <div className="lg:hidden bg-orange-50/40 dark:bg-stone-900/60 border border-orange-500/10 rounded-3xl p-5 shadow-xs space-y-4">
+                  <div className="lg:hidden bg-orange-50/40 dark:bg-stone-900/60 border border-[#5c1d0c]/20 rounded-3xl p-5 shadow-xs space-y-4">
                     <div className="flex items-center justify-between gap-3 text-left">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-950 flex items-center justify-center text-orange-600 font-extrabold text-sm shrink-0 overflow-hidden">
@@ -817,9 +817,9 @@ export default function JoinCommunityPage() {
                       <Button 
                         size="icon" 
                         onClick={() => setCreatePostOpen(true)}
-                        className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white rounded-full w-9 h-9 shadow-md active:scale-95 shrink-0 border-none"
+                        className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white rounded-full w-9 h-9 shadow-md active:scale-95 shrink-0 border-none flex items-center justify-center"
                       >
-                        <Plus className="w-5 h-5 text-white" />
+                        <Plus className="w-5 h-5 text-white" strokeWidth={3.5} style={{ stroke: '#ffffff' }} />
                       </Button>
                     </div>
 
@@ -836,7 +836,7 @@ export default function JoinCommunityPage() {
                             setPostType(item.id as any);
                             setCreatePostOpen(true);
                           }}
-                          className="bg-white dark:bg-stone-900 border border-orange-500/10 hover:bg-orange-50/50 p-2.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center"
+                          className="bg-white dark:bg-stone-900 border border-[#5c1d0c]/20 hover:bg-orange-50/50 p-2.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all text-center"
                         >
                           <span className="text-xl leading-none">{item.icon}</span>
                           <span className="font-extrabold text-[8.5px] uppercase tracking-tight text-stone-700 dark:text-stone-300 whitespace-nowrap">{item.label}</span>
@@ -898,10 +898,21 @@ export default function JoinCommunityPage() {
                           className={`px-4 py-2 rounded-full text-sm font-extrabold transition-all border shrink-0 ${
                             isSelected 
                               ? "bg-[#5c1d0c] text-white border-[#5c1d0c] shadow-xs"
-                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-[#5c1d0c]/10 hover:bg-[#5c1d0c]/5"
+                              : "bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 border-[#5c1d0c]/20 hover:bg-[#5c1d0c]/5"
                           }`}
                         >
-                          {filter === "All" ? (isHi ? "सभी पोस्ट" : "All") : filter}
+                          {(() => {
+                            if (!isHi) return filter;
+                            switch (filter) {
+                              case "All": return "सभी पोस्ट";
+                              case "Bhajan Share": return "साझा भजन";
+                              case "Bhajan Request": return "भजन अनुरोध";
+                              case "Question": return "प्रश्न";
+                              case "Thought": return "भक्ति विचार";
+                              case "Event": return "कार्यक्रम";
+                              default: return filter;
+                            }
+                          })()}
                         </button>
                       );
                     })}
@@ -977,21 +988,21 @@ export default function JoinCommunityPage() {
                     return (
                       <>
                         {/* TOP TOOLBAR: SEARCH & CREATE GROUP */}
-                        <div className="flex items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-[hsl(var(--brand-gold-border))] shadow-1 text-left">
+                        <div className="flex items-center justify-between gap-3 text-left w-full mb-2">
                           <div className="relative flex-1">
-                            <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                             <Input 
                               type="text"
                               placeholder={isHi ? "समूह खोजें..." : "Search groups..."}
                               value={groupSearch}
                               onChange={(e) => setGroupSearch(e.target.value)}
-                              className="pl-10 h-9 border-border bg-background rounded-full w-full focus-visible:ring-1 focus-visible:ring-brand-primary"
+                              className="pl-9 h-10 border-border bg-background rounded-xl w-full text-sm font-medium focus-visible:ring-1 focus-visible:ring-brand-primary"
                             />
                           </div>
 
                           <Button
                             onClick={() => setCreateGroupOpen(true)}
-                            className="btn-primary btn-sm shrink-0"
+                            className="btn-primary shrink-0 text-sm font-extrabold px-4 h-10 rounded-xl flex items-center justify-center gap-1.5"
                           >
                             <Plus className="w-4 h-4" />
                             <span>{isHi ? "नया समूह" : "New Group"}</span>

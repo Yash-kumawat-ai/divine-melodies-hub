@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { bhajans, deities, Bhajan, getDeityById } from "@/data/bhajans";
+import SearchBar from "@/components/SearchBar";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,10 +32,16 @@ import { useLyricsFallback } from "@/hooks/useLyricsFallback";
 import { useAssistantContext } from "@/hooks/useAssistantContext";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTheme } from "@/hooks/useTheme";
 import { searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
 import { useLikedBhajans } from "@/hooks/useLikedBhajans";
 import { cn } from "@/lib/utils";
-import { WALLPAPERS_LIST, POSTER_TEMPLATES } from "@/pages/Blessings/constants";
+import mandalaGold from "@/pages/images/mandala-gold.svg";
+import mandalaBeige from "@/pages/images/mandala-beige.svg";
+import manjiraSvg from "@/pages/images/svg/manjira.svg";
+import meditationImage from "@/pages/images/meditation_image (1).webp";
+import malaBeadsImage from "@/pages/images/mala_beads.webp";
+import devotionalImage from "@/pages/images/devotional_image.webp";
 
 interface UserBhajan {
   id: string;
@@ -83,6 +90,8 @@ export default function SearchPage() {
   const { setContext: setAssistantContext } = useAssistantContext();
   const { openPlayer } = useYouTubePlayer();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Define results BEFORE using it in useEffect dependency arrays
   const results = useMemo(() => {
@@ -307,7 +316,8 @@ export default function SearchPage() {
 
   const scrollDeities = (direction: 'left' | 'right') => {
     if (deityScrollRef.current) {
-      const scrollAmt = direction === 'left' ? -200 : 200;
+      const containerWidth = deityScrollRef.current.clientWidth;
+      const scrollAmt = direction === 'left' ? -containerWidth : containerWidth;
       deityScrollRef.current.scrollBy({ left: scrollAmt, behavior: 'smooth' });
     }
   };
@@ -442,7 +452,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-[#FCF8F2] via-[#F8F3EC] to-[#FDFBF8] dark:from-background dark:via-background/95 dark:to-background pb-12 text-[#32251E] dark:text-[#FFFDF8]">
       {/* Hide scrollbars style utility */}
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar {
@@ -455,8 +465,8 @@ export default function SearchPage() {
       `}} />
 
       {/* Search Header Bar (No line/border at bottom) */}
-      <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl px-4 py-3">
-        <div className="container mx-auto max-w-5xl flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-[#FCF8F2]/90 dark:bg-background/90 backdrop-blur-xl px-1.5 py-2.5 sm:py-4 md:py-5 md:px-4">
+        <div className="container mx-auto max-w-5xl flex items-center gap-1 sm:gap-3">
           <button
             onClick={() => {
               if (query.trim() || selectedDeity) {
@@ -466,22 +476,20 @@ export default function SearchPage() {
                 navigate(-1);
               }
             }}
-            className="p-2 -ml-2 rounded-full hover:bg-muted text-foreground transition-colors cursor-pointer"
+            className="p-2 -ml-1 sm:-ml-2 rounded-full hover:bg-muted text-foreground transition-colors cursor-pointer shrink-0"
             aria-label="Back"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
           </button>
           
-          <div className="flex-1 relative flex items-center bg-white dark:bg-[#1E1710] border border-orange-200/50 dark:border-zinc-800/80 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] focus-within:border-orange-500/50 focus-within:ring-2 focus-within:ring-orange-500/10 transition-all duration-300 p-1.5 pl-6 pr-2">
-            <SearchIcon className="w-5 h-5 text-[#FF6A00] shrink-0 mr-3 select-none" />
-            <input
-              type="text"
+          <div className="flex-1">
+            <SearchBar
               value={activeMode === 'bhajans' ? query : youtubeQuery}
-              onChange={(e) => {
+              onChange={(val) => {
                 if (activeMode === 'bhajans') {
-                  setQuery(e.target.value);
+                  setQuery(val);
                 } else {
-                  setYoutubeQuery(e.target.value);
+                  setYoutubeQuery(val);
                 }
               }}
               placeholder={
@@ -489,153 +497,138 @@ export default function SearchPage() {
                   ? (language === 'hi' ? 'भजन, कीर्तन या कलाकार खोजें...' : 'Search bhajans, artists or tags...')
                   : (language === 'hi' ? 'यूट्यूब पर भजन खोजें...' : 'Search bhajans on YouTube...')
               }
-              className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-stone-700 dark:text-foreground text-sm md:text-base placeholder:text-stone-400 dark:placeholder:text-muted-foreground/60 py-2"
+              isListening={isListening}
+              onMicClick={startSpeechRecognition}
               autoFocus
+              onClear={() => {
+                setQuery("");
+                setYoutubeQuery("");
+              }}
             />
-            {/* Clear Button */}
-            {(query || youtubeQuery) ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setYoutubeQuery("");
-                }}
-                className="mr-2 text-stone-400 hover:text-stone-600 dark:hover:text-white transition-colors focus:outline-none cursor-pointer p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            ) : null}
-            
-            {/* Mic Button */}
-            <button
-              type="button"
-              onClick={startSpeechRecognition}
-              className={cn(
-                "inline-flex h-10 w-10 items-center justify-center rounded-full transition-all shrink-0 shadow-sm",
-                isListening
-                  ? "bg-red-600 text-white shadow-md animate-pulse"
-                  : "bg-[#FF6A00] hover:bg-[#E05B00] text-white hover:scale-105 active:scale-95"
-              )}
-              title="Voice Search"
-            >
-              {isListening ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <Mic className="w-5 h-5" />}
-            </button>
           </div>
- 
         </div>
       </header>
 
       {/* Main Content Area */}
-      <div className="container mx-auto max-w-5xl px-4 py-4">
+      <div className="container mx-auto max-w-5xl px-4 pt-1.5 pb-4 sm:py-4">
         <AnimatePresence mode="wait">
           {!query.trim() && !selectedDeity ? (
             /* EXPLORE DASHBOARD (When not searching) */
-            <motion.div
-              key="explore-dashboard"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-8"
-            >
-              {/* Section 1: अपने आराध्य चुनें (Deities Row with scrollbar hidden) */}
-              <div className="space-y-3 relative group/carousel">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-serif text-lg font-extrabold text-foreground tracking-wide flex items-center gap-1.5">
-                    🙏 {language === 'hi' ? 'अपने आराध्य चुनें' : 'Choose Your Deity'}
-                  </h2>
+            <div className="space-y-8">
+              {/* Section 1: अपने आराध्य चुनें (Deities Row inside White floating card) */}
+              <div className="bg-white dark:bg-[#1E1710] rounded-[28px] border border-[#EFE4D7] dark:border-zinc-800/80 p-3.5 sm:p-5 shadow-[0_12px_40px_rgba(80,45,20,0.06)] relative overflow-hidden space-y-3 sm:space-y-4">
+                <img src={mandalaGold} className="absolute -left-6 -bottom-6 w-24 h-24 opacity-[0.02] pointer-events-none object-contain rotate-12" alt="" />
+                
+                <div className="flex items-center justify-between px-0.5 sm:px-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#D4A44A] text-[10px] sm:text-xs font-bold">✦</span>
+                    <h2 className="font-serif text-[15px] sm:text-[17px] font-bold text-[#32251E] dark:text-[#FFFDF8]">
+                      {language === 'hi' ? 'अपने आराध्य चुनें' : 'Choose Your Deity'}
+                    </h2>
+                    <span className="text-[#D4A44A] text-[10px] sm:text-xs font-bold">✦</span>
+                  </div>
                   <button 
                     onClick={() => setShowAllDeities(prev => !prev)}
-                    className="text-xs font-bold text-amber-500 hover:text-amber-400 transition-colors flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] sm:text-xs font-bold text-[#6A2C2A] hover:text-[#58211F] transition-colors cursor-pointer"
                   >
                     {language === 'hi' ? 'सभी देखें →' : 'View All →'}
                   </button>
                 </div>
                 
                 {/* Horizontal Scrolling Deities list */}
-                <div className="relative flex items-center">
+                <div className="relative flex items-center group/carousel">
                   {/* Left arrow on desktop */}
                   <button 
                     onClick={() => scrollDeities('left')}
-                    className="absolute -left-4 z-10 p-1.5 rounded-full bg-black/75 border border-amber-500/30 text-amber-400 hover:bg-black hover:text-amber-300 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+                    className="absolute -left-4 z-10 p-1.5 rounded-full bg-white dark:bg-zinc-800 border border-[#EFE4D7] dark:border-zinc-700 text-[#6A2C2A] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-sm"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-
+ 
                   <div 
                     ref={deityScrollRef}
-                    className="flex gap-7 md:gap-8 overflow-x-auto pb-2.5 pt-1.5 no-scrollbar scroll-smooth snap-x touch-pan-x w-full"
+                    className="flex overflow-x-auto pb-1.5 pt-1 no-scrollbar scroll-smooth snap-x snap-mandatory touch-pan-x w-full"
                   >
-                    {allDeities.map((deity) => {
-                      const slug = getDeitySlug(deity);
-                      const bgClass = getDeityBg(slug);
-                      const isActive = selectedDeity === slug;
-                      return (
-                        <button
-                          key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
-                          onClick={() => {
-                            handleDeityFilter(slug);
-                            setActiveMode('bhajans');
-                          }}
-                          className="flex flex-col items-center gap-2 group shrink-0 snap-start focus:outline-none cursor-pointer"
+                    {(() => {
+                      const groups = [];
+                      for (let i = 0; i < allDeities.length; i += 4) {
+                        groups.push(allDeities.slice(i, i + 4));
+                      }
+                      return groups.map((group, groupIdx) => (
+                        <div 
+                          key={`group-${groupIdx}`} 
+                          className="w-full shrink-0 snap-start grid grid-cols-4 gap-1.5 md:gap-3"
                         >
-                          <div className={cn(
-                            "w-20 h-20 md:w-24 md:h-24 rounded-2xl md:rounded-3xl border flex items-center justify-center overflow-hidden transition-all duration-300 relative shadow-[0_4px_16px_rgba(0,0,0,0.35)]",
-                            isActive 
-                              ? "border-amber-500 ring-2 ring-amber-500/40 ring-offset-1 ring-offset-background bg-amber-500/10 shadow-[0_0_16px_rgba(245,158,11,0.4)] scale-105" 
-                              : "border-white/10 group-hover:border-amber-500/50 group-hover:scale-105",
-                            bgClass
-                          )}>
-                            {deity.imageUrl ? (
-                              <img
-                                src={deity.imageUrl}
-                                alt={deity.name}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                              />
-                            ) : (
-                              <span className="text-3xl select-none">{deity.emoji}</span>
-                            )}
-                            
-                            {/* Card gradient overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                            
-                            {/* Amber hover effect */}
-                            <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/5 transition-all duration-500" />
-                          </div>
-                          
-                          <span className={cn(
-                            "text-[10px] sm:text-xs font-sans font-black tracking-wide max-w-[80px] truncate transition-all duration-200 relative pb-0.5",
-                            isActive 
-                              ? "text-amber-500 font-extrabold after:content-[''] after:absolute after:bottom-0 after:left-1/4 after:right-1/4 after:h-0.5 after:bg-amber-500" 
-                              : "text-muted-foreground group-hover:text-amber-500/80"
-                          )}>
-                            {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
-                          </span>
-                        </button>
-                      );
-                    })}
+                          {group.map((deity) => {
+                            const slug = getDeitySlug(deity);
+                            const bgClass = getDeityBg(slug);
+                            const isActive = selectedDeity === slug;
+                            return (
+                              <button
+                                key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
+                                onClick={() => {
+                                  handleDeityFilter(slug);
+                                  setActiveMode('bhajans');
+                                }}
+                                className="flex flex-col items-center gap-1.5 group focus:outline-none cursor-pointer w-full"
+                              >
+                                <div className={cn(
+                                  "w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-full transition-all duration-300 relative flex items-center justify-center shadow-[0_8px_20px_rgba(80,45,20,0.04)] sm:shadow-none",
+                                  isActive 
+                                    ? "p-[2.5px] bg-[#6A2C2A] dark:bg-[#E8B15C] scale-105 shadow-[0_8px_24px_rgba(106,44,42,0.2)] sm:p-0 sm:bg-transparent sm:border-2 sm:border-[#D4A44A] sm:ring-4 sm:ring-[#D4A44A]/20 sm:scale-105" 
+                                    : "p-[2.5px] bg-[#6A2C2A]/20 dark:bg-zinc-800 hover:bg-[#6A2C2A] dark:hover:bg-[#E8B15C] sm:p-0 sm:bg-transparent sm:border-2 sm:border-[#EFE4D7] sm:dark:border-zinc-800 sm:hover:border-[#D4A44A]/60",
+                                  bgClass
+                                )}>
+                                  <div className="w-full h-full rounded-full p-[2px] sm:p-0 bg-white dark:bg-[#1E1710] sm:bg-transparent flex items-center justify-center overflow-hidden relative">
+                                    {deity.imageUrl ? (
+                                      <img
+                                        src={deity.imageUrl}
+                                        alt={deity.name}
+                                        className="w-full h-full object-cover rounded-full"
+                                      />
+                                    ) : (
+                                      <span className="text-2xl sm:text-3xl select-none">{deity.emoji}</span>
+                                    )}
+                                    
+                                    {/* Card gradient overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none rounded-full" />
+                                  </div>
+                                </div>
+                                
+                                <span className={cn(
+                                  "text-[13px] font-bold tracking-normal text-center max-w-[80px] truncate transition-colors mt-0.5 sm:text-xs sm:font-semibold sm:max-w-[90px] sm:mt-0",
+                                  isActive 
+                                    ? "text-[#6A2C2A] dark:text-[#E8B15C] font-extrabold sm:font-bold" 
+                                    : "text-[#7A6B60] dark:text-muted-foreground group-hover:text-[#6A2C2A]"
+                                )}>
+                                  {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ));
+                    })()}
                   </div>
-
+ 
                   {/* Right arrow on desktop */}
                   <button 
                     onClick={() => scrollDeities('right')}
-                    className="absolute -right-4 z-10 p-1.5 rounded-full bg-black/75 border border-amber-500/30 text-amber-400 hover:bg-black hover:text-amber-300 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100"
+                    className="absolute -right-4 z-10 p-1.5 rounded-full bg-white dark:bg-zinc-800 border border-[#EFE4D7] dark:border-zinc-700 text-[#6A2C2A] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-sm"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
                 {/* Swipe Helper text */}
-                <p className="text-[10px] font-sans font-bold text-center text-amber-500/40 tracking-wider">
+                <p className="text-xs font-semibold text-center text-[#7A6B60]/70 dark:text-amber-500/40 tracking-wider">
                   {language === 'hi' ? "← स्वाइप करें और अधिक देखें →" : "← Swipe to see more deities →"}
                 </p>
               </div>
-
+ 
               {/* Expand deities grid if "सभी देखें" is active */}
               {showAllDeities && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-card/50 border border-border/60 rounded-3xl p-5 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4"
+                <div 
+                  className="bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-[28px] p-5 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4 shadow-[0_12px_40px_rgba(80,45,20,0.06)]"
                 >
                   {allDeities.map((deity) => {
                     const slug = getDeitySlug(deity);
@@ -649,185 +642,278 @@ export default function SearchPage() {
                         }}
                         className="flex flex-col items-center gap-1.5 focus:outline-none cursor-pointer group"
                       >
-                        <div className={cn("w-14 h-14 rounded-2xl border border-white/10 hover:border-amber-500/50 flex items-center justify-center overflow-hidden transition-all duration-300 relative shadow-md", bgClass)}>
+                        <div className={cn("w-14 h-14 rounded-2xl border border-[#EFE4D7] dark:border-white/10 hover:border-[#D4A44A]/60 flex items-center justify-center overflow-hidden relative shadow-sm", bgClass)}>
                           {deity.imageUrl ? (
-                            <img src={deity.imageUrl} alt={deity.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                            <img src={deity.imageUrl} alt={deity.name} className="w-full h-full object-cover" />
                           ) : (
                             <span className="text-xl">{deity.emoji}</span>
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
                         </div>
-                        <span className="text-[10px] font-black text-muted-foreground group-hover:text-amber-500 truncate max-w-[65px] transition-colors">
+                        <span className="text-xs font-semibold text-[#7A6B60] group-hover:text-[#6A2C2A] truncate max-w-[65px] transition-colors">
                           {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
                         </span>
                       </button>
                     );
                   })}
-                </motion.div>
-              )}
-
-              {/* Section 2: Dashboard Cards Grid (Side-by-side on mobile and desktop) */}
-              <div className="grid grid-cols-2 gap-3.5">
-                {/* Left Card: साधना / Japa Sadhana */}
-                <div 
-                  onClick={() => navigate('/meditation')}
-                  className="rounded-3xl p-3.5 md:p-6 text-left flex flex-col justify-between relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10 border border-purple-500/10 cursor-pointer group/card min-h-[230px] md:min-h-[290px]"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(35,16,68,0.9) 0%, rgba(20,9,43,0.95) 50%, rgba(12,5,28,0.98) 100%)',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.45)'
-                  }}
-                >
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-purple-500/10 rounded-full blur-3xl pointer-events-none group-hover/card:bg-purple-500/15 transition-all duration-500" />
-                  
-                  <div>
-                    <span className="text-[8px] md:text-[10px] uppercase font-sans font-black text-purple-400 tracking-widest leading-none mb-1 md:mb-2 block">
-                      {language === 'hi' ? "आपका मंत्र" : "Your Mantra"}
-                    </span>
-                    <h3 className="font-serif text-sm md:text-xl font-bold text-purple-100 group-hover/card:text-purple-200 transition-colors leading-tight">
-                      {language === 'hi' ? "साधना और जाप" : "Slow Sadhana & Japa"}
-                    </h3>
-                    <p className="text-[9px] md:text-xs text-purple-200/80 font-sans leading-relaxed mt-1 md:mt-2 font-medium">
-                      {language === 'hi' ? "सभी समस्याओं का समाधान" : "Solution to all your Problems"}
-                    </p>
-                  </div>
-
-                  {/* Rocket animated graphic */}
-                  <div className="relative w-20 h-20 md:w-26 md:h-26 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-center overflow-hidden mx-auto my-1.5 group-hover/card:scale-105 transition-transform duration-500 shrink-0">
-                    <svg className="w-10 h-10 md:w-14 md:h-14 animate-bounce duration-3000" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M12 2C12 2 15 5 15 10C15 12.5 13.5 14.5 12 16C10.5 14.5 9 12.5 9 10C9 5 12 2 12 2Z" fill="url(#rocket-grad)" stroke="#d8b4fe" />
-                      <path d="M12 16V22" stroke="#a78bfa" strokeLinecap="round" />
-                      <path d="M9 13.5L6.5 16.5C6 17 6.5 18 7.5 18H16.5C17.5 18 18 17 17.5 16.5L15 13.5" stroke="#a78bfa" strokeLinejoin="round" />
-                      <path d="M12 6V10" stroke="#f43f5e" strokeLinecap="round" />
-                      <defs>
-                        <linearGradient id="rocket-grad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#c084fc" />
-                          <stop offset="100%" stopColor="#6366f1" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <span className="absolute bottom-1 text-[8px] md:text-[10px] animate-pulse text-amber-400">🚀</span>
-                  </div>
-
-                  <div className="flex items-center justify-between z-10">
-                    <button className="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 active:scale-95 text-white font-sans text-[8px] md:text-xs font-black uppercase rounded-lg transition-all shadow-lg shadow-purple-500/20 cursor-pointer">
-                      {language === 'hi' ? "शुरू करें" : "Add Now"}
-                    </button>
-                  </div>
                 </div>
-
-                {/* Right Column Stack: Wallpapers & Liked Bhajans */}
-                <div className="grid grid-cols-1 gap-3.5">
-                  {/* Top Card: Daily Mantra */}
+              )}
+ 
+              {/* Section 2: त्वरित सेवाएं (Grid Cards with 2 columns) */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center gap-3.5 mb-2">
+                  <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4A44A]/60" />
+                  <span className="text-[#D4A44A] text-xs font-bold">✦</span>
+                  <h2 className="font-serif text-[17px] md:text-[20px] font-bold text-[#32251E] dark:text-[#FFFDF8]">
+                    {language === 'hi' ? 'त्वरित सेवाएं' : 'Quick Services'}
+                  </h2>
+                  <span className="text-[#D4A44A] text-xs font-bold">✦</span>
+                  <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4A44A]/60" />
+                </div>
+ 
+                <div className="grid grid-cols-2 gap-3.5 sm:gap-4 max-w-2xl mx-auto">
+                  {/* Card 1: ध्यान करें */}
                   <div 
-                    onClick={playShaniMantra}
-                    className="rounded-3xl p-3 md:p-5 text-left flex items-center justify-between relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-orange-500/5 border border-orange-500/10 cursor-pointer group/card"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(58,26,14,0.9) 0%, rgba(38,15,6,0.95) 50%, rgba(20,7,1,0.98) 100%)',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.45)'
-                    }}
+                    onClick={() => navigate('/meditation')}
+                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
                   >
-                    <div className="absolute top-0 right-0 w-28 h-28 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+                    {/* Full Hero Image */}
+                    <img 
+                      src={meditationImage} 
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
+                      alt="" 
+                    />
+                    {/* Dark mode overlay */}
+                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
                     
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <span className="text-[8px] md:text-[9px] uppercase font-sans font-black text-orange-400 tracking-widest leading-none mb-1">
-                        {language === 'hi' ? "दैनिक मंत्र" : "Daily Mantra"}
-                      </span>
-                      <h3 className="font-serif text-[11px] md:text-base font-bold text-orange-100 group-hover/card:text-orange-200 transition-colors truncate">
-                        {language === 'hi' ? "शनि गायत्री मंत्र" : "Shani Gayatri Mantra"}
-                      </h3>
-                      <p className="text-[9px] md:text-[11px] text-orange-200/80 font-sans mt-0.5 truncate max-w-[120px]">
-                        {language === 'hi' ? "ॐ नीलांजन समाभासं..." : "Om Neelanjan Samabhasam..."}
-                      </p>
-                      <button className="w-fit mt-2 md:mt-3 px-3 py-1 bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-sans text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all shadow-md shadow-orange-600/20 cursor-pointer">
-                        {language === 'hi' ? "सुनें" : "Play"}
-                      </button>
-                    </div>
+                    {/* Mandala watermark */}
+                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-12 transition-transform duration-700 group-hover:rotate-[45deg] z-[1]" alt="" />
 
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0 group-hover/card:scale-105 transition-transform duration-500">
-                      <svg className="w-6 h-6 md:w-8 md:h-8 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <circle cx="12" cy="12" r="4" fill="#fb923c" />
-                        <path d="M12 2V6M12 18V22M2 12H6M18 12H22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="#f97316" strokeLinecap="round" />
-                      </svg>
+                    {/* Top Artwork Spacer - pushes text down below the artwork */}
+                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
+
+                    {/* Content at lower area */}
+                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
+                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
+                        {language === 'hi' ? "ध्यान करें" : "Meditate"}
+                      </h3>
+                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
+                        {language === 'hi' ? "मन को शांति दें और आत्मिक संतुलन पाएं।" : "Calm your mind and find inner balance."}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-0.5">
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ शांत संगीत</span>
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 5-30 मिनट</span>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
+                          <ChevronRight className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Bottom Card: Liked Mantra */}
+                  {/* Card 2: नाम जप करें */}
                   <div 
-                    onClick={() => navigate('/account/liked')}
-                    className="rounded-3xl p-3 md:p-5 text-left flex items-center justify-between relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-pink-500/5 border border-pink-500/10 cursor-pointer group/card"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(62,18,36,0.9) 0%, rgba(42,9,21,0.95) 50%, rgba(24,3,10,0.98) 100%)',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.45)'
-                    }}
+                    onClick={() => navigate('/meditation')}
+                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
                   >
-                    <div className="absolute top-0 right-0 w-28 h-28 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-                    
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <span className="text-[8px] md:text-[9px] uppercase font-sans font-black text-pink-400 tracking-widest leading-none mb-1">
-                        {language === 'hi' ? "पसंदीदा" : "Favorites"}
-                      </span>
-                      <h3 className="font-serif text-[11px] md:text-base font-bold text-pink-100 group-hover/card:text-pink-200 transition-colors truncate">
-                        {language === 'hi' ? "पसंदीदा मंत्र" : "Liked Mantra"}
+                    {/* Full Hero Image */}
+                    <img 
+                      src={malaBeadsImage} 
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
+                      alt="" 
+                    />
+                    {/* Dark mode overlay */}
+                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
+
+                    {/* Mandala watermark */}
+                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-45 transition-transform duration-700 group-hover:rotate-[90deg] z-[1]" alt="" />
+
+                    {/* Top Artwork Spacer */}
+                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
+
+                    {/* Content at lower area */}
+                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
+                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
+                        {language === 'hi' ? "नाम जप करें" : "Mantra Chanting"}
                       </h3>
-                      <p className="text-[9px] md:text-[11px] text-pink-200/80 font-sans mt-0.5 truncate">
-                        {language === 'hi' ? `${likedIds.length} मंत्र व भजन` : `${likedIds.length} liked mantras.`}
+                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
+                        {language === 'hi' ? "नाम स्मरण से बढ़े आत्मिक शांति और प्रेम।" : "Grow inner peace through mantra chanting."}
                       </p>
-                      <button className="w-fit mt-2 md:mt-3 px-3 py-1 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-sans text-[8px] md:text-[10px] font-black uppercase rounded-lg transition-all shadow-md shadow-pink-600/20 cursor-pointer">
-                        {language === 'hi' ? "खोलें" : "Open"}
-                      </button>
+                      <div className="flex flex-wrap gap-1.5 mt-0.5">
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 108 जाप</span>
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ माला काउंटर</span>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
+                          <ChevronRight className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3: प्रार्थना करें */}
+                  <div 
+                    onClick={() => navigate('/blessings')}
+                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
+                  >
+                    {/* Full Hero Image */}
+                    <img 
+                      src={devotionalImage} 
+                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
+                      alt="" 
+                    />
+                    {/* Dark mode overlay */}
+                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
+
+                    {/* Mandala watermark */}
+                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-90 transition-transform duration-700 group-hover:rotate-[135deg] z-[1]" alt="" />
+
+                    {/* Top Artwork Spacer */}
+                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
+
+                    {/* Content at lower area */}
+                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
+                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
+                        {language === 'hi' ? "प्रार्थना करें" : "Prayers"}
+                      </h3>
+                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
+                        {language === 'hi' ? "ईश्वर से जुड़ें और आशीर्वाद प्राप्त करें।" : "Connect with the divine and receive blessings."}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-0.5">
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ आरती संग्रह</span>
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ आशीर्वाद</span>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
+                          <ChevronRight className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: भजन सुनें */}
+                  <div 
+                    onClick={() => navigate('/all-bhajans')}
+                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
+                  >
+                    {/* Hero Image — manjira SVG centred on top matching warm bg */}
+                    <div className="relative w-full h-[155px] sm:h-[185px] overflow-hidden rounded-t-[24px] shrink-0 flex items-center justify-center p-4 pt-5">
+                      <img src={manjiraSvg} className="w-full h-full max-h-[135px] sm:max-h-[155px] object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm" alt="" />
+                      <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-[180deg] transition-transform duration-700 group-hover:rotate-[225deg]" alt="" />
                     </div>
 
-                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center shrink-0 group-hover/card:scale-105 transition-transform duration-500">
-                      <Heart className="w-5 h-5 md:w-7 md:h-7 text-pink-400 fill-pink-500/10" />
+                    {/* Content at lower area */}
+                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
+                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
+                        {language === 'hi' ? "भजन सुनें" : "Listen to Bhajans"}
+                      </h3>
+                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
+                        {language === 'hi' ? "भजनों के साथ भक्ति में लीन हों।" : "Immerse yourself in devotion with sacred hymns."}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-0.5">
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 500+ भजन</span>
+                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ प्लेलिस्ट</span>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
+                          <ChevronRight className="w-4 h-4 text-white" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Section 3: Today's Panchang (Wide banner card) */}
+              {/* Section 3: Today's Panchang (Wide dashboard card) */}
               <div className="space-y-4">
-                <h2 className="font-serif text-lg font-extrabold text-foreground tracking-wide flex items-center gap-1.5">
-                  📅 {language === 'hi' ? 'दैनिक पंचांग' : 'Today\'s Panchang'}
-                </h2>
-                
                 <div 
                   onClick={() => navigate('/panchang')}
-                  className="rounded-3xl p-5 text-left border border-amber-500/20 hover:border-amber-500/35 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 cursor-pointer relative overflow-hidden group/card"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(32,20,5,0.85) 0%, rgba(20,11,3,0.92) 50%, rgba(12,5,1,0.97) 100%)',
-                    boxShadow: '0 6px 24px rgba(0,0,0,0.4)'
-                  }}
+                  className="bg-white dark:bg-[#1E1710] rounded-[28px] border border-[#EFE4D7] dark:border-zinc-800/80 p-5 md:p-6 text-left shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-0.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.10)] transition-all duration-300 cursor-pointer relative overflow-hidden group/card"
                 >
-                  <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+                  <img src={mandalaGold} className="absolute -right-8 -bottom-8 w-28 h-28 opacity-[0.01] pointer-events-none object-contain rotate-12" alt="" />
                   
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] uppercase font-sans font-black text-amber-500 tracking-wider">
+                  <div className="flex items-center justify-between gap-4 mb-6">
+                    <div className="flex flex-col text-left">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[#D4A44A] text-xs font-bold">✦</span>
+                        <h3 className="font-serif text-[17px] md:text-[20px] font-bold text-[#6A2C2A] dark:text-[#E8B15C]">
+                          आज का पंचांग
+                        </h3>
+                        <span className="text-[#D4A44A] text-xs font-bold">✦</span>
+                      </div>
+                      <p className="text-xs text-[#7A6B60] dark:text-stone-300 font-semibold mt-1 pl-4 sm:pl-0">
                         {today.toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                      </span>
-                      <h3 className="font-serif text-base font-bold text-amber-100 flex items-center gap-2">
-                        {language === 'hi' ? "आज का शुभ मुहूर्त" : "Today's Auspicious Info"}
-                      </h3>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="bg-black/40 border border-white/5 rounded-2xl px-3 py-1.5 text-center min-w-[70px]">
-                        <span className="block text-[8px] text-muted-foreground uppercase font-sans font-bold">{language === 'hi' ? 'तिथि' : 'Tithi'}</span>
-                        <span className="text-[11px] font-semibold text-amber-300">{language === 'hi' ? panchangData.tithi.hi : panchangData.tithi.en}</span>
-                      </div>
-                      <div className="bg-black/40 border border-white/5 rounded-2xl px-3 py-1.5 text-center min-w-[70px]">
-                        <span className="block text-[8px] text-muted-foreground uppercase font-sans font-bold">{language === 'hi' ? 'नक्षत्र' : 'Nakshatra'}</span>
-                        <span className="text-[11px] font-semibold text-amber-300">{language === 'hi' ? panchangData.nakshatra.hi : panchangData.nakshatra.en}</span>
-                      </div>
-                      <div className="bg-black/40 border border-white/5 rounded-2xl px-3 py-1.5 text-center min-w-[70px]">
-                        <span className="block text-[8px] text-muted-foreground uppercase font-sans font-bold">{language === 'hi' ? 'राहुकाल' : 'Rahu Kaal'}</span>
-                        <span className="text-[11px] font-semibold text-red-400">{panchangData.rahuKaal}</span>
-                      </div>
+                      </p>
                     </div>
                     
-                    <button className="shrink-0 flex items-center justify-center p-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 group-hover/card:bg-amber-500 group-hover/card:text-white transition-all duration-300 cursor-pointer">
-                      <ChevronRight className="w-5 h-5" />
+                    {/* Navigation arrow button */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/panchang');
+                      }}
+                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] active:scale-[0.98] text-white flex items-center justify-center transition-all shadow-[0_3px_8px_rgba(106,44,42,0.2)] sm:shadow-[0_4px_12px_rgba(106,44,42,0.2)] shrink-0 cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </button>
+                  </div>
+                  
+                  {/* Dashboard row of boxes */}
+                  <div className="flex sm:grid sm:grid-cols-5 overflow-x-auto sm:overflow-visible gap-3 pb-3 sm:pb-0 snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+                    {/* Pill 1: Tithi */}
+                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
+                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M12 3a9 9 0 1 0 9 9 9.75 9.75 0 0 0-9-9z" fill="#D4A44A" opacity="0.1" />
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#D4A44A" strokeWidth="1.5" />
+                      </svg>
+                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'तिथि' : 'Tithi'}</span>
+                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">{language === 'hi' ? panchangData.tithi.hi : panchangData.tithi.en}</span>
+                    </div>
+                    
+                    {/* Pill 2: Nakshatra */}
+                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
+                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="#D4A44A" strokeWidth="1.5" />
+                      </svg>
+                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'नक्षत्र' : 'Nakshatra'}</span>
+                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">{language === 'hi' ? panchangData.nakshatra.hi : panchangData.nakshatra.en}</span>
+                    </div>
+                    
+                    {/* Pill 3: Sunrise */}
+                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
+                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M17 18a5 5 0 0 0-10 0" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
+                        <path d="M12 2v3M4.93 4.93l1.41 1.41M19.07 4.93l-1.41 1.41M2 18h20M12 9v5M8 12.5a4 4 0 0 1 8 0" stroke="#D4A44A" strokeWidth="1.5" />
+                      </svg>
+                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'सूर्योदय' : 'Sunrise'}</span>
+                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">05:48 AM</span>
+                    </div>
+                    
+                    {/* Pill 4: Sunset */}
+                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
+                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M12 18a4 4 0 0 0-4-4H8a4 4 0 0 0 8 0" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
+                        <path d="M2 18h20M12 22v-3M4.93 17.07l1.41-1.41M19.07 17.07l-1.41-1.41M12 10v4M8 13.5a4 4 0 0 0 8 0" stroke="#D4A44A" strokeWidth="1.5" />
+                      </svg>
+                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'सूर्यास्त' : 'Sunset'}</span>
+                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">07:15 PM</span>
+                    </div>
+                    
+                    {/* Pill 5: Rahukaal */}
+                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
+                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <circle cx="12" cy="12" r="4" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
+                        <path d="M2 17c5-5 15-5 20 0M5 12c3-3 11-3 14 0" stroke="#D4A44A" strokeWidth="1.5" />
+                      </svg>
+                      <span className="text-[13px] text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'राहुकाल' : 'Rahu Kaal'}</span>
+                      <span className="text-[11px] md:text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">
+                        01:30 PM
+                        <span className="block text-[10px] md:text-[11px] font-semibold text-[#7A6B60] dark:text-stone-400 mt-0.5">
+                          – 03:00 PM
+                        </span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -848,14 +934,14 @@ export default function SearchPage() {
                           setSelectedBhajanForDetail(bhajan);
                           setIsDetailModalOpen(true);
                         }}
-                        className="w-[140px] sm:w-[160px] aspect-[3/4.2] rounded-3xl overflow-hidden relative shadow-lg shadow-black/40 group shrink-0 snap-start cursor-pointer transition-transform duration-300 hover:scale-[1.02] border border-border/5"
+                        className="w-[140px] sm:w-[160px] aspect-[3/4.2] rounded-3xl overflow-hidden relative shadow-lg shadow-black/40 group shrink-0 snap-start cursor-pointer border border-border/5"
                       >
                         {/* Background cover image */}
                         {deity?.imageUrl ? (
                           <img
                             src={deity.imageUrl}
                             alt={bhajan.title}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
+                            className="w-full h-full object-cover"
                             loading="lazy"
                           />
                         ) : (
@@ -863,10 +949,10 @@ export default function SearchPage() {
                             ॐ
                           </div>
                         )}
-
+ 
                         {/* Soft Vignette overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-
+ 
                         {/* Title text overlay at the bottom */}
                         <div className="absolute inset-x-0 bottom-0 p-3.5 flex flex-col justify-end text-left">
                           <span className="text-[8px] uppercase font-sans font-black text-amber-500 tracking-wider">
@@ -876,10 +962,10 @@ export default function SearchPage() {
                             {bhajan.titleHindi || bhajan.title}
                           </h4>
                         </div>
-
+ 
                         {/* Circular Play Button on hover */}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 scale-90 group-hover:scale-100 transition-transform duration-300">
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center">
+                          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 scale-100">
                             <Play className="w-4 h-4 fill-current ml-0.5" />
                           </div>
                         </div>
@@ -888,17 +974,10 @@ export default function SearchPage() {
                   })}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ) : selectedDeity && !query.trim() ? (
             /* DEITY PORTAL DASHBOARD (When a deity is clicked) */
-            <motion.div
-              key={`deity-portal-${selectedDeity}`}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {/* Deity Title & Back action */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-500/10 rounded-3xl p-5 shadow-inner">
                 <div className="space-y-1 text-left">
@@ -1093,7 +1172,7 @@ export default function SearchPage() {
                             <img 
                               src={downloadUrl} 
                               alt={titleText} 
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
+                              className="w-full h-full object-cover"
                               loading="lazy"
                             />
                           ) : (
@@ -1118,12 +1197,9 @@ export default function SearchPage() {
                 ) : categoryFilteredBhajans.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
                     {categoryFilteredBhajans.map((bhajan, index) => (
-                      <motion.div
+                      <div
                         key={`${bhajan.source}-${bhajan.sourceKey}`}
                         className="min-w-0"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.04 }}
                       >
                         <BhajanCard
                           bhajan={bhajan}
@@ -1132,7 +1208,7 @@ export default function SearchPage() {
                             setIsDetailModalOpen(true);
                           }}
                         />
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -1143,38 +1219,31 @@ export default function SearchPage() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           ) : (
             /* SEARCH RESULTS VIEW (When query text search is active) */
-            <motion.div
-              key="search-results"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               {/* Toggle search mode tabs */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setActiveMode('bhajans')}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold tracking-wide transition-all ${
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm md:text-base font-bold tracking-wide transition-all shadow-sm cursor-pointer ${
                     activeMode === 'bhajans'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25'
-                      : 'bg-card text-foreground border-border hover:border-primary/50'
+                      ? 'bg-[#5C1D0C] text-white border-[#5C1D0C] shadow-md shadow-[#5C1D0C]/10'
+                      : 'bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800'
                   }`}
                 >
-                  <BookText className="w-3.5 h-3.5" /> {language === 'hi' ? 'भजन' : 'Bhajans In App'}
+                  <BookText className="w-4 h-4" /> {language === 'hi' ? 'भजन' : 'Bhajans In App'}
                 </button>
                 <button
                   onClick={() => setActiveMode('youtube')}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold tracking-wide transition-all ${
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm md:text-base font-bold tracking-wide transition-all shadow-sm cursor-pointer ${
                     activeMode === 'youtube'
-                      ? 'bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25'
-                      : 'bg-card text-foreground border-border hover:border-primary/50'
+                      ? 'bg-[#5C1D0C] text-white border-[#5C1D0C] shadow-md shadow-[#5C1D0C]/10'
+                      : 'bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800'
                   }`}
                 >
-                  <Youtube className="w-3.5 h-3.5" /> {language === 'hi' ? 'यूट्यूब' : 'YouTube Discovery'}
+                  <Youtube className="w-4 h-4" /> {language === 'hi' ? 'यूट्यूब' : 'YouTube Discovery'}
                 </button>
               </div>
 
@@ -1183,7 +1252,7 @@ export default function SearchPage() {
                   {/* Deity Filter buttons row */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-sans font-black tracking-widest text-muted-foreground uppercase">
+                      <span className="text-xs font-sans font-black tracking-widest text-[#5C1D0C] dark:text-muted-foreground uppercase">
                         ⚡ {language === 'hi' ? 'देवता द्वारा फ़िल्टर करें' : 'Filter by Deity'}
                       </span>
                       {(query || selectedDeity) && (
@@ -1192,7 +1261,7 @@ export default function SearchPage() {
                             setQuery("");
                             setSelectedDeity("");
                           }}
-                          className="text-xs font-sans font-bold text-primary hover:underline cursor-pointer"
+                          className="text-xs font-sans font-bold text-[#FF6A00] hover:underline cursor-pointer"
                         >
                           {language === 'hi' ? 'फ़िल्टर साफ करें' : 'Clear all'}
                         </button>
@@ -1201,10 +1270,10 @@ export default function SearchPage() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => setSelectedDeity("")}
-                        className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all touch-target cursor-pointer ${
+                        className={`px-4.5 py-2 rounded-full text-xs md:text-sm font-bold transition-all cursor-pointer shadow-sm ${
                           !selectedDeity
-                            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                            : "bg-card text-foreground border border-border hover:border-primary"
+                            ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
+                            : "bg-white dark:bg-[#1E1710] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-zinc-800 hover:border-orange-500/50"
                         }`}
                       >
                         All
@@ -1215,10 +1284,10 @@ export default function SearchPage() {
                           <button
                             key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
                             onClick={() => handleDeityFilter(deitySlug)}
-                            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all touch-target cursor-pointer ${
+                            className={`px-4.5 py-2 rounded-full text-xs md:text-sm font-bold transition-all cursor-pointer shadow-sm ${
                               selectedDeity === deitySlug
-                                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                                : "bg-card text-foreground border border-border hover:border-primary"
+                                ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
+                                : "bg-white dark:bg-[#1E1710] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-zinc-800 hover:border-orange-500/50"
                             }`}
                           >
                             {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
@@ -1254,13 +1323,10 @@ export default function SearchPage() {
                   {/* Search Results Grid */}
                   {results.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-                      {results.map((bhajan, index) => (
-                        <motion.div
+                      {results.map((bhajan) => (
+                        <div
                           key={`${bhajan.source}-${bhajan.sourceKey}`}
                           className="min-w-0"
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.04 }}
                         >
                           <BhajanCard
                             bhajan={bhajan}
@@ -1269,16 +1335,12 @@ export default function SearchPage() {
                               setIsDetailModalOpen(true);
                             }}
                           />
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   ) : (
                     /* Fallbacks when no local results found */
-                    <motion.div
-                      className="space-y-6 py-10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    >
+                    <div className="space-y-6 py-10">
                       <div className="text-center py-6">
                         <p className="text-muted-foreground text-sm font-semibold hindi-text mb-2">
                           कोई भजन नहीं मिला • No bhajans found
@@ -1289,11 +1351,7 @@ export default function SearchPage() {
                       </div>
 
                       {showFallbackLyrics && (
-                        <motion.div
-                          className="bg-gradient-warm/5 border border-primary/20 rounded-3xl p-6"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
+                        <div className="bg-gradient-warm/5 border border-primary/20 rounded-3xl p-6">
                           <div className="flex items-center gap-2 mb-4">
                             <BookText className="w-5 h-5 text-primary" />
                             <h3 className="font-serif text-base font-bold text-foreground">
@@ -1323,9 +1381,9 @@ export default function SearchPage() {
                               </pre>
                             </div>
                           ) : null}
-                        </motion.div>
+                        </div>
                       )}
-                    </motion.div>
+                    </div>
                   )}
                 </>
               ) : (
@@ -1458,7 +1516,7 @@ export default function SearchPage() {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
