@@ -24,7 +24,8 @@ export default function AppShell() {
   const isShortsPage = resolvedPath.startsWith("/shorts");
   const isLiveAarti = resolvedPath === "/live-aarti" || resolvedPath === "/aarti";
   const isCommunityPage = resolvedPath.startsWith("/community") || resolvedPath === "/join-community";
-  const hideHeaderGlobally = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti;
+  const isUploadPage = resolvedPath === "/upload-bhajan";
+  const hideHeaderGlobally = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti || isUploadPage;
   const hideHeaderMobileOnly = isCommunityPage;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");

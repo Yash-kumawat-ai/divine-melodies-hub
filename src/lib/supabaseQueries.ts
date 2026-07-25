@@ -10,7 +10,12 @@ import { supabase } from '@/lib/supabaseClient';
  * newsletter_subscribers   – anyone can insert; only admins can read
  */
 
-export const queryUserUploads = async (options?: { orderBy?: string; limit?: number; includeUnapproved?: boolean }) => {
+export const queryUserUploads = async (options?: { 
+  orderBy?: string; 
+  limit?: number; 
+  includeUnapproved?: boolean;
+  contentType?: string;
+}) => {
   const client = supabase as any;
   let query = client
     .from('user_uploads')
@@ -19,6 +24,10 @@ export const queryUserUploads = async (options?: { orderBy?: string; limit?: num
   // Only filter by approved status if not explicitly including unapproved
   if (!options?.includeUnapproved) {
     query = query.or(`status.eq.approved,status.is.null`); // Include null status (legacy data)
+  }
+
+  if (options?.contentType) {
+    query = query.eq('content_type', options.contentType);
   }
 
   if (options?.orderBy) {

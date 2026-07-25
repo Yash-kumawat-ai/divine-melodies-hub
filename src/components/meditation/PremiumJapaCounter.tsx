@@ -1813,72 +1813,61 @@ export default function PremiumJapaCounter({
           {/* 2. Leaderboard Full-Screen Overlay */}
           {renderLeaderboardOverlay()}
 
-          {/* 3. Completed Overlay */}
-          <AnimatePresence>
-            {isCompleted && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 z-[130] bg-black/95 flex flex-col items-center justify-center p-4 text-center select-none rounded-[2.5rem]"
-              >
-                <div className="absolute top-1/4 w-[240px] h-[240px] bg-amber-500/10 blur-[80px] rounded-full animate-pulse pointer-events-none" />
-                <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  transition={{ type: "spring", damping: 15 }}
-                  className="w-full max-w-sm bg-gradient-to-b from-[#180a0f] to-[#0a0406] border border-amber-500/30 rounded-3xl p-5 md:p-6 shadow-2xl relative"
+          {/* 3. Completed Overlay - Light Mode & Without Animations */}
+          {isCompleted && (
+            <div
+              className="absolute inset-0 z-[130] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center select-none rounded-[2.5rem]"
+            >
+              <div className="w-full max-w-sm bg-[#FFFDF8] dark:bg-[#1E1710] border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-3xl p-5 md:p-6 shadow-2xl relative">
+                <div className="w-16 h-16 rounded-2xl bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#E8D8C4] dark:border-amber-900/40 flex items-center justify-center text-[#7A2D28] dark:text-[#E8B15C] mx-auto mb-3 shadow-sm">
+                  <Sparkles className="w-8 h-8" />
+                </div>
+                <h1 className="font-serif font-extrabold text-xl text-[#4A1516] dark:text-[#FFFDF8] uppercase tracking-wider mb-1">
+                  {isHi ? "साधना पूर्ण" : "Sadhana Complete"}
+                </h1>
+                <p className="text-sm font-serif font-bold text-[#7A2D28] dark:text-[#E8B15C] mb-4">
+                  Hari Om / हरी ॐ
+                </p>
+                <div className="grid grid-cols-2 gap-2.5 mb-5 text-left">
+                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3">
+                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
+                      {isHi ? "जपे गए मंत्र" : "Total Chants"}
+                    </span>
+                    <span className="font-serif font-black text-lg text-[#7A2D28] dark:text-[#E8B15C]">
+                      {count}
+                    </span>
+                  </div>
+                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3">
+                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
+                      {isHi ? "लगा समय" : "Duration"}
+                    </span>
+                    <span className="font-serif font-black text-lg text-[#7A2D28] dark:text-[#E8B15C]">
+                      {formatTime(secondsElapsed)}
+                    </span>
+                  </div>
+                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3 col-span-2">
+                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
+                      {isHi ? "आपका संकल्प" : "Sankalp Fulfilled"}
+                    </span>
+                    <span className="text-xs font-bold text-[#4A1516] dark:text-[#FFFDF8] truncate block">
+                      {sankalpText || (isHi ? "कोई नहीं" : "None")}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-[#5C3026] dark:text-[#D4C5B9] leading-relaxed mb-5 font-semibold italic">
+                  {isHi
+                    ? "“परम चेतना आपके संकल्प को सिद्धि प्रदान करें और आपके जीवन में सुख-शांति का संचार हो।”"
+                    : "“May your intention find fulfillment and may the divine vibrations bring peace and clarity to your life.”"}
+                </p>
+                <button
+                  onClick={() => onComplete(count, secondsElapsed, activeMantra.id)}
+                  className="w-full bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 font-bold py-3 px-5 rounded-xl shadow-md border border-[#EFE4D7] dark:border-zinc-800 transition-all text-xs uppercase tracking-wider active:scale-95"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-                  <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/35 flex items-center justify-center text-amber-400 mx-auto mb-4 shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-[bounce_2s_infinite]">
-                    <Sparkles className="w-8 h-8" />
-                  </div>
-                  <h1 className="font-display font-black text-xl text-amber-400 uppercase tracking-widest mb-1">
-                    {isHi ? "साधना पूर्ण" : "Sadhana Complete"}
-                  </h1>
-                  <p className="text-sm font-display font-bold text-amber-300 mb-4">
-                    Hari Om / हरी ॐ
-                  </p>
-                  <div className="grid grid-cols-2 gap-2.5 mb-6 text-left">
-                    <div className="bg-black/35 border border-white/5 rounded-xl p-3">
-                      <span className="block text-[8px] text-white/40 font-bold uppercase tracking-wider mb-0.5">
-                        {isHi ? "जपे गए मंत्र" : "Total Chants"}
-                      </span>
-                      <span className="font-display font-black text-lg text-amber-400">
-                        {count}
-                      </span>
-                    </div>
-                    <div className="bg-black/35 border border-white/5 rounded-xl p-3">
-                      <span className="block text-[8px] text-white/40 font-bold uppercase tracking-wider mb-0.5">
-                        {isHi ? "लगा समय" : "Duration"}
-                      </span>
-                      <span className="font-display font-black text-lg text-amber-400">
-                        {formatTime(secondsElapsed)}
-                      </span>
-                    </div>
-                    <div className="bg-black/35 border border-white/5 rounded-xl p-3 col-span-2">
-                      <span className="block text-[8px] text-white/40 font-bold uppercase tracking-wider mb-0.5">
-                        {isHi ? "आपका संकल्प" : "Sankalp Fulfilled"}
-                      </span>
-                      <span className="text-xs font-semibold text-brand-cream/80 truncate block">
-                        {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-[#fbf6f0]/60 leading-relaxed mb-5 font-medium italic">
-                    {isHi
-                      ? "“परम चेतना आपके संकल्प को सिद्धि प्रदान करें और आपके जीवन में सुख-शांति का संचार हो।”"
-                      : "“May your intention find fulfillment and may the divine vibrations bring peace and clarity to your life.”"}
-                  </p>
-                  <button
-                    onClick={() => onComplete(count, secondsElapsed, activeMantra.id)}
-                    className="w-full bg-gradient-to-r from-amber-400 to-orange-600 hover:from-amber-500 hover:to-orange-700 text-black font-black py-3 px-5 rounded-xl shadow-[0_8px_24px_rgba(249,115,22,0.3)] border border-amber-300/25 transition-all text-xs uppercase tracking-widest active:scale-98"
-                  >
-                    {isHi ? "साधना सुरक्षित करें" : "Save Practice Session"}
-                  </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  {isHi ? "साधना सुरक्षित करें" : "Save Practice Session"}
+                </button>
+              </div>
+            </div>
+          )}
         </motion.div>
         
         {/* Fixed Mobile Bottom Navigation */}

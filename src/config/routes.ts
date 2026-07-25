@@ -4,6 +4,8 @@ export const ROUTES = {
   BROWSE: '/all-bhajans',
   BHAJANS: '/all-bhajans',
   CHALISA: '/chalisa',
+  AARTI: '/aarti',
+  KATHA: '/katha',
   MANTRAS: '/mantras',
   AUDIO: '/audio',
   SHORTS: '/shorts',

@@ -36,6 +36,8 @@ const PanchangPage = lazy(() => import("./pages/PanchangPage"));
 const PanchangDetailsPage = lazy(() => import("./pages/PanchangDetailsPage"));
 const TemplePage = lazy(() => import("./pages/TemplePage"));
 const LiveAartiPage = lazy(() => import("./pages/LiveAartiPage"));
+const AartiChalisaPage = lazy(() => import("./pages/AartiChalisaPage"));
+const KathaPage = lazy(() => import("./pages/KathaPage"));
 const UploadBhajan = lazy(() => import("./pages/UploadBhajan"));
 const AdminModeration = lazy(() => import("./pages/AdminModeration"));
 const RecentBhajans = lazy(() => import("./pages/RecentBhajans"));
@@ -131,7 +133,10 @@ function AppContent() {
             <Route path="/panchang" element={<PanchangPage />} />
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
             <Route path="/kirtan-ai" element={<KirtanAIPage />} />
-            <Route path="/aarti" element={<LiveAartiPage />} />
+            <Route path="/chalisa" element={<AartiChalisaPage />} />
+            <Route path="/aarti" element={<AartiChalisaPage />} />
+            <Route path="/aarti-chalisa" element={<AartiChalisaPage />} />
+            <Route path="/katha" element={<KathaPage />} />
             <Route path="/live-aarti" element={<LiveAartiPage />} />
             <Route
               path="/temple"

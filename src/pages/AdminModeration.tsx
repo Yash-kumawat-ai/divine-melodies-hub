@@ -284,7 +284,7 @@ export default function AdminModeration() {
           <>
             <QueueStatsBar refreshKey={refreshKey} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
               <Input
                 placeholder="Filter by submitter..."
                 value={filters.submittedBy || ''}
@@ -303,6 +303,22 @@ export default function AdminModeration() {
                   <SelectItem value="Hindi">Hindi</SelectItem>
                   <SelectItem value="English">English</SelectItem>
                   <SelectItem value="Sanskrit">Sanskrit</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={(filters as any).contentType || 'All'}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, contentType: value } as any))}
+              >
+                <SelectTrigger className="border-orange-900/30 bg-[#2a1a08]">
+                  <SelectValue placeholder="All Content Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Types</SelectItem>
+                  <SelectItem value="bhajan">Bhajan</SelectItem>
+                  <SelectItem value="aarti">Aarti</SelectItem>
+                  <SelectItem value="chalisa">Chalisa</SelectItem>
+                  <SelectItem value="katha">Katha</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -340,8 +356,18 @@ export default function AdminModeration() {
               </div>
             ) : (
               <div className="space-y-3">
-                {items.map((item) => {
+                {items
+                  .filter((item: any) => {
+                    const cTypeFilter = (filters as any).contentType;
+                    if (cTypeFilter && cTypeFilter !== 'All') {
+                      return (item.content_type || 'bhajan') === cTypeFilter;
+                    }
+                    return true;
+                  })
+                  .map((item: any) => {
                   const submitter = userMap[item.user_id];
+                  const cType = item.content_type || 'bhajan';
+
                   return (
                     <button
                       key={item.id}
@@ -351,9 +377,20 @@ export default function AdminModeration() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground group-hover:text-orange-400 transition-colors truncate">
-                            {item.title}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-foreground group-hover:text-orange-400 transition-colors truncate">
+                              {item.title}
+                            </h3>
+                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                              cType === 'aarti' ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
+                              cType === 'chalisa' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                              cType === 'katha' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
+                              cType === 'other' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
+                              'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                            }`}>
+                              {cType} {item.sub_type ? `(${item.sub_type})` : ''}
+                            </span>
+                          </div>
                           <p className="text-sm text-muted-foreground truncate">{item.title_hindi}</p>
 
                           <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-muted-foreground">

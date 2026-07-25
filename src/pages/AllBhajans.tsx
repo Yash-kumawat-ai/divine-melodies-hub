@@ -40,7 +40,11 @@ export const AllBhajans = () => {
       const { data, error } = await queryUserUploads({ orderBy: 'created_at' });
 
       if (error) throw error;
-      setBhajans((data || []) as UserBhajan[]);
+      // Strictly filter for content_type === 'bhajan' or legacy items
+      const bhajanOnly = ((data || []) as any[]).filter(
+        (item) => !item.content_type || item.content_type === 'bhajan'
+      );
+      setBhajans(bhajanOnly as UserBhajan[]);
     } catch (err) {
       console.error('Error fetching bhajans:', err);
     } finally {

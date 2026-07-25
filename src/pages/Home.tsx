@@ -330,11 +330,15 @@ export default function Home() {
         const { data, error } = await (supabase as any)
           .from('user_uploads')
           .select('*')
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false })
-          .limit(6);
+          .or('status.eq.approved,status.is.null')
+          .order('created_at', { ascending: false });
         if (error) throw error;
-        if (data) setUserBhajans(data as UserBhajan[]);
+        if (data) {
+          const bhajanOnly = (data as any[]).filter(
+            (item) => !item.content_type || item.content_type === 'bhajan'
+          );
+          setUserBhajans(bhajanOnly.slice(0, 6) as UserBhajan[]);
+        }
       } catch (err) {
         console.error('Error fetching user bhajans:', err);
       } finally {

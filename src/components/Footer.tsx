@@ -26,6 +26,7 @@ import { bhajans as staticBhajans } from '@/data/bhajans';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import devotionalBg from '@/pages/images/devotional_background (1).webp';
 
 // Local translation dictionary to support Hindi and English beautifully
 const footerDict = {
@@ -162,77 +163,49 @@ export default function Footer() {
   };
 
   return (
-    // ── Light: warm cream bg  |  Dark: deep brown-black bg ──────────────────
-    <footer className="bg-amber-50/60 dark:bg-[#0b0705] text-foreground border-t border-primary/10 mt-0 pt-16 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-12 relative overflow-hidden transition-colors duration-300">
+    // ── Matching exact page background (#FFFDF8 / bg-background) ──
+    <footer className="bg-[#FFFDF8] dark:bg-background text-foreground border-t border-[#EFE4D7] dark:border-zinc-800 mt-0 pt-10 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-12 relative overflow-hidden transition-colors duration-300">
       {/* Decorative background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="container mx-auto max-w-6xl px-4 relative z-10">
         
-        {/* Top Header Block: Logo & Temple Silhouette */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
-          <div className="text-center md:text-left">
-            <Link to="/" className="flex items-center justify-center md:justify-start gap-3 mb-4 group">
-              <img 
-                src={language === 'hi' ? "/brand-logo.svg" : "/brand-logo-en.svg"} 
-                alt="Raghavam Logo" 
-                className="w-12 h-12 object-contain transition-transform group-hover:rotate-12 duration-300 dark:brightness-100 dark:invert brightness-[0.15] dark:drop-shadow-[0_0_8px_rgba(217,119,6,0.25)]"
-                width={48} 
-                height={48} 
-              />
-              <span className="font-display text-2xl font-bold text-foreground tracking-wide">Raghavam</span>
+        {/* Brand Banner using devotional_background (1).webp with Single Raghavam Title */}
+        <div className="relative overflow-hidden rounded-3xl border border-[#E8D8C4] dark:border-zinc-800 shadow-md mb-8 min-h-[160px] flex items-center justify-center">
+          <img
+            src={devotionalBg}
+            alt="Raghavam Devotional Background"
+            className="absolute inset-0 w-full h-full object-cover object-bottom"
+          />
+          {/* Natural soft overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-white/15 to-[#FFFDF8]/85 dark:from-black/60 dark:via-black/75 dark:to-black/90" />
+
+          <div className="relative z-10 p-6 sm:p-8 text-center flex flex-col items-center justify-center">
+            {/* Single Raghavam Title */}
+            <Link to="/" className="inline-block group mb-1.5">
+              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-wide text-[#4A1516] dark:text-[#E8B15C] drop-shadow-sm group-hover:scale-105 transition-transform">
+                Raghavam
+              </h2>
             </Link>
-            <p className="text-primary font-display font-medium text-base mb-1.5 leading-snug">
+
+            {/* Tagline & Subtitle */}
+            <p className="text-[#6A2C2A] dark:text-amber-200 font-serif font-bold text-base sm:text-lg mb-1 max-w-xl">
               {l.tagline}
             </p>
-            <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+            <p className="text-[#5C3026] dark:text-stone-300 text-xs sm:text-sm font-semibold max-w-md leading-relaxed">
               {l.desc}
             </p>
-          </div>
-
-          {/* Temple Silhouette SVG Graphics */}
-          <div className="w-full max-w-[280px] h-32 md:block hidden opacity-40 hover:opacity-60 transition-opacity duration-300">
-            <svg viewBox="0 0 300 120" className="w-full h-full text-primary fill-current">
-              <defs>
-                <radialGradient id="sun-glow" cx="50%" cy="100%" r="80%">
-                  <stop offset="0%" stopColor="rgba(217, 119, 6, 0.4)" />
-                  <stop offset="60%" stopColor="rgba(217, 119, 6, 0.05)" />
-                  <stop offset="100%" stopColor="rgba(0, 0, 0, 0)" />
-                </radialGradient>
-              </defs>
-              {/* Glowing Sun */}
-              <circle cx="150" cy="100" r="35" fill="url(#sun-glow)" />
-              <circle cx="150" cy="95" r="14" fill="rgba(217, 119, 6, 0.12)" stroke="rgba(217, 119, 6, 0.3)" strokeWidth="0.75" />
-              
-              {/* Back Temples */}
-              <path d="M 90,120 L 90,105 L 94,95 L 98,82 L 102,68 L 105,82 L 109,95 L 113,105 L 113,120 Z" fill="rgba(217, 119, 6, 0.08)" />
-              <path d="M 187,120 L 187,105 L 191,95 L 195,82 L 199,68 L 202,82 L 206,95 L 210,105 L 210,120 Z" fill="rgba(217, 119, 6, 0.08)" />
-              
-              {/* Center Temple (Shikhara structure with flag) */}
-              <path d="M 130,120 L 130,95 L 135,80 L 140,65 L 146,45 L 150,30 L 154,45 L 160,65 L 165,80 L 170,95 L 170,120 Z" fill="rgba(217, 119, 6, 0.18)" />
-              <line x1="150" y1="30" x2="150" y2="12" stroke="rgba(217, 119, 6, 0.5)" strokeWidth="1" />
-              <path d="M 150,12 L 162,17 L 150,22 Z" fill="rgba(217, 119, 6, 0.5)" />
-
-              {/* Side Small Silhouettes */}
-              <path d="M 60,120 L 60,112 L 63,106 L 66,98 L 68,106 L 71,112 L 71,120 Z" fill="rgba(217, 119, 6, 0.05)" />
-              <path d="M 230,120 L 230,112 L 233,106 L 236,98 L 238,106 L 241,112 L 241,120 Z" fill="rgba(217, 119, 6, 0.05)" />
-
-              {/* Birds */}
-              <path d="M 75,45 Q 79,42 82,45 Q 85,42 88,45 Q 85,46 82,45 Q 79,46 75,45 Z" fill="rgba(217, 119, 6, 0.2)" />
-              <path d="M 220,38 Q 223,35 226,38 Q 229,35 232,38 Q 229,39 226,38 Q 223,39 220,38 Z" fill="rgba(217, 119, 6, 0.2)" />
-              <path d="M 205,25 Q 207,23 209,25 Q 211,23 213,25 Q 211,26 209,25 Q 207,26 205,25 Z" fill="rgba(217, 119, 6, 0.2)" />
-            </svg>
           </div>
         </div>
 
         {/* Social Media Section */}
         <div className="mb-10">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/20 to-primary/40"></div>
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-primary/20 to-primary/40" />
             <span className="text-primary font-display text-sm font-semibold tracking-wider flex items-center gap-1">
               ✦ {l.connectWithUs} ✦
             </span>
-            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-primary/20 to-primary/40"></div>
+            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-primary/20 to-primary/40" />
           </div>
 
           <div className="flex items-center justify-center gap-10">
@@ -487,7 +460,7 @@ export default function Footer() {
           {/* Center: Om Mandala */}
           <div className="flex flex-col items-center justify-center col-start-2 row-start-1 row-span-2 md:col-start-3 md:row-span-1 md:row-start-1">
             <div className="relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20">
-              <div className="absolute inset-0 bg-primary/5 rounded-full blur-lg animate-pulse"></div>
+              <div className="absolute inset-0 bg-primary/5 rounded-full blur-lg animate-pulse" />
               <img 
                 src="/mandala-logo.png" 
                 alt="Om Mandala" 
@@ -515,7 +488,7 @@ export default function Footer() {
         <div className="border-t border-primary/10 pt-8 flex flex-col items-center justify-center gap-3">
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <Link to="/privacy" className="hover:text-primary transition-colors flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-primary" />
+              <Shield className="w-4 h-4 text-[#7A2D28] dark:text-[#E8B15C]" />
               {l.privacyPolicy}
             </Link>
             <span className="text-primary/20">|</span>
@@ -529,7 +502,7 @@ export default function Footer() {
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 mt-1">
             <span>© 2026 Raghavam. {l.rightsReserved}</span>
-            <Heart className="w-3.5 h-3.5 text-primary fill-current inline-block" />
+            <Heart className="w-3.5 h-3.5 text-red-500 fill-current inline-block" />
           </div>
         </div>
 
