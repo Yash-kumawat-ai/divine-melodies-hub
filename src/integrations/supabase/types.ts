@@ -34,6 +34,9 @@ export type Database = {
       user_jap_totals: AppTable
       user_sankalpas: AppTable
       daily_dohas: AppTable
+      shorts: AppTable
+      shorts_interactions: AppTable
+      whitelisted_channels: AppTable
     }
     Views: {
       [_ in never]: never

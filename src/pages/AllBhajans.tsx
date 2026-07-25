@@ -110,7 +110,7 @@ export const AllBhajans = () => {
       </section>
 
       {/* Results Section */}
-      <section className="py-12 px-4">
+      <section className="py-6 md:py-12 pb-28 md:pb-12 px-3 sm:px-4">
         <div className="container mx-auto max-w-6xl">
           {loading ? (
             <div className="flex justify-center items-center py-20">
@@ -132,7 +132,7 @@ export const AllBhajans = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6"
             >
               {filteredBhajans.map((bhajan) => (
                 <div key={bhajan.id} className="min-w-0">

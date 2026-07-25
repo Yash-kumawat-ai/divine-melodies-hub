@@ -422,11 +422,11 @@ export function DarshanScreen() {
           <motion.img
             src="/images/mala.png"
             alt=""
-            initial={{ opacity: 0, y: -180, scale: 0.55, x: '-50%' }}
+            initial={{ opacity: 0, y: -140, scale: 0.65, x: '-50%' }}
             animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-            exit={{ opacity: 0, x: '-50%' }}
+            exit={{ opacity: 0, scale: 0.9, x: '-50%' }}
             transition={{ duration: 0.85, ease: 'easeOut' }}
-            className="pointer-events-none absolute top-[24%] left-1/2 z-30 w-[58%] object-contain drop-shadow-[0_0_28px_rgba(249,160,40,0.45)]"
+            className="pointer-events-none absolute top-[44%] left-1/2 z-30 w-[48%] max-w-[260px] object-contain drop-shadow-[0_0_28px_rgba(249,160,40,0.45)]"
           />
         )}
       </AnimatePresence>
@@ -539,15 +539,15 @@ export function DarshanScreen() {
               <span className="font-serif font-semibold">{xp}</span>
             </div>
 
-            {/* Bell Circle */}
+            {/* Bell Icon */}
             <button
               type="button"
               onClick={ringHeaderBell}
               disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning || bellActive}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 text-[#E06D14] dark:text-[#d4a853] transition-all hover:border-[#EAD7C3]/80 dark:hover:border-[#d4a853]/60 active:scale-90 disabled:opacity-50"
+              className="flex h-8 w-8 shrink-0 items-center justify-center transition-all hover:opacity-80 active:scale-90 disabled:opacity-50"
               aria-label="Ring bell"
             >
-              <Bell className="h-4.5 w-4.5 fill-[#E06D14] dark:fill-[#d4a853] text-[#E06D14] dark:text-[#d4a853]" />
+              <Bell className="h-5.5 w-5.5 fill-[#651317] dark:fill-[#d4a853] text-[#651317] dark:text-[#d4a853]" />
             </button>
           </div>
 

@@ -46,10 +46,10 @@ export function UserNotificationBell({ userId }: UserNotificationBellProps) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="relative h-8 w-8 rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none focus:ring-2 focus:ring-brand"
+          className="relative h-8 w-8 transition-all flex items-center justify-center p-0 focus:outline-none hover:opacity-80"
           aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5 fill-[#651317] text-[#651317] dark:fill-[#d4a853] dark:text-[#d4a853]" />
           {unreadQuery.isLoading ? (
             <span className="absolute right-0.5 top-0.5 flex h-3.5 w-3.5 items-center justify-center">
               <Loader2 className="h-2.5 w-2.5 animate-spin text-muted-foreground" />
