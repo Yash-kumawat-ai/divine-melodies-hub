@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-24",
+  "date": "2026-07-25",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Dasimi",
-  "tithi_number": 10,
-  "nakshatra": "Anuradha - 1",
-  "yoga": "Sukla",
-  "karana": "Garija",
-  "paksha": "Shukla",
+  "tithi": "Ekadasi",
+  "tithi_number": 0,
+  "nakshatra": "Jyesta - 1",
+  "yoga": "Brahma",
+  "karana": "Visti",
+  "paksha": "Krishna",
   "sunrise": "06:07 AM",
-  "sunset": "06:45 PM",
-  "rahu_kaal": "02:01 PM - 03:36 PM",
+  "sunset": "06:44 PM",
+  "rahu_kaal": "09:16 AM - 10:51 AM",
   "brahma_muhurat": "04:31 AM - 05:19 AM",
-  "vara": "Shukravaar",
-  "updated_at": "2026-07-24T06:24:24+05:30"
+  "vara": "Shanivaar",
+  "updated_at": "2026-07-25T06:29:04+05:30"
 }
