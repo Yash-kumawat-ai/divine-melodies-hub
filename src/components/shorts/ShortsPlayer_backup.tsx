@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, Bookmark, Check, Play, Pause } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import youtubeIcon from '@/pages/images/youtube-svgrepo-com.svg';
@@ -198,7 +198,7 @@ export default function ShortsPlayer({
     >
       {/* Fullscreen Video / Embed */}
       {isActive ? (
-        <div className="relative w-full h-full bg-black overflow-hidden">
+        <div className="relative w-full h-full bg-black overflow-hidden pointer-events-none">
           <iframe
             ref={iframeRef}
             src={embedUrl}
@@ -207,9 +207,7 @@ export default function ShortsPlayer({
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
-          {/* Always-on transparent overlay: blocks YouTube native controls from showing/being clicked */}
-          <div className="absolute inset-0 z-10 pointer-events-none" />
-          {/* Paused state: thumbnail overlay so the video frame is visible, while hiding YouTube native controls */}
+          {/* Paused state cover overlay to cover YouTube's native 3 icons (prev, play, next) */}
           {!isPlaying && (
             <img
               src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
@@ -217,7 +215,7 @@ export default function ShortsPlayer({
               onError={(e) => {
                 e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
               }}
-              className="absolute inset-0 w-full h-full object-cover z-20 pointer-events-none scale-[1.25] origin-center"
+              className="w-full h-full object-cover absolute inset-0 z-20 pointer-events-none"
             />
           )}
         </div>
@@ -307,7 +305,7 @@ export default function ShortsPlayer({
             />
           </button>
           <span className="text-[11px] font-medium text-white">
-            {saved ? 'सहेजा गया' : 'सेव करें'}
+            {saved ? 'à¤¸à¤¹à¥‡à¤œà¤¾ à¤—à¤¯à¤¾' : 'à¤¸à¥‡à¤µ à¤•à¤°à¥‡à¤‚'}
           </span>
         </div>
 
@@ -325,7 +323,7 @@ export default function ShortsPlayer({
             />
           </button>
           <span className="text-[11px] font-medium text-white">
-            शेयर करें
+            à¤¶à¥‡à¤¯à¤° à¤•à¤°à¥‡à¤‚
           </span>
         </div>
 
@@ -344,17 +342,13 @@ export default function ShortsPlayer({
               className="w-7 h-7 object-contain"
             />
           </a>
-          <span className="text-[10px] font-medium text-white text-center leading-tight">
-            यूट्यूब पर देखें
-          </span>
+          <span className="text-[10px] font-medium text-white text-center leading-tight">`n            `u{092F}`u{0942}`u{091F}`u{094D}`u{092F}`u{0942}`u{092C} `u{092A}`u{0930} `u{0926}`u{0947}`u{0916}`u{0947}`u{0902}`n          </span>
         </div>
-      </div>
-
-      {/* BOTTOM LEFT CONTENT */}
+      </div>`n{/* BOTTOM LEFT CONTENT */}
       <div className="absolute left-4 bottom-[138px] right-20 z-30 flex flex-col gap-2 pointer-events-none">
         {/* Creator Info */}
         <div className="flex items-center gap-2 pointer-events-auto">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6b1d1d] to-[#9b2c2c] border-2 border-white/40 text-white text-xs flex items-center justify-center font-bold uppercase">
+          <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 text-white text-xs flex items-center justify-center font-semibold uppercase">
             {channelName.slice(0, 2)}
           </div>
           <div className="flex flex-col">
@@ -362,8 +356,8 @@ export default function ShortsPlayer({
               <span className="text-sm font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 {channelName}
               </span>
-              <span className="w-3.5 h-3.5 flex items-center justify-center rounded-full bg-[#1DA1F2] text-white text-[8px]">
-                <Check className="w-2.5 h-2.5 stroke-[3] text-white" />
+              <span className="w-3.5 h-3.5 flex items-center justify-center rounded-full bg-white text-black text-[8px]">
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
               </span>
             </div>
             <span className="text-[10px] font-medium text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
@@ -384,39 +378,4 @@ export default function ShortsPlayer({
           ref={progressTrackRef}
           onMouseDown={(e) => {
             setIsDragging(true);
-            handleSeek(e.clientX);
-          }}
-          onTouchStart={(e) => {
-            setIsDragging(true);
-            if (e.touches.length > 0) {
-              handleSeek(e.touches[0].clientX);
-            }
-          }}
-          className="flex-1 h-6 flex items-center cursor-pointer group touch-none"
-        >
-          <div className="w-full h-[3px] bg-white/40 rounded-full relative group-hover:h-[4px] transition-all">
-            {/* Progress Fill */}
-            <div 
-              className="h-full bg-amber-300 rounded-full transition-all duration-75"
-              style={{ width: `${progress}%` }}
-            />
-            {/* Draggable Circular Thumb */}
-            <div 
-              className={cn(
-                "rounded-full bg-white absolute top-1/2 -translate-y-1/2 -ml-1.5 shadow-md transition-transform",
-                isDragging ? "w-4 h-4 -ml-2 scale-125 bg-amber-200" : "w-3 h-3 group-hover:scale-125"
-              )}
-              style={{ left: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        <span className="text-[11px] font-mono text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] shrink-0">
-          {formatTime(duration)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 

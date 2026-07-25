@@ -63,7 +63,7 @@ export default function AppShell() {
         className={cn(
           "flex-1",
           (isFullScreenApp || isShortsPage) && "flex min-h-0 flex-col overflow-hidden",
-          (isFullScreenApp && showMobileBottomNav) && "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
+          (isFullScreenApp && showMobileBottomNav && !isTemplePage) && "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
           isTemplePage && "temple-mobile-layout"
         )}
       >
