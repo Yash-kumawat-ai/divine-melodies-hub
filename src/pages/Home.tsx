@@ -103,16 +103,19 @@ const SparklesIcon = () => (
 const SkyBlueImageIcon = () => (
   <svg className="w-5 h-5 shrink-0 block text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
+    <circle cx="9" cy="9" r="1.5" />
+    <path d="M21 15l-5-5L5 21" />
   </svg>
 );
 
 const PaletteIcon = () => (
   <svg className="w-5 h-5 shrink-0 block text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 14.7255 3.09032 17.1962 4.85857 19C5.3431 19.4845 5.25059 20.3012 4.87322 20.784C4.30132 21.5158 4.78651 22 5.71761 22H12Z" />
-    <circle cx="7.5" cy="10.5" r="1.5" />
-    <circle cx="11.5" cy="7.5" r="1.5" />
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="8" cy="10" r="1" />
+    <circle cx="12" cy="7" r="1" />
+    <circle cx="16" cy="10" r="1" />
+    <circle cx="15" cy="15" r="1" />
+    <circle cx="9" cy="15" r="1" />
   </svg>
 );
 
@@ -125,8 +128,10 @@ const ActivityIcon = () => (
 
 const UsersIcon = () => (
   <svg className="w-5 h-5 shrink-0 block text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
+    <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="10" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 );
 
@@ -434,7 +439,7 @@ export default function Home() {
           </div>
 
           {/* Grid Layout: 4 columns on all device sizes (mobile, tablet, desktop) */}
-          <div className="grid grid-cols-4 gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
+          <div className="grid grid-cols-3 min-[420px]:grid-cols-4 gap-2.5 min-[420px]:gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
             {([
               { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', gradient: 'from-[#FF9737] to-[#F46A1D]', icon: <HeadphonesIcon /> },
               { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', gradient: 'from-[#FF8A2A] to-[#E65A0D]', icon: <FlameIcon /> },
@@ -460,7 +465,7 @@ export default function Home() {
                   scale: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
                   default: { delay: i * 0.02, duration: 0.3 }
                 }}
-                className="flex flex-col items-center justify-center p-2.5 md:p-3 rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:from-[#1E1710] dark:to-[#150F0A] border border-[#E8D8C4]/60 dark:border-[rgba(201,167,110,0.15)] shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
+                className="flex flex-col items-center justify-center p-2 min-[420px]:p-2.5 md:p-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:from-[#1E1710] dark:to-[#150F0A] border border-[#E8D8C4]/60 dark:border-[rgba(201,167,110,0.15)] shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
                 style={{
                   transitionDuration: '200ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
