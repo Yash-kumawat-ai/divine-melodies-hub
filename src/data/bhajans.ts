@@ -22,7 +22,7 @@ export interface Deity {
 }
 
 export interface Bhajan {
-  id: number;
+  id: number | string;
   slug: string;
   title: string;
   titleHindi: string;

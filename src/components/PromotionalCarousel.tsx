@@ -92,7 +92,6 @@ export function PromotionalCarousel() {
     if (isDragging || Math.abs(dragOffset) > 5 || dragDistance.current > 10) {
       e.preventDefault();
       e.stopPropagation();
-      // Reset dragDistance to allow subsequent regular clicks
       dragDistance.current = 0;
       return;
     }
@@ -101,7 +100,7 @@ export function PromotionalCarousel() {
 
   return (
     <div 
-      className="w-full select-none relative overflow-hidden pt-4 pb-8 md:pt-6 md:pb-12 bg-background/20 mb-6 md:mb-10"
+      className="w-full select-none relative overflow-hidden pt-4 pb-6 md:pt-6 md:pb-8 bg-transparent mb-4 md:mb-6"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
         setIsHovering(false);
@@ -163,17 +162,17 @@ export function PromotionalCarousel() {
           }
 
           const isActive = index === currentIndex;
-          const isVisible = true; // Make all banners visible to show a continuous row of cards across the screen without gaps
+          const isVisible = true;
 
           return (
             <div 
               key={banner.id}
               onClick={(e) => handleBannerClick(banner.href, e)}
               className={cn(
-                "absolute top-0 left-1/2 rounded-[28px] overflow-hidden bg-stone-950/40 shadow-xl border border-border/5 aspect-[16/9] w-[var(--slide-width)] h-full transition-all duration-700",
+                "absolute top-0 left-1/2 rounded-[24px] overflow-hidden bg-stone-900/30 border border-black/5 dark:border-white/10 aspect-[16/9] w-[var(--slide-width)] h-full transition-all duration-700 shadow-sm",
                 isActive 
-                  ? "scale-100 opacity-100 z-10 shadow-black/40 border-amber-500/10" 
-                  : "scale-95 opacity-85 z-0 shadow-black/20"
+                  ? "scale-100 opacity-100 z-10 border-amber-500/30" 
+                  : "scale-95 opacity-85 z-0"
               )}
               style={{
                 transform: `translate3d(calc(-50% + ${offset} * (var(--slide-width) + var(--slide-gap)) + ${dragOffset}px), 0, 0)`,
@@ -186,18 +185,16 @@ export function PromotionalCarousel() {
                 src={banner.image} 
                 alt={banner.title}
                 loading={isActive ? "eager" : "lazy"}
-                className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.02]"
+                className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.01]"
                 draggable={false}
               />
-              {/* Vignette Overlay for subtle premium finish */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-black/5 pointer-events-none" />
             </div>
           );
         })}
       </div>
 
-      {/* Pagination Dots */}
-      <div className="flex justify-center items-center gap-2.5 mt-5 md:mt-8">
+      {/* Simple Pagination Dots */}
+      <div className="flex justify-center items-center gap-2 mt-4 md:mt-6">
         {BANNERS.map((_, i) => {
           const isActive = i === currentIndex;
           return (
@@ -207,14 +204,11 @@ export function PromotionalCarousel() {
               onClick={() => setCurrentIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={cn(
-                "h-2 rounded-full transition-all duration-500 cursor-pointer",
+                "h-2 rounded-full transition-all duration-300 cursor-pointer",
                 isActive 
-                  ? "bg-brand-saffron w-7 shadow-[0_0_10px_rgba(249,115,22,0.35)]" 
-                  : "bg-muted-foreground/35 hover:bg-muted-foreground/60 w-2"
+                  ? "bg-amber-500 w-6" 
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50 w-2"
               )}
-              style={{
-                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
             />
           );
         })}
@@ -222,3 +216,5 @@ export function PromotionalCarousel() {
     </div>
   );
 }
+
+export default PromotionalCarousel;

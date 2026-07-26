@@ -74,42 +74,44 @@ export default function LyricsDisplay({
       {/* Header with controls */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
         <div className="min-w-0 flex-1">
-          <h3 className="hindi-text text-lg font-semibold text-foreground break-words [overflow-wrap:anywhere]">{formatBhajanDisplayTitle(titleHindi)}</h3>
+          <h3 className="hindi-text text-lg font-semibold text-foreground break-words [overflow-wrap:anywhere]">{formatBhajanDisplayTitle(titleHindi || '')}</h3>
           <p className="text-sm text-muted-foreground mt-1 break-words">{language === 'hi' ? 'गायक:' : 'by'} {singerName}</p>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <button
-            onClick={decreaseFontSize}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border hover:bg-muted transition-colors"
-            title={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
-            aria-label={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
-          >
-            <ZoomOut className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
-            {fontSize}px
-          </span>
-          <button
-            onClick={increaseFontSize}
-            className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border hover:bg-muted transition-colors"
-            title={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
-            aria-label={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
-          >
-            <ZoomIn className="w-4 h-4" />
-          </button>
-          
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-border/70 bg-card shadow-sm">
+            <button
+              onClick={decreaseFontSize}
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
+              aria-label={language === 'hi' ? 'फ़ॉन्ट आकार घटाएँ' : 'Decrease font size'}
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-muted/60 text-foreground min-w-[36px] text-center select-none">
+              {fontSize}px
+            </span>
+            <button
+              onClick={increaseFontSize}
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
+              aria-label={language === 'hi' ? 'फ़ॉन्ट आकार बढ़ाएँ' : 'Increase font size'}
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
           <button
             onClick={handleCopyLyrics}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/70 bg-card text-foreground hover:bg-muted transition-colors shadow-sm cursor-pointer font-medium text-xs sm:text-sm"
             title={language === 'hi' ? 'गीत कॉपी करें' : 'Copy lyrics'}
           >
             {copied ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             ) : (
-              <Copy className="w-4 h-4" />
+              <Copy className="w-4 h-4 text-muted-foreground" />
             )}
-            <span className="text-sm">{copied ? t('copied') : (language === 'hi' ? 'कॉपी' : 'Copy')}</span>
+            <span>{copied ? t('copied') : (language === 'hi' ? 'कॉपी करें' : 'Copy')}</span>
           </button>
         </div>
       </div>

@@ -5,7 +5,7 @@ import {
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { type CommunityPost, type PostComment } from "@/lib/community/communityApi";
 
 // Deity Avatars
@@ -345,12 +345,12 @@ export function PostCard({
                     {isHi ? "भजन को मुख्य लाइब्रेरी में जोड़ दिया गया है!" : "Your request was added to the Library!"}
                   </span>
                   {post.resolved_bhajan_id && (
-                    <a 
-                      href={"/bhajan/" + post.resolved_bhajan_id}
+                    <Link 
+                      to={"/bhajan/" + post.resolved_bhajan_id}
                       className="underline text-emerald-400 ml-auto flex items-center gap-1 shrink-0"
                     >
                       View Bhajan <ChevronRight className="w-3.5 h-3.5" />
-                    </a>
+                    </Link>
                   )}
                 </div>
               )}
@@ -418,12 +418,12 @@ export function PostCard({
                     <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#5c1d0c] block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
                     <span className={`text-xs font-bold truncate block ${isDark ? 'text-stone-200' : 'text-stone-855'}`}>{isHi ? "भजन संदर्भ" : "Bhajan Page Reference"}</span>
                   </div>
-                  <a 
-                    href={"/bhajan/" + post.linked_bhajan_id}
+                  <Link 
+                    to={"/bhajan/" + post.linked_bhajan_id}
                     className="bg-[#5c1d0c]/10 text-[#5c1d0c] hover:bg-[#5c1d0c]/20 text-xs px-3 py-1.5 rounded-lg font-bold flex items-center gap-0.5 transition-all shrink-0"
                   >
                     {isHi ? "बोल खोलें" : "Open lyrics"} <ChevronRight className="w-3 h-3" />
-                  </a>
+                  </Link>
                 </div>
               )}
 

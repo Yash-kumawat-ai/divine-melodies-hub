@@ -23,6 +23,7 @@ import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { bhajans, deities, Bhajan, getDeityById } from "@/data/bhajans";
 import SearchBar from "@/components/SearchBar";
+import Pagination from "@/components/Pagination";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,7 +78,12 @@ export default function SearchPage() {
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
   const [selectedBhajanForDetail, setSelectedBhajanForDetail] = useState<Bhajan | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedDeity]);
   const { deities: allDeities, loading: deitiesLoading } = useDeities();
   const isMobile = useIsMobile();
   const deityScrollRef = useRef<HTMLDivElement>(null);
@@ -1267,13 +1273,13 @@ export default function SearchPage() {
                         </button>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 pt-1">
                       <button
                         onClick={() => setSelectedDeity("")}
-                        className={`px-4.5 py-2 rounded-full text-xs md:text-sm font-bold transition-all cursor-pointer shadow-sm ${
+                        className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm ${
                           !selectedDeity
                             ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
-                            : "bg-white dark:bg-[#1E1710] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-zinc-800 hover:border-orange-500/50"
+                            : "bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800"
                         }`}
                       >
                         All
@@ -1284,10 +1290,10 @@ export default function SearchPage() {
                           <button
                             key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
                             onClick={() => handleDeityFilter(deitySlug)}
-                            className={`px-4.5 py-2 rounded-full text-xs md:text-sm font-bold transition-all cursor-pointer shadow-sm ${
+                            className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm ${
                               selectedDeity === deitySlug
                                 ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
-                                : "bg-white dark:bg-[#1E1710] text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-zinc-800 hover:border-orange-500/50"
+                                : "bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800"
                             }`}
                           >
                             {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
@@ -1322,22 +1328,31 @@ export default function SearchPage() {
 
                   {/* Search Results Grid */}
                   {results.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-                      {results.map((bhajan) => (
-                        <div
-                          key={`${bhajan.source}-${bhajan.sourceKey}`}
-                          className="min-w-0"
-                        >
-                          <BhajanCard
-                            bhajan={bhajan}
-                            onCardClick={(clickedBhajan) => {
-                              setSelectedBhajanForDetail(clickedBhajan);
-                              setIsDetailModalOpen(true);
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+                        {results.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((bhajan) => (
+                          <div
+                            key={`${bhajan.source}-${bhajan.sourceKey}`}
+                            className="min-w-0"
+                          >
+                            <BhajanCard
+                              bhajan={bhajan}
+                              onCardClick={(clickedBhajan) => {
+                                setSelectedBhajanForDetail(clickedBhajan);
+                                setIsDetailModalOpen(true);
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Google-Style Page Numbers Pagination */}
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(results.length / pageSize)}
+                        onPageChange={(page) => setCurrentPage(page)}
+                      />
+                    </>
                   ) : (
                     /* Fallbacks when no local results found */
                     <div className="space-y-6 py-10">
@@ -1413,29 +1428,20 @@ export default function SearchPage() {
                         )}
                       </div>
                     ) : youtubeResults.length > 0 ? (
-                      <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                        {youtubeResults.map((video) => (
-                          <div
-                            key={video.id}
-                            className={`p-3 rounded-2xl border transition-colors ${
-                              selectedVideo?.id === video.id
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border/80 hover:border-primary/60'
-                            }`}
-                          >
-                            <button
-                              onClick={() => setSelectedVideo(video)}
-                              className="w-full text-left"
+                      <div className="space-y-3.5 max-h-[550px] overflow-y-auto pr-1">
+                        {youtubeResults.map((video) => {
+                          const thumbUrl = video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+                          return (
+                            <div
+                              key={video.id}
+                              className={`p-3.5 rounded-2xl border transition-all flex gap-3.5 items-center ${
+                                selectedVideo?.id === video.id
+                                  ? 'border-[#5C1D0C] bg-[#5C1D0C]/5 dark:bg-[#E8B15C]/10 shadow-sm'
+                                  : 'border-border/80 hover:border-[#5C1D0C]/50 bg-white dark:bg-[#1E1710]'
+                              }`}
                             >
-                              <p className="text-sm font-semibold text-foreground line-clamp-2">{video.title}</p>
-                              <p className="text-xs text-muted-foreground mt-1">{video.channel}</p>
-                              <div className="text-[10px] text-muted-foreground mt-1 flex gap-3">
-                                {video.duration && <span>{video.duration}</span>}
-                                {video.viewsText && <span>{video.viewsText}</span>}
-                              </div>
-                            </button>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <button
+                              {/* Video Thumbnail */}
+                              <div 
                                 onClick={() => {
                                   setSelectedVideo(video);
                                   openPlayer({
@@ -1444,21 +1450,77 @@ export default function SearchPage() {
                                     channel: video.channel,
                                   });
                                 }}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full bg-primary text-primary-foreground font-semibold cursor-pointer"
+                                className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 bg-stone-900 cursor-pointer group/thumb shadow-sm"
                               >
-                                <PlayCircle className="w-3.5 h-3.5" /> Play
-                              </button>
-                              <a
-                                href={`https://www.youtube.com/watch?v=${video.id}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border border-border hover:border-primary text-muted-foreground hover:text-foreground"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" /> YouTube
-                              </a>
+                                <img
+                                  src={thumbUrl}
+                                  alt={video.title}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
+                                  loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover/thumb:bg-black/40 transition-colors flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md">
+                                    <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  </div>
+                                </div>
+                                {video.duration && (
+                                  <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-bold text-white">
+                                    {video.duration}
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Title, Channel & Action Buttons */}
+                              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                                <button
+                                  onClick={() => {
+                                    setSelectedVideo(video);
+                                    openPlayer({
+                                      id: video.id,
+                                      title: video.title,
+                                      channel: video.channel,
+                                    });
+                                  }}
+                                  className="text-left group/title cursor-pointer"
+                                >
+                                  <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover/title:text-[#5C1D0C] dark:group-hover/title:text-[#E8B15C] line-clamp-2 leading-snug">
+                                    {video.title}
+                                  </h4>
+                                  <p className="text-[11px] text-muted-foreground mt-1 font-medium truncate">
+                                    {video.channel} {video.viewsText ? `• ${video.viewsText}` : ''}
+                                  </p>
+                                </button>
+
+                                <div className="mt-2 flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedVideo(video);
+                                      openPlayer({
+                                        id: video.id,
+                                        title: video.title,
+                                        channel: video.channel,
+                                      });
+                                    }}
+                                    className="inline-flex items-center gap-1 px-3 py-1 text-[11px] rounded-full bg-[#5C1D0C] dark:bg-[#E8B15C] text-white dark:text-black font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                                  >
+                                    <PlayCircle className="w-3.5 h-3.5 shrink-0" />
+                                    {language === 'hi' ? 'चलाएं' : 'Play'}
+                                  </button>
+
+                                  <a
+                                    href={`https://www.youtube.com/watch?v=${video.id}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 px-3 py-1 text-[11px] rounded-full border border-border hover:border-[#5C1D0C] text-muted-foreground hover:text-foreground font-semibold transition-all"
+                                  >
+                                    <ExternalLink className="w-3 h-3 shrink-0" />
+                                    {language === 'hi' ? 'यूट्यूब पर देखें' : 'YouTube'}
+                                  </a>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="py-8 space-y-3">

@@ -17,7 +17,8 @@ export function generateBhajanSlug(title: string): string {
 }
 
 /** Shorten YouTube-style titles for UI (e.g. "Name || CHANNEL" → "Name"). */
-export function formatBhajanDisplayTitle(title: string, maxLength = 120): string {
+export function formatBhajanDisplayTitle(title?: string | null, maxLength = 120): string {
+  if (!title) return '';
   const primary = title.split(/\s*\|\|\s*/)[0]?.trim() || title.trim();
   const normalized = primary.replace(/\s+/g, ' ');
   if (normalized.length <= maxLength) return normalized;

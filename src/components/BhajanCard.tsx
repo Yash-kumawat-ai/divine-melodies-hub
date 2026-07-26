@@ -97,10 +97,10 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
             handleCardClick(e as any);
           }
         }}
-        className="group block min-w-0 rounded-xl bg-card overflow-hidden shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+        className="group block min-w-0 h-full rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
       >
         <div className={`h-1.5 ${deity?.colorClass ?? "bg-primary"}`} />
-        <div className="p-3.5 sm:p-5 relative">
+        <div className="p-3.5 sm:p-4.5 relative flex-1 flex flex-col justify-between">
           <button
             type="button"
             onClick={handleLikeClick}
@@ -111,44 +111,45 @@ export default function BhajanCard({ bhajan, onCardClick }: BhajanCardProps) {
               className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${liked ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
             />
           </button>
-          <div className="flex items-center gap-1.5 mb-2 sm:mb-3 pr-7 sm:pr-9 min-w-0">
-            <span className="text-base sm:text-lg shrink-0">{deity?.emoji}</span>
-            <span className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
-              {language === 'hi' ? (deity?.nameHindi || deity?.name) : deity?.name}
-            </span>
-          </div>
-          <h3
-            className="font-display text-base sm:text-lg md:text-xl font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2"
-            title={primaryTitle}
-          >
-            {primaryTitle}
-          </h3>
-          {secondaryTitle ? (
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1" title={secondaryTitle}>
-              {secondaryTitle}
-            </p>
-          ) : null}
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2 line-clamp-1" title={bhajan.singerName}>
-            {language === 'hi' ? `${bhajan.singerName} द्वारा` : `by ${bhajan.singerName}`}
-          </p>
-          <div className="mt-3 sm:mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2.5 sm:gap-3 text-xs sm:text-sm text-muted-foreground shrink-0">
-              <span className="flex items-center gap-1">
-                <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-                {(bhajan.playCount / 1000).toFixed(0)}K
-              </span>
-              <span className="flex items-center gap-1">
-                <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-secondary text-secondary shrink-0" />
-                {bhajan.rating.toFixed(1)}
+
+          <div>
+            <div className="flex items-center gap-1.5 mb-2 sm:mb-2.5 pr-7 sm:pr-9 min-w-0">
+              <span className="text-base sm:text-lg shrink-0">{deity?.emoji}</span>
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+                {language === 'hi' ? (deity?.nameHindi || deity?.name) : deity?.name}
               </span>
             </div>
+
+            <h3
+              className="font-display text-base sm:text-lg font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2"
+              title={primaryTitle}
+            >
+              {primaryTitle}
+            </h3>
+
+            {secondaryTitle ? (
+              <p className="text-xs text-muted-foreground/80 mt-0.5 line-clamp-1" title={secondaryTitle}>
+                {secondaryTitle}
+              </p>
+            ) : null}
+
+            <p className="text-xs text-muted-foreground mt-1.5 line-clamp-1 font-medium" title={bhajan.singerName}>
+              {language === 'hi' ? `${bhajan.singerName} द्वारा` : `by ${bhajan.singerName}`}
+            </p>
+          </div>
+
+          <div className="mt-3.5 sm:mt-4 pt-2 border-t border-border/30">
             <button
               type="button"
               onClick={handlePlayClick}
               disabled={playBusy}
-              className="inline-flex w-full sm:w-auto shrink-0 items-center justify-center gap-1 sm:gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#5C1D0C] dark:bg-[#E8B15C] text-white dark:text-black py-2 px-3 text-xs sm:text-sm font-bold shadow-sm hover:opacity-95 active:scale-[0.98] transition-all disabled:opacity-60"
             >
-              {playBusy ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />}
+              {playBusy ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Play className="w-3.5 h-3.5 fill-current shrink-0" />
+              )}
               {t("play")}
             </button>
           </div>

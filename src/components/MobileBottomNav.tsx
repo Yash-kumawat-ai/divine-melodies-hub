@@ -176,7 +176,7 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-50 grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[hsl(var(--brand-gold-border))] bg-surface-raised/95 dark:border-white/10 dark:bg-background/90 px-2 pt-2 shadow-3 dark:shadow-floating backdrop-blur-2xl md:hidden"
+        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[200] pointer-events-auto grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[hsl(var(--brand-gold-border))] bg-surface-raised/95 dark:border-white/10 dark:bg-background/90 px-2 pt-2 shadow-3 dark:shadow-floating backdrop-blur-2xl md:hidden"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         aria-label="Main navigation"
       >
@@ -214,7 +214,10 @@ export default function MobileBottomNav() {
               <button
                 key={item.labelKey}
                 type="button"
-                onClick={() => setFeaturesOpen(true)}
+                onClick={() => {
+                  setFeaturesOpen(true);
+                  onItemClick?.();
+                }}
                 className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
                 aria-label={t("features")}
                 aria-expanded={featuresOpen}
@@ -228,6 +231,7 @@ export default function MobileBottomNav() {
             <Link
               key={item.labelKey}
               to={item.path || "/"}
+              onClick={() => onItemClick?.()}
               className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
               aria-current={active ? "page" : undefined}
             >

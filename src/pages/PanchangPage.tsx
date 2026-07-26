@@ -902,7 +902,7 @@ export default function PanchangPage() {
   );
 
   const upcomingEventsList = (
-    <div className={cn('mt-4 space-y-3', isMobile ? 'max-h-60 overflow-y-auto pr-1' : 'max-h-[360px] overflow-y-auto pr-1')}>
+    <div className={cn('mt-4 space-y-3 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden', isMobile ? 'max-h-60 overflow-y-auto pr-1' : 'max-h-[360px] overflow-y-auto pr-1')}>
       {festivalLoading && (
         <p className="temple-panel-soft p-3 text-sm text-amber-700/70 dark:text-amber-100/70">
           {lang === 'hi' ? 'पर्व लोड हो रहे हैं...' : 'Loading festivals...'}
@@ -967,7 +967,7 @@ export default function PanchangPage() {
   }
 
   return (
-    <div className="panchang-temple panchang-temple-bg min-h-screen overflow-x-hidden px-3 py-4 sm:px-4 sm:py-10">
+    <div className="panchang-temple panchang-temple-bg min-h-screen overflow-x-hidden px-3 py-4 pb-28 sm:px-4 sm:py-10 sm:pb-36">
       <SEO
         title={lang === 'hi' ? 'आज का पंचांग - Raghavam' : "Today's Panchang - Raghavam"}
         description="Daily Panchang, sacred timings, vrat and Hindu festival guide."

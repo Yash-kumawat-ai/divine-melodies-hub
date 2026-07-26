@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Search, Sparkles, Music, Loader2, Play, ChevronRight, Flame } from 'lucide-react';
+import { BookOpen, Search, Sparkles, Music, Loader2, Play, ChevronRight, ChevronLeft, Flame } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { queryUserUploads } from '@/lib/supabaseQueries';
 import { bhajans as staticBhajans, deities } from '@/data/bhajans';
 import BhajanCard from '@/components/BhajanCard';
 import SearchBar from '@/components/SearchBar';
+import Pagination from '@/components/Pagination';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
 
@@ -33,10 +34,16 @@ export default function AartiChalisaPage() {
   const [search, setSearch] = useState('');
   const [userItems, setUserItems] = useState<AartiItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
   useEffect(() => {
     fetchAartisAndChalisas();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeTab]);
 
   const fetchAartisAndChalisas = async () => {
     try {
@@ -120,6 +127,12 @@ export default function AartiChalisaPage() {
     });
   }, [combinedItems, activeTab, search]);
 
+  const totalPages = Math.ceil(filteredItems.length / pageSize);
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
+
   return (
     <div className="min-h-screen bg-[#FFFDF8] dark:bg-background pb-16">
       {/* ── LANDSCAPE HERO BANNER ── */}
@@ -158,46 +171,45 @@ export default function AartiChalisaPage() {
         </div>
       </section>
 
-      {/* ── FILTER TABS & SEARCH SECTION ── */}
-      <section className="sticky top-16 z-30 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-y border-[#E8D8C4] dark:border-zinc-800 py-3.5 px-4 shadow-sm">
-        <div className="container mx-auto max-w-6xl space-y-3">
-          {/* Search Bar */}
-          <SearchBar
-            value={search}
-            onChange={(val) => setSearch(val)}
-            placeholder={isHi ? "आरती या चालीसा खोजें (उदा: हनुमान चालीसा, जय गणेश देवा)..." : "Search Aarti or Chalisa..."}
-            onClear={() => setSearch('')}
-            onVoiceResult={(transcript) => setSearch(transcript)}
-          />
+      {/* ── SEARCH BAR & CATEGORY TABS SECTION (Sleek max-w-2xl width) ── */}
+      <section className="py-2 px-4 max-w-2xl mx-auto space-y-4">
+        {/* Search Bar */}
+        <SearchBar
+          value={search}
+          onChange={(val) => setSearch(val)}
+          placeholder={isHi ? "आरती या चालीसा खोजें (उदा: हनुमान चालीसा, जय गणेश देवा)..." : "Search Aarti or Chalisa..."}
+          onClear={() => setSearch('')}
+          onVoiceResult={(transcript) => setSearch(transcript)}
+          onSelectSuggestion={(selected) => setSearch(selected)}
+        />
 
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {[
-              { id: 'all', label: isHi ? 'सभी रचनाएं' : 'All Items', icon: '🪔' },
-              { id: 'aarti', label: isHi ? 'आरती (Aarti)' : 'Aartis', icon: '🕯️' },
-              { id: 'chalisa', label: isHi ? 'चालीसा (Chalisa)' : 'Chalisas', icon: '📜' },
-              { id: 'stotra', label: isHi ? 'स्तोत्र व पाठ' : 'Stotra & Path', icon: '✨' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 ${
-                  activeTab === tab.id
-                    ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 border-transparent shadow-md scale-105'
-                    : 'bg-white dark:bg-[#1E1710] border-[#E8D8C4] dark:border-zinc-800 text-[#5A1F1A] dark:text-[#E8B15C] hover:bg-[#FAF2E8]'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+        {/* Category Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2.5 px-3">
+          {[
+            { id: 'all', label: isHi ? 'सभी रचनाएं' : 'All Items', icon: '🪔' },
+            { id: 'aarti', label: isHi ? 'आरती (Aarti)' : 'Aartis', icon: '🕯️' },
+            { id: 'chalisa', label: isHi ? 'चालीसा (Chalisa)' : 'Chalisas', icon: '📜' },
+            { id: 'stotra', label: isHi ? 'स्तोत्र व पाठ' : 'Stotra & Path', icon: '✨' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 border-transparent shadow-md scale-[1.03]'
+                  : 'bg-white dark:bg-[#1E1710] border-[#E8D8C4] dark:border-zinc-800 text-[#5A1F1A] dark:text-[#E8B15C] hover:bg-[#FAF2E8]'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </div>
       </section>
 
       {/* ── CARD GRID DISPLAY ── */}
-      <section className="py-8 px-4">
+      <section className="py-6 px-4">
         <div className="container mx-auto max-w-6xl">
           {loading ? (
             <div className="flex justify-center items-center py-20">
@@ -214,30 +226,39 @@ export default function AartiChalisaPage() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {filteredItems.map((item) => (
-                <div key={item.id} className="min-w-0">
-                  <BhajanCard
-                    bhajan={{
-                      id: typeof item.id === 'number' ? item.id : Math.abs(item.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)),
-                      slug: generateBhajanSlug(item.title),
-                      title: item.title,
-                      titleHindi: item.titleHindi,
-                      deityId: item.deityId || 1,
-                      singerName: item.singerName,
-                      composerName: item.composerName || 'पारंपरिक',
-                      youtubeUrl: item.youtubeUrl || '',
-                      lyricsHindi: item.lyricsHindi,
-                      lyricsTransliteration: '',
-                      playCount: item.playCount || 0,
-                      rating: 5,
-                      tags: [item.contentType, item.subType || ''].filter(Boolean),
-                      featured: false,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                {paginatedItems.map((item) => (
+                  <div key={item.id} className="min-w-0">
+                    <BhajanCard
+                      bhajan={{
+                        id: item.id,
+                        slug: generateBhajanSlug(item.title),
+                        title: item.title,
+                        titleHindi: item.titleHindi,
+                        deityId: item.deityId || 1,
+                        singerName: item.singerName,
+                        composerName: item.composerName || 'पारंपरिक',
+                        youtubeUrl: item.youtubeUrl || '',
+                        lyricsHindi: item.lyricsHindi,
+                        lyricsTransliteration: '',
+                        playCount: item.playCount || 0,
+                        rating: 5,
+                        tags: [item.contentType, item.subType || ''].filter(Boolean),
+                        featured: false,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Google-Style Page Numbers Pagination */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+              />
+            </>
           )}
         </div>
       </section>

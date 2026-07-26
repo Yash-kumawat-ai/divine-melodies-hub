@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { TextToSpeech, VoiceManager, checkVoiceSupport } from "../lib/voiceUtils";
@@ -217,6 +217,20 @@ export default function KirtanAIPage() {
     };
   }, []);
 
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const initialQueryRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const qParam = searchParams.get("q") || (location.state as { query?: string })?.query;
+    if (qParam?.trim() && initialQueryRef.current !== qParam.trim()) {
+      initialQueryRef.current = qParam.trim();
+      const term = qParam.trim();
+      pushUser(term);
+      runExistingBhajanSearch(term);
+    }
+  }, [searchParams, location.state]);
+
   useEffect(() => {
     if (!activeSessionId) return;
     const title = deriveChatTitle(messages as KirtanChatSession['messages']);
@@ -261,11 +275,7 @@ export default function KirtanAIPage() {
   const pushUser = (text: string) => setMessages((prev) => [...prev, { id: id(), role: "user", text }]);
 
   const pushBot = (message: Omit<Message, "id" | "role">) => {
-    setTyping(true);
-    window.setTimeout(() => {
-      setMessages((prev) => [...prev, { id: id(), role: "bot", ...message }]);
-      setTyping(false);
-    }, 300);
+    setMessages((prev) => [...prev, { id: id(), role: "bot", ...message }]);
   };
 
   const showQuickActions = () => {

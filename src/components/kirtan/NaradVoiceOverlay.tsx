@@ -1,21 +1,21 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Languages,
+  Globe,
   Mic,
   MicOff,
-  MessageSquare,
-  RotateCcw,
   Send,
   Volume2,
   VolumeX,
   X,
+  Sparkles,
+  Square,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import OmMandalaOrb, { type NaradOrbVoiceState } from "@/components/kirtan/OmMandalaOrb";
-import NaradVoiceWave from "@/components/kirtan/NaradVoiceWave";
 import { NARAD_HI } from "@/lib/narad/naradVoiceStrings";
 import { cn } from "@/lib/utils";
+import devotionalTanpura from "@/pages/images/devotional_tanpura.webp";
 
 export type NaradVoicePhase = "idle" | "listening" | "thinking" | "speaking" | "result" | "error";
 
@@ -42,8 +42,67 @@ type NaradVoiceOverlayProps = {
   onMeditation?: () => void;
 };
 
-const ORB_SIZE_MOBILE = 120;
-const ORB_SIZE_DESKTOP = 100;
+// Veena SVG Component matching image-1784976248254.png specification
+function VeenaIcon({ className = "w-12 h-12" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      {/* Resonator 1 (Bottom Gourd) */}
+      <circle cx="20" cy="44" r="10" fill="url(#veena-gold-grad)" stroke="#FFD700" strokeWidth="1.5" />
+      {/* Resonator 2 (Top Gourd) */}
+      <circle cx="44" cy="20" r="7" fill="url(#veena-gold-grad)" stroke="#FFD700" strokeWidth="1.5" />
+      {/* Main Neck/Fingerboard */}
+      <line x1="12" y1="52" x2="52" y2="12" stroke="#FFD700" strokeWidth="3.5" strokeLinecap="round" />
+      {/* Instrument Strings */}
+      <line x1="14" y1="50" x2="50" y2="14" stroke="#FFF5E5" strokeWidth="1" opacity="0.9" />
+      <line x1="16" y1="48" x2="48" y2="16" stroke="#FFF5E5" strokeWidth="1" opacity="0.9" />
+      {/* Frets */}
+      <line x1="26" y1="36" x2="28" y2="38" stroke="#FFE4B5" strokeWidth="2" />
+      <line x1="31" y1="31" x2="33" y2="33" stroke="#FFE4B5" strokeWidth="2" />
+      <line x1="36" y1="26" x2="38" y2="28" stroke="#FFE4B5" strokeWidth="2" />
+      {/* Dragon Head Tip */}
+      <path d="M52 12 Q56 8 54 4 Q50 6 48 10" stroke="#FFD700" strokeWidth="2" fill="none" />
+      <defs>
+        <radialGradient id="veena-gold-grad" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20 44) scale(10)">
+          <stop stopColor="#F5A623" />
+          <stop offset="1" stopColor="#8B4513" />
+        </radialGradient>
+      </defs>
+    </svg>
+  );
+}
+
+// Sound wave bars flanking the orb
+function WaveformSideBars({ isListening }: { isListening: boolean }) {
+  return (
+    <div className="flex items-center gap-1 px-1 sm:px-2">
+      {[12, 22, 30, 16, 26, 34, 18, 10].map((h, i) => (
+        <span
+          key={i}
+          className={`w-1 bg-gradient-to-t from-[#E8B15C] to-[#7A2D28] rounded-full transition-all duration-300 ${
+            isListening ? "animate-pulse" : "opacity-60"
+          }`}
+          style={{
+            height: `${isListening ? Math.max(8, (h + i * 3) % 36) : h}px`,
+            animationDelay: `${i * 100}ms`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Pink Lotus Flower artwork for bottom corners
+function LotusFlowerDecoration({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <path d="M50 50 C20 45 10 30 5 20 C25 25 40 38 50 50 Z" fill="#F8A4B8" opacity="0.75" />
+      <path d="M50 50 C80 45 90 30 95 20 C75 25 60 38 50 50 Z" fill="#F8A4B8" opacity="0.75" />
+      <path d="M50 50 C30 35 25 15 20 5 C38 15 45 32 50 50 Z" fill="#E86A8D" opacity="0.85" />
+      <path d="M50 50 C70 35 75 15 80 5 C62 15 55 32 50 50 Z" fill="#E86A8D" opacity="0.85" />
+      <path d="M50 50 C40 25 45 5 50 0 C55 5 60 25 50 50 Z" fill="#FFC0CB" />
+    </svg>
+  );
+}
 
 const NaradVoiceOverlay = forwardRef<HTMLDivElement, NaradVoiceOverlayProps>(function NaradVoiceOverlay(
   {
@@ -69,232 +128,203 @@ const NaradVoiceOverlay = forwardRef<HTMLDivElement, NaradVoiceOverlayProps>(fun
   },
   ref,
 ) {
-  const showText = true;
+  const isHi = voiceLang === "hi";
   const [textInput, setTextInput] = useState("");
-  const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  useEffect(() => {
-    if (isMobile) return;
-    inputRef.current?.focus();
-  }, [isMobile]);
-
-  const orbState: NaradOrbVoiceState =
-    phase === "listening"
-      ? "listening"
-      : phase === "thinking"
-        ? "thinking"
-        : phase === "speaking"
-          ? "speaking"
-          : "idle";
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    onSubmitText(textInput.trim());
+    setTextInput("");
+  };
 
   const statusText =
     phase === "listening"
-      ? NARAD_HI.listening
+      ? "मैं सुन रहा हूँ..."
       : phase === "thinking"
-        ? NARAD_HI.thinking
+        ? "विचार कर रहा हूँ..."
         : phase === "speaking"
-          ? NARAD_HI.speaking
+          ? "उत्तर दे रहा हूँ..."
           : phase === "error"
-            ? errorMessage
+            ? errorMessage || "त्रुटि आई है"
             : phase === "result"
-              ? NARAD_HI.heardYou
-              : NARAD_HI.speakPrompt;
-
-  const orbSize = isMobile ? ORB_SIZE_MOBILE : ORB_SIZE_DESKTOP;
+              ? "मैंने सुना..."
+              : "बोलें या प्रश्न पूछें";
 
   return (
-    <motion.div
+    <div
       ref={ref}
       role="dialog"
-      aria-label="Narad voice assistant"
-      initial={isMobile ? { opacity: 0, y: "100%" } : { opacity: 0, scale: 0.96, y: 16 }}
-      animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
-      exit={isMobile ? { opacity: 0, y: "100%" } : { opacity: 0, scale: 0.96, y: 16 }}
-      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-      className={cn(
-        "pointer-events-auto flex flex-col overflow-hidden border border-amber-200/20 shadow-[0_20px_60px_-12px_rgba(45,18,0,0.65)] backdrop-blur-xl",
-        "bg-[linear-gradient(160deg,rgba(45,18,0,0.92)_0%,rgba(20,0,31,0.88)_45%,rgba(10,10,20,0.95)_100%)]",
-        isMobile
-          ? "fixed inset-x-0 bottom-0 z-[140] max-h-[min(92dvh,640px)] rounded-t-3xl"
-          : "fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[max(0.75rem,env(safe-area-inset-right))] z-[140] w-[min(340px,calc(100vw-1.5rem))] rounded-3xl md:bottom-[max(1rem,env(safe-area-inset-bottom))]",
-      )}
+      aria-label="Ask Narad Floating AI"
+      className="pointer-events-auto fixed inset-0 z-[140] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md"
     >
-      <div className="flex items-center justify-between px-4 py-3">
-        <p className="text-sm font-medium text-amber-100/90">{NARAD_HI.askNarad}</p>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full p-2 text-amber-100/80 hover:bg-white/10"
-          aria-label="Close Narad voice"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
+      {/* Card Window Container matching image-1784976248254.png & image-1784976287108.png */}
+      <div
+        className={cn(
+          "relative w-full max-w-md overflow-hidden rounded-[2.5rem] border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-[0_25px_60px_-15px_rgba(90,31,26,0.25)]",
+          "bg-gradient-to-b from-[#FFFDF8] via-[#FFF8EB] to-[#FDF0D8] p-5 sm:p-7 text-center flex flex-col justify-between select-none"
+        )}
+      >
+        {/* Subtle Background Mandala Halo */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full border border-amber-500/15 pointer-events-none opacity-40 animate-spin-slow" />
 
-      <div className="flex flex-col items-center px-4 pb-2 pt-1">
-        <div className="relative">
-          {(isListening || phase === "speaking") && !reducedMotion && (
-            <>
-              <span className="pointer-events-none absolute -inset-3 rounded-full bg-amber-400/25 blur-md" />
-              <span className="pointer-events-none absolute -inset-6 rounded-full bg-violet-500/15 blur-lg" />
-            </>
-          )}
-          <OmMandalaOrb
-            voiceState={orbState}
-            active={phase !== "idle" || isListening}
-            listening={isListening}
-            reducedMotion={reducedMotion}
-            size={orbSize}
-            className="relative shadow-[0_0_32px_rgba(255,160,60,0.4)]"
-          />
-        </div>
+        {/* ── TOP HEADER ── */}
+        <div className="relative z-10 flex items-start justify-between w-full mb-3">
+          <div className="w-8 h-8 opacity-0" aria-hidden />
 
-        <NaradVoiceWave
-          active={isListening}
-          reducedMotion={reducedMotion}
-          className="mt-4"
-        />
+          <div className="text-center">
+            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#4A1516] tracking-wide">
+              Ask Narad
+            </h2>
 
-        <p className="mt-3 text-center text-sm font-medium text-amber-50/95">{statusText}</p>
+            {/* Flourish Line */}
+            <div className="flex items-center justify-center gap-1.5 my-0.5 opacity-85">
+              <div className="h-px w-6 bg-gradient-to-r from-transparent to-[#7A2D28]" />
+              <span className="text-xs text-[#7A2D28] font-bold">आपका आध्यात्मिक साथी</span>
+              <div className="h-px w-6 bg-gradient-to-l from-transparent to-[#7A2D28]" />
+            </div>
+          </div>
 
-        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-          {transcript || statusText}
-        </div>
-
-        {transcript.trim() ? (
-          <p className="mt-2 max-w-[95%] text-center text-sm leading-relaxed text-amber-100/85">
-            &ldquo;{transcript.trim()}&rdquo;
-          </p>
-        ) : isListening ? (
-          <p className="mt-1 text-xs text-white/40">{NARAD_HI.transcriptHint}</p>
-        ) : null}
-      </div>
-
-      {phase === "result" && lastReply.trim() && (
-        <div className="mx-4 mb-3 max-h-32 overflow-y-auto rounded-2xl border border-amber-400/15 bg-black/35 px-3 py-2.5">
-          <p className="text-sm leading-relaxed text-amber-50/90">{lastReply}</p>
-        </div>
-      )}
-
-      {!voiceSupported && phase === "error" && (
-        <p className="mx-4 mb-2 text-center text-xs text-amber-200/70">{NARAD_HI.voiceUnsupported}</p>
-      )}
-
-      {showText && (
-        <div className="mx-4 mb-3 flex gap-2">
-          <textarea
-            ref={inputRef}
-            rows={3}
-            value={textInput}
-            onChange={(e) => setTextInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey && textInput.trim()) {
-                e.preventDefault();
-                onSubmitText(textInput);
-                setTextInput("");
-              }
-            }}
-            placeholder={NARAD_HI.micFallback}
-            className="min-h-[96px] min-w-0 flex-1 resize-none rounded-xl border border-amber-400/25 bg-black/40 px-3 py-2.5 text-sm text-amber-50 placeholder:text-white/35 focus:border-amber-400/50 focus:outline-none"
-            aria-label="Type your question for Narad"
-          />
           <button
             type="button"
-            disabled={!textInput.trim() || phase === "thinking"}
-            onClick={() => {
-              onSubmitText(textInput);
-              setTextInput("");
-            }}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-600 text-amber-50 disabled:opacity-40"
-            aria-label={NARAD_HI.sendText}
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] flex items-center justify-center text-[#5A1F1A] hover:scale-105 transition-all shadow-sm"
+            aria-label="Close Ask Narad"
           >
-            <Send className="h-4 w-4" />
+            <X className="w-4 h-4" />
           </button>
         </div>
-      )}
 
-      <div className="flex flex-wrap items-center justify-center gap-2 border-t border-amber-400/10 px-3 py-3">
-        {voiceSupported && (isListening ? (
+        {/* ── CENTER NARAD ORB & WAVEFORMS ── */}
+        <div className="relative z-10 my-4 flex flex-col items-center">
+          <div className="flex items-center justify-center gap-2">
+            {/* Left Waveform Bars */}
+            <WaveformSideBars isListening={isListening} />
+
+            {/* Glowing Golden Narad Orb with Devotional Tanpura */}
+            <div className="relative flex items-center justify-center">
+              <div className="absolute -inset-3.5 rounded-full bg-gradient-to-r from-amber-400/35 via-amber-300/45 to-amber-500/35 blur-md animate-pulse" />
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-gradient-to-b from-[#4A1B0C] via-[#2D0F06] to-[#180603] border-4 border-[#E8B15C] shadow-[0_0_40px_rgba(232,177,92,0.5)] flex items-center justify-center overflow-hidden">
+                {/* Starry Sparkles inside Orb */}
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(245,166,35,0.25),transparent)]" />
+                <img
+                  src={devotionalTanpura}
+                  alt="Devotional Tanpura"
+                  className="w-full h-full object-cover rounded-full scale-105 relative z-10 drop-shadow-[0_0_15px_rgba(255,215,0,0.85)] hover:scale-110 transition-transform"
+                />
+              </div>
+            </div>
+
+            {/* Right Waveform Bars */}
+            <WaveformSideBars isListening={isListening} />
+          </div>
+
+          {/* Listening Status Text */}
+          <div className="mt-4 space-y-0.5">
+            <p className="font-serif font-extrabold text-base sm:text-lg text-[#4A1516] flex items-center justify-center gap-1.5">
+              <Mic className={`w-4 h-4 text-[#7A2D28] ${isListening ? "animate-bounce" : ""}`} />
+              <span>{statusText}</span>
+            </p>
+            <p className="text-xs font-semibold text-[#7A6B60]">
+              {isHi ? "ईश्वर का नाम लें और प्रश्न पूछें" : "Take the divine name and ask a question"}
+            </p>
+          </div>
+        </div>
+
+        {/* ── PRIMARY ACTION BUTTON ("बोलें (Tap to speak)") ── */}
+        <div className="relative z-10 my-2">
+          <button
+            type="button"
+            onClick={isListening ? onStopListen : onStartListen}
+            className="w-full rounded-full bg-[#FFF8EB] border-2 border-[#E8D8C4] py-3 px-6 font-serif font-extrabold text-sm sm:text-base text-[#4A1516] flex items-center justify-center gap-3 shadow-md hover:border-[#7A2D28] hover:bg-[#FFF5E5] active:scale-98 transition-all"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] text-white flex items-center justify-center shadow">
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            </div>
+            <span>{isListening ? (isHi ? "सुनना रोकें (Tap to stop)" : "Stop (Tap to stop)") : (isHi ? "बोलें (Tap to speak)" : "Speak (Tap to speak)")}</span>
+          </button>
+
+          {/* Live Transcript Display while speaking/listening */}
+          {transcript.trim() && (
+            <div className="mt-2 text-xs font-semibold text-[#4A1516] bg-[#FFF5E5] p-2.5 rounded-xl border border-[#E8D8C4]">
+              &ldquo;{transcript.trim()}&rdquo;
+            </div>
+          )}
+        </div>
+
+        {/* ── ELEGANT DIVIDER ("या") ── */}
+        <div className="relative z-10 flex items-center justify-center gap-3 my-2.5 opacity-80">
+          <div className="h-px w-20 bg-gradient-to-r from-transparent via-[#D8C9B9] to-[#D8C9B9]" />
+          <span className="text-xs font-bold text-[#7A6B60] tracking-wider uppercase">या</span>
+          <div className="h-px w-20 bg-gradient-to-l from-transparent via-[#D8C9B9] to-[#D8C9B9]" />
+        </div>
+
+        {/* ── ELEGANT TEXT INPUT BAR ("कुछ भी पूछें...") ── */}
+        <form onSubmit={handleTextSubmit} className="relative z-10 w-full my-2">
+          <div className="relative flex items-center rounded-full bg-[#FFF5E5] border-2 border-[#E8D8C4] shadow-[inset_0_2px_4px_rgba(0,0,0,0.03)] focus-within:border-[#7A2D28] focus-within:shadow-[0_0_12px_rgba(122,45,40,0.15)] transition-all">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              placeholder={isHi ? "कुछ भी पूछें..." : "Ask anything..."}
+              className="w-full rounded-full bg-transparent py-3.5 pl-5 pr-14 text-sm font-semibold text-[#32251E] placeholder:text-[#7A6B60]/75 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!textInput.trim()}
+              className="absolute right-1.5 w-10 h-10 rounded-full bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] text-amber-100 flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:hover:scale-100"
+              aria-label="Send query"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </form>
+
+        {/* ── BOTTOM CONTROL TOOLBAR (Language, Voice, Stop) ── */}
+        <div className="relative z-10 flex items-center justify-center gap-2 pt-2 border-t border-[#E8D8C4]/60">
+          <button
+            type="button"
+            onClick={onToggleLang}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] text-xs font-bold text-[#5A1F1A] hover:bg-[#FAF2E8] transition-all"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>{isHi ? "भाषा English" : "Language हिंदी"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onToggleMute}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] text-xs font-bold text-[#5A1F1A] hover:bg-[#FAF2E8] transition-all"
+          >
+            {ttsMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            <span>{isHi ? (ttsMuted ? "आवाज़ Off" : "आवाज़ On") : (ttsMuted ? "Voice Off" : "Voice On")}</span>
+          </button>
+
           <button
             type="button"
             onClick={onStopListen}
-            className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-950/50 px-3 py-1.5 text-xs text-amber-100"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] text-xs font-bold text-[#5A1F1A] hover:bg-[#FAF2E8] transition-all"
           >
-            <MicOff className="h-3.5 w-3.5" />
-            {NARAD_HI.stopListening}
+            <Square className="w-3.5 h-3.5 fill-current" />
+            <span>{isHi ? "रोकें" : "Stop"}</span>
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onStartListen}
-            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-xs font-semibold text-amber-50"
-          >
-            <Mic className="h-3.5 w-3.5" />
-            {phase === "result" || phase === "error" ? NARAD_HI.speakAgain : NARAD_HI.speakPrompt}
-          </button>
-        ))}
+        </div>
 
-        {phase === "result" && (
-          <>
-            <button
-              type="button"
-              onClick={onRepeat}
-              disabled={ttsMuted}
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-amber-100/80 disabled:opacity-40"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              {NARAD_HI.repeatAnswer}
-            </button>
-            <button
-              type="button"
-              onClick={onOpenChat}
-              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1.5 text-xs text-amber-100/80"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              {NARAD_HI.openChat}
-            </button>
-          </>
-        )}
-
-        {phase === "error" && (
-          <button
-            type="button"
-            onClick={onRetry}
-            className="inline-flex items-center gap-1 rounded-full border border-rose-400/30 px-3 py-1.5 text-xs text-rose-100"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {NARAD_HI.retry}
-          </button>
-        )}
-
-        <button
-          type="button"
-          onClick={onToggleMute}
-          className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1.5 text-xs text-amber-100/70"
-          aria-label={ttsMuted ? NARAD_HI.unmuteVoice : NARAD_HI.muteVoice}
+        {/* Bottom Link: Sacred Studio */}
+        <Link
+          to="/kirtan-ai"
+          onClick={onClose}
+          className="relative z-10 mt-3 inline-flex items-center justify-center gap-1 font-serif text-xs font-bold text-[#7A2D28] hover:underline"
         >
-          {ttsMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-        </button>
-
-        <button
-          type="button"
-          onClick={onToggleLang}
-          className="inline-flex items-center gap-1 rounded-full border border-white/10 px-2.5 py-1.5 text-xs text-amber-100/70"
-        >
-          <Languages className="h-3.5 w-3.5" />
-          {voiceLang === "hi" ? NARAD_HI.english : NARAD_HI.hindi}
-        </button>
-      </div>
-
-      <div className="flex items-center justify-between border-t border-amber-400/10 px-4 py-2 text-[10px] text-amber-200/45">
-        <Link to="/kirtan-ai" onClick={onClose} className="hover:text-amber-200/70">
-          Full sacred studio
+          <span>{isHi ? "Sacred Studio खोलें" : "Open Sacred Studio"}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </Link>
-        <Link to="/meditation" onClick={onClose} className="hover:text-amber-200/70">
-          Start meditation
-        </Link>
+
+        {/* ── CORNER PINK LOTUS FLOWER GRAPHICS ── */}
+        <LotusFlowerDecoration className="absolute -bottom-2 -left-2 w-20 h-14 pointer-events-none opacity-80" />
+        <LotusFlowerDecoration className="absolute -bottom-2 -right-2 w-20 h-14 pointer-events-none opacity-80 scale-x-[-1]" />
       </div>
-    </motion.div>
+    </div>
   );
 });
 

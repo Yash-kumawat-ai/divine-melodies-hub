@@ -37,51 +37,92 @@ function decodeHtmlEntities(value: string): string {
 function extractYouTubeResultsFromHtml(html: string): ProxyYouTubeResult[] {
   const results: ProxyYouTubeResult[] = [];
   const seen = new Set<string>();
-  const idRegex = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
-  const titleRegex = /"title":\{"runs":\[\{"text":"([^"]+)"\}\]\}/g;
-  const channelRegex = /"ownerText":\{"runs":\[\{"text":"([^"]+)"\}/g;
 
-  const ids: string[] = [];
-  let idMatch: RegExpExecArray | null;
-  while ((idMatch = idRegex.exec(html)) !== null && ids.length < 20) {
-    ids.push(idMatch[1]);
+  // Extract initial data JSON string from YouTube HTML
+  let initialDataStr = "";
+  const jsonMatch =
+    html.match(/ytInitialData\s*=\s*(\{.+?\});<\/script>/s) ||
+    html.match(/var ytInitialData\s*=\s*(\{.+?\});/s);
+  if (jsonMatch) {
+    initialDataStr = jsonMatch[1];
   }
 
-  const titles: string[] = [];
-  let titleMatch: RegExpExecArray | null;
-  while ((titleMatch = titleRegex.exec(html)) !== null && titles.length < 60) {
-    titles.push(decodeHtmlEntities(titleMatch[1]));
+  if (initialDataStr) {
+    try {
+      const data = JSON.parse(initialDataStr);
+      const contents =
+        data?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
+
+      if (Array.isArray(contents)) {
+        for (const section of contents) {
+          const itemSection = section?.itemSectionRenderer?.contents;
+          if (!Array.isArray(itemSection)) continue;
+
+          for (const item of itemSection) {
+            const vr = item?.videoRenderer;
+            if (!vr || !vr.videoId) continue;
+
+            const videoId = vr.videoId;
+            if (seen.has(videoId)) continue;
+            seen.add(videoId);
+
+            const titleText = vr.title?.runs?.[0]?.text || vr.title?.simpleText || "";
+            const authorText = vr.ownerText?.runs?.[0]?.text || "YouTube";
+            const lengthText = vr.lengthText?.simpleText || "";
+            const viewText = vr.viewCountText?.simpleText || "";
+            const thumbs = vr.thumbnail?.thumbnails || [];
+            const bestThumb = thumbs[thumbs.length - 1]?.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+            if (titleText && !["Intro", "Keyboard shortcuts", "Filters", "Search filters"].includes(titleText)) {
+              results.push({
+                type: "video",
+                videoId,
+                title: decodeHtmlEntities(titleText),
+                author: decodeHtmlEntities(authorText),
+                lengthSeconds: 0,
+                viewCountText: viewText,
+                publishedText: lengthText,
+                videoThumbnails: [
+                  {
+                    quality: "high",
+                    url: bestThumb,
+                  },
+                ],
+              });
+            }
+
+            if (results.length >= 12) break;
+          }
+          if (results.length >= 12) break;
+        }
+      }
+    } catch {
+      // Fallback regex parsing if JSON parse fails
+    }
   }
 
-  const channels: string[] = [];
-  let channelMatch: RegExpExecArray | null;
-  while ((channelMatch = channelRegex.exec(html)) !== null && channels.length < 60) {
-    channels.push(decodeHtmlEntities(channelMatch[1]));
-  }
+  // Fallback regex parsing if ytInitialData parsing produced no items
+  if (results.length === 0) {
+    const matches = html.matchAll(/"videoRenderer":\s*\{"videoId":"([a-zA-Z0-9_-]{11})".+?"title":\{"runs":\[\{"text":"([^"]+)"\}/g);
+    for (const match of matches) {
+      const id = match[1];
+      const title = decodeHtmlEntities(match[2]);
 
-  for (let i = 0; i < ids.length; i += 1) {
-    const id = ids[i];
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
+      if (!id || seen.has(id) || ["Intro", "Keyboard shortcuts"].includes(title)) continue;
+      seen.add(id);
 
-    results.push({
-      type: "video",
-      videoId: id,
-      title: titles[i] || `YouTube Video ${i + 1}`,
-      author: channels[i] || "YouTube",
-      lengthSeconds: 0,
-      viewCountText: "",
-      publishedText: "",
-      videoThumbnails: [
-        {
-          quality: "high",
-          url: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
-        },
-      ],
-    });
+      results.push({
+        type: "video",
+        videoId: id,
+        title,
+        author: "YouTube",
+        lengthSeconds: 0,
+        viewCountText: "",
+        publishedText: "",
+        videoThumbnails: [{ quality: "high", url: `https://i.ytimg.com/vi/${id}/hqdefault.jpg` }],
+      });
 
-    if (results.length >= 12) {
-      break;
+      if (results.length >= 12) break;
     }
   }
 
@@ -108,35 +149,14 @@ export default defineConfig(({ mode }) => ({
             "@radix-ui/react-dialog",
             "@radix-ui/react-dropdown-menu",
             "@radix-ui/react-hover-card",
-            "@radix-ui/react-label",
-            "@radix-ui/react-menubar",
-            "@radix-ui/react-navigation-menu",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-progress",
-            "@radix-ui/react-radio-group",
-            "@radix-ui/react-scroll-area",
-            "@radix-ui/react-select",
-            "@radix-ui/react-separator",
-            "@radix-ui/react-slider",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-switch",
-            "@radix-ui/react-tabs",
             "@radix-ui/react-toast",
             "@radix-ui/react-toggle",
-            "@radix-ui/react-toggle-group",
             "@radix-ui/react-tooltip",
           ],
           motion: ["framer-motion"],
           charts: ["recharts"],
         },
       },
-    },
-  },
-  server: {
-    host: "::",
-    port: 8080,
-    hmr: {
-      overlay: false,
     },
   },
   plugins: [
@@ -184,8 +204,8 @@ export default defineConfig(({ mode }) => ({
               const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
               const ytResponse = await fetch(ytUrl, {
                 headers: {
-                  "User-Agent": "Mozilla/5.0",
-                  Accept: "text/html",
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "Accept-Language": "en-US,en;q=0.9",
                 },
               });
 
@@ -272,10 +292,6 @@ export default defineConfig(({ mode }) => ({
             }
 
             const nowStr = new Date().toISOString();
-            const getFallbackState = () => {
-              return temple.aartiSchedule.length > 0 ? "UPCOMING" : "OFFLINE";
-            };
-
             const targetUrl = temple.youtubeChannelId
               ? `https://www.youtube.com/channel/${temple.youtubeChannelId}/live`
               : `https://www.youtube.com/${temple.youtubeHandle}/live`;
@@ -317,7 +333,6 @@ export default defineConfig(({ mode }) => ({
                 const titleMatch = html.match(/<meta name="title" content="([^"]+)"/i) || html.match(/<title>([^<]+)<\/title>/i);
                 const liveTitle = titleMatch ? titleMatch[1].replace(/\s*-\s*YouTube/i, "").trim() : "";
 
-                // check content filter if needed
                 if (temple.requiresTitleFilter) {
                   const { isTitleDevotional } = await import("./src/utils/contentFilter");
                   const isDevotional = isTitleDevotional(liveTitle);
@@ -349,38 +364,39 @@ export default defineConfig(({ mode }) => ({
                 res.setHeader("Content-Type", "application/json");
                 res.end(JSON.stringify({
                   id: templeId,
-                  status: getFallbackState(),
+                  status: "OFFLINE",
                   liveTitle: null,
                   videoId: null,
                   lastVerifiedAt: nowStr
                 }));
               }
-            } catch (err) {
-              console.error(`Live status check failed for ${templeId}:`, err);
+            } catch {
+              clearTimeout(timeoutId);
               res.statusCode = 200;
               res.setHeader("Content-Type", "application/json");
               res.end(JSON.stringify({
                 id: templeId,
-                status: getFallbackState(),
+                status: "OFFLINE",
                 liveTitle: null,
                 videoId: null,
                 lastVerifiedAt: nowStr
               }));
             }
-          } catch (err) {
+          } catch {
             res.statusCode = 500;
             res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({ error: "Unexpected check error" }));
+            res.end(JSON.stringify({ error: "Unexpected proxy error." }));
           }
         });
       },
     },
-    mode === "development" && componentTagger(),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
+  },
+  server: {
+    host: true,
   },
 }));
