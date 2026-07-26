@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-25",
+  "date": "2026-07-26",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Ekadasi",
+  "tithi": "Dwadasi",
   "tithi_number": 0,
-  "nakshatra": "Jyesta - 1",
-  "yoga": "Brahma",
-  "karana": "Visti",
+  "nakshatra": "Jyesta - 4",
+  "yoga": "Indra",
+  "karana": "Balava",
   "paksha": "Krishna",
   "sunrise": "06:07 AM",
   "sunset": "06:44 PM",
-  "rahu_kaal": "09:16 AM - 10:51 AM",
+  "rahu_kaal": "05:09 PM - 06:44 PM",
   "brahma_muhurat": "04:31 AM - 05:19 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-07-25T06:29:04+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-07-26T06:35:37+05:30"
 }
