@@ -164,8 +164,8 @@ export default function KathaPage() {
       </section>
 
       {/* ── FILTER TABS & SEARCH SECTION ── */}
-      <section className="sticky top-16 z-30 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-y border-[#E8D8C4] dark:border-zinc-800 py-3.5 px-4 shadow-sm">
-        <div className="container mx-auto max-w-6xl space-y-3">
+      <section className="bg-[#FFFDF8] dark:bg-background py-4 px-4 max-w-6xl mx-auto">
+        <div className="space-y-3">
           <SearchBar
             value={search}
             onChange={(val) => setSearch(val)}

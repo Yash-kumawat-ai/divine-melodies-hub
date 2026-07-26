@@ -194,7 +194,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30">
+    <header className="sticky top-0 z-50 bg-[#FFFDF8] dark:bg-background border-b border-border/30">
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
         <div className="flex items-center gap-1 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {/* Hamburger — mobile left corner */}
@@ -203,10 +203,10 @@ export default function Header() {
           </span>
           <Link 
             to="/" 
-            className="flex items-center flex-shrink-0 min-w-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 z-10"
+            className="flex items-center flex-shrink-0 min-w-0 absolute left-[42%] sm:left-1/2 top-1/2 -translate-x-1/2 -translate-y-[52%] md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 z-10 pb-1.5"
             style={{ height: '44px', display: 'flex', alignItems: 'center' }}
           >
-            <AnimatedBrandLogo height={40} />
+            <AnimatedBrandLogo height={38} className="pb-1" />
           </Link>
         </div>
 
