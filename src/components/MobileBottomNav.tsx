@@ -23,7 +23,7 @@ import {
   User,
   Users,
 } from "lucide-react";
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { languageOptions } from "@/constants/languageOptions";
 import { useAuth } from "@/hooks/useAuth";
@@ -214,10 +214,7 @@ export default function MobileBottomNav() {
               <button
                 key={item.labelKey}
                 type="button"
-                onClick={() => {
-                  setFeaturesOpen(true);
-                  onItemClick?.();
-                }}
+                onClick={() => setFeaturesOpen(true)}
                 className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
                 aria-label={t("features")}
                 aria-expanded={featuresOpen}
@@ -231,7 +228,7 @@ export default function MobileBottomNav() {
             <Link
               key={item.labelKey}
               to={item.path || "/"}
-              onClick={() => onItemClick?.()}
+              onClick={() => setFeaturesOpen(false)}
               className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
               aria-current={active ? "page" : undefined}
             >
@@ -248,6 +245,7 @@ export default function MobileBottomNav() {
         >
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="text-base">{t("features")}</SheetTitle>
+            <SheetDescription className="sr-only">{t("features")}</SheetDescription>
           </SheetHeader>
 
           <div className="mb-4 rounded-2xl border border-primary/15 bg-gradient-to-br from-amber-50 via-background to-orange-50 p-3 shadow-sm dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">

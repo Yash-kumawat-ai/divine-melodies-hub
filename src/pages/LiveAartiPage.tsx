@@ -12,6 +12,7 @@ import MandalaFrame from '../components/LiveAarti/MandalaFrame';
 // Import assets for loading screen
 import mandalaSvg from '@/pages/images/mandala.svg';
 import devotionalBackground from '@/pages/images/devotional_background.webp';
+import devotionalHeaderBg from '@/pages/images/devotional_background_high_quality(1).webp';
 import whatsappIcon from '@/pages/images/whatsapp-svgrepo-com.svg';
 
 function getMandalaCategory(templeId: string): 'jyotirlinga' | 'hanuman' | 'krishna' | 'lotus' {
@@ -189,16 +190,23 @@ export default function LiveAartiPage() {
          {/* Centered Devotional Header */}
         <div className="relative overflow-hidden rounded-[24px] border border-[#EAD7C3]/60 dark:border-white/5 bg-white/30 dark:bg-white/[0.01] backdrop-blur-sm p-5 md:p-8 text-center shadow-sm">
           
+          {/* High-quality Devotional background image */}
+          <img
+            src={devotionalHeaderBg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-75 dark:opacity-50 pointer-events-none select-none z-0"
+          />
+
           {/* Background Mandala watermarks (left and right edges, darkened) */}
           <img 
             src={mandalaSvg} 
             alt="" 
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none -translate-x-12"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none -translate-x-12 z-0"
           />
           <img 
             src={mandalaSvg} 
             alt="" 
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none translate-x-12"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 opacity-[0.09] dark:opacity-[0.16] pointer-events-none select-none translate-x-12 z-0"
           />
 
           {/* Top Controls Row */}

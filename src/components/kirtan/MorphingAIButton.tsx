@@ -71,15 +71,15 @@ export function MorphingAIButton({
 
   return (
     <div className={`relative flex items-center justify-center ${className}`}>
-      {/* Soft ambient backdrop glow (No hard borders or ghost outlines) */}
+      {/* Soft ambient backdrop glow — deep navy/blue palette */}
       <motion.div
-        className="pointer-events-none absolute -z-10 rounded-full blur-xl opacity-50"
+        className="pointer-events-none absolute -z-10 rounded-full blur-xl opacity-55"
         animate={{
           width: isListening ? 64 : 144,
           height: 64,
           background: isListening
-            ? "radial-gradient(circle, rgba(168,85,247,0.6), rgba(219,39,119,0.3) 70%, transparent 100%)"
-            : "radial-gradient(circle, rgba(59,130,246,0.6), rgba(147,51,234,0.3) 70%, transparent 100%)",
+            ? "radial-gradient(circle, rgba(22,54,90,0.85), rgba(144,179,214,0.4) 70%, transparent 100%)"
+            : "radial-gradient(circle, rgba(22,54,90,0.8), rgba(78,120,164,0.35) 70%, transparent 100%)",
         }}
         transition={bouncyTransition}
       />
@@ -98,8 +98,8 @@ export function MorphingAIButton({
         whileTap={{ scale: 0.95 }}
         className={`relative flex items-center justify-between overflow-hidden border backdrop-blur-md cursor-pointer outline-none select-none ${
           isListening
-            ? "border-white/20 bg-gradient-to-r from-blue-600/50 via-purple-600/50 to-pink-600/50 shadow-[0_0_20px_rgba(168,85,247,0.5)]"
-            : "border-white/10 bg-gradient-to-r from-blue-600/40 via-purple-600/40 to-blue-600/40 shadow-[0_8px_24px_rgba(30,58,138,0.5),inset_0_1px_1px_rgba(255,255,255,0.08)]"
+            ? "border-[#90B3D6]/40 bg-gradient-to-r from-[#16365A] via-[#29527A] to-[#4E78A4] shadow-[0_0_24px_rgba(22,54,90,0.7)]"
+            : "border-[#4E78A4]/30 bg-gradient-to-r from-[#16365A] via-[#29527A] to-[#90B3D6] shadow-[0_8px_24px_rgba(22,54,90,0.6),inset_0_1px_1px_rgba(255,255,255,0.12)]"
         }`}
       >
         {/* Shimmer sweep effect (idle state) */}
@@ -122,23 +122,23 @@ export function MorphingAIButton({
             isListening ? "pointer-events-none" : "pointer-events-auto"
           }`}
         >
-          {/* Mic icon with breathing scale & glowing aura */}
+          {/* Mic icon with breathing scale & gold glowing aura */}
           <motion.div
             className="relative flex items-center justify-center"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
             <motion.div
-              className="absolute -z-10 h-5 w-5 rounded-full bg-blue-400/35 blur-md"
+              className="absolute -z-10 h-5 w-5 rounded-full bg-[#90B3D6]/50 blur-md"
               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.2, 0.5] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
-            <Mic className="h-5 w-5 text-white/85 drop-shadow-[0_0_6px_rgba(255,255,255,0.7)]" />
+            <Mic className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(144,179,214,0.9)]" />
           </motion.div>
 
           {/* Text label with opacity pulse */}
           <motion.span
-            className="text-sm font-medium tracking-wide text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+            className="text-sm font-medium tracking-wide text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
             animate={{ opacity: [0.8, 1, 0.8] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -157,18 +157,18 @@ export function MorphingAIButton({
             isListening ? "pointer-events-auto" : "pointer-events-none"
           }`}
         >
-          {/* Expanding concentric ripple ring */}
+          {/* Expanding concentric ripple ring — light blue */}
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-white/30 pointer-events-none"
+            className="absolute inset-0 rounded-full border-2 border-[#90B3D6]/60 pointer-events-none"
             animate={{ scale: [1, 1.6, 2.0], opacity: [1, 0.25, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
           />
 
-          {/* 3 Staggered Equalizer Waveform Bars */}
+          {/* 3 Staggered Equalizer Waveform Bars — soft blue to white */}
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-1 rounded-full bg-gradient-to-t from-blue-300 to-white shadow-[0_0_6px_rgba(255,255,255,0.8)]"
+              className="w-1 rounded-full bg-gradient-to-t from-[#4E78A4] to-white shadow-[0_0_6px_rgba(144,179,214,0.9)]"
               animate={{ height: ["8px", "20px", "8px"] }}
               transition={{
                 duration: 0.6,

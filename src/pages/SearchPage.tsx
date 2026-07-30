@@ -78,6 +78,7 @@ export default function SearchPage() {
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
   const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
   const [selectedBhajanForDetail, setSelectedBhajanForDetail] = useState<Bhajan | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 

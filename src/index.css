@@ -1222,3 +1222,61 @@ span.truncate.font-bold {
   font-size: 17px;
   color: hsl(var(--brand-primary));
 }
+
+
+
+ @media (max-width: 769px) { 
+
+.-top-10 {
+    top: -14rem;
+}
+
+
+.-right-6 {
+    right: -1rem;
+}
+
+.bottom-\[8\%\] {
+    bottom: 11%;}
+ }
+
+
+
+ @media (min-width: 769px) {
+  /* Card centering now handled by md:left-1/2 md:-translate-x-1/2 in component */
+ }
+
+
+ @media (min-width: 768px) {
+    .md\:-top-16 {
+        top: -21rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:-top-16 {
+        
+        top: -20rem!important;
+    }
+
+    .bottom-\[8\%\] {
+    bottom: 1%;
+}
+
+    .md\:left-1\/2 {
+        left: 30%!important;
+    }
+
+        .md\:max-w-\[500px\] {
+        max-width: 570px!important;
+      }
+}
+
+
+img.h-16.sm\:h-20.md\:h-22.w-auto.max-w-\[300px\].sm\:max-w-\[380px\].md\:max-w-\[440px\].object-contain.-mt-1.transition-transform.duration-300.filter.drop-shadow-\[0_2px_10px_rgba\(212\,168\,83\,0\.45\)\] {
+    margin-top: -1.4rem;
+}
+
+.w-full.mt-0\.5 {
+    margin-top: 0.9rem;
+}

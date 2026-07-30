@@ -41,6 +41,12 @@ import templeBellImg from "./images/temple_bell.png";
 import omWebp from "./images/om.webp";
 import mandalaBeige from "./images/mandala-beige.svg";
 import mandalaGold from "./images/mandala-gold.svg";
+import devotionalBg3 from "./images/devotional_background(3).webp";
+import mandirSvg from "./images/svg/mandir.svg";
+import malaSvg from "./images/svg/mala.svg";
+import manjiraSvg from "./images/svg/manjira.svg";
+import prayingSvg from "./images/svg/praying-svgrepo-com.svg";
+import leaderboardSvg from "./images/svg/leaderboard-1.svg";
 
 // Large deity avatars for group creation
 import durgaImg from "@/assets/deities/durga.webp";
@@ -581,7 +587,7 @@ export default function JoinCommunityPage() {
 
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
       {!groupViewOpen && (
-        <header className="sticky top-0 z-30 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-orange-500/10 px-4 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-orange-500/10 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
@@ -591,20 +597,14 @@ export default function JoinCommunityPage() {
                   navigate("/community");
                 }
               }}
-              className="w-10 h-10 rounded-full border border-[#D6A86B]/30 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-[#C88A3D] active:scale-95 transition-all shrink-0"
+              className="w-9 h-9 rounded-full border border-[#D6A86B]/30 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-[#C88A3D] active:scale-95 transition-all shrink-0"
+              title={isHi ? "समुदाय पर वापस जाएं" : "Back to Community"}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="flex flex-col text-left">
-              <span className="font-display text-base md:text-lg font-extrabold tracking-tight text-orange-950 dark:text-amber-50">
-                {groupViewOpen ? selectedGroup?.name : (isHi ? "डिजिटल सत्संग" : "Digital Satsang")}
-              </span>
-              {!groupViewOpen && (
-                <span className="text-[9px] text-[#C88A3D] font-extrabold tracking-wider uppercase mt-0.5 flex items-center gap-1">
-                  ❖ {isHi ? "भक्ति संगीत और नाम जाप का संगम" : "Confluence of Devotional Music & Chants"} ❖
-                </span>
-              )}
-            </div>
+            <span className="font-display text-sm md:text-base font-bold text-orange-950/80 dark:text-amber-100/80">
+              {isHi ? "समुदाय" : "Community"}
+            </span>
           </div>
 
           {groupViewOpen && communityApi.isFallbackActive() && (
@@ -643,17 +643,17 @@ export default function JoinCommunityPage() {
         <div className="max-w-7xl mx-auto px-4 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            {/* ─── 1. LEFT SIDEBAR: MY GROUPS (Desktop Only) ────────────── */}
+            {/* ─── 1. LEFT SIDEBAR: MY GROUPS & DEVOTIONAL QUICK STATS ────────────── */}
             <div className="hidden lg:block lg:col-span-3 space-y-4 sticky top-24">
               <div className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-orange-500/10">
-                  <Users className="w-4.5 h-4.5 text-orange-500" />
+                  <img src={mandirSvg} alt="Mandir" className="w-4.5 h-4.5 filter drop-shadow opacity-90" />
                   <h3 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider">
                     {isHi ? "मेरे समूह" : "My Communities"}
                   </h3>
                 </div>
 
-                <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
                   {groups.filter(g => g.is_member).length === 0 ? (
                     <p className="text-xs text-stone-400 text-center py-4 font-medium">
                       {isHi ? "आप अभी किसी समूह में नहीं हैं।" : "You haven't joined any groups yet."}
@@ -700,11 +700,112 @@ export default function JoinCommunityPage() {
                   <span>{isHi ? "समूह बनाएं" : "Create Community"}</span>
                 </button>
               </div>
+
+              {/* Devotional Quick Glance & Satsang Stats Widget */}
+              <div className="bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-stone-900/10 border border-amber-500/20 rounded-2xl p-4 space-y-3 shadow-xs">
+                <div className="flex items-center gap-2 pb-2 border-b border-amber-500/15">
+                  <img src={malaSvg} alt="Mala" className="w-4 h-4 opacity-90" />
+                  <h4 className="font-display font-extrabold text-[11px] text-orange-950 dark:text-amber-100 uppercase tracking-wider">
+                    {isHi ? "सत्संग झलक" : "Satsang Glance"}
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-left">
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-stone-900/70 border border-amber-500/15 flex items-center gap-2">
+                    <img src={prayingSvg} alt="Devotees" className="w-5 h-5 opacity-90 shrink-0" />
+                    <div>
+                      <p className="text-[9.5px] text-stone-500 font-bold">{isHi ? "सक्रिय भक्त" : "Devotees"}</p>
+                      <p className="text-xs font-black text-amber-600 dark:text-amber-400">1,008+</p>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white/70 dark:bg-stone-900/70 border border-amber-500/15 flex items-center gap-2">
+                    <img src={manjiraSvg} alt="Kirtans" className="w-5 h-5 opacity-90 shrink-0" />
+                    <div>
+                      <p className="text-[9.5px] text-stone-500 font-bold">{isHi ? "दैनिक कीर्तन" : "Live Kirtan"}</p>
+                      <p className="text-xs font-black text-amber-600 dark:text-amber-400">24/7</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate("/naam-sangh")}
+                  className="w-full flex items-center justify-between py-2 px-3.5 rounded-xl bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-[11px] font-extrabold transition-all shadow-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <img src={leaderboardSvg} alt="Leaderboard" className="w-4 h-4 filter brightness-0 invert" />
+                    <span>{isHi ? "नाम संघ लीडरबोर्ड" : "Naam Sangh Ranks"}</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* ─── 2. MIDDLE COLUMN (MAIN CONTENT) ────────────────────── */}
             <div className={`col-span-12 ${activeTab === 'feed' ? 'lg:col-span-6' : 'lg:col-span-9'} space-y-6`}>
               
+              {/* Top Hero Banner with high-opacity devotional_background(3).webp & sacred SVGs */}
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-amber-500/40 p-8 md:p-12 flex flex-col items-center justify-center text-center select-none min-h-[225px] group transition-all">
+                {/* Background image: devotional_background(3).webp with high opacity */}
+                <img 
+                  src={devotionalBg3} 
+                  alt="Digital Satsang Banner" 
+                  className="absolute inset-0 w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-700 opacity-95"
+                />
+                
+                {/* Rotating Gold Mandala Watermark SVG */}
+                <div className="absolute -right-12 -bottom-12 w-64 h-64 pointer-events-none opacity-20 animate-[spin_120s_linear_infinite]">
+                  <img src={mandalaGold} alt="" className="w-full h-full object-contain" />
+                </div>
+                
+                {/* Subtle gradient overlay for full image clarity & text legibility */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/70 backdrop-blur-[0.5px]" />
+                
+                {/* Ambient Radial Glow */}
+                <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+
+                <div className="relative z-10 space-y-3.5 max-w-2xl mx-auto flex flex-col items-center text-center">
+                  <span className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.25em] text-amber-200 bg-black/45 backdrop-blur-md border border-amber-400/40 px-4 py-1 rounded-full shadow-lg flex items-center gap-2">
+                    <img src={malaSvg} alt="Mala" className="w-3.5 h-3.5 opacity-95 filter drop-shadow" />
+                    <span>{isHi ? "डिजिटल सत्संग मंच" : "Digital Satsang Platform"}</span>
+                  </span>
+                  
+                  <h1 className="font-display font-black text-3xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-b from-amber-50 via-amber-100 to-amber-300 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] tracking-tight">
+                    {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
+                  </h1>
+
+                  <div className="flex items-center justify-center gap-3 py-0.5 w-full">
+                    <span className="w-16 md:w-24 h-px bg-gradient-to-r from-transparent via-amber-300/80 to-amber-300" />
+                    <span className="text-amber-300 text-base md:text-lg font-extrabold filter drop-shadow-[0_2px_8px_rgba(245,158,11,0.8)]">✦ ॐ ✦</span>
+                    <span className="w-16 md:w-24 h-px bg-gradient-to-l from-transparent via-amber-300/80 to-amber-300" />
+                  </div>
+
+                  <p className="text-xs md:text-base text-amber-100/95 font-bold tracking-wide leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] max-w-lg">
+                    {isHi 
+                      ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
+                      : "Share Bhajans • Connect with Devotees • Advance Devotion"}
+                  </p>
+
+                  {/* Feature Badges with Sacred SVGs */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-2">
+                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
+                      <img src={mandirSvg} alt="Mandir" className="w-4 h-4 opacity-95 filter drop-shadow" />
+                      <span>{isHi ? "भक्ति समूह" : "Devotional Groups"}</span>
+                    </div>
+
+                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
+                      <img src={malaSvg} alt="Naam Jap" className="w-4 h-4 opacity-95 filter drop-shadow" />
+                      <span>{isHi ? "सामूहिक नाम जाप" : "Group Naam Jap"}</span>
+                    </div>
+
+                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
+                      <img src={manjiraSvg} alt="Kirtans" className="w-4 h-4 opacity-95 filter drop-shadow" />
+                      <span>{isHi ? "भजन व संकीर्तन" : "Bhajans & Kirtans"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* ─── PILL TAB SWITCHER ─────────────────────────────────── */}
               <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 pt-1">
                 {[
@@ -734,40 +835,6 @@ export default function JoinCommunityPage() {
               {/* ─── TAB 1: FEED VIEW ──────────────────────────────────── */}
               {activeTab === 'feed' && (
                 <div className="space-y-6">
-                  
-                  {/* Digital Satsang Premium Banner */}
-                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#FAF6EE] via-[#fefbf7] to-[#FAF6EE] border border-orange-500/25 p-6 md:p-8 flex items-center justify-between shadow-xs min-h-[140px] select-none text-left">
-                    {/* warm ambient glows */}
-                    <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-orange-600/4 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-amber-500/4 rounded-full blur-2xl pointer-events-none" />
-                    
-                    <div className="relative z-10 space-y-2 max-w-md md:max-w-lg">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-orange-700">🪷 {isHi ? "सत्संग में आपका स्वागत है" : "Welcome to Satsang"}</p>
-                      <h2 className="font-display font-extrabold text-2xl md:text-3xl text-orange-950 tracking-tight">
-                        {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
-                      </h2>
-                      <p className="text-xs md:text-sm text-stone-600 dark:text-stone-300 font-semibold tracking-wide leading-relaxed">
-                        {isHi 
-                          ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
-                          : "Share Bhajans • Connect with Devotees • Advance Devotion"}
-                      </p>
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="w-16 h-px bg-gradient-to-r from-transparent to-orange-500/20" />
-                        <span className="text-orange-500/40 text-[10px]">✦</span>
-                        <span className="w-16 h-px bg-gradient-to-l from-transparent to-orange-500/20" />
-                      </div>
-                    </div>
-
-                    <div className="relative flex items-center justify-center shrink-0 pr-2">
-                      <div className="absolute w-28 h-28 bg-amber-500/15 rounded-full blur-2xl animate-pulse" />
-                      <div className="relative z-10 flex flex-col items-center gap-1">
-                        <span className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-orange-500 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)] select-none">
-                          ॐ
-                        </span>
-                        <span className="text-xl md:text-2xl mt-0.5 filter drop-shadow-[0_2px_8px_rgba(244,63,94,0.4)] select-none">🪷</span>
-                      </div>
-                    </div>
-                  </div>
 
                   {/* Desktop Post Composer (Hidden on mobile) */}
                   <div className="hidden lg:block bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-5 shadow-xs space-y-4">
