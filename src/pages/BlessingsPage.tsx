@@ -24,7 +24,8 @@ import {
   RotateCcw,
   Move,
   Maximize2,
-  RotateCw
+  RotateCw,
+  Trash2
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -1032,6 +1033,7 @@ export default function BlessingsPage() {
   const [posterOffsetX, setPosterOffsetX] = useState<number>(0);
   const [posterOffsetY, setPosterOffsetY] = useState<number>(0);
   const [posterShape, setPosterShape] = useState<"circle" | "square" | "rounded-square" | "oval">("circle");
+  const [hidePhotoFrame, setHidePhotoFrame] = useState(false);
   const [posterRotation, setPosterRotation] = useState<number>(0);
   const [isEditingPhoto, setIsEditingPhoto] = useState<boolean>(false);
   const [showEditorModal, setShowEditorModal] = useState<boolean>(false);
@@ -2803,36 +2805,63 @@ export default function BlessingsPage() {
 
       {/* ─── TAB NAVIGATION SWITCHER ───────────────────────────────── */}
       <div className="w-full max-w-md mx-auto px-4 mt-4 select-none">
-        <nav className={cn("p-1.5 rounded-full border flex items-center shadow-md", isDark ? "bg-[#120704]/70 border-amber-950/40" : "bg-[#FFFFFF] border-[#EFE5DA]")}>
+        <nav className={cn("p-1.5 rounded-full border flex items-center shadow-md transition-colors", isDark ? "bg-[#120704]/80 border-amber-950/40" : "bg-[#FFFDF8] border-[#EAD7C3]")}>
           <button
-            onClick={() => setActiveTab("maker")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
+            onClick={() => {
+              setActiveTab("maker");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={cn(
+              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
+              isHi ? '' : 'tracking-wider',
               activeTab === "maker"
-                ? (isDark ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md" : "bg-[#D88A15] text-white shadow-md")
-                : (isDark ? "text-amber-200/85 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
-            }`}
+                ? isDark
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
+                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                : isDark
+                  ? "text-amber-200/80 hover:text-amber-200"
+                  : "text-[#543D2B] hover:text-[#651317]"
+            )}
           >
             <span>✨</span>
             <span>{isHi ? "पोस्टर" : "Posters"}</span>
           </button>
           <button
-            onClick={() => setActiveTab("wallpapers")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
+            onClick={() => {
+              setActiveTab("wallpapers");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={cn(
+              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
+              isHi ? '' : 'tracking-wider',
               activeTab === "wallpapers"
-                ? (isDark ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md" : "bg-[#D88A15] text-white shadow-md")
-                : (isDark ? "text-amber-200/85 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
-            }`}
+                ? isDark
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
+                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                : isDark
+                  ? "text-amber-200/80 hover:text-amber-200"
+                  : "text-[#543D2B] hover:text-[#651317]"
+            )}
           >
             <span>📱</span>
             <span>{isHi ? "वॉलपेपर" : "Wallpapers"}</span>
           </button>
           <button
-            onClick={() => setActiveTab("saved")}
-            className={`flex-1 py-2 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
+            onClick={() => {
+              setActiveTab("saved");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={cn(
+              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
+              isHi ? '' : 'tracking-wider',
               activeTab === "saved"
-                ? (isDark ? "bg-gradient-to-r from-amber-500 to-amber-600 text-black shadow-md" : "bg-[#D88A15] text-white shadow-md")
-                : (isDark ? "text-amber-200/85 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
-            }`}
+                ? isDark
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
+                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                : isDark
+                  ? "text-amber-200/80 hover:text-amber-200"
+                  : "text-[#543D2B] hover:text-[#651317]"
+            )}
           >
             <span>📖</span>
             <span>{isHi ? "डायरी" : "Diary"}</span>
@@ -2866,12 +2895,17 @@ export default function BlessingsPage() {
                   {/* Avatar circle */}
                   <div 
                     onClick={() => setShowSetupSheet(true)}
-                    className={cn("w-14 h-14 rounded-full bg-stone-950/80 flex items-center justify-center overflow-hidden shrink-0 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer relative group border-2", isDark ? "border-amber-500/40 hover:border-amber-400 shadow-amber-500/10" : "border-[#B27A1C]/40 hover:border-[#B27A1C]/70 shadow-[#B27A1C]/10")}
+                    className={cn(
+                      "w-14 h-14 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer relative group border-2",
+                      isDark 
+                        ? "bg-stone-950/80 border-amber-500/40 hover:border-amber-400 shadow-amber-500/10" 
+                        : "bg-[#FFFDF8] border-[#D4A437] hover:border-[#651317] shadow-stone-400/20"
+                    )}
                   >
                     {userPhoto ? (
                       <img src={userPhoto} alt="devotee" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                     ) : (
-                      <span className="text-2xl font-serif text-amber-500">ॐ</span>
+                      <span className={cn("text-2xl font-serif font-black flex items-center justify-center leading-none", isDark ? "text-amber-400" : "text-[#651317]")}>ॐ</span>
                     )}
                     <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
                       <Camera className="w-3.5 h-3.5 text-amber-300" />
@@ -2879,29 +2913,35 @@ export default function BlessingsPage() {
                   </div>
                   
                   <div className="flex flex-col min-w-0 z-10">
-                    <span className={cn(`text-[9px] uppercase font-sans font-black leading-none mb-1.5 ${isHi ? '' : 'tracking-widest'}`, isDark ? "text-amber-500" : "text-[#D88A15]")}>
+                    <span className={cn(`text-[9px] uppercase font-sans font-black leading-none mb-1.5 ${isHi ? '' : 'tracking-widest'}`, isDark ? "text-amber-500" : "text-[#651317]")}>
                       {isHi ? "आज का आशीर्वाद" : "Today's Blessing"}
                     </span>
                     <h2 
                       onClick={() => setShowSetupSheet(true)}
-                      className={cn("font-serif text-base font-bold leading-tight flex items-center gap-1.5 cursor-pointer transition-colors", isDark ? "text-amber-100 hover:text-amber-200" : "text-[#2B1F18] hover:text-[#2B1F18]/80")}
+                      className={cn("font-serif text-base font-bold leading-tight flex items-center gap-1.5 cursor-pointer transition-colors", isDark ? "text-amber-100 hover:text-amber-200" : "text-[#3A2418] hover:text-[#651317]")}
                     >
                       <span>{isHi ? "शुभ प्रभात," : "Jai Shri Ram 🙏"}</span> 
-                      <span className={cn("text-transparent bg-clip-text bg-gradient-to-r drop-shadow-sm font-black", isDark ? "from-amber-400 via-orange-300 to-amber-200" : "from-[#D88A15] via-[#D88A15] to-[#DAA437]")}>
+                      <span className={cn("text-transparent bg-clip-text bg-gradient-to-r drop-shadow-sm font-black", isDark ? "from-amber-400 via-orange-300 to-amber-200" : "from-[#651317] via-[#8B1E24] to-[#651317]")}>
                         {userName || (isHi ? "हरि भक्त" : "Devotee")}
                       </span>
                     </h2>
-                    <p className={cn("text-[10px] font-sans leading-tight mt-1 font-medium", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
+                    <p className={cn("text-[10px] font-sans leading-tight mt-1 font-medium", isDark ? "text-amber-200/80" : "text-[#786252]")}>
                       {isHi ? "ॐ नमः शिवाय। दिन मंगलमय हो ✨" : "May your day be filled with peace ✨"}
                     </p>
                   </div>
 
-                  {/* Edit/Setup profile button */}
+                  {/* Edit/Setup profile button — fixed button style */}
                   <button
                     onClick={() => setShowSetupSheet(true)}
-                    className={cn("ml-auto shrink-0 px-3 py-1.5 border rounded-lg font-sans text-[9px] font-black uppercase transition-all z-10 flex items-center gap-1 active:scale-95 cursor-pointer", isHi ? "" : "tracking-wider", isDark ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-400" : "bg-[#FFFFFF] hover:bg-[#FAF8F4] border-[#EFE5DA] text-[#D88A15]")}
+                    className={cn(
+                      "ml-auto shrink-0 px-3.5 py-2 rounded-xl font-sans text-[10px] font-black uppercase transition-all z-10 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-md",
+                      isHi ? "" : "tracking-wider",
+                      isDark 
+                        ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20" 
+                        : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                    )}
                   >
-                    <UserIcon className="w-3 h-3" />
+                    <UserIcon className="w-3.5 h-3.5" />
                     <span>{userName ? (isHi ? "बदलें" : "Edit") : (isHi ? "जोड़ें" : "Setup")}</span>
                   </button>
                 </div>
@@ -2910,55 +2950,61 @@ export default function BlessingsPage() {
                 {(() => {
                   const heroPoster = filteredPosterTemplates.find(p => p.id === "poster-shyam-1") || filteredPosterTemplates[0];
                   return (
-                    <div className={cn("w-full rounded-[2rem] overflow-hidden relative cursor-pointer group flex flex-col md:flex-row md:h-[380px]", isDark ? "shadow-[0_20px_60px_rgba(0,0,0,0.7)]" : "shadow-[0_20px_60px_rgba(239,229,218,0.15)]")} style={{border: isDark ? "1px solid rgba(245,158,11,0.18)" : "1px solid #EFE5DA", backgroundColor: isDark ? "transparent" : "#FFFFFF"}} onClick={() => setSelectedPoster(heroPoster)}>
+                    <div className={cn("w-full rounded-[2rem] overflow-hidden relative cursor-pointer group flex flex-col md:flex-row md:h-[380px] border shadow-xl", isDark ? "border-amber-500/20 shadow-black/80" : "border-[#EAD7C3] shadow-stone-900/10 bg-white")} onClick={() => setSelectedPoster(heroPoster)}>
                       {/* Left: Image Container */}
                       <div className="w-full aspect-[3/4] md:aspect-auto md:w-1/2 md:h-full relative overflow-hidden shrink-0">
                         <img src={heroPoster.imageUrl} alt={heroPoster.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700" />
                         
                         {/* Top label */}
-                        <div className="absolute top-4 left-4 flex items-center gap-2">
-                          <span className={`px-2.5 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase font-sans ${isHi ? '' : 'tracking-widest'}`} style={{background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24'}}>
+                        <div className="absolute top-4 left-4 flex items-center gap-2 z-20">
+                          <span className={cn("px-3 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase font-sans border backdrop-blur-md shadow-md", isHi ? '' : 'tracking-widest', isDark ? "bg-amber-500/20 border-amber-500/40 text-amber-300" : "bg-black/40 border-white/20 text-white")}>
                             ✨ {isHi ? "आज का विशेष" : "Today's Featured"}
                           </span>
                         </div>
                       </div>
 
-                      {/* Right/Overlay: Details and action */}
-                      <div className="absolute inset-x-0 bottom-0 p-5 md:relative md:inset-auto md:w-1/2 md:h-full md:p-8 flex flex-col justify-end md:justify-between hero-card-overlay">
-                        {/* Group devotee row & quote for better flex spacing on desktop */}
+                      {/* Right/Overlay: Details and action — text in WHITE over poster background */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 md:relative md:inset-auto md:w-1/2 md:h-full md:p-8 flex flex-col justify-end md:justify-between hero-card-overlay bg-gradient-to-t from-black/90 via-black/60 to-transparent md:bg-none">
+                        {/* Group devotee row & quote */}
                         <div className="flex flex-col text-left gap-1 md:gap-4">
                           {/* Devotee row */}
                           <div className="flex items-center gap-2.5 mb-2 md:mb-0">
-                            <div className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shrink-0" style={{border: '1.5px solid rgba(251,191,36,0.55)', boxShadow: '0 0 8px rgba(251,191,36,0.25)'}}>
+                            <div className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shrink-0 border-2 border-amber-400/80 shadow-md">
                               {userPhoto ? (
                                 <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-sm md:text-base font-serif text-amber-500">ॐ</span></div>
+                                <div className={cn("w-full h-full flex items-center justify-center font-serif text-sm md:text-base font-bold", isDark ? "bg-stone-900 text-amber-400" : "bg-[#FFFDF8] text-[#651317]")}>ॐ</div>
                               )}
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className={cn("text-[9px] md:text-[10px] font-sans font-black uppercase leading-none", isHi ? "" : "tracking-widest", isDark ? "text-amber-500/90" : "text-[#D88A15]")}>{isHi ? "पावन पोस्टर" : "Sacred Poster"}</span>
-                              <span className={cn("text-xs md:text-sm font-serif font-black truncate leading-tight drop-shadow mt-0.5", isDark ? "text-amber-300" : "text-[#2B1F18]")}>
+                              <span className={cn("text-[9px] md:text-[10px] font-sans font-black uppercase leading-none tracking-wider text-amber-300 drop-shadow", isHi ? "" : "tracking-widest")}>{isHi ? "पावन पोस्टर" : "Sacred Poster"}</span>
+                              <span className="text-xs md:text-sm font-serif font-black truncate leading-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] mt-0.5">
                                 {userName || (isHi ? "हरि भक्त" : "Devotee")}
                               </span>
                             </div>
                           </div>
                           
-                          <p className={cn("text-[10px] md:text-xs font-serif italic line-clamp-2 md:line-clamp-none leading-relaxed mb-4 md:mb-0 font-medium", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
+                          {/* Quote text in WHITE */}
+                          <p className="text-[10px] md:text-xs font-serif italic line-clamp-2 md:line-clamp-none leading-relaxed mb-4 md:mb-0 font-medium text-stone-100 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                             {isHi ? heroPoster.quoteHindi : heroPoster.quote}
                           </p>
                         </div>
 
-                        {/* Action row */}
+                        {/* Action row — title in WHITE */}
                         <div className="flex items-center justify-between gap-3 text-left">
                           <div className="flex flex-col min-w-0">
-                            <span className={cn("font-serif text-sm md:text-base font-bold leading-tight truncate", isDark ? "text-amber-200" : "text-[#2B1F18]")}>{isHi ? heroPoster.titleHindi : heroPoster.title}</span>
-                            <span className={cn("text-[9px] md:text-[10px] font-sans font-bold leading-none mt-1", isDark ? "text-amber-500/80" : "text-[#D88A15]")}>{isHi ? "बाबा श्याम आशीर्वाद" : "Khatu Shyam Blessings"}</span>
+                            <span className="font-serif text-sm md:text-base font-black leading-tight truncate text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">{isHi ? heroPoster.titleHindi : heroPoster.title}</span>
+                            <span className="text-[9px] md:text-[10px] font-sans font-bold leading-none mt-1 text-amber-300 drop-shadow">{isHi ? "बाबा श्याम आशीर्वाद" : "Khatu Shyam Blessings"}</span>
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); setSelectedPoster(heroPoster); }}
-                            className={`shrink-0 px-4 py-2.5 md:px-5 md:py-3 font-sans font-black text-[9px] md:text-[10px] uppercase rounded-xl transition-all active:scale-[0.97] flex items-center gap-1.5 cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
-                            style={isDark ? {background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#1a0a02', boxShadow: '0 4px 16px rgba(245,158,11,0.35)'} : {background: 'linear-gradient(135deg, #D88A15, #D88A15)', color: '#FFFFFF', border: '1px solid rgba(230,196,106,0.25)', boxShadow: '0 8px 24px rgba(216,138,21,0.22)'}}
+                            className={cn(
+                              "shrink-0 px-4 py-2.5 md:px-5 md:py-3 font-sans font-black text-[9.5px] md:text-[11px] uppercase rounded-xl transition-all active:scale-[0.97] flex items-center gap-1.5 cursor-pointer shadow-lg",
+                              isHi ? '' : 'tracking-widest',
+                              isDark 
+                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20" 
+                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/30"
+                            )}
                           >
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>{isHi ? "अपना बनाएं" : "Create Mine"}</span>
@@ -2969,8 +3015,8 @@ export default function BlessingsPage() {
                   );
                 })()}
 
-                {/* Categories Bar Row */}
-                <div className="w-full flex items-center justify-start md:justify-center gap-2.5 md:gap-4 overflow-x-auto py-1.5 scrollbar-none">
+                {/* Categories Bar Row — Fixed Button Styling */}
+                <div className="w-full flex items-center justify-start md:justify-center gap-2.5 md:gap-3.5 overflow-x-auto py-1.5 scrollbar-none">
                   {[
                     { key: "all", label: isHi ? "सभी" : "For You", emoji: "❤️" },
                     { key: "todays", label: isHi ? "आज के" : "Today's", emoji: "🌅" },
@@ -2989,29 +3035,16 @@ export default function BlessingsPage() {
                             setSelectedCategory(cat.key as any);
                           }
                         }}
-                        className={`py-2 px-4 rounded-full font-sans text-[10px] md:text-[11px] font-black uppercase transition-all duration-300 flex items-center gap-1.5 shrink-0 focus:outline-none cursor-pointer ${isHi ? '' : 'tracking-wider'}`}
-                        style={isActive ? (
-                          isDark ? {
-                            background: 'linear-gradient(135deg, rgba(251,191,36,0.2) 0%, rgba(217,119,6,0.12) 100%)',
-                            border: '1px solid rgba(251,191,36,0.4)',
-                            color: '#fbbf24',
-                            boxShadow: '0 2px 12px rgba(251,191,36,0.15)'
-                          } : {
-                            background: '#D88A15',
-                            border: '1px solid #D88A15',
-                            color: '#FFFFFF',
-                            boxShadow: '0 4px 12px rgba(216,138,21,0.2)'
-                          }
-                        ) : (
-                          isDark ? {
-                            background: 'rgba(0,0,0,0.3)',
-                            border: '1px solid rgba(120,60,10,0.15)',
-                            color: 'rgba(217,180,140,0.85)'
-                          } : {
-                            background: '#FFFFFF',
-                            border: '1px solid #EFE5DA',
-                            color: '#8A7A6B'
-                          }
+                        className={cn(
+                          "py-2 px-4 rounded-xl font-sans text-[10px] md:text-[11px] font-black uppercase transition-all duration-200 flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 shadow-sm border",
+                          isHi ? '' : 'tracking-wider',
+                          isActive
+                            ? isDark
+                              ? "bg-gradient-to-r from-amber-500 to-amber-600 border-amber-400 text-stone-950 shadow-amber-500/20"
+                              : "bg-gradient-to-r from-[#651317] to-[#8B1E24] border-[#651317] text-white shadow-red-900/20"
+                            : isDark
+                              ? "bg-stone-900/60 border-amber-500/15 text-stone-300 hover:bg-stone-800"
+                              : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-[#FCF6E8]"
                         )}
                       >
                         <span className="text-xs">{cat.emoji}</span>
@@ -3052,11 +3085,11 @@ export default function BlessingsPage() {
                               {/* Personalized bottom row */}
                               <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0 border border-amber-400/80">
                                     {userPhoto ? (
                                       <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
                                     ) : (
-                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500 font-bold">ॐ</span></div>
+                                      <div className={cn("w-full h-full flex items-center justify-center font-serif text-[7px] md:text-[8px] font-bold", isDark ? "bg-stone-900 text-amber-500" : "bg-[#FFFDF8] text-[#651317]")}>ॐ</div>
                                     )}
                                   </div>
                                   <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
@@ -3080,7 +3113,7 @@ export default function BlessingsPage() {
                               <span className={cn("font-serif text-[11px] md:text-xs font-bold truncate block", isDark ? "text-amber-200" : "text-[#543D2B]")}>
                                 {isHi ? tpl.titleHindi : tpl.title}
                               </span>
-                              <span className={cn("text-[8px] md:text-[9px] font-sans font-bold uppercase block mt-0.5", isHi ? "" : "tracking-wider", isDark ? "text-amber-500" : "text-[#B27A1C]")}>
+                              <span className={cn("text-[8px] md:text-[9px] font-sans font-bold uppercase block mt-0.5", isHi ? "" : "tracking-wider", isDark ? "text-amber-500" : "text-[#651317]")}>
                                 {isHi ? tpl.subtitleHindi : tpl.subtitle}
                               </span>
                             </div>
@@ -3095,7 +3128,7 @@ export default function BlessingsPage() {
                     <div className="space-y-3.5 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-xs">🎉</span>
-                        <h3 className={`font-serif text-xs font-black uppercase text-amber-400 ${isHi ? '' : 'tracking-widest'}`}>
+                        <h3 className={cn("font-serif text-xs font-black uppercase", isHi ? '' : 'tracking-widest', isDark ? "text-amber-400" : "text-[#651317]")}>
                           {isHi ? "उत्सव एवं विशेष पर्व पोस्टर" : "Festival Special Posters"}
                         </h3>
                       </div>
@@ -3116,11 +3149,11 @@ export default function BlessingsPage() {
                               <div className="absolute inset-0" style={{background: 'linear-gradient(to top, rgba(5,2,1,0.92) 0%, rgba(5,2,1,0.4) 40%, transparent 70%)'}} />
                               <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0 border border-amber-400/80">
                                     {userPhoto ? (
                                       <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
                                     ) : (
-                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500 font-bold">ॐ</span></div>
+                                      <div className={cn("w-full h-full flex items-center justify-center font-serif text-[7px] md:text-[8px] font-bold", isDark ? "bg-stone-900 text-amber-500" : "bg-[#FFFDF8] text-[#651317]")}>ॐ</div>
                                     )}
                                   </div>
                                   <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
@@ -3141,8 +3174,8 @@ export default function BlessingsPage() {
                               </div>
                             </div>
                             <div className="px-2.5 py-2.5">
-                              <span className="font-serif text-[11px] md:text-xs font-bold text-amber-200 truncate block">{isHi ? tpl.titleHindi : tpl.title}</span>
-                              <span className={`text-[8px] md:text-[9px] font-sans text-amber-500 font-bold uppercase block mt-0.5 ${isHi ? '' : 'tracking-wider'}`}>{isHi ? tpl.subtitleHindi : tpl.subtitle}</span>
+                              <span className={cn("font-serif text-[11px] md:text-xs font-bold truncate block", isDark ? "text-amber-200" : "text-[#543D2B]")}>{isHi ? tpl.titleHindi : tpl.title}</span>
+                              <span className={cn("text-[8px] md:text-[9px] font-sans font-bold uppercase block mt-0.5", isHi ? '' : 'tracking-wider', isDark ? "text-amber-500" : "text-[#651317]")}>{isHi ? tpl.subtitleHindi : tpl.subtitle}</span>
                             </div>
                           </div>
                         ))}
@@ -3155,7 +3188,7 @@ export default function BlessingsPage() {
                     <div className="space-y-3.5 text-left">
                       <div className="flex items-center gap-2">
                         <span className="text-amber-500 text-xs">☀️</span>
-                        <h3 className={`font-serif text-xs font-black uppercase text-amber-400 ${isHi ? '' : 'tracking-widest'}`}>
+                        <h3 className={cn("font-serif text-xs font-black uppercase", isHi ? '' : 'tracking-widest', isDark ? "text-amber-400" : "text-[#651317]")}>
                           {isHi ? "सुप्रभात दर्शन पोस्टर" : "Morning Special Posters"}
                         </h3>
                       </div>
@@ -3176,11 +3209,11 @@ export default function BlessingsPage() {
                               <div className="absolute inset-0" style={{background: 'linear-gradient(to top, rgba(5,2,1,0.92) 0%, rgba(5,2,1,0.4) 40%, transparent 70%)'}} />
                               <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3 flex flex-col gap-1.5 md:gap-2">
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0" style={{border: '1px solid rgba(251,191,36,0.5)'}}>
+                                  <div className="w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden shrink-0 border border-amber-400/80">
                                     {userPhoto ? (
                                       <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" />
                                     ) : (
-                                      <div className="w-full h-full bg-stone-900 flex items-center justify-center"><span className="text-[7px] md:text-[8px] text-amber-500 font-bold">ॐ</span></div>
+                                      <div className={cn("w-full h-full flex items-center justify-center font-serif text-[7px] md:text-[8px] font-bold", isDark ? "bg-stone-900 text-amber-500" : "bg-[#FFFDF8] text-[#651317]")}>ॐ</div>
                                     )}
                                   </div>
                                   <span className="text-[9px] md:text-[10px] font-serif font-black text-amber-400 truncate drop-shadow-lg">
@@ -3759,25 +3792,31 @@ export default function BlessingsPage() {
             </div>
 
             {/* Sub-tab selection within Saved tab */}
-            <div className={cn("flex rounded-full p-0.5 max-w-xs w-full select-none font-sans text-xs mb-2 border", isDark ? "bg-stone-950/65 border-amber-950/20" : "bg-white/80 border-[#EAD7C3]")}>
+            <div className={cn("flex rounded-full p-1 max-w-xs w-full select-none font-sans text-xs mb-2 border shadow-sm", isDark ? "bg-[#120704]/80 border-amber-950/40" : "bg-[#FFFDF8] border-[#EAD7C3]")}>
               <button
                 onClick={() => setSavedSubTab("posters")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none ${
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none font-black uppercase text-[10px]",
                   savedSubTab === "posters"
-                    ? "bg-[#fbbf24] text-stone-950 font-bold shadow-md"
-                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
-                }`}
+                    ? isDark
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md"
+                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-md"
+                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#543D2B] hover:text-[#651317]"
+                )}
               >
                 <span>{isHi ? "सहेजे गए" : "Saved"}</span>
                 <span className="text-[10px] opacity-75">({savedBlessings.length})</span>
               </button>
               <button
                 onClick={() => setSavedSubTab("liked")}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none ${
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none font-black uppercase text-[10px]",
                   savedSubTab === "liked"
-                    ? "bg-[#fbbf24] text-stone-950 font-bold shadow-md"
-                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
-                }`}
+                    ? isDark
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md"
+                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-md"
+                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#543D2B] hover:text-[#651317]"
+                )}
               >
                 <span>{isHi ? "पसंदीदा" : "Liked"}</span>
                 <span className="text-[10px] opacity-75">({likedPosters.length + likedWallpaperIds.length})</span>
@@ -4139,8 +4178,12 @@ export default function BlessingsPage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                    style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
-                    className="fixed bottom-[8%] left-[25px] w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
+                    className={`fixed bottom-[8%] left-[25px] w-[90%] max-w-[430px] md:max-w-[500px] md:left-1/2 md:-translate-x-1/2 backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                      isDark 
+                        ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
+                        : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"
+                    }`}
                   >
                     {/* Card close button */}
                     <button
@@ -4148,7 +4191,11 @@ export default function BlessingsPage() {
                         e.stopPropagation();
                         setShowPreviewModal(null);
                       }}
-                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className={`absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full border flex items-center justify-center transition-all active:scale-90 cursor-pointer z-40 ${
+                        isDark
+                          ? "bg-black/40 border-white/10 text-white/70 hover:text-amber-400 hover:bg-black/60"
+                          : "bg-black/5 border-[#EAD7C3] text-[#543D2B]/70 hover:text-[#B27A1C] hover:bg-black/10"
+                      }`}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -4158,15 +4205,25 @@ export default function BlessingsPage() {
                       <div className="space-y-4 md:space-y-5">
                         {/* Header title */}
                         <div className="space-y-2">
-                          <span className="inline-block px-2 py-0.5 bg-amber-500/10 border border-amber-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
+                          <span className={`inline-block px-2 py-0.5 border rounded text-[7px] md:text-[9px] font-sans font-black uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px] ${
+                            isDark
+                              ? "bg-amber-500/10 border-amber-500/35 text-amber-400"
+                              : "bg-[#651317]/10 border-[#651317]/25 text-[#651317]"
+                          }`}>
                             {isHi
                               ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
                               : wp.deity}
                           </span>
-                          <h2 className="text-base md:text-2xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 leading-tight">
+                          <h2 className={`text-base md:text-2xl font-serif font-black leading-tight ${
+                            isDark 
+                              ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300" 
+                              : "text-[#3A2418]"
+                          }`}>
                             {isHi ? wp.nameHindi : wp.name}
                           </h2>
-                          <p className="text-[9px] md:text-xs font-sans text-amber-200/60 font-medium leading-normal">
+                          <p className={`text-[9px] md:text-xs font-sans font-medium leading-normal ${
+                            isDark ? "text-amber-200/60" : "text-[#786252]"
+                          }`}>
                             {isHi 
                               ? `रागघवम् गैलरी का पावन ${wp.tier !== "free" ? "प्रीमियम" : "मुफ़्त"} वॉलपेपर`
                               : `Sacred ${wp.tier !== "free" ? "Premium" : "Free"} mobile wallpaper from Raghavam gallery`}
@@ -4174,13 +4231,19 @@ export default function BlessingsPage() {
                         </div>
 
                         {/* Toggle Pills Selection (Home screen vs Lock screen) - Segmented Control */}
-                        <div className="flex bg-stone-950/60 border border-amber-500/10 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                        <div className={`flex border rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs ${
+                          isDark ? "bg-stone-950/60 border-amber-500/10" : "bg-[#F4EAD8]/80 border-[#EAD7C3]"
+                        }`}>
                           <button
                             onClick={() => setPreviewMode("lock")}
                             className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                               previewMode === "lock"
-                                ? "bg-amber-500 text-stone-950 font-bold shadow-md"
-                                : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
+                                ? isDark
+                                  ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                                  : "bg-[#651317] text-white font-bold shadow-md"
+                                : isDark
+                                  ? "bg-transparent text-amber-200/80 hover:text-amber-200"
+                                  : "bg-transparent text-[#786252] hover:text-[#3A2418]"
                             }`}
                           >
                             <Lock className="w-3 h-3" />
@@ -4190,8 +4253,12 @@ export default function BlessingsPage() {
                             onClick={() => setPreviewMode("home")}
                             className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                               previewMode === "home"
-                                ? "bg-amber-500 text-stone-950 font-bold shadow-md"
-                                : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
+                                ? isDark
+                                  ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                                  : "bg-[#651317] text-white font-bold shadow-md"
+                                : isDark
+                                  ? "bg-transparent text-amber-200/80 hover:text-amber-200"
+                                  : "bg-transparent text-[#786252] hover:text-[#3A2418]"
                             }`}
                           >
                             <Smartphone className="w-3 h-3" />
@@ -4204,17 +4271,25 @@ export default function BlessingsPage() {
                       <div className="space-y-2 mt-4 md:mt-0 select-none">
                         <button
                           onClick={() => handleDownloadWallpaper(wp)}
-                          className="w-full py-2 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                          className={`w-full py-2 md:py-3.5 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer border ${
+                            isDark
+                              ? "bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 shadow-[0_4px_12px_rgba(245,158,11,0.25)] border-amber-400/20"
+                              : "bg-gradient-to-r from-[#651317] via-[#7D191E] to-[#651317] hover:from-[#7D191E] hover:to-[#651317] text-white shadow-[0_4px_12px_rgba(101,19,23,0.25)] border-[#651317]/20"
+                          }`}
                         >
-                          <Download className="w-4 h-4 text-stone-950" />
+                          <Download className={`w-4 h-4 ${isDark ? "text-stone-950" : "text-white"}`} />
                           <span>{isHi ? "डाउनलोड" : "Download"}</span>
                         </button>
                         
                         <button
                           onClick={() => toggleSaveWallpaper(wp.id)}
-                          className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                          className={`w-full py-1.5 md:py-2.5 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer border ${
+                            isDark
+                              ? "border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400"
+                              : "border-[#651317]/30 hover:border-[#651317]/50 bg-[#F4EAD8]/60 hover:bg-[#F4EAD8] text-[#651317]"
+                          }`}
                         >
-                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? (isDark ? "fill-amber-500 text-amber-500" : "fill-[#651317] text-[#651317]") : (isDark ? "text-amber-400" : "text-[#651317]")}`} />
                           <span>
                             {likedWallpaperIds.includes(wp.id) 
                               ? (isHi ? "सहेजा गया" : "Saved") 
@@ -4240,10 +4315,12 @@ export default function BlessingsPage() {
 
               {/* Swipe Help instruction at absolute bottom */}
               {isCardVisible && (
-                <div className="fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans text-amber-200/85 pointer-events-none select-none z-[131] font-semibold">
-                  <span className="text-amber-500/80">❈</span>
+                <div className={`fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans pointer-events-none select-none z-[131] font-semibold ${
+                  isDark ? "text-amber-200/85" : "text-[#543D2B]/85"
+                }`}>
+                  <span className={isDark ? "text-amber-500/80" : "text-[#651317]/80"}>❈</span>
                   <span>👆 {isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
-                  <span className="text-amber-500/80">❈</span>
+                  <span className={isDark ? "text-amber-500/80" : "text-[#651317]/80"}>❈</span>
                 </div>
               )}
             </>
@@ -4316,8 +4393,12 @@ export default function BlessingsPage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
-                    style={{ backgroundColor: "rgba(20, 10, 5, 0.85)" }}
-                    className="fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border border-amber-500/20 rounded-[2rem] p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-[130] flex flex-row items-center justify-between overflow-visible"
+                    style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
+                    className={`fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                      isDark 
+                        ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
+                        : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"
+                    }`}
                   >
                     {/* Card close button */}
                     <button
@@ -4325,7 +4406,11 @@ export default function BlessingsPage() {
                         e.stopPropagation();
                         setShowLivePreviewModal(null);
                       }}
-                      className="absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full bg-black/40 border border-white/10 hover:border-amber-500/40 hover:bg-black/60 flex items-center justify-center text-white/70 hover:text-amber-400 transition-all active:scale-90 cursor-pointer z-40"
+                      className={`absolute top-4 left-4 w-7 h-7 md:w-8 md:h-8 rounded-full border flex items-center justify-center transition-all active:scale-90 cursor-pointer z-40 ${
+                        isDark
+                          ? "bg-black/40 border-white/10 text-white/70 hover:text-amber-400 hover:bg-black/60"
+                          : "bg-black/5 border-[#EAD7C3] text-[#543D2B]/70 hover:text-[#B27A1C] hover:bg-black/10"
+                      }`}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -4336,19 +4421,33 @@ export default function BlessingsPage() {
                         {/* Header title */}
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="inline-block px-2 py-0.5 bg-amber-500/15 border border-amber-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-amber-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
+                            <span className={`inline-block px-2 py-0.5 border rounded text-[7px] md:text-[9px] font-sans font-black uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px] ${
+                              isDark
+                                ? "bg-amber-500/15 border-amber-500/35 text-amber-400"
+                                : "bg-[#651317]/10 border-[#651317]/25 text-[#651317]"
+                            }`}>
                               {isHi
                                 ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity)
                                 : wp.deity}
                             </span>
-                            <span className="inline-block px-2 py-0.5 bg-orange-500/15 border border-orange-500/35 rounded text-[7px] md:text-[9px] font-sans font-black text-orange-400 uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px]">
+                            <span className={`inline-block px-2 py-0.5 border rounded text-[7px] md:text-[9px] font-sans font-black uppercase tracking-widest leading-none shadow-sm backdrop-blur-[2px] ${
+                              isDark
+                                ? "bg-orange-500/15 border-orange-500/35 text-orange-400"
+                                : "bg-[#B27A1C]/15 border-[#B27A1C]/35 text-[#B27A1C]"
+                            }`}>
                               {wp.effect}
                             </span>
                           </div>
-                          <h2 className="text-base md:text-2xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300 leading-tight">
+                          <h2 className={`text-base md:text-2xl font-serif font-black leading-tight ${
+                            isDark 
+                              ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-100 to-amber-300" 
+                              : "text-[#3A2418]"
+                          }`}>
                             {isHi ? wp.nameHindi : wp.name}
                           </h2>
-                          <p className="text-[9px] md:text-xs font-sans text-amber-200/60 font-medium leading-normal">
+                          <p className={`text-[9px] md:text-xs font-sans font-medium leading-normal ${
+                            isDark ? "text-amber-200/60" : "text-[#786252]"
+                          }`}>
                             {isHi 
                               ? `रागघवम् गैलरी का पावन सजीव ${wp.tier !== "free" ? "प्रीमियम" : "मुफ़्त"} वॉलपेपर`
                               : `Sacred ${wp.tier !== "free" ? "Premium" : "Free"} live wallpaper from Raghavam gallery`}
@@ -4356,13 +4455,19 @@ export default function BlessingsPage() {
                         </div>
 
                         {/* Toggle Pills Selection - Segmented Control */}
-                        <div className="flex bg-stone-950/60 border border-amber-500/10 rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs">
+                        <div className={`flex border rounded-full p-0.5 max-w-[240px] select-none font-sans text-[10px] md:text-xs ${
+                          isDark ? "bg-stone-950/60 border-amber-500/10" : "bg-[#F4EAD8]/80 border-[#EAD7C3]"
+                        }`}>
                           <button
                             onClick={() => setPreviewMode("lock")}
                             className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                               previewMode === "lock"
-                                ? "bg-amber-500 text-stone-950 font-bold shadow-md"
-                                : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
+                                ? isDark
+                                  ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                                  : "bg-[#651317] text-white font-bold shadow-md"
+                                : isDark
+                                  ? "bg-transparent text-amber-200/80 hover:text-amber-200"
+                                  : "bg-transparent text-[#786252] hover:text-[#3A2418]"
                             }`}
                           >
                             <Lock className="w-3 h-3" />
@@ -4372,8 +4477,12 @@ export default function BlessingsPage() {
                             onClick={() => setPreviewMode("home")}
                             className={`flex-1 flex items-center justify-center gap-1 py-1.5 px-2 md:px-3.5 rounded-full transition-all duration-200 cursor-pointer ${
                               previewMode === "home"
-                                ? "bg-amber-500 text-stone-950 font-bold shadow-md"
-                                : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#8C6D53]/80 hover:text-[#543D2B]"
+                                ? isDark
+                                  ? "bg-amber-500 text-stone-950 font-bold shadow-md"
+                                  : "bg-[#651317] text-white font-bold shadow-md"
+                                : isDark
+                                  ? "bg-transparent text-amber-200/80 hover:text-amber-200"
+                                  : "bg-transparent text-[#786252] hover:text-[#3A2418]"
                             }`}
                           >
                             <Smartphone className="w-3 h-3" />
@@ -4386,17 +4495,25 @@ export default function BlessingsPage() {
                       <div className="space-y-2 mt-4 md:mt-0 select-none">
                         <button
                           onClick={() => handleDownloadLiveWallpaper(wp)}
-                          className="w-full py-2 md:py-3.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-amber-400/20 cursor-pointer"
+                          className={`w-full py-2 md:py-3.5 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer border ${
+                            isDark
+                              ? "bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 shadow-[0_4px_12px_rgba(245,158,11,0.25)] border-amber-400/20"
+                              : "bg-gradient-to-r from-[#651317] via-[#7D191E] to-[#651317] hover:from-[#7D191E] hover:to-[#651317] text-white shadow-[0_4px_12px_rgba(101,19,23,0.25)] border-[#651317]/20"
+                          }`}
                         >
-                          <CustomDownloadIcon className="w-4 h-4 text-stone-950" />
+                          <CustomDownloadIcon className={`w-4 h-4 ${isDark ? "text-stone-950" : "text-white"}`} />
                           <span>{isHi ? "डाउनलोड" : "Download"}</span>
                         </button>
                         
                         <button
                           onClick={() => toggleSaveWallpaper(wp.id)}
-                          className="w-full py-1.5 md:py-2.5 border border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer"
+                          className={`w-full py-1.5 md:py-2.5 font-sans font-black text-[9px] md:text-xs uppercase tracking-widest rounded-xl md:rounded-2xl transition-all active:scale-[0.96] flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer border ${
+                            isDark
+                              ? "border-amber-500/30 hover:border-amber-500/50 bg-black/30 hover:bg-black/50 text-amber-400"
+                              : "border-[#651317]/30 hover:border-[#651317]/50 bg-[#F4EAD8]/60 hover:bg-[#F4EAD8] text-[#651317]"
+                          }`}
                         >
-                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? "fill-amber-500 text-amber-500" : "text-amber-400"}`} />
+                          <Heart className={`w-4 h-4 ${likedWallpaperIds.includes(wp.id) ? (isDark ? "fill-amber-500 text-amber-500" : "fill-[#651317] text-[#651317]") : (isDark ? "text-amber-400" : "text-[#651317]")}`} />
                           <span>
                             {likedWallpaperIds.includes(wp.id) 
                               ? (isHi ? "सहेजा गया" : "Saved") 
@@ -4422,10 +4539,12 @@ export default function BlessingsPage() {
 
               {/* Swipe Help instruction at absolute bottom */}
               {isCardVisible && (
-                <div className="fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans text-amber-200/85 pointer-events-none select-none z-[131] font-semibold">
-                  <span className="text-amber-500/80">❈</span>
+                <div className={`fixed bottom-4 inset-x-0 flex items-center justify-center gap-1 text-[9px] uppercase tracking-widest font-sans pointer-events-none select-none z-[131] font-semibold ${
+                  isDark ? "text-amber-200/85" : "text-[#543D2B]/85"
+                }`}>
+                  <span className={isDark ? "text-amber-500/80" : "text-[#651317]/80"}>❈</span>
                   <span>👆 {isHi ? "स्वाइप करें और वॉलपेपर देखें" : "Swipe to change"}</span>
-                  <span className="text-amber-500/80">❈</span>
+                  <span className={isDark ? "text-amber-500/80" : "text-[#651317]/80"}>❈</span>
                 </div>
               )}
             </>
@@ -4636,57 +4755,51 @@ export default function BlessingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowSetupSheet(false)}
-              className="fixed inset-0 bg-black/75 z-[150] backdrop-blur-sm"
+              className="fixed inset-0 bg-black/65 z-[150] backdrop-blur-sm"
             />
 
-            {/* Bottom Sheet Drawer Container */}
+            {/* Bottom Sheet Drawer Container — position above mobile footer */}
             <motion.div
               initial={{ opacity: 0, y: "100%" }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-x-0 bottom-0 max-w-md mx-auto bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-t border-amber-500/30 rounded-t-[2.5rem] p-6 shadow-[0_-15px_40px_rgba(0,0,0,0.8)] z-[160] flex flex-col gap-6 pb-8 md:bottom-auto md:top-[25%] md:rounded-[2rem] md:border text-stone-200"
+              className={cn(
+                "fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] md:bottom-auto md:top-[20%] max-w-md mx-auto rounded-t-[2.2rem] md:rounded-[2rem] p-6 shadow-2xl z-[160] flex flex-col gap-5 text-stone-200 border pointer-events-auto",
+                isDark 
+                  ? "bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-amber-500/30 text-stone-200 shadow-black/80" 
+                  : "bg-[#FFFDF8] border-[#EAD7C3] text-[#3A2418] shadow-stone-900/20"
+              )}
             >
               {/* Drag handle */}
-              <div className="w-12 h-1 bg-amber-500/20 rounded-full mx-auto md:hidden" />
+              <div className={cn("w-12 h-1 rounded-full mx-auto md:hidden", isDark ? "bg-amber-500/20" : "bg-[#651317]/20")} />
 
               <div className="flex justify-between items-center">
-                <h3 className="font-serif text-lg font-black text-amber-400 uppercase tracking-widest">
-                  {isHi ? "प्रोफ़ाइल सेटअप" : "Create My Version"}
+                <h3 className={cn("font-serif text-base font-black uppercase tracking-widest", isDark ? "text-amber-400" : "text-[#651317]")}>
+                  {isHi ? "प्रोफ़ाइल सेटअप" : "Profile Setup"}
                 </h3>
                 <button
                   onClick={() => setShowSetupSheet(false)}
-                  className="w-8 h-8 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 flex items-center justify-center text-amber-400 transition-colors"
+                  className={cn("w-8 h-8 rounded-full border flex items-center justify-center transition-colors cursor-pointer", isDark ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-400" : "bg-[#651317]/10 hover:bg-[#651317]/20 border-[#651317]/20 text-[#651317]")}
                 >
                   <X className="w-4.5 h-4.5" />
                 </button>
               </div>
 
-              {/* Upload Photo section */}
+              {/* Upload Photo section — Elegant avatar with non-overlapping camera badge */}
               <div className="flex flex-col items-center gap-3">
-                <div className="relative w-28 h-28 rounded-full border-2 border-amber-500/50 bg-stone-900/60 overflow-hidden flex items-center justify-center shadow-lg group">
-                  {tempPhoto ? (
-                    <img src={tempPhoto} alt="Preview avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="w-12 h-12 text-amber-500/30" />
-                  )}
+                <div className="relative inline-block">
+                  <div className={cn("w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center shadow-lg transition-all", isDark ? "border-amber-500/50 bg-stone-900/80 shadow-amber-500/10" : "border-[#D4A437] bg-[#FCF6E8] shadow-amber-900/10")}>
+                    {tempPhoto ? (
+                      <img src={tempPhoto} alt="Preview avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className={cn("font-serif text-2xl", isDark ? "text-amber-400/80" : "text-[#651317]")}>ॐ</span>
+                    )}
+                  </div>
 
-                  {/* Upload overlay trigger */}
-                  <button 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = "";
-                      }
-                      fileInputRef.current?.click();
-                    }}
-                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-                  >
-                    <Camera className="w-6 h-6 text-white" />
-                  </button>
-
-                  {/* Camera float overlay */}
+                  {/* Camera float overlay badge outside overflow container */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.preventDefault();
                       if (fileInputRef.current) {
@@ -4694,12 +4807,13 @@ export default function BlessingsPage() {
                       }
                       fileInputRef.current?.click();
                     }}
-                    className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-amber-500 border border-stone-950 flex items-center justify-center text-stone-950 shadow active:scale-90 transition-transform cursor-pointer"
+                    className={cn("absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md cursor-pointer active:scale-90 transition-transform border-2", isDark ? "bg-amber-500 border-stone-950 text-stone-950 hover:bg-amber-400" : "bg-[#651317] border-white text-white hover:bg-[#8B1E24]")}
                   >
-                    <Camera className="w-3.5 h-3.5" />
+                    <Camera className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-[10px] uppercase font-sans font-black text-amber-500/90 tracking-wider">
+
+                <span className={cn("text-[10px] uppercase font-sans font-black tracking-wider", isDark ? "text-amber-500/90" : "text-[#651317]")}>
                   {isHi ? "श्रद्धालु चित्र अपलोड करें" : "Upload Devotee Photo"}
                 </span>
 
@@ -4728,11 +4842,11 @@ export default function BlessingsPage() {
 
               {/* Name Input section */}
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] uppercase font-sans font-black text-amber-500/90 tracking-wider">
+                <label className={cn("text-[10px] uppercase font-sans font-black tracking-wider", isDark ? "text-amber-500/90" : "text-[#786252]")}>
                   {isHi ? "आपका नाम" : "Your Name"}
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500/70">
+                  <div className={cn("absolute left-4 top-1/2 -translate-y-1/2", isDark ? "text-amber-500/70" : "text-[#651317]/70")}>
                     <UserIcon className="w-4 h-4" />
                   </div>
                   <input
@@ -4741,16 +4855,21 @@ export default function BlessingsPage() {
                     placeholder={isHi ? "नाम दर्ज करें..." : "Enter your name..."}
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
-                    className="w-full bg-black/45 border border-amber-500/20 focus:border-amber-500/45 rounded-xl py-3 pl-11 pr-16 text-xs text-amber-100 placeholder:text-amber-200/85 focus:outline-none tracking-wide font-sans font-medium"
+                    className={cn(
+                      "w-full rounded-xl py-3 pl-11 pr-16 text-xs focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                      isDark
+                        ? "bg-black/45 border-amber-500/20 focus:border-amber-500/45 text-amber-100 placeholder:text-amber-200/85"
+                        : "bg-white border-[#EAD7C3] focus:border-[#651317] text-[#3A2418] placeholder:text-[#786252]/60"
+                    )}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/80 font-bold">
+                  <span className={cn("absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
                     {tempName.length}/30
                   </span>
                 </div>
               </div>
 
-              {/* Submit CTA */}
-              <div className="space-y-4">
+              {/* Action Buttons */}
+              <div className="space-y-2.5">
                 <button
                   onClick={() => {
                     const finalName = tempName.trim();
@@ -4758,29 +4877,62 @@ export default function BlessingsPage() {
                       toast.error(isHi ? "कृपया अपना नाम दर्ज करें!" : "Please enter your name!");
                       return;
                     }
-                    if (!tempPhoto) {
-                      toast.error(isHi ? "कृपया एक पावन चित्र अपलोड करें!" : "Please upload profile photo!");
-                      return;
-                    }
                     setUserName(finalName);
                     setUserPhoto(tempPhoto);
                     try {
                       localStorage.setItem("hk_profile_name", finalName);
-                      localStorage.setItem("hk_profile_photo", tempPhoto);
+                      if (tempPhoto) {
+                        localStorage.setItem("hk_profile_photo", tempPhoto);
+                      } else {
+                        localStorage.removeItem("hk_profile_photo");
+                      }
                     } catch (err) {
                       console.error("Failed to save profile details to localStorage", err);
                     }
                     setShowSetupSheet(false);
                     toast.success(isHi ? "प्रोफ़ाइल सफलतापूर्वक सहेज ली गई!" : "Profile details saved successfully!");
                   }}
-                  disabled={!tempName.trim() || !tempPhoto}
-                  className={`w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-stone-800 disabled:to-stone-900 disabled:text-stone-500 disabled:cursor-not-allowed text-stone-950 font-sans font-black text-xs uppercase rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-md cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
+                  disabled={!tempName.trim()}
+                  className={cn(
+                    "w-full py-3.5 font-sans font-black text-xs uppercase rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-md cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
+                    isDark
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950"
+                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white"
+                  )}
                 >
                   <Check className="w-4 h-4" />
                   <span>{isHi ? "प्रोफ़ाइल सहेजें" : "Save Profile"}</span>
                 </button>
 
-                <p className="text-[9.5px] font-sans text-emerald-400/80 flex items-center justify-center gap-1.5 leading-none">
+                {/* Delete Profile Option */}
+                {(tempPhoto || (tempName && tempName !== "हरि भक्त")) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempPhoto(null);
+                      setTempName("");
+                      setUserPhoto(null);
+                      setUserName("हरि भक्त");
+                      try {
+                        localStorage.removeItem("hk_profile_name");
+                        localStorage.removeItem("hk_profile_photo");
+                      } catch (err) {}
+                      setShowSetupSheet(false);
+                      toast.info(isHi ? "प्रोफ़ाइल हटा दी गई!" : "Profile deleted & reset!");
+                    }}
+                    className={cn(
+                      "w-full py-2.5 rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border active:scale-95",
+                      isDark
+                        ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                        : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                    )}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isHi ? "प्रोफ़ाइल / फ़ोटो हटाएं" : "Delete Profile & Photo"}</span>
+                  </button>
+                )}
+
+                <p className="text-[9.5px] font-sans text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 leading-none pt-1">
                   <span>🛡️</span>
                   <span>{isHi ? "आपकी जानकारी पूर्णतः सुरक्षित है" : "Your profile is safe & secure"}</span>
                 </p>
@@ -4800,39 +4952,37 @@ export default function BlessingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-              className="fixed inset-0 z-[120]"
-              style={{ background: "rgba(10,3,1,0.94)", backdropFilter: "blur(18px)" }}
+              className="fixed inset-0 z-[30]"
+              style={{ background: isDark ? "rgba(10,3,1,0.94)" : "rgba(252,246,232,0.92)", backdropFilter: "blur(18px)" }}
             />
 
             {/* Modal */}
-            <div className="fixed inset-0 z-[130] flex items-center justify-center pointer-events-none">
+            <div className="fixed inset-x-0 top-0 bottom-[4.2rem] md:bottom-0 z-[35] flex items-center justify-center pointer-events-none">
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-                className="pointer-events-auto w-full max-w-[420px] flex flex-col"
+                className="pointer-events-auto w-full max-w-[420px] h-full flex flex-col justify-between"
                 style={{
-                  height: "100dvh",
-                  maxHeight: 860,
                   background: "transparent",
                   overflow: "hidden",
                 }}
               >
-                {/* ── TOP: Close button + Poster card ── */}
+                {/* ── TOP: Close button + Share button + Poster card ── */}
                 <div
                   className="flex-1 min-h-0 flex flex-col items-center justify-end relative"
-                  style={{ padding: "16px 12px 8px" }}
+                  style={{ padding: "14px 12px 6px" }}
                 >
-                  {/* Close button — top right, larger for accessibility */}
+                  {/* Close button — top left */}
                   <button
                     onClick={() => { setSelectedPoster(null); setShowProfileEdit(false); }}
-                    className="absolute top-4 right-4 z-50 flex items-center justify-center cursor-pointer shadow-lg active:scale-95"
+                    className="absolute top-3 left-4 z-50 flex items-center justify-center cursor-pointer shadow-lg active:scale-95"
                     style={{
                       width: 40, height: 40, borderRadius: "50%",
-                      background: "rgba(0,0,0,0.65)",
-                      border: "1px solid rgba(251,191,36,0.35)",
-                      color: "#fbbf24",
+                      background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,253,248,0.9)",
+                      border: isDark ? "1px solid rgba(251,191,36,0.35)" : "1px solid #EAD7C3",
+                      color: isDark ? "#fbbf24" : "#543D2B",
                       transition: "transform 0.2s, opacity 0.2s",
                     }}
                     onMouseEnter={e => (e.currentTarget.style.transform="scale(1.08)")}
@@ -4841,14 +4991,31 @@ export default function BlessingsPage() {
                     <X className="w-5 h-5" />
                   </button>
 
+                  {/* Share button — top right, equal to close button */}
+                  <button
+                    onClick={handleSharePosterNative}
+                    className="absolute top-3 right-4 z-50 flex items-center justify-center cursor-pointer shadow-lg active:scale-95"
+                    style={{
+                      width: 40, height: 40, borderRadius: "50%",
+                      background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,253,248,0.9)",
+                      border: isDark ? "1px solid rgba(251,191,36,0.35)" : "1px solid #EAD7C3",
+                      color: isDark ? "#fbbf24" : "#543D2B",
+                      transition: "transform 0.2s, opacity 0.2s",
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.transform="scale(1.08)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform="scale(1)")}
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+
                   {/* Scrollable container of poster cards - Vertical snap scrolling */}
                   <div
                     ref={posterScrollContainerRef}
                     onScroll={handlePosterScroll}
                     className={`w-full flex flex-col snap-y snap-mandatory scrollbar-none gap-0 ${isEditingPhoto ? "overflow-y-hidden touch-none" : "overflow-y-auto"}`}
                     style={{
-                      height: "calc(100dvh - 190px)",
-                      maxHeight: "calc(100dvh - 190px)",
+                      height: "calc(100% - 10px)",
+                      maxHeight: "calc(100% - 10px)",
                       opacity: hasScrolledPosterToInitial ? 1 : 0,
                       transition: "opacity 0.12s ease-in-out",
                     }}
@@ -4884,18 +5051,10 @@ export default function BlessingsPage() {
                               maxWidth: 390,
                               maxHeight: "100%",
                               borderRadius: 18,
-                              boxShadow: "0 16px 48px rgba(0,0,0,0.85)",
-                              background: "#120603",
+                              boxShadow: isDark ? "0 16px 48px rgba(0,0,0,0.85)" : "0 16px 48px rgba(84,61,43,0.18)",
+                              background: isDark ? "#120603" : "#FFFDF8",
                             }}
                           >
-                            {/* Like Button Overlay - Top Left of each card (preventing overlap with modal close button at top-right) */}
-                            <div className="absolute top-4 left-4 z-40">
-                              <PosterLikeButton
-                                posterId={tpl.id}
-                                isLiked={likedPosterIds.includes(tpl.id)}
-                                onToggle={() => toggleLike(tpl.id)}
-                              />
-                            </div>
                             {/* Template base background image */}
                             <img
                               src={tpl.imageUrl}
@@ -4911,6 +5070,8 @@ export default function BlessingsPage() {
 
                             {/* Live CSS Avatar Overlay (Instant, no flickering, no image swapping!) */}
                             {(() => {
+                              if (hidePhotoFrame) return null;
+
                               const shapeForTpl = isActive ? posterShape : (tpl.defaultShape || "circle");
                               const zoomForTpl = isActive ? posterZoom : 1.0;
                               const offsetXForTpl = isActive ? posterOffsetX : 0;
@@ -4928,7 +5089,20 @@ export default function BlessingsPage() {
 
                               return (
                                 <div
-                                  className={`absolute overflow-hidden flex items-center justify-center ${isEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
+                                  className={`absolute overflow-hidden flex items-center justify-center cursor-pointer ${isEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : 'z-[100]'}`}
+                                  onClick={() => {
+                                    if (!isEditable) {
+                                      if (!userPhoto) {
+                                        if (profileEditFileInputRef.current) {
+                                          profileEditFileInputRef.current.value = "";
+                                        }
+                                        profileEditFileInputRef.current?.click();
+                                      } else {
+                                        setIsEditingPhoto(true);
+                                        setEditingElement("photo");
+                                      }
+                                    }
+                                  }}
                                   style={{
                                     left: photoLeft,
                                     top: photoTop,
@@ -5182,18 +5356,18 @@ export default function BlessingsPage() {
                 {/* ── BOTTOM: Control panel ── */}
                 <div
                   className="shrink-0 w-full flex flex-col"
-                  style={{ background: "#0c0300", paddingTop: 0 }}
+                  style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0 }}
                 >
                   {isEditingPhoto ? (
-                    <div className="flex flex-col w-full bg-[#0c0300]" style={{ paddingTop: 0 }}>
+                    <div className={cn("flex flex-col w-full", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")} style={{ paddingTop: 0 }}>
                       
                       {/* 1. TITLE / INDICATOR ROW */}
-                      <div className="flex justify-between items-center px-4 py-3 border-b border-white/5">
+                      <div className={cn("flex justify-between items-center px-4 py-2.5 border-b", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                         <div className="flex flex-col text-left">
-                          <span style={{ fontSize: 13, fontFamily: "serif", fontWeight: 800, color: "#fbbf24", letterSpacing: "0.02em" }}>
+                          <span style={{ fontSize: 13, fontFamily: "serif", fontWeight: 800, color: isDark ? "#fbbf24" : "#3A2418", letterSpacing: "0.02em" }}>
                             {isHi ? "तस्वीर और नाम एडजस्ट करें" : "Adjust Photo & Name"}
                           </span>
-                          <span style={{ fontSize: 9, fontFamily: "sans-serif", color: "rgba(255,255,255,0.4)" }}>
+                          <span style={{ fontSize: 9, fontFamily: "sans-serif", color: isDark ? "rgba(255,255,255,0.4)" : "#786252" }}>
                             {isHi ? "लेयर चुनें और उंगली से ड्रैग करें" : "Select layer and drag directly"}
                           </span>
                         </div>
@@ -5210,22 +5384,23 @@ export default function BlessingsPage() {
                             setPosterNameScale(1.0);
                             setPosterNameRotation(0);
                             setPosterNameShape("rounded-square");
+                            setHidePhotoFrame(false);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-white/5 text-[10px] font-sans font-bold text-amber-300 uppercase tracking-wider hover:bg-white/10 active:scale-95 transition-all"
+                          className={cn("px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold uppercase tracking-wider active:scale-95 transition-all cursor-pointer", isDark ? "bg-white/5 text-amber-300 hover:bg-white/10" : "bg-[#651317]/10 text-[#651317] hover:bg-[#651317]/20")}
                         >
                           🔄 {isHi ? "रीसेट" : "Reset"}
                         </button>
                       </div>
 
                       {/* 2. LAYER SELECTOR (Photo vs Name toggle) */}
-                      <div className="grid grid-cols-2 gap-1.5 px-4 py-2 border-b border-white/5 bg-[#0a0200]">
+                      <div className={cn("grid grid-cols-2 gap-1.5 px-4 py-2 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
                         <button
                           onClick={() => setEditingElement("photo")}
                           className={cn(
                             "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
                             editingElement === "photo"
-                              ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10"
-                              : "bg-white/5 hover:bg-white/10 text-stone-300"
+                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
                           )}
                         >
                           📷 {isHi ? "तस्वीर (Photo)" : "Photo Layer"}
@@ -5235,8 +5410,8 @@ export default function BlessingsPage() {
                           className={cn(
                             "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
                             editingElement === "name"
-                              ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10"
-                              : "bg-white/5 hover:bg-white/10 text-stone-300"
+                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
                           )}
                         >
                           ✍️ {isHi ? "नाम (Name)" : "Name Layer"}
@@ -5244,7 +5419,7 @@ export default function BlessingsPage() {
                       </div>
 
                       {/* 3. TAB LIST BAR */}
-                      <div className="grid grid-cols-5 border-b border-white/5 bg-[#0a0200]">
+                      <div className={cn("grid grid-cols-5 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
                         {[
                           { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
                           { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-3.5 h-3.5" /> },
@@ -5277,10 +5452,10 @@ export default function BlessingsPage() {
                                 }
                               }}
                               className={cn(
-                                "flex flex-col items-center justify-center gap-1 py-2.5 border-b-2 text-[9px] font-sans font-black uppercase tracking-wider transition-all cursor-pointer",
+                                "flex flex-col items-center justify-center gap-1 py-2 border-b-2 text-[9px] font-sans font-black uppercase tracking-wider transition-all cursor-pointer",
                                 isTabActive
-                                  ? "border-amber-500 bg-amber-500/10 text-amber-400"
-                                  : "border-transparent text-stone-400 hover:text-stone-200"
+                                  ? isDark ? "border-amber-500 bg-amber-500/10 text-amber-400" : "border-[#651317] bg-[#651317]/10 text-[#651317]"
+                                  : isDark ? "border-transparent text-stone-400 hover:text-stone-200" : "border-transparent text-[#786252] hover:text-[#3A2418]"
                               )}
                             >
                               {tab.icon}
@@ -5291,12 +5466,12 @@ export default function BlessingsPage() {
                       </div>
 
                       {/* 4. ACTIVE PANEL CONTENT */}
-                      <div className="p-4 space-y-4 bg-[#0c0300]">
+                      <div className={cn("p-3 space-y-3", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")}>
                         
                         {/* Real-time name text editor */}
                         {editingElement === "name" && (
-                          <div className="space-y-1 text-left border-b border-white/5 pb-3">
-                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
+                          <div className={cn("space-y-1 text-left border-b pb-2.5", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                            <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
                               {isHi ? "नाम बदलें" : "Edit Name Text"}
                             </span>
                             <div className="relative">
@@ -5306,9 +5481,14 @@ export default function BlessingsPage() {
                                 placeholder={isHi ? "अपना नाम लिखें..." : "Type your name..."}
                                 value={userName}
                                 onChange={(e) => setUserName(e.target.value)}
-                                className="w-full bg-black/45 border border-amber-500/20 focus:border-amber-500/45 rounded-xl py-2 px-3 text-xs text-amber-100 placeholder:text-amber-200/40 focus:outline-none tracking-wide font-sans font-medium"
+                                className={cn(
+                                  "w-full rounded-xl py-2 px-3 text-xs focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                                  isDark 
+                                    ? "bg-black/45 border-amber-500/20 text-amber-100 placeholder:text-amber-200/40"
+                                    : "bg-white border-[#EAD7C3] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
+                                )}
                               />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-sans text-amber-500/80 font-bold">
+                              <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
                                 {userName.length}/30
                               </span>
                             </div>
@@ -5317,12 +5497,26 @@ export default function BlessingsPage() {
                         
                         {/* shape panel */}
                         {posterActiveTab === "shape" && (
-                          <div className="space-y-3">
+                          <div className="space-y-2.5">
                             {editingElement === "photo" ? (
-                              <div className="space-y-1.5 text-left">
-                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
-                                  {isHi ? "फोटो का आकार चुनें" : "Select Photo Shape"}
-                                </span>
+                              <div className="space-y-2 text-left">
+                                <div className="flex items-center justify-between">
+                                  <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    {isHi ? "फोटो का आकार और दृश्यता" : "Photo Shape & Visibility"}
+                                  </span>
+                                  {/* Hide/Show Photo Frame Toggle */}
+                                  <button
+                                    onClick={() => setHidePhotoFrame(prev => !prev)}
+                                    className={cn(
+                                      "px-2.5 py-1 rounded-lg text-[9.5px] font-sans font-bold transition-all cursor-pointer border select-none",
+                                      hidePhotoFrame
+                                        ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
+                                        : isDark ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10" : "bg-white border-[#EAD7C3] text-[#651317] hover:bg-[#FFFDF8]"
+                                    )}
+                                  >
+                                    {hidePhotoFrame ? "👁️ " + (isHi ? "फ़्रेम दिखाएं" : "Show Frame") : "🙈 " + (isHi ? "फ़्रेम छिपाएं" : "Hide Frame")}
+                                  </button>
+                                </div>
                                 <div className="grid grid-cols-4 gap-1.5">
                                   {[
                                     { id: "circle", label: isHi ? "गोल" : "Circle" },
@@ -5332,12 +5526,12 @@ export default function BlessingsPage() {
                                   ].map((s) => (
                                     <button
                                       key={s.id}
-                                      onClick={() => setPosterShape(s.id as any)}
+                                      onClick={() => { setPosterShape(s.id as any); setHidePhotoFrame(false); }}
                                       className={cn(
                                         "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
-                                        posterShape === s.id
-                                          ? "bg-amber-500/15 border-amber-500 text-amber-300"
-                                          : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                                        posterShape === s.id && !hidePhotoFrame
+                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
+                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
                                       )}
                                     >
                                       {s.label}
@@ -5347,7 +5541,7 @@ export default function BlessingsPage() {
                               </div>
                             ) : (
                               <div className="space-y-1.5 text-left">
-                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
+                                <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
                                   {isHi ? "नाम पट्टी का आकार चुनें" : "Select Name Plate Shape"}
                                 </span>
                                 <div className="grid grid-cols-4 gap-1.5">
@@ -5363,8 +5557,8 @@ export default function BlessingsPage() {
                                       className={cn(
                                         "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
                                         posterNameShape === s.id
-                                          ? "bg-amber-500/15 border-amber-500 text-amber-300"
-                                          : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
+                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
                                       )}
                                     >
                                       {s.label}
@@ -5379,7 +5573,7 @@ export default function BlessingsPage() {
                         {/* move panel (fine nudge arrows) */}
                         {posterActiveTab === "move" && (
                           <div className="flex flex-col items-center gap-1.5">
-                            <span className="text-[9px] text-stone-400 font-bold uppercase tracking-wider block text-center mb-0.5">
+                            <span className={cn("text-[9px] font-bold uppercase tracking-wider block text-center mb-0.5", isDark ? "text-stone-400" : "text-[#786252]")}>
                               {isHi ? `${editingElement === "photo" ? "फोटो" : "नाम"} पोजीशन फाइन-ट्यूनिंग` : `Fine-Tune ${editingElement === "photo" ? "Photo" : "Name"} Position`}
                             </span>
                             <div className="flex flex-col items-center gap-1">
@@ -5388,7 +5582,7 @@ export default function BlessingsPage() {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev - 2);
                                   else setPosterNameOffsetY(prev => prev - 2);
                                 }}
-                                className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                               >
                                 ▲
                               </button>
@@ -5398,7 +5592,7 @@ export default function BlessingsPage() {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev - 2);
                                     else setPosterNameOffsetX(prev => prev - 2);
                                   }}
-                                  className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                 >
                                   ◀
                                 </button>
@@ -5412,7 +5606,7 @@ export default function BlessingsPage() {
                                       setPosterNameOffsetY(0);
                                     }
                                   }}
-                                  className="px-2 h-7 rounded-lg bg-white/5 flex items-center justify-center text-[9px] text-stone-300 font-black uppercase tracking-wider border border-white/5 cursor-pointer"
+                                  className={cn("px-2 h-7 rounded-lg flex items-center justify-center text-[9px] font-black uppercase tracking-wider border cursor-pointer", isDark ? "bg-white/5 text-stone-300 border-white/5" : "bg-white text-[#543D2B] border-[#EAD7C3]")}
                                 >
                                   Center
                                 </button>
@@ -5421,7 +5615,7 @@ export default function BlessingsPage() {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev + 2);
                                     else setPosterNameOffsetX(prev => prev + 2);
                                   }}
-                                  className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                 >
                                   ▶
                                 </button>
@@ -5431,7 +5625,7 @@ export default function BlessingsPage() {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev + 2);
                                   else setPosterNameOffsetY(prev => prev + 2);
                                 }}
-                                className="w-9 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                               >
                                 ▼
                               </button>
@@ -5445,14 +5639,14 @@ export default function BlessingsPage() {
                             {editingElement === "photo" ? (
                               <>
                                 <div className="space-y-1 text-left">
-                                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
                                     <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
-                                    <span className="font-sans text-amber-400">{posterFrameScale.toFixed(2)}x</span>
+                                    <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterFrameScale.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.max(0.5, prev - 0.05))}
-                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5463,11 +5657,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterFrameScale}
                                       onChange={(e) => setPosterFrameScale(parseFloat(e.target.value))}
-                                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.min(2.5, prev + 0.05))}
-                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5475,14 +5669,14 @@ export default function BlessingsPage() {
                                 </div>
 
                                 <div className="space-y-1 text-left">
-                                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
                                     <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
-                                    <span className="font-sans text-amber-400">{posterZoom.toFixed(2)}x</span>
+                                    <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterZoom.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.max(0.8, prev - 0.05))}
-                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5493,11 +5687,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterZoom}
                                       onChange={(e) => setPosterZoom(parseFloat(e.target.value))}
-                                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.min(3.0, prev + 0.05))}
-                                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5506,14 +5700,14 @@ export default function BlessingsPage() {
                               </>
                             ) : (
                               <div className="space-y-1 text-left">
-                                <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                                <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
                                   <span>{isHi ? "नाम का आकार बदलें" : "Adjust Name Scale"}</span>
-                                  <span className="font-sans text-amber-400">{posterNameScale.toFixed(2)}x</span>
+                                  <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterNameScale.toFixed(2)}x</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <button
                                     onClick={() => setPosterNameScale(prev => Math.max(0.5, prev - 0.05))}
-                                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                   >
                                     -
                                   </button>
@@ -5524,11 +5718,11 @@ export default function BlessingsPage() {
                                     step="0.05"
                                     value={posterNameScale}
                                     onChange={(e) => setPosterNameScale(parseFloat(e.target.value))}
-                                    className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                    className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                   />
                                   <button
                                     onClick={() => setPosterNameScale(prev => Math.min(2.5, prev + 0.05))}
-                                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                                   >
                                     +
                                   </button>
@@ -5541,9 +5735,9 @@ export default function BlessingsPage() {
                         {/* rotate panel */}
                         {posterActiveTab === "rotate" && (
                           <div className="space-y-2.5 text-left">
-                            <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                            <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
                               <span>{isHi ? `${editingElement === "photo" ? "फ्रेम" : "नाम"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Name"} Rotation`}</span>
-                              <span className="font-sans text-amber-400">
+                              <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>
                                 {Math.round(((editingElement === "photo" ? posterRotation : posterNameRotation) * 180) / Math.PI)}°
                               </span>
                             </div>
@@ -5553,7 +5747,7 @@ export default function BlessingsPage() {
                                   if (editingElement === "photo") setPosterRotation(prev => prev - (5 * Math.PI) / 180);
                                   else setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
                                 }}
-                                className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                               >
                                 ↺
                               </button>
@@ -5567,14 +5761,14 @@ export default function BlessingsPage() {
                                   if (editingElement === "photo") setPosterRotation(parseFloat(e.target.value));
                                   else setPosterNameRotation(parseFloat(e.target.value));
                                 }}
-                                className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
+                                className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                               />
                               <button
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterRotation(prev => prev + (5 * Math.PI) / 180);
                                   else setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
                                 }}
-                                className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
                               >
                                 ↻
                               </button>
@@ -5582,13 +5776,18 @@ export default function BlessingsPage() {
                           </div>
                         )}
 
-                        {/* Action buttons done / cancel */}
-                        <div className="flex gap-2 pt-2 border-t border-white/5">
+                        {/* Action buttons done / cancel — elevated slightly for clear footer space */}
+                        <div className={cn("flex gap-2 pt-2 pb-2 border-t", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                           <button
                             onClick={() => {
                               setIsEditingPhoto(false);
                             }}
-                            className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-stone-300 uppercase tracking-wider cursor-pointer"
+                            className={cn(
+                              "flex-1 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all",
+                              isDark
+                                ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10"
+                                : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
+                            )}
                           >
                             {isHi ? "रद्द करें" : "Cancel"}
                           </button>
@@ -5604,7 +5803,12 @@ export default function BlessingsPage() {
                                 }
                               }
                             }}
-                            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-orange-500/10 cursor-pointer"
+                            className={cn(
+                              "flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-md",
+                              isDark
+                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/10"
+                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                            )}
                           >
                             {isHi ? "पूर्ण (Done)" : "Done"}
                           </button>
@@ -5614,21 +5818,21 @@ export default function BlessingsPage() {
                     </div>
                   ) : (
                     <>
-                      {/* Profile row + compact like */}
-                      <div className="flex items-center justify-between" style={{ padding: "10px 16px 8px" }}>
+                      {/* Profile row + Edit Poster Button (Always visible on right) */}
+                      <div className="flex items-center justify-between" style={{ padding: "8px 16px 6px" }}>
                         {/* Left: Avatar + name + edit */}
                         <button
                           onClick={() => setShowProfileEdit(true)}
-                          className="flex items-center cursor-pointer"
+                          className="flex items-center cursor-pointer min-w-0 max-w-[62%]"
                           style={{ gap: 10, transition: "opacity 0.2s", background: "none", border: "none", padding: 0 }}
                           onMouseEnter={e => (e.currentTarget.style.opacity="0.8")}
                           onMouseLeave={e => (e.currentTarget.style.opacity="1")}
                         >
-                          {/* Avatar — 56px, 1px gold ring */}
+                          {/* Avatar — 50px, 1px gold ring */}
                           <div style={{
-                            width: 56, height: 56, borderRadius: "50%",
-                            border: "1px solid rgba(251,191,36,0.5)",
-                            background: "#1b0a05",
+                            width: 50, height: 50, borderRadius: "50%",
+                            border: isDark ? "1px solid rgba(251,191,36,0.5)" : "1px solid #EAD7C3",
+                            background: isDark ? "#1b0a05" : "#FFFDF8",
                             overflow: "hidden",
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0,
@@ -5636,62 +5840,52 @@ export default function BlessingsPage() {
                             {userPhoto ? (
                               <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             ) : (
-                              <span style={{ fontSize: 20, fontFamily: "serif", color: "rgba(251,191,36,0.55)" }}>ॐ</span>
+                              <span style={{ fontSize: 18, fontFamily: "serif", color: isDark ? "rgba(251,191,36,0.55)" : "#651317" }}>ॐ</span>
                             )}
                           </div>
-                          <div className="flex flex-col text-left">
-                            <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(255,200,120,0.85)", lineHeight: 1, marginBottom: 4, letterSpacing: "0.04em" }}>
+                          <div className="flex flex-col text-left min-w-0">
+                            <span style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 600, color: isDark ? "rgba(255,200,120,0.85)" : "#786252", lineHeight: 1, marginBottom: 3, letterSpacing: "0.04em" }}>
                               {isHi ? "श्रद्धालु" : "Devotee"}
                             </span>
-                            <span style={{ fontSize: 16, fontFamily: "serif", fontWeight: 800, color: "#fef3c7", lineHeight: 1.1, letterSpacing: isHi ? "normal" : "0.01em" }}>
+                            <span className="truncate" style={{ fontSize: 15, fontFamily: "serif", fontWeight: 800, color: isDark ? "#fef3c7" : "#3A2418", lineHeight: 1.1, letterSpacing: isHi ? "normal" : "0.01em" }}>
                               {userName.trim() || (isHi ? "हरि भक्त" : "Devotee")}
                             </span>
-                            <span style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 600, color: "rgba(251,191,36,0.85)", marginTop: 3 }}>
-                              {isHi ? "बदलने के लिए टैप करें ›" : "Tap to edit ›"}
+                            <span style={{ fontSize: 9, fontFamily: "sans-serif", fontWeight: 600, color: isDark ? "rgba(251,191,36,0.85)" : "#651317", marginTop: 2 }}>
+                              {isHi ? "प्रोफ़ाइल बदलें ›" : "Edit Profile ›"}
                             </span>
                           </div>
                         </button>
+
+                        {/* Right: Poster Edit Button (Always accessible on the right side!) */}
+                        <button
+                          onClick={() => setIsEditingPhoto(true)}
+                          className="flex items-center justify-center gap-1 px-3 py-2 cursor-pointer shadow-md hover:scale-[1.03] active:scale-95 transition-all rounded-xl text-xs font-sans font-bold select-none shrink-0"
+                          style={{
+                            background: isDark ? "rgba(251,191,36,0.12)" : "rgba(101,19,23,0.08)",
+                            border: isDark ? "1px solid rgba(251,191,36,0.35)" : "1px solid rgba(101,19,23,0.25)",
+                            color: isDark ? "#fbbf24" : "#651317",
+                          }}
+                        >
+                          🎨 {isHi ? "पोस्टर एडिट" : "Edit Poster"}
+                        </button>
                       </div>
 
-                      {userPhoto && (
-                        <div style={{ padding: "0 16px 8px" }}>
-                          <button
-                            onClick={() => setIsEditingPhoto(true)}
-                            className="w-full flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:scale-[1.01] active:scale-98"
-                            style={{
-                              height: 40,
-                              borderRadius: 14,
-                              background: "rgba(251,191,36,0.1)",
-                              border: "1px solid rgba(251,191,36,0.3)",
-                              color: "#fbbf24",
-                              fontSize: 12,
-                              fontFamily: "sans-serif",
-                              fontWeight: 700,
-                              letterSpacing: "0.02em",
-                              transition: "all 0.2s",
-                            }}
-                          >
-                            🎨 {isHi ? "पोस्टर एडिट करें" : "Edit That Poster"}
-                          </button>
-                        </div>
-                      )}
-
                       {/* Hairline divider */}
-                      <div style={{ height: "0.5px", background: "rgba(255,255,255,0.06)", margin: "0 16px 8px" }} />
+                      <div style={{ height: "0.5px", background: isDark ? "rgba(255,255,255,0.06)" : "rgba(84,61,43,0.15)", margin: "0 16px 8px" }} />
 
                       {/* Action buttons row — equal height, 18px radius */}
-                      <div className="flex items-stretch gap-2" style={{ padding: "0 16px 20px" }}>
+                      <div className="flex items-stretch gap-2" style={{ padding: "0 16px 14px" }}>
                         {/* Download — outlined secondary */}
                         <button
                           onClick={handleDownloadPoster}
                           disabled={!compiledPosterUrl}
                           className="flex-1 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                           style={{
-                            height: 48,
+                            height: 44,
                             borderRadius: 18,
-                            background: "transparent",
-                            border: "1.5px solid rgba(251,191,36,0.28)",
-                            color: "rgba(251,191,36,0.85)",
+                            background: isDark ? "transparent" : "#FFFDF8",
+                            border: isDark ? "1.5px solid rgba(251,191,36,0.28)" : "1.5px solid #651317",
+                            color: isDark ? "rgba(251,191,36,0.85)" : "#651317",
                             fontSize: 12,
                             fontFamily: "sans-serif",
                             fontWeight: 700,
@@ -5716,10 +5910,10 @@ export default function BlessingsPage() {
                           disabled={!compiledPosterUrl}
                           className="flex-[1.4] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
                           style={{
-                            height: 48,
+                            height: 44,
                             borderRadius: 18,
-                            background: "linear-gradient(135deg, #e8960a 0%, #c97c04 100%)",
-                            color: "#1a0500",
+                            background: isDark ? "linear-gradient(135deg, #e8960a 0%, #c97c04 100%)" : "linear-gradient(135deg, #651317 0%, #8B1E24 100%)",
+                            color: isDark ? "#1a0500" : "#FFFDF8",
                             fontSize: 13,
                             fontFamily: "sans-serif",
                             fontWeight: 800,
@@ -5753,50 +5947,46 @@ export default function BlessingsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowProfileEdit(false)}
-              className="fixed inset-0 z-[155]"
-              style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+              className="fixed inset-0 z-[155] bg-black/60 backdrop-blur-sm"
             />
-            {/* Sheet */}
+            {/* Sheet — position above mobile bottom nav */}
             <motion.div
               initial={{ y: "100%", opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 30, stiffness: 260 }}
-              className="fixed inset-x-0 bottom-0 z-[160] pointer-events-auto"
-              style={{
-                background: "linear-gradient(180deg, #120603 0%, #0a0200 100%)",
-                borderTop: "1px solid rgba(251,191,36,0.25)",
-                borderRadius: "28px 28px 0 0",
-                padding: "8px 20px 32px",
-                boxShadow: "0 -20px 60px rgba(0,0,0,0.8)",
-              }}
+              className={cn(
+                "fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] md:bottom-auto md:top-[20%] max-w-md mx-auto z-[160] pointer-events-auto rounded-t-[2.2rem] md:rounded-[2rem] p-6 shadow-2xl border flex flex-col gap-4",
+                isDark
+                  ? "bg-gradient-to-b from-[#120603] to-[#0a0200] border-amber-500/25 text-stone-200 shadow-black/80"
+                  : "bg-[#FFFDF8] border-[#EAD7C3] text-[#3A2418] shadow-stone-900/20"
+              )}
             >
               {/* Drag handle */}
-              <div className="flex justify-center pt-2 pb-4">
-                <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(251,191,36,0.25)" }} />
+              <div className="flex justify-center pt-1 pb-2">
+                <div className={cn("w-10 h-1 rounded-full", isDark ? "bg-amber-500/25" : "bg-[#651317]/25")} />
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between mb-5">
-                <span style={{ fontSize: 14, fontFamily: "serif", fontWeight: 800, color: "#fef3c7", letterSpacing: "0.02em" }}>
+              <div className="flex items-center justify-between">
+                <span className={cn("font-serif text-base font-black uppercase tracking-wider", isDark ? "text-[#fef3c7]" : "text-[#651317]")}>
                   {isHi ? "प्रोफ़ाइल बदलें" : "Edit Profile"}
                 </span>
                 <button
                   onClick={() => setShowProfileEdit(false)}
-                  className="flex items-center justify-center active:scale-95 transition-all cursor-pointer"
-                  style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24" }}
+                  className={cn("w-8 h-8 rounded-full border flex items-center justify-center transition-colors cursor-pointer", isDark ? "bg-amber-500/10 border-amber-500/25 text-amber-400" : "bg-[#651317]/10 border-[#651317]/20 text-[#651317]")}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               {/* Name input */}
-              <div className="mb-5">
-                <label style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "#fbbf24", display: "block", marginBottom: 8 }}>
+              <div>
+                <label className={cn("text-[10px] font-sans font-black uppercase tracking-widest block mb-2", isDark ? "text-amber-400" : "text-[#786252]")}>
                   {isHi ? "आपका नाम" : "Your Name"}
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/70" />
+                  <UserIcon className={cn("absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4", isDark ? "text-amber-500/70" : "text-[#651317]/70")} />
                   <input
                     type="text"
                     maxLength={30}
@@ -5804,32 +5994,27 @@ export default function BlessingsPage() {
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     autoFocus
-                    className="w-full focus:outline-none tracking-wide placeholder:text-amber-200/80"
-                    style={{
-                      background: "rgba(0,0,0,0.5)",
-                      border: "1px solid rgba(251,191,36,0.25)",
-                      borderRadius: 14,
-                      padding: "13px 48px 13px 40px",
-                      fontSize: 15,
-                      fontFamily: "serif",
-                      fontWeight: 600,
-                      color: "#fef3c7",
-                    }}
+                    className={cn(
+                      "w-full rounded-xl py-3 pl-11 pr-14 text-sm font-serif font-semibold focus:outline-none tracking-wide border transition-colors",
+                      isDark
+                        ? "bg-black/50 border-amber-500/25 text-[#fef3c7] placeholder:text-amber-200/50"
+                        : "bg-white border-[#EAD7C3] text-[#3A2418] placeholder:text-[#786252]/50"
+                    )}
                   />
-                  <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 9, color: "rgba(251,191,36,0.8)", fontWeight: 700 }}>
+                  <span className={cn("absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
                     {userName.length}/30
                   </span>
                 </div>
               </div>
 
-              {/* Photo upload */}
-              <div className="mb-6">
-                <label style={{ fontSize: 10, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.12em", color: "#fbbf24", display: "block", marginBottom: 8 }}>
+              {/* Photo upload section */}
+              <div>
+                <label className={cn("text-[10px] font-sans font-black uppercase tracking-widest block mb-2", isDark ? "text-amber-400" : "text-[#786252]")}>
                   {isHi ? "श्रद्धालु चित्र" : "Devotee Photo"}
                 </label>
-                <div className="flex items-center gap-3" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(251,191,36,0.15)", borderRadius: 14, padding: "12px 14px" }}>
-                  <div style={{ width: 46, height: 46, borderRadius: "50%", border: "2px solid rgba(251,191,36,0.45)", background: "#1b0a05", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 10px rgba(251,191,36,0.2)" }}>
-                    {userPhoto ? <img src={userPhoto} alt="devotee" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontFamily: "serif", color: "rgba(251,191,36,0.55)", fontSize: 20 }}>ॐ</span>}
+                <div className={cn("flex items-center gap-3 rounded-2xl p-3 border", isDark ? "bg-black/40 border-amber-500/15" : "bg-[#FCF6E8] border-[#EAD7C3]")}>
+                  <div className={cn("w-12 h-12 rounded-full border-2 overflow-hidden flex items-center justify-center shrink-0 shadow-md", isDark ? "border-amber-500/45 bg-[#1b0a05]" : "border-[#D4A437] bg-white")}>
+                    {userPhoto ? <img src={userPhoto} alt="devotee" className="w-full h-full object-cover" /> : <span className={cn("font-serif text-lg", isDark ? "text-amber-400/70" : "text-[#651317]")}>ॐ</span>}
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
@@ -5840,17 +6025,18 @@ export default function BlessingsPage() {
                         }
                         profileEditFileInputRef.current?.click();
                       }}
-                      className="flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-                      style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-sans font-black uppercase tracking-wider cursor-pointer transition-all active:scale-95 border",
+                        isDark ? "bg-amber-500/12 border-amber-500/30 text-amber-300" : "bg-[#651317]/10 border-[#651317]/25 text-[#651317]"
+                      )}
                     >
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-3.5 h-3.5" />
                       <span>{userPhoto ? (isHi ? "बदलें" : "Change") : (isHi ? "अपलोड करें" : "Upload Photo")}</span>
                     </button>
                     {userPhoto && (
                       <button
                         onClick={() => setUserPhoto(null)}
-                        className="active:scale-95 transition-all cursor-pointer"
-                        style={{ padding: "8px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", fontSize: 11, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase" }}
+                        className="px-3 py-2 rounded-xl text-[11px] font-sans font-black uppercase cursor-pointer transition-all active:scale-95 border bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
                       >
                         {isHi ? "हटाएं" : "Remove"}
                       </button>
@@ -5875,15 +6061,62 @@ export default function BlessingsPage() {
                 </div>
               </div>
 
-              {/* Save button */}
-              <button
-                onClick={() => setShowProfileEdit(false)}
-                className="w-full active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
-                style={{ padding: "15px", borderRadius: 16, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#1a0500", fontSize: 14, fontFamily: "sans-serif", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", boxShadow: "0 4px 20px rgba(245,158,11,0.35)" }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: 16, height: 16 }}><polyline points="20 6 9 17 4 12"/></svg>
-                <span>{isHi ? "सहेजें" : "Save Profile"}</span>
-              </button>
+              {/* Action Buttons: Save & Delete */}
+              <div className="space-y-2 pt-1">
+                <button
+                  onClick={() => {
+                    if (!userName.trim()) {
+                      toast.error(isHi ? "कृपया नाम दर्ज करें!" : "Please enter your name!");
+                      return;
+                    }
+                    try {
+                      localStorage.setItem("hk_profile_name", userName.trim());
+                      if (userPhoto) {
+                        localStorage.setItem("hk_profile_photo", userPhoto);
+                      } else {
+                        localStorage.removeItem("hk_profile_photo");
+                      }
+                    } catch (err) {}
+                    setShowProfileEdit(false);
+                    toast.success(isHi ? "प्रोफ़ाइल सहेज ली गई!" : "Profile saved successfully!");
+                  }}
+                  className={cn(
+                    "w-full py-3.5 rounded-xl font-sans font-black text-xs uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all",
+                    isDark
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
+                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                  )}
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{isHi ? "सहेजें" : "Save Profile"}</span>
+                </button>
+
+                {/* Delete Profile Option */}
+                {(userPhoto || (userName && userName !== "हरि भक्त")) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserPhoto(null);
+                      setUserName("हरि भक्त");
+                      try {
+                        localStorage.removeItem("hk_profile_name");
+                        localStorage.removeItem("hk_profile_photo");
+                      } catch (err) {}
+                      setShowProfileEdit(false);
+                      toast.info(isHi ? "प्रोफ़ाइल हटा दी गई!" : "Profile deleted & reset!");
+                    }}
+                    className={cn(
+                      "w-full py-2.5 rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border active:scale-95",
+                      isDark
+                        ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                        : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                    )}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isHi ? "प्रोफ़ाइल / फ़ोटो हटाएं" : "Delete Profile & Photo"}</span>
+                  </button>
+                )}
+              </div>
             </motion.div>
           </>
         )}

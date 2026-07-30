@@ -21,13 +21,13 @@ export default function MandalaFrame({ category, isLive, isDark = false, classNa
         }}
       />
       
-      {/* Static Detailed Mandala SVG behind/below the circle (95% high opacity, saffron filtered, increased size) */}
+      {/* Static Detailed Mandala SVG behind/below the circle (softer opacity, saffron filtered, increased size) */}
       <img 
         src={mandalaSvg} 
         alt="" 
         className="absolute w-[116%] h-[116%] max-w-none object-contain pointer-events-none select-none z-0"
         style={{
-          opacity: 0.95,
+          opacity: 0.40,
           filter: 'invert(47%) sepia(93%) saturate(1750%) hue-rotate(12deg) brightness(97%) contrast(95%)',
         }}
       />

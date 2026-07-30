@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronUp, Bell } from 'lucide-react'
+import { ChevronUp, Bell, ArrowLeft, Video } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { deities } from '@/lib/deities'
 import { useLang } from '@/lib/i18n'
 import {
@@ -15,7 +16,6 @@ import {
   playDiyaTone,
   playShankhTone,
 } from '@/lib/temple-audio'
-import { TempleGates } from './temple-gates'
 import { HangingBells } from './hanging-bells'
 import { FlowerParticles } from './flower-particles'
 import { AartiOverlay } from './aarti-overlay'
@@ -23,6 +23,10 @@ import { WorshipTray, type PujaAction } from './worship-tray'
 import { DeityStrip } from './deity-strip'
 import { FlowerPicker } from './flower-picker'
 import { BhogPicker } from './bhog-picker'
+import basuriSvg from '@/pages/images/svg/basuri.svg'
+import basuriWithoutFeatherSvg from '@/pages/images/svg/basuri without feather.svg'
+import leftFeatherSvg from '@/pages/images/svg/left feather.svg'
+import rightFeatherSvg from '@/pages/images/svg/right feather.svg'
 
 const XP_KEY = 'mandir-bhakti-xp'
 const GATE_CLOSE_MS = 400
@@ -38,8 +42,9 @@ interface Petal {
 }
 
 export function DarshanScreen() {
-  const { t, lang, toggle } = useLang()
-  const [gatesOpen, setGatesOpen] = useState(false)
+  const navigate = useNavigate()
+  const { t, lang } = useLang()
+  const [gatesOpen, setGatesOpen] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
   const [transitioning, setTransitioning] = useState(false)
 
@@ -110,10 +115,9 @@ export function DarshanScreen() {
     })
   }, [])
 
-  // Gate-open hero animation on mount
+  // Mount effect
   useEffect(() => {
     const timer = setTimeout(() => {
-      setGatesOpen(true)
       playBellChime()
     }, 150)
     const hintTimer = setTimeout(() => setShowSwipeHint(false), 6000)
@@ -135,23 +139,16 @@ export function DarshanScreen() {
   }, [])
 
   /**
-   * Reel-style deity change: gates close → deity switches behind the
-   * closed doors → gates reopen with a bell chime on the new god.
+   * Deity change: switches deity directly with bell chime.
    */
   const changeDeity = useCallback(
     (index: number) => {
       if (transitioning || index === activeIndex) return
       setTransitioning(true)
       setShowSwipeHint(false)
-      setGatesOpen(false)
-      setTimeout(() => {
-        setActiveIndex(index)
-        setTimeout(() => {
-          setGatesOpen(true)
-          playBellChime()
-          setTimeout(() => setTransitioning(false), GATE_CLOSE_MS)
-        }, GATE_REOPEN_DELAY_MS)
-      }, GATE_CLOSE_MS)
+      setActiveIndex(index)
+      playBellChime()
+      setTimeout(() => setTransitioning(false), 300)
     },
     [transitioning, activeIndex],
   )
@@ -191,7 +188,7 @@ export function DarshanScreen() {
         else prevDeity()
         setTimeout(() => {
           wheelLock.current = false
-        }, 1600)
+        }, 350)
       }
     },
     [transitioning, nextDeity, prevDeity, anyOverlayOpen],
@@ -309,13 +306,13 @@ export function DarshanScreen() {
 
   return (
     <div
-      className="relative mx-auto h-full w-full max-w-md overflow-hidden bg-[#FCF6E8] dark:bg-[#0d0705] transition-colors duration-300"
+      className="relative mx-auto h-full w-full max-w-md overflow-hidden bg-white dark:bg-[#0d0705] transition-colors duration-300"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onWheel={onWheel}
     >
-      {/* LAYER 1: Temple background — subtle radial warmth */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,#FFF9EE_0%,#F6EAD2_55%,#EAD7C3_100%)] dark:bg-[radial-gradient(ellipse_at_50%_42%,#3d1a08_0%,#1d0e06_55%,#0d0705_100%)] transition-all duration-300" />
+      {/* LAYER 1: Temple background — pure white top matching scrolling bar */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,#FFFFFF_0%,#FAFAFA_60%,#F3F0EA_100%)] dark:bg-[radial-gradient(ellipse_at_50%_42%,#3d1a08_0%,#1d0e06_55%,#0d0705_100%)] transition-all duration-300" />
 
       {/* LAYER 2: Divine rotating light rays behind deity */}
       <div
@@ -352,28 +349,6 @@ export function DarshanScreen() {
             opacity: intenseGlow ? 1 : glowPulse ? 0.75 : 0,
           }}
         />
-      </div>
-
-      {/* LAYER 4: Thin decorative golden arch — top only */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 right-0 left-0 z-20"
-      >
-        <svg viewBox="0 0 390 100" className="w-full" fill="none">
-          <path
-            d="M0 0h390v34c-26 0-36 22-62 22-24 0-30-14-52-14-20 0-26 10-46 10h-70c-20 0-26-10-46-10-22 0-28 14-52 14-26 0-36-22-62-22V0z"
-            className="fill-[#FCF6E8] dark:fill-[#0d0705] transition-colors duration-300"
-          />
-          <path
-            d="M0 34c26 0 36 22 62 22 24 0 30-14 52-14 20 0 26 10 46 10h70c20 0 26-10 46-10 22 0 28 14 52 14 26 0 36-22 62-22"
-            stroke="#d4a853"
-            strokeWidth="2"
-            opacity="0.8"
-          />
-          {/* Kalash at center */}
-          <path d="M195 22l-7 12h14l-7-12z" fill="#d4a853" />
-          <circle cx="195" cy="18" r="3.5" fill="#f97316" />
-        </svg>
       </div>
 
       {/* LAYER 5: Hanging bells */}
@@ -451,130 +426,88 @@ export function DarshanScreen() {
         )}
       </AnimatePresence>
 
-      {/* LAYER 6: Beautiful Temple Header */}
-      <header className="absolute top-0 right-0 left-0 z-50 flex flex-col bg-[#FCF6E8]/95 dark:bg-[#0d0705]/95 border-b border-[#EAD7C3] dark:border-[#d4a853]/25 px-4 pt-4 pb-3 gap-2 transition-all duration-300 backdrop-blur-md">
+      {/* LAYER 6: Seamless Temple Header */}
+      <header className="absolute top-0 right-0 left-0 z-50 flex flex-col px-3 sm:px-4 pt-3.5 pb-0 transition-all duration-300">
         
-        {/* Top Row: Language | Jaikara & Lotus Divider | Diya & Bell */}
-        <div className="flex items-center justify-between w-full min-h-[44px]">
-          
-          {/* Left: Language Toggle */}
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label="Toggle language"
-            className="rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 px-3.5 py-1.5 font-serif text-xs text-[#543D2B] dark:text-[#fcefd2] shadow-inner transition-all hover:border-[#E06D14]/40 dark:hover:border-[#d4a853]/60 active:scale-95"
-          >
-            {'हिं / EN'}
-          </button>
-
-          {/* Center: Jaikara & Lotus Divider */}
-          <div className="flex flex-col items-center justify-center text-center flex-1 mx-2">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={`${deity.id}-jaikara`}
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: gatesOpen ? 1 : 0, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
-                transition={{ duration: 0.3 }}
-                className="font-serif text-[15px] font-bold text-[#E06D14] dark:text-[#f2b84b] drop-shadow-[0_1.5px_4px_rgba(255,255,255,0.1)] dark:drop-shadow-[0_1.5px_4px_rgba(0,0,0,0.95)] tracking-wide leading-none"
+        {/* Header Contents */}
+        <div className="relative z-10 flex flex-col gap-1">
+          {/* Top Row: Back Button (Left) | Title & Bansuri (Centered) | Bell Icon (Right) */}
+          <div className="relative flex items-center justify-between w-full min-h-[50px] px-1 pt-0.5">
+            
+            {/* Left: Back Button */}
+            <div className="flex items-center justify-start z-10">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                aria-label="Go back"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d4a853]/60 bg-[#3D1409]/90 dark:bg-[#1A0804]/95 text-[#FCEFD2] shadow-md backdrop-blur-md transition-all hover:bg-[#581C0E] hover:border-[#f2b84b] hover:scale-105 active:scale-95 cursor-pointer p-2.5"
               >
-                {deity.jaikara}
-              </motion.p>
-            </AnimatePresence>
-
-            {/* Lotus Divider SVG */}
-            <svg
-              className="w-36 h-5 text-[#E06D14]/80 dark:text-[#d4a853] mt-1 drop-shadow-[0_1px_2px_rgba(255,255,255,0.1)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
-              viewBox="0 0 200 30"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 15 C45 15, 60 20, 85 15 C88 14.5, 89 12, 87 11 C85 10, 81 12, 82 14 C83 16, 88 17, 90 15"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-                fill="none"
-              />
-              <path
-                d="M190 15 C155 15, 140 20, 115 15 C112 14.5, 111 12, 113 11 C115 10, 119 12, 118 14 C117 16, 112 17, 110 15"
-                stroke="currentColor"
-                strokeWidth="1"
-                strokeLinecap="round"
-                fill="none"
-              />
-              <circle cx="10" cy="15" r="1.5" fill="currentColor" />
-              <circle cx="190" cy="15" r="1.5" fill="currentColor" />
-              <g transform="translate(88, 3) scale(0.18)" fill="currentColor">
-                <path d="M66.7,68.9c0,0-5.8-12.7-5.8-24.9c0-10.7,5.8-21.7,5.8-21.7s5.8,11,5.8,21.7C72.5,56.2,66.7,68.9,66.7,68.9z" />
-                <path d="M66.7,68.9c-3.1-2.9-14-11.8-19.1-22.3c-4.4-9.1-3.6-20.5-3.6-20.5s9.6,7.5,15,16.5C64,51,66.7,68.9,66.7,68.9z" />
-                <path d="M66.7,68.9c3.1-2.9,14-11.8,19.1-22.3c4.4-9.1,3.6-20.5,3.6-20.5s-9.6,7.5-15,16.5C69.4,51,66.7,68.9,66.7,68.9z" />
-                <path d="M66.7,68.9c-5.8-1.5-21-4.8-29.2-12.8C29.4,48,27,37.3,27,37.3s11.5,2.6,21,9c8.2,5.5,18.7,22.6,18.7,22.6z" />
-                <path d="M66.7,68.9c5.8-1.5,21-4.8,29.2-12.8C104,48,106.4,37.3,106.4,37.3s-11.5,2.6-21,9C77.2,54.8,66.7,68.9,66.7,68.9z" />
-              </g>
-            </svg>
-          </div>
-
-          {/* Right: Diya/XP Pill & Bell Circle */}
-          <div className="flex items-center gap-2">
-            {/* Diya / XP Pill */}
-            <div className="flex items-center gap-1.5 rounded-full border border-[#EAD7C3] dark:border-[#d4a853]/30 bg-white/60 dark:bg-black/40 px-3 py-1.5 text-xs text-[#543D2B] dark:text-[#fcefd2] shadow-inner select-none">
-              <svg className="w-5 h-4 shrink-0" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12,0 C12,0 15,4.5 15,7 C15,8.66 13.66,10 12,10 C10.34,10 9,8.66 9,7 C9,4.5 12,0 12,0 Z" fill="url(#flameGrad)" />
-                <path d="M3,9 C3,9 2,11 2,12 C2,14.5 6.5,16 12,16 C17.5,16 22,14.5 22,12 C22,11 21,9 21,9 C19.5,10.5 16,11.5 12,11.5 C8,11.5 4.5,10.5 3,9 Z" fill="url(#diyaGrad)" stroke="#d4a853" strokeWidth="0.5" />
-                <defs>
-                  <radialGradient id="flameGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#ffffff" />
-                    <stop offset="25%" stopColor="#ffee55" />
-                    <stop offset="70%" stopColor="#ff7a00" />
-                    <stop offset="100%" stopColor="#ff3c00" stopOpacity="0" />
-                  </radialGradient>
-                  <linearGradient id="diyaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#d4a853" />
-                    <stop offset="50%" stopColor="#aa8844" />
-                    <stop offset="100%" stopColor="#665522" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <span className="font-serif font-semibold">{xp}</span>
+                <ArrowLeft className="h-5 w-5 text-[#FCEFD2]" />
+              </button>
             </div>
 
-            {/* Bell Icon */}
-            <button
-              type="button"
-              onClick={ringHeaderBell}
-              disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning || bellActive}
-              className="flex h-8 w-8 shrink-0 items-center justify-center transition-all hover:opacity-80 active:scale-90 disabled:opacity-50"
-              aria-label="Ring bell"
-            >
-              <Bell className="h-5.5 w-5.5 fill-[#651317] dark:fill-[#d4a853] text-[#651317] dark:text-[#d4a853]" />
-            </button>
+            {/* Center: Left Feather + Deity Name Heading & Bansuri Without Feather + Right Feather */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-0 flex flex-col items-center justify-center text-center z-10 pointer-events-none w-full max-w-[90%] sm:max-w-[82%]">
+              <div className="flex items-center justify-center gap-2 sm:gap-3.5 w-full">
+                {/* Left Feather */}
+                <img
+                  src={leftFeatherSvg}
+                  alt=""
+                  className="h-10 sm:h-14 md:h-16 w-auto object-contain shrink-0 filter drop-shadow-[0_2px_8px_rgba(212,168,83,0.5)] transition-transform duration-300 hover:scale-105"
+                />
+
+                {/* Deity Name Heading */}
+                <AnimatePresence mode="wait">
+                  <motion.h1
+                    key={`${deity.id}-name`}
+                    initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                    animate={{ opacity: gatesOpen ? 1 : 0, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="font-serif text-[24px] sm:text-[28px] md:text-[32px] font-black text-[#5C1217] dark:text-[#f8c968] tracking-wide leading-none py-0.5 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] whitespace-nowrap"
+                  >
+                    {lang === 'hi' ? deity.nameHindi : deity.nameEnglish}
+                  </motion.h1>
+                </AnimatePresence>
+
+                {/* Right Feather */}
+                <img
+                  src={rightFeatherSvg}
+                  alt=""
+                  className="h-10 sm:h-14 md:h-16 w-auto object-contain shrink-0 filter drop-shadow-[0_2px_8px_rgba(212,168,83,0.5)] transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+
+              {/* Bansuri Without Feather directly below the deity name */}
+              <img
+                src={basuriWithoutFeatherSvg}
+                alt="Divine Flute"
+                className="h-5 sm:h-7 md:h-8 w-[200px] sm:w-[300px] md:w-[360px] max-w-full object-contain -mt-0.5 filter drop-shadow-[0_2px_6px_rgba(212,168,83,0.45)] transition-transform duration-300"
+              />
+            </div>
+
+            {/* Right: Bell Icon Button */}
+            <div className="flex items-center justify-end z-10">
+              <button
+                type="button"
+                onClick={ringHeaderBell}
+                disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning || bellActive}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d4a853]/60 bg-[#3D1409]/90 dark:bg-[#1A0804]/95 text-[#FCEFD2] shadow-md backdrop-blur-md transition-all hover:bg-[#581C0E] hover:border-[#f2b84b] hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer p-2.5"
+                aria-label="Ring bell"
+              >
+                <Bell className="h-5 w-5 fill-[#FCEFD2] text-[#FCEFD2] transition-transform duration-300 hover:rotate-12" />
+              </button>
+            </div>
+
           </div>
 
-        </div>
-
-        {/* Bottom Row: Deity Selector Strip */}
-        <div className="w-full mt-1">
-          <DeityStrip activeIndex={activeIndex} onSelect={changeDeity} />
+          {/* Bottom Row: Deity Selector Strip Shifted Up */}
+          <div className="w-full mt-0.5 translate-y-0.5 sm:translate-y-1 z-20">
+            <DeityStrip activeIndex={activeIndex} onSelect={changeDeity} />
+          </div>
         </div>
 
       </header>
-
-      {/* Swipe hint — fades out after a few seconds */}
-      <AnimatePresence>
-        {showSwipeHint && gatesOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 1.2 }}
-            className="pointer-events-none absolute bottom-24 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-0.5"
-          >
-            <ChevronUp className="swipe-hint-bounce h-4 w-4 text-white/70" />
-            <p className="text-[11px] text-white/70">{t('swipeHint')}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Aarti — auto-rotating thali */}
       <AartiOverlay
@@ -614,11 +547,6 @@ export function DarshanScreen() {
         onAction={handleAction}
         disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning}
       />
-
-      {/* Temple gates (above all darshan layers, below header) */}
-      <div className="absolute top-[112px] right-0 bottom-20 left-0 z-[55] pointer-events-none">
-        <TempleGates open={gatesOpen} />
-      </div>
 
       {/* Flower & bhog pickers */}
       <FlowerPicker

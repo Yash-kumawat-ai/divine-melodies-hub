@@ -465,7 +465,7 @@ export default function Home() {
                   scale: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
                   default: { delay: i * 0.02, duration: 0.3 }
                 }}
-                className="flex flex-col items-center justify-center p-2 min-[420px]:p-2.5 md:p-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:from-[#1E1710] dark:to-[#150F0A] border border-[#E8D8C4]/60 dark:border-[rgba(201,167,110,0.15)] shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
+                className="flex flex-col items-center justify-center p-2 min-[420px]:p-2.5 md:p-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
                 style={{
                   transitionDuration: '200ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -498,15 +498,15 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Title (Subtitle hidden completely, title 16px, weight 600, color #2E1F14, margin-top 12px) */}
+                {/* Title */}
                 <div className="flex flex-col items-center justify-center z-10 mt-2">
-                  <span className="text-[16px] font-semibold text-[#3A2418] dark:text-[#F3ECE4] leading-tight group-hover:text-[#651317] dark:group-hover:text-amber-400 transition-colors">
+                  <span className="text-[16px] font-semibold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
                     {item.title}
                   </span>
                 </div>
 
-                {/* Small Circular Arrow Button (Hidden on mobile, shown on desktop) */}
-                <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 items-center justify-center text-xs text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 dark:group-hover:bg-amber-600 group-hover:text-white transition-all duration-150 ease-out transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 shrink-0 z-10">
+                {/* Small Circular Arrow Button */}
+                <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 dark:border-[#D4A437]/40 items-center justify-center text-xs text-amber-600 dark:text-[#D4A437] group-hover:bg-[#651317] dark:group-hover:bg-[#D4A437] group-hover:text-white dark:group-hover:text-[#1A120B] transition-all duration-150 ease-out transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 shrink-0 z-10">
                   →
                 </div>
               </motion.button>
