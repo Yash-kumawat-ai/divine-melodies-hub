@@ -24,7 +24,7 @@ const ACTIONS: {
       <img
         src="/images/marigold.png"
         alt=""
-        className="h-7 w-7 object-contain"
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
       />
     ),
   },
@@ -35,7 +35,7 @@ const ACTIONS: {
       <img
         src="/images/puja-thali.png"
         alt=""
-        className="h-7 w-7 object-contain"
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
       />
     ),
   },
@@ -46,7 +46,7 @@ const ACTIONS: {
       <img
         src="/images/diya-brass.png"
         alt=""
-        className="h-7 w-7 object-contain"
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
       />
     ),
   },
@@ -54,7 +54,11 @@ const ACTIONS: {
     id: 'shankh',
     labelKey: 'shankh',
     icon: (
-      <img src="/images/conch.png" alt="" className="h-7 w-7 object-contain" />
+      <img
+        src="/images/conch.png"
+        alt=""
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
+      />
     ),
   },
   {
@@ -64,7 +68,7 @@ const ACTIONS: {
       <img
         src="/images/bell-hand.png"
         alt=""
-        className="h-7 w-7 object-contain"
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
       />
     ),
   },
@@ -75,7 +79,7 @@ const ACTIONS: {
       <img
         src="/images/bhog/laddu.png"
         alt=""
-        className="h-7 w-7 object-contain"
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
       />
     ),
   },
@@ -84,20 +88,20 @@ const ACTIONS: {
     labelKey: 'dhoop',
     icon: (
       // Incense stick with smoke
-      <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="h-10 w-10 sm:h-11 sm:w-11" fill="none" aria-hidden="true">
         <path
           d="M12 21V9"
-          stroke="#c9a96e"
-          strokeWidth="1.6"
+          stroke="#D4A853"
+          strokeWidth="2"
           strokeLinecap="round"
         />
-        <circle cx="12" cy="7.5" r="1.6" fill="#f97316" />
+        <circle cx="12" cy="7.5" r="2" fill="#f97316" />
         <path
           d="M12 5c-1.2-1.2.8-2 0-3.2M14.5 5.5c-1-.9.6-1.6 0-2.6"
-          stroke="#c9a96e"
-          strokeWidth="1.1"
+          stroke="#D4A853"
+          strokeWidth="1.4"
           strokeLinecap="round"
-          opacity="0.7"
+          opacity="0.85"
         />
       </svg>
     ),
@@ -106,7 +110,11 @@ const ACTIONS: {
     id: 'mala',
     labelKey: 'mala',
     icon: (
-      <img src="/images/mala.png" alt="" className="h-7 w-7 object-contain" />
+      <img
+        src="/images/mala.png"
+        alt=""
+        className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-[0_2px_6px_rgba(61,20,9,0.12)] transition-transform duration-200 group-hover:scale-110"
+      />
     ),
   },
 ]
@@ -122,24 +130,35 @@ export function WorshipTray({
   return (
     <nav
       aria-label={t('offeringsLabel')}
-      className="absolute right-0 bottom-0 left-0 z-50 border-t border-[#EAD7C3] dark:border-gold/30 bg-gradient-to-t from-[#FCF6E8] to-[#FCF6E8]/95 dark:from-[#0d0705] dark:to-[#0d0705]/95 pb-[env(safe-area-inset-bottom)] transition-all duration-300"
+      className="absolute right-0 bottom-0 left-0 z-50 rounded-t-[16px] sm:rounded-t-[20px] border-t border-[#D4A853]/60 dark:border-[#D4A853]/40 bg-[#FFF9EE] dark:bg-[#1A0804] shadow-[0_-4px_20px_rgba(61,20,9,0.1)] backdrop-blur-md pb-[calc(0.35rem+env(safe-area-inset-bottom))] transition-all duration-300"
     >
-      <ul className="no-scrollbar flex items-center gap-1 overflow-x-auto px-3 py-2.5">
-        {ACTIONS.map((action) => (
-          <li key={action.id} className="shrink-0">
+      {/* Top Handle Accent Line */}
+      <div className="w-10 h-[3.5px] rounded-full bg-[#C99C4B]/60 dark:bg-[#D4A853]/40 mx-auto mt-1.5 mb-0.5" />
+
+      <ul className="no-scrollbar flex items-center overflow-x-auto px-2 sm:px-4 py-1 justify-start sm:justify-center">
+        {ACTIONS.map((action, index) => (
+          <li key={action.id} className="flex items-center shrink-0">
             <button
               type="button"
               disabled={disabled}
               onClick={() => onAction(action.id)}
-              className="group flex w-[68px] flex-col items-center gap-1 focus-visible:outline-none disabled:opacity-50"
+              className="group flex w-[72px] sm:w-[80px] flex-col items-center gap-0.5 focus-visible:outline-none disabled:opacity-40 cursor-pointer select-none py-0.5"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border-[1.5px] border-[#EAD7C3] dark:border-gold/50 bg-[#FFF5EA] dark:bg-gold/10 transition-all duration-150 group-active:scale-90 group-active:border-[#E06D14] dark:group-active:border-saffron group-active:bg-[#E06D14]/10 dark:group-active:bg-saffron/30">
+              {/* Direct Floating 3D Image */}
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center">
                 {action.icon}
-              </span>
-              <span className="font-serif text-[11px] whitespace-nowrap text-[#543D2B] dark:text-white/80 transition-colors duration-300">
+              </div>
+
+              {/* Ritual Text Label */}
+              <span className="font-serif text-[12px] sm:text-[13px] font-bold tracking-wide text-[#3D1409] dark:text-[#FCEFD2] whitespace-nowrap transition-colors duration-200 group-hover:text-[#80220A] dark:group-hover:text-[#FFFFFF]">
                 {t(action.labelKey)}
               </span>
             </button>
+
+            {/* Thin Golden Vertical Divider Line Between Items */}
+            {index < ACTIONS.length - 1 && (
+              <div className="h-7 w-[1px] bg-[#D4A853]/40 dark:bg-[#D4A853]/30 shrink-0 self-center mx-1" />
+            )}
           </li>
         ))}
       </ul>
