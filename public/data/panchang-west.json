@@ -1,17 +1,17 @@
 {
-  "date": "2026-07-30",
+  "date": "2026-07-31",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Padyami",
+  "tithi": "Vidiya",
   "tithi_number": 0,
-  "nakshatra": "Sravana - 3",
-  "yoga": "Ayushman",
-  "karana": "Balava",
+  "nakshatra": "Dhanishta - 2",
+  "yoga": "Saubhagya",
+  "karana": "Taitula",
   "paksha": "Krishna",
   "sunrise": "06:18 AM",
-  "sunset": "07:11 PM",
-  "rahu_kaal": "12:44 PM - 02:21 PM",
+  "sunset": "07:10 PM",
+  "rahu_kaal": "02:20 PM - 03:57 PM",
   "brahma_muhurat": "04:42 AM - 05:30 AM",
-  "vara": "Guruvaar",
-  "updated_at": "2026-07-30T06:23:03+05:30"
+  "vara": "Shukravaar",
+  "updated_at": "2026-07-31T06:33:08+05:30"
 }
