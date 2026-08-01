@@ -35,6 +35,7 @@ import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
 import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
 import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
 import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
+import ramJiSvg from "@/pages/images/svg/ram ji.svg";
 
 // ─── SHANKH & BELL SYNTH SOUND GENERATOR ──────────────────────────
 const playBellSound = (volumeEnabled: boolean) => {
@@ -141,6 +142,64 @@ interface FloatingText {
   x: number;
   y: number;
 }
+
+interface FallingFlower {
+  id: number;
+  image: string;
+  x: number;
+  size: number;
+  duration: number;
+  delay: number;
+  rotationSpeed: number;
+  driftX: number;
+}
+
+const SACRED_FLOWERS = [
+  "/images/ram-yellow-flower.svg",
+  "/images/radhe-pink-flower.svg",
+  "/images/shyam-blue-flower.svg",
+  "/images/shivayy-white-flower.svg",
+];
+
+const MaskedIcon = ({
+  src,
+  alt,
+  className = "w-6 h-6",
+  isDark,
+  active = true,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  isDark: boolean;
+  active?: boolean;
+}) => {
+  const color = active
+    ? isDark
+      ? "#fbbf24"
+      : "#591A0D"
+    : isDark
+      ? "rgba(255, 255, 255, 0.3)"
+      : "#94A3B8";
+
+  return (
+    <div
+      aria-label={alt}
+      className={`inline-block transition-colors duration-200 ${className}`}
+      style={{
+        backgroundColor: color,
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+      }}
+    />
+  );
+};
 
 export default function PremiumJapaCounter({
   mantra,
@@ -254,6 +313,15 @@ export default function PremiumJapaCounter({
   // Floating text animation states
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const floatingIdCounter = useRef(0);
+
+  // Falling Ram Yellow Flower particle animation states
+  const [fallingFlowers, setFallingFlowers] = useState<FallingFlower[]>([]);
+  const flowerIdCounter = useRef(0);
+
+  // 1-second tap throttle state & refs
+  const lastTapTimeRef = useRef<number>(0);
+  const [showTooFastToast, setShowTooFastToast] = useState(false);
+  const tooFastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // References for cleanup
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -397,10 +465,23 @@ export default function PremiumJapaCounter({
 
   // ─── INCREMENT ACTION ───────────────────────────────────────────
   const incrementCount = useCallback(() => {
-    if (isCompleted) return;
+    if (isCompleted || count >= targetCount) return;
+    
+    // Strict 1-second (1000ms) cooldown throttle check
+    const now = Date.now();
+    if (now - lastTapTimeRef.current < 1000) {
+      setShowTooFastToast(true);
+      if (tooFastTimeoutRef.current) clearTimeout(tooFastTimeoutRef.current);
+      tooFastTimeoutRef.current = setTimeout(() => {
+        setShowTooFastToast(false);
+      }, 1200);
+      return;
+    }
+    lastTapTimeRef.current = now;
     
     setCount((prev) => {
-      const next = prev + 1;
+      if (prev >= targetCount) return targetCount;
+      const next = Math.min(prev + 1, targetCount);
       
       // Play bell
       playBellSound(soundEnabled);
@@ -427,15 +508,40 @@ export default function PremiumJapaCounter({
       setTimeout(() => {
         setFloatingTexts((prevList) => prevList.filter((f) => f.id !== newFloat.id));
       }, 1500);
+
+      // Spawn 1 falling flower
+      const currentIdx = flowerIdCounter.current++;
+      const selectedFlowerImage = SACRED_FLOWERS[currentIdx % SACRED_FLOWERS.length];
+
+      const newFlower: FallingFlower = {
+        id: currentIdx,
+        image: selectedFlowerImage,
+        x: 5 + Math.random() * 90,
+        size: 28 + Math.random() * 14,
+        duration: 3.2 + Math.random() * 0.6,
+        delay: 0,
+        rotationSpeed: (Math.random() - 0.5) * 260,
+        driftX: (Math.random() - 0.5) * 60,
+      };
+
+      setFallingFlowers((prevFlowers) => {
+        const updated = [...prevFlowers, newFlower];
+        return updated.length > 25 ? updated.slice(updated.length - 25) : updated;
+      });
+
+      setTimeout(() => {
+        setFallingFlowers((prevFlowers) =>
+          prevFlowers.filter((f) => f.id !== newFlower.id)
+        );
+      }, (newFlower.duration + newFlower.delay) * 1000 + 150);
       
+      // STRICT COMPLETION TRIGGER: Trigger completion immediately when target is reached
       if (next >= targetCount) {
-        setTimeout(() => {
-          handleCompletion();
-        }, 400);
+        handleCompletion();
       }
       return next;
     });
-  }, [targetCount, isCompleted, soundEnabled, vibrationEnabled, activeMantra, isHi, handleCompletion]);
+  }, [count, targetCount, isCompleted, soundEnabled, vibrationEnabled, activeMantra, isHi, handleCompletion]);
 
   // ─── SCREEN TAP CLICK ───────────────────────────────────────────
   const handleBackgroundTap = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -808,6 +914,150 @@ export default function PremiumJapaCounter({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  // ─── ELEGANT THEME-AWARE COMPLETED OVERLAY ───────────────────────
+  const renderCompletedOverlay = () => {
+    if (!isCompleted) return null;
+    const finalCount = Math.min(count, targetCount);
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className={`fixed inset-0 z-[150] flex flex-col items-center justify-center p-4 text-center select-none backdrop-blur-md transition-colors duration-300 ${
+            isDark ? "bg-black/80" : "bg-black/45"
+          }`}
+        >
+          {/* Soft background aura glow */}
+          <div 
+            className={`absolute top-1/4 w-[320px] h-[320px] rounded-full blur-[90px] pointer-events-none ${
+              isDark ? "bg-amber-500/15" : "bg-[#D8A35A]/25"
+            }`} 
+          />
+
+          <motion.div
+            initial={{ scale: 0.92, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.92, y: 20 }}
+            transition={{ type: "spring", damping: 18, stiffness: 260 }}
+            className={`w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl relative border overflow-hidden transition-colors duration-300 ${
+              isDark 
+                ? "bg-gradient-to-b from-[#1c120a] via-[#150c06] to-[#0d0603] border-amber-500/30 text-[#fbf6f0] shadow-[0_16px_48px_rgba(0,0,0,0.6)]" 
+                : "bg-gradient-to-b from-[#FFFDF8] via-[#FFFBF2] to-[#FAF5E8] border-[#E8D8C4] text-[#3A2418] shadow-[0_16px_48px_rgba(89,26,13,0.18)]"
+            }`}
+          >
+            {/* Decorative top border accent */}
+            <div 
+              className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${
+                isDark 
+                  ? "from-transparent via-amber-500/70 to-transparent" 
+                  : "from-transparent via-[#591A0D]/50 to-transparent"
+              }`} 
+            />
+
+            {/* Top Ram Ji SVG Badge (Replaces Sparkles) */}
+            <div 
+              className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 p-2 shadow-lg transition-transform duration-300 hover:scale-105 ${
+                isDark 
+                  ? "bg-amber-500/15 border-2 border-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.2)]" 
+                  : "bg-[#FAF2E8] border-2 border-[#E8D8C4] shadow-[0_4px_20px_rgba(89,26,13,0.1)]"
+              }`}
+            >
+              <img 
+                src={ramJiSvg} 
+                alt="Shree Ram" 
+                className="w-14 h-14 object-contain filter drop-shadow-sm" 
+              />
+            </div>
+
+            {/* Heading & Subheading */}
+            <h1 className={`font-serif font-black text-2xl md:text-3xl uppercase tracking-widest mb-1 ${
+              isDark ? "text-amber-400" : "text-[#591A0D]"
+            }`}>
+              {isHi ? "साधना पूर्ण" : "Sadhana Complete"}
+            </h1>
+
+            <p className={`text-sm font-serif font-bold mb-6 ${
+              isDark ? "text-amber-200/90" : "text-[#786252]"
+            }`}>
+              Hari Om / हरी ॐ
+            </p>
+
+            {/* Stats Cards (Strictly Capped Count) */}
+            <div className="grid grid-cols-2 gap-3 mb-6 text-left">
+              <div className={`border rounded-2xl p-4 transition-colors ${
+                isDark ? "bg-[#24170E]/80 border-amber-500/20" : "bg-[#FAF2E8] border-[#E8D8C4]"
+              }`}>
+                <span className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                  isDark ? "text-white/40" : "text-[#786252]"
+                }`}>
+                  {isHi ? "जपे गए मंत्र" : "Total Chants"}
+                </span>
+                <span className={`font-serif font-black text-xl md:text-2xl ${
+                  isDark ? "text-amber-400" : "text-[#591A0D]"
+                }`}>
+                  {finalCount}
+                </span>
+              </div>
+
+              <div className={`border rounded-2xl p-4 transition-colors ${
+                isDark ? "bg-[#24170E]/80 border-amber-500/20" : "bg-[#FAF2E8] border-[#E8D8C4]"
+              }`}>
+                <span className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                  isDark ? "text-white/40" : "text-[#786252]"
+                }`}>
+                  {isHi ? "लगा समय" : "Duration"}
+                </span>
+                <span className={`font-serif font-black text-xl md:text-2xl ${
+                  isDark ? "text-amber-400" : "text-[#591A0D]"
+                }`}>
+                  {formatTime(secondsElapsed)}
+                </span>
+              </div>
+
+              <div className={`border rounded-2xl p-4 col-span-2 transition-colors ${
+                isDark ? "bg-[#24170E]/80 border-amber-500/20" : "bg-[#FAF2E8] border-[#E8D8C4]"
+              }`}>
+                <span className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                  isDark ? "text-white/40" : "text-[#786252]"
+                }`}>
+                  {isHi ? "आपका संकल्प" : "Sankalp Fulfilled"}
+                </span>
+                <span className={`text-sm font-semibold truncate block ${
+                  isDark ? "text-amber-100" : "text-[#591A0D]"
+                }`}>
+                  {sankalpText || (isHi ? "कोई नहीं" : "None")}
+                </span>
+              </div>
+            </div>
+
+            {/* Blessing Quote */}
+            <p className={`text-xs leading-relaxed mb-6 font-medium italic ${
+              isDark ? "text-white/60" : "text-[#786252]"
+            }`}>
+              {isHi
+                ? "“परम चेतना आपके संकल्प को सिद्धि प्रदान करें और आपके जीवन में सुख-शांति का संचार हो।”"
+                : "“May your intention find fulfillment and may the divine vibrations bring peace and clarity to your life.”"}
+            </p>
+
+            {/* Save Sadhana Button (Matching fixed website button color #591A0D) */}
+            <button
+              onClick={() => onComplete(finalCount, secondsElapsed, activeMantra.id)}
+              className={`w-full py-3.5 px-6 rounded-xl text-xs font-bold tracking-widest uppercase transition-all shadow-md active:scale-95 border ${
+                isDark
+                  ? "border-amber-500/40 bg-amber-500/20 hover:bg-amber-500/30 text-amber-100 shadow-[0_4px_16px_rgba(245,158,11,0.2)]"
+                  : "bg-[#591A0D] border-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] shadow-[0_4px_16px_rgba(89,26,13,0.2)]"
+              }`}
+            >
+              {isHi ? "साधना सुरक्षित करें" : "Save Practice Session"}
+            </button>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
   };
 
   const renderLeaderboardOverlay = () => {
@@ -1813,61 +2063,26 @@ export default function PremiumJapaCounter({
           {/* 2. Leaderboard Full-Screen Overlay */}
           {renderLeaderboardOverlay()}
 
-          {/* 3. Completed Overlay - Light Mode & Without Animations */}
-          {isCompleted && (
-            <div
-              className="absolute inset-0 z-[130] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-4 text-center select-none rounded-[2.5rem]"
-            >
-              <div className="w-full max-w-sm bg-[#FFFDF8] dark:bg-[#1E1710] border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-3xl p-5 md:p-6 shadow-2xl relative">
-                <div className="w-16 h-16 rounded-2xl bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#E8D8C4] dark:border-amber-900/40 flex items-center justify-center text-[#7A2D28] dark:text-[#E8B15C] mx-auto mb-3 shadow-sm">
-                  <Sparkles className="w-8 h-8" />
-                </div>
-                <h1 className="font-serif font-extrabold text-xl text-[#4A1516] dark:text-[#FFFDF8] uppercase tracking-wider mb-1">
-                  {isHi ? "साधना पूर्ण" : "Sadhana Complete"}
-                </h1>
-                <p className="text-sm font-serif font-bold text-[#7A2D28] dark:text-[#E8B15C] mb-4">
-                  Hari Om / हरी ॐ
-                </p>
-                <div className="grid grid-cols-2 gap-2.5 mb-5 text-left">
-                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3">
-                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
-                      {isHi ? "जपे गए मंत्र" : "Total Chants"}
-                    </span>
-                    <span className="font-serif font-black text-lg text-[#7A2D28] dark:text-[#E8B15C]">
-                      {count}
-                    </span>
-                  </div>
-                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3">
-                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
-                      {isHi ? "लगा समय" : "Duration"}
-                    </span>
-                    <span className="font-serif font-black text-lg text-[#7A2D28] dark:text-[#E8B15C]">
-                      {formatTime(secondsElapsed)}
-                    </span>
-                  </div>
-                  <div className="bg-[#FAF2E8] dark:bg-[#2A1F14] border border-[#E8D8C4] dark:border-zinc-800 rounded-xl p-3 col-span-2">
-                    <span className="block text-[9px] text-[#7A6B60] dark:text-[#D4C5B9] font-bold uppercase tracking-wider mb-0.5">
-                      {isHi ? "आपका संकल्प" : "Sankalp Fulfilled"}
-                    </span>
-                    <span className="text-xs font-bold text-[#4A1516] dark:text-[#FFFDF8] truncate block">
-                      {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs text-[#5C3026] dark:text-[#D4C5B9] leading-relaxed mb-5 font-semibold italic">
-                  {isHi
-                    ? "“परम चेतना आपके संकल्प को सिद्धि प्रदान करें और आपके जीवन में सुख-शांति का संचार हो।”"
-                    : "“May your intention find fulfillment and may the divine vibrations bring peace and clarity to your life.”"}
-                </p>
-                <button
-                  onClick={() => onComplete(count, secondsElapsed, activeMantra.id)}
-                  className="w-full bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 font-bold py-3 px-5 rounded-xl shadow-md border border-[#EFE4D7] dark:border-zinc-800 transition-all text-xs uppercase tracking-wider active:scale-95"
-                >
-                  {isHi ? "साधना सुरक्षित करें" : "Save Practice Session"}
-                </button>
-              </div>
-            </div>
-          )}
+          {/* 3. Completed Overlay */}
+          {renderCompletedOverlay()}
+
+          {/* Too Fast Tap Toast Notification */}
+          <AnimatePresence>
+            {showTooFastToast && (
+              <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                className={`fixed top-16 left-1/2 -translate-x-1/2 z-[160] px-4 py-2 rounded-full border shadow-xl text-xs font-bold pointer-events-none transition-colors ${
+                  isDark
+                    ? "bg-[#1E140C]/95 border-amber-500/40 text-amber-300"
+                    : "bg-[#FFFDF8]/95 border-[#591A0D]/30 text-[#591A0D]"
+                }`}
+              >
+                {isHi ? "कृपया धीरे और शांति से जप करें (1 से. अंतराल)" : "Please chant peacefully (1s min per count)"}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
         
         {/* Fixed Mobile Bottom Navigation */}
@@ -1896,6 +2111,32 @@ export default function PremiumJapaCounter({
             : "bg-[radial-gradient(circle_at_50%_30%,#D8A35A15,transparent_55%)]"
         }`} 
       />
+
+      {/* Elegant Falling Ram Yellow Flowers on Tap (60FPS Zero-Lag Performance) */}
+      <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
+        {fallingFlowers.map((flower) => (
+          <div
+            key={flower.id}
+            className="falling-ram-flower absolute top-0"
+            style={{
+              left: `${flower.x}%`,
+              width: `${flower.size}px`,
+              height: `${flower.size}px`,
+              animationDuration: `${flower.duration}s`,
+              animationDelay: `${flower.delay}s`,
+              '--drift-x': `${flower.driftX}px`,
+              '--rot-deg': `${flower.rotationSpeed}deg`,
+            } as React.CSSProperties}
+          >
+            <img
+              src={flower.image}
+              alt=""
+              className="w-full h-full object-contain pointer-events-none"
+              loading="eager"
+            />
+          </div>
+        ))}
+      </div>
 
       {/* Devotional Deity Background Image with Fade */}
       <div 
@@ -2310,23 +2551,20 @@ export default function PremiumJapaCounter({
 
             {/* ── 1. MANTRA ──────────────────────────────────────── */}
             <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3">
-              <img 
+              <MaskedIcon 
                 src="/icons/music-player.svg" 
                 alt="mantra" 
-                className="w-6 h-6 opacity-80" 
-                style={{ 
-                  filter: isDark 
-                    ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
-                    : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)" 
-                }} 
+                isDark={isDark} 
+                active={true} 
+                className="w-5 h-5 sm:w-6 sm:h-6"
               />
               <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-white/40" : "text-[#786252]"
+                isDark ? "text-amber-200/60" : "text-[#786252]"
               }`}>
                 {isHi ? "मंत्र" : "Mantra"}
               </span>
               <span className={`text-[13px] font-bold leading-none text-center max-w-[58px] truncate ${
-                isDark ? "text-amber-400" : "text-[#5C1D0C]"
+                isDark ? "text-amber-400" : "text-[#591A0D]"
               }`}>
                 {isHi ? activeMantra.name_hindi : activeMantra.name_english}
               </span>
@@ -2343,23 +2581,20 @@ export default function PremiumJapaCounter({
                 setMalaType(types[nextIdx]);
               }}
             >
-              <img 
+              <MaskedIcon 
                 src="/icons/mala.svg" 
                 alt="mala" 
-                className="w-6 h-6 opacity-80" 
-                style={{ 
-                  filter: isDark 
-                    ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
-                    : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)" 
-                }} 
+                isDark={isDark} 
+                active={true} 
+                className="w-5 h-5 sm:w-6 sm:h-6"
               />
               <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-white/40" : "text-[#786252]"
+                isDark ? "text-amber-200/60" : "text-[#786252]"
               }`}>
                 {isHi ? "माला" : "Mala Type"}
               </span>
               <span className={`text-[13px] font-bold leading-none ${
-                isDark ? "text-amber-400" : "text-[#5C1D0C]"
+                isDark ? "text-amber-400" : "text-[#591A0D]"
               }`}>
                 {malaType === "rudraksha" ? (isHi ? "रुद्राक्ष" : "Rudraksha") : malaType === "tulsi" ? (isHi ? "तुलसी" : "Tulsi") : (isHi ? "चंदन" : "Sandal")}
               </span>
@@ -2372,29 +2607,22 @@ export default function PremiumJapaCounter({
               }`}
               onClick={() => setSoundEnabled(!soundEnabled)}
             >
-              <img 
+              <MaskedIcon 
                 src="/icons/sound.svg" 
                 alt="sound" 
-                className="w-6 h-6" 
-                style={{ 
-                  filter: soundEnabled 
-                    ? isDark 
-                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
-                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
-                    : isDark 
-                      ? "invert(40%) sepia(0%) brightness(60%)" 
-                      : "invert(60%) sepia(0%) brightness(75%)" 
-                }} 
+                isDark={isDark} 
+                active={soundEnabled} 
+                className="w-5 h-5 sm:w-6 sm:h-6"
               />
               <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-white/40" : "text-[#786252]"
+                isDark ? "text-amber-200/60" : "text-[#786252]"
               }`}>
                 {isHi ? "ध्वनि" : "Sound"}
               </span>
               <span className={`text-[13px] font-bold leading-none tracking-wider ${
                 soundEnabled 
-                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
-                  : isDark ? "text-white/30" : "text-slate-400/60"
+                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
+                  : isDark ? "text-white/30" : "text-slate-400"
               }`}>
                 {soundEnabled ? "On" : "Off"}
               </span>
@@ -2407,29 +2635,22 @@ export default function PremiumJapaCounter({
               }`}
               onClick={() => setVibrationEnabled(!vibrationEnabled)}
             >
-              <img 
+              <MaskedIcon 
                 src="/icons/vibrator.svg" 
                 alt="vibration" 
-                className="w-6 h-6" 
-                style={{ 
-                  filter: vibrationEnabled 
-                    ? isDark 
-                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
-                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
-                    : isDark 
-                      ? "invert(40%) sepia(0%) brightness(60%)" 
-                      : "invert(60%) sepia(0%) brightness(75%)" 
-                }} 
+                isDark={isDark} 
+                active={vibrationEnabled} 
+                className="w-5 h-5 sm:w-6 sm:h-6"
               />
               <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-white/40" : "text-[#786252]"
+                isDark ? "text-amber-200/60" : "text-[#786252]"
               }`}>
                 {isHi ? "कंपन" : "Vibration"}
               </span>
               <span className={`text-[13px] font-bold leading-none tracking-wider ${
                 vibrationEnabled 
-                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
-                  : isDark ? "text-white/30" : "text-slate-400/60"
+                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
+                  : isDark ? "text-white/30" : "text-slate-400"
               }`}>
                 {vibrationEnabled ? "On" : "Off"}
               </span>
@@ -2442,29 +2663,22 @@ export default function PremiumJapaCounter({
               }`}
               onClick={() => setAutoLockDisabled(!autoLockDisabled)}
             >
-              <img 
+              <MaskedIcon 
                 src="/icons/lock.svg" 
                 alt="auto-lock" 
-                className="w-6 h-6" 
-                style={{ 
-                  filter: autoLockDisabled 
-                    ? isDark 
-                      ? "invert(75%) sepia(80%) saturate(400%) hue-rotate(5deg) brightness(110%)" 
-                      : "invert(13%) sepia(74%) saturate(4897%) hue-rotate(352deg) brightness(88%) contrast(97%)"
-                    : isDark 
-                      ? "invert(40%) sepia(0%) brightness(60%)" 
-                      : "invert(60%) sepia(0%) brightness(75%)" 
-                }} 
+                isDark={isDark} 
+                active={autoLockDisabled} 
+                className="w-5 h-5 sm:w-6 sm:h-6"
               />
               <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-white/40" : "text-[#786252]"
+                isDark ? "text-amber-200/60" : "text-[#786252]"
               }`}>
                 {isHi ? "स्क्रीन" : "Auto-Lock"}
               </span>
               <span className={`text-[13px] font-bold leading-none tracking-wider ${
                 autoLockDisabled 
-                  ? isDark ? "text-[#4ade80]" : "text-[#5C1D0C]"
-                  : "text-red-500"
+                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
+                  : isDark ? "text-white/30" : "text-slate-400"
               }`}>
                 {autoLockDisabled ? "On" : "Off"}
               </span>
@@ -2619,84 +2833,7 @@ export default function PremiumJapaCounter({
       {renderLeaderboardOverlay()}
 
       {/* ─── CELEBRATION COMPLETED SCREEN OVERLAY ─────────────────── */}
-      <AnimatePresence>
-        {isCompleted && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[110] bg-black/95 flex flex-col items-center justify-center p-4 text-center select-none"
-          >
-            {/* Sparkles / Aura glow backdrop */}
-            <div className="absolute top-1/4 w-[320px] h-[320px] bg-amber-500/10 blur-[80px] rounded-full animate-pulse pointer-events-none" />
-
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ type: "spring", damping: 15 }}
-              className="w-full max-w-md bg-gradient-to-b from-[#180a0f] to-[#0a0406] border border-amber-500/30 rounded-3xl p-6 md:p-8 shadow-2xl relative"
-            >
-              {/* Gold border strip */}
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-
-              {/* Complete Stamp Lotus Icon */}
-              <div className="w-20 h-20 rounded-full bg-amber-500/10 border border-amber-500/35 flex items-center justify-center text-amber-400 mx-auto mb-6 shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-[bounce_2s_infinite]">
-                <Sparkles className="w-10 h-10" />
-              </div>
-
-              <h1 className="font-display font-black text-2xl md:text-3xl text-amber-400 uppercase tracking-widest mb-2">
-                {isHi ? "साधना पूर्ण" : "Sadhana Complete"}
-              </h1>
-              
-              <p className="text-base font-display font-bold text-amber-300 mb-6">
-                Hari Om / हरी ॐ
-              </p>
-
-              {/* Stats Card */}
-              <div className="grid grid-cols-2 gap-3 mb-8 text-left">
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4">
-                  <span className="block text-[10px] text-white/40 font-bold uppercase tracking-wider mb-1">
-                    {isHi ? "जपे गए मंत्र" : "Total Chants"}
-                  </span>
-                  <span className="font-display font-black text-xl text-amber-400">
-                    {count}
-                  </span>
-                </div>
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4">
-                  <span className="block text-[10px] text-white/40 font-bold uppercase tracking-wider mb-1">
-                    {isHi ? "लगा समय" : "Duration"}
-                  </span>
-                  <span className="font-display font-black text-xl text-amber-400">
-                    {formatTime(secondsElapsed)}
-                  </span>
-                </div>
-                
-                <div className="bg-black/35 border border-white/5 rounded-2xl p-4 col-span-2">
-                  <span className="block text-[10px] text-white/40 font-bold uppercase tracking-wider mb-1">
-                    {isHi ? "आपका संकल्प" : "Sankalp Fulfilled"}
-                  </span>
-                  <span className="text-sm font-semibold text-brand-cream/80 truncate block">
-                    {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-[#fbf6f0]/60 leading-relaxed mb-6 font-medium italic">
-                {isHi
-                  ? "“परम चेतना आपके संकल्प को सिद्धि प्रदान करें और आपके जीवन में सुख-शांति का संचार हो।”"
-                  : "“May your intention find fulfillment and may the divine vibrations bring peace and clarity to your life.”"}
-              </p>
-
-              {/* Save and exit button */}
-              <button
-                onClick={() => onComplete(count, secondsElapsed, activeMantra.id)}
-                className="w-full bg-gradient-to-r from-amber-400 to-orange-600 hover:from-amber-500 hover:to-orange-700 text-black font-black py-4 px-6 rounded-2xl shadow-[0_8px_24px_rgba(249,115,22,0.3)] border border-amber-300/25 transition-all text-sm uppercase tracking-widest active:scale-98"
-              >
-                {isHi ? "साधना सुरक्षित करें" : "Save Practice Session"}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {renderCompletedOverlay()}
     </motion.div>
   );
 }

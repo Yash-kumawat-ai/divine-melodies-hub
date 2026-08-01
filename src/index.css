@@ -1296,3 +1296,33 @@ img.h-16.sm\:h-20.md\:h-22.w-auto.max-w-\[300px\].sm\:max-w-\[380px\].md\:max-w-
     height: 5rem;
 }
 
+/* Falling Sacred Flower particle animation (60FPS Zero-Lag Hardware Acceleration) */
+.falling-ram-flower {
+  animation: fall-ram-flower 3.2s linear forwards;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  contain: layout style paint;
+  transform-style: preserve-3d;
+}
+
+@keyframes fall-ram-flower {
+  0% {
+    transform: translate3d(0, -60px, 0) rotate(0deg) scale(0.65);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate3d(calc(var(--drift-x, 0px) * 0.5), 52vh, 0) rotate(calc(var(--rot-deg, 0deg) * 0.5)) scale(0.95);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--drift-x, 0px), 108vh, 0) rotate(var(--rot-deg, 0deg)) scale(0.8);
+    opacity: 0;
+  }
+}
+
+
