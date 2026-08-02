@@ -214,7 +214,10 @@ export default function MobileBottomNav() {
               <button
                 key={item.labelKey}
                 type="button"
-                onClick={() => setFeaturesOpen(true)}
+                onClick={() => {
+                  window.dispatchEvent(new Event('close-temple-pickers'))
+                  setFeaturesOpen(true)
+                }}
                 className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
                 aria-label={t("features")}
                 aria-expanded={featuresOpen}
@@ -228,7 +231,10 @@ export default function MobileBottomNav() {
             <Link
               key={item.labelKey}
               to={item.path || "/"}
-              onClick={() => setFeaturesOpen(false)}
+              onClick={() => {
+                window.dispatchEvent(new Event('close-temple-pickers'))
+                setFeaturesOpen(false)
+              }}
               className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
               aria-current={active ? "page" : undefined}
             >

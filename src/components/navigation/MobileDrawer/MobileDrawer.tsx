@@ -131,6 +131,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            key="mobile-drawer-panel"
             ref={drawerRef}
             role="dialog"
             aria-modal="true"

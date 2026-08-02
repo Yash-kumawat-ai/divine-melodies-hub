@@ -89,6 +89,7 @@ export function AartiOverlay({
           if (quarter > lastQuarterRef.current) {
             lastQuarterRef.current = quarter
             playAartiTick()
+            playBellChime()
             onProgressRef.current()
             setRounds(Math.floor(accumulatedRef.current / FULL_TURN))
           }
@@ -132,9 +133,6 @@ export function AartiOverlay({
           exit={{ opacity: 0 }}
           className="absolute inset-0 z-40"
         >
-          {/* Dim backdrop, deity stays visible through it */}
-          <div className="absolute inset-0 bg-black/30" />
-
           {/* Rotation progress dots */}
           <motion.div
             initial={{ opacity: 0, y: -12 }}

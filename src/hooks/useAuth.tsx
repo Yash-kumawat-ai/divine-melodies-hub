@@ -100,8 +100,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Profile fetch error:', profileError);
-        setProfile(null);
+        const isNetworkErr = profileError.message?.includes('Failed to fetch') || profileError.message?.includes('fetch');
+        if (isNetworkErr) {
+          console.warn('Profile fetch timed out / network offline, using fallback metadata');
+        } else {
+          console.error('Profile fetch error:', profileError);
+        }
+
+        // Fallback to local session metadata if network database query times out
+        const sessionUser = (await supabase.auth.getUser().catch(() => ({ data: { user: null } }))).data?.user;
+        if (sessionUser) {
+          const meta = sessionUser.user_metadata ?? {};
+          const name = meta.name || meta.full_name || sessionUser.email?.split('@')[0] || 'Devotee';
+          setProfile({
+            id: sessionUser.id,
+            email: sessionUser.email || '',
+            name,
+            avatar_url: meta.avatar_url,
+            created_at: sessionUser.created_at,
+          });
+        } else {
+          setProfile(null);
+        }
         return;
       }
 
@@ -112,16 +132,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const {
         data: { user: authUser },
-      } = await supabase.auth.getUser();
+      } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
       if (authUser) {
-        await ensureUserProfile(authUser);
-        const { data: created } = await client.from('user_profiles').select('*').eq('id', userId).maybeSingle();
-        setProfile(created ?? null);
+        await ensureUserProfile(authUser).catch(() => {});
+        const { data: created } = await client
+          .from('user_profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle()
+          .catch(() => ({ data: null }));
+
+        if (created) {
+          setProfile(created);
+        } else {
+          const meta = authUser.user_metadata ?? {};
+          const name = meta.name || meta.full_name || authUser.email?.split('@')[0] || 'Devotee';
+          setProfile({
+            id: authUser.id,
+            email: authUser.email || '',
+            name,
+            avatar_url: meta.avatar_url,
+            created_at: authUser.created_at,
+          });
+        }
       } else {
         setProfile(null);
       }
-    } catch (err) {
-      console.error('Error fetching profile:', err);
+    } catch (err: any) {
+      console.warn('Network timeout / connection issue during profile fetch:', err?.message || err);
       setProfile(null);
     } finally {
       setLoading(false);

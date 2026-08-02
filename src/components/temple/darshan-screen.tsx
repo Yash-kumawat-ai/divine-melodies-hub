@@ -22,7 +22,13 @@ import { AartiOverlay } from './aarti-overlay'
 import { WorshipTray, type PujaAction } from './worship-tray'
 import { DeityStrip } from './deity-strip'
 import { FlowerPicker } from './flower-picker'
+import { AartiPicker } from './aarti-picker'
+import { DiyaPicker } from './diya-picker'
+import { ShankhPicker } from './shankh-picker'
+import { BellPicker } from './bell-picker'
 import { BhogPicker } from './bhog-picker'
+import { DhoopPicker } from './dhoop-picker'
+import { MalaPicker } from './mala-picker'
 import basuriSvg from '@/pages/images/svg/basuri.svg'
 import basuriWithoutFeatherSvg from '@/pages/images/svg/basuri without feather.svg'
 import leftFeatherSvg from '@/pages/images/svg/left feather.svg'
@@ -51,13 +57,21 @@ export function DarshanScreen() {
   // Effects state
   const [shower, setShower] = useState(0)
   const [flowerImage, setFlowerImage] = useState('/images/marigold.png')
+  const [aartiImage, setAartiImage] = useState('/images/puja-thali.png')
+  const [diyaImage, setDiyaImage] = useState('/images/diya-brass.png')
   const [burst, setBurst] = useState(0)
   const [glowPulse, setGlowPulse] = useState(false)
   const [intenseGlow, setIntenseGlow] = useState(false)
   const [aartiOpen, setAartiOpen] = useState(false)
+  const [aartiPickerOpen, setAartiPickerOpen] = useState(false)
   const [diyaOpen, setDiyaOpen] = useState(false)
+  const [diyaPickerOpen, setDiyaPickerOpen] = useState(false)
   const [flowerPickerOpen, setFlowerPickerOpen] = useState(false)
+  const [shankhPickerOpen, setShankhPickerOpen] = useState(false)
+  const [bellPickerOpen, setBellPickerOpen] = useState(false)
   const [bhogPickerOpen, setBhogPickerOpen] = useState(false)
+  const [dhoopPickerOpen, setDhoopPickerOpen] = useState(false)
+  const [malaPickerOpen, setMalaPickerOpen] = useState(false)
   const [bhogImage, setBhogImage] = useState<string | null>(null)
   const [dhoopActive, setDhoopActive] = useState(false)
   const [bellActive, setBellActive] = useState(false)
@@ -66,6 +80,22 @@ export function DarshanScreen() {
   const [toast, setToast] = useState<string | null>(null)
   const [xp, setXp] = useState(0)
   const [petals, setPetals] = useState<Petal[]>([])
+  const closeAllPickers = useCallback(() => {
+    setFlowerPickerOpen(false)
+    setAartiPickerOpen(false)
+    setDiyaPickerOpen(false)
+    setShankhPickerOpen(false)
+    setBellPickerOpen(false)
+    setBhogPickerOpen(false)
+    setDhoopPickerOpen(false)
+    setMalaPickerOpen(false)
+  }, [])
+
+  useEffect(() => {
+    const handleClosePickers = () => closeAllPickers()
+    window.addEventListener('close-temple-pickers', handleClosePickers)
+    return () => window.removeEventListener('close-temple-pickers', handleClosePickers)
+  }, [closeAllPickers])
 
   const triggerFullFlowerShower = useCallback((selectedImage?: string) => {
     const defaultFlowers = [
@@ -201,47 +231,92 @@ export function DarshanScreen() {
           setFlowerPickerOpen(true)
           break
         case 'aarti':
-          playAartiTone()
-          setAartiOpen(true)
+          setAartiPickerOpen(true)
           break
         case 'diya':
-          playDiyaTone()
-          setDiyaOpen(true)
+          setDiyaPickerOpen(true)
           break
         case 'shankh':
-          playShankhTone()
-          setIntenseGlow(true)
-          addXp(10)
-          showToast(t('shankhBlown'))
-          setTimeout(() => setIntenseGlow(false), 2200)
+          setShankhPickerOpen(true)
           break
         case 'bell':
-          setBellActive(true)
-          playBellChime()
-          pulseGlow()
-          addXp(5)
-          setTimeout(() => playBellChime(), 700)
-          setTimeout(() => playBellChime(), 1400)
-          setTimeout(() => setBellActive(false), 2400)
+          setBellPickerOpen(true)
           break
         case 'bhog':
           setBhogPickerOpen(true)
           break
         case 'dhoop':
-          playDhoopTone()
-          setDhoopActive(true)
-          addXp(5)
-          setTimeout(() => setDhoopActive(false), 5000)
+          setDhoopPickerOpen(true)
           break
         case 'mala':
-          playMalaTone()
-          setMalaActive(true)
-          pulseGlow()
-          addXp(5)
-          showToast(t('malaOffered'))
-          setTimeout(() => setMalaActive(false), 3000)
+          setMalaPickerOpen(true)
           break
       }
+    },
+    [],
+  )
+
+  const onAartiSelect = useCallback(
+    (_id: string, image: string) => {
+      setAartiImage(image)
+      playAartiTone()
+      setAartiOpen(true)
+    },
+    [],
+  )
+
+  const onDiyaSelect = useCallback(
+    (_id: string, image: string) => {
+      setDiyaImage(image)
+      playDiyaTone()
+      setDiyaOpen(true)
+    },
+    [],
+  )
+
+  const onShankhSelect = useCallback(
+    (_id: string, _image: string) => {
+      playShankhTone()
+      setIntenseGlow(true)
+      addXp(10)
+      showToast(t('shankhBlown'))
+      setTimeout(() => setIntenseGlow(false), 2200)
+    },
+    [addXp, showToast, t],
+  )
+
+  const onBellSelect = useCallback(
+    (_id: string, _image: string) => {
+      setBellActive(true)
+      playBellChime()
+      pulseGlow()
+      addXp(5)
+      setTimeout(() => playBellChime(), 700)
+      setTimeout(() => playBellChime(), 1400)
+      setTimeout(() => setBellActive(false), 2400)
+    },
+    [pulseGlow, addXp],
+  )
+
+  const onDhoopSelect = useCallback(
+    (_id: string, name: string) => {
+      playDhoopTone()
+      setDhoopActive(true)
+      addXp(5)
+      showToast(name)
+      setTimeout(() => setDhoopActive(false), 5000)
+    },
+    [addXp, showToast],
+  )
+
+  const onMalaSelect = useCallback(
+    (_id: string, _image: string) => {
+      playMalaTone()
+      setMalaActive(true)
+      pulseGlow()
+      addXp(5)
+      showToast(t('malaOffered'))
+      setTimeout(() => setMalaActive(false), 3000)
     },
     [pulseGlow, addXp, showToast, t],
   )
@@ -352,7 +427,7 @@ export function DarshanScreen() {
       </div>
 
       {/* LAYER 5: Hanging bells */}
-      <HangingBells onRing={() => addXp(5)} />
+      <HangingBells onRing={() => addXp(5)} aartiActive={aartiOpen || diyaOpen} />
 
       {/* LAYER 6: Flowers — deity zones only */}
       <FlowerParticles shower={shower} flowerImage={flowerImage} burst={burst} />
@@ -512,7 +587,7 @@ export function DarshanScreen() {
       {/* Aarti — auto-rotating thali */}
       <AartiOverlay
         open={aartiOpen}
-        image="/images/puja-thali.png"
+        image={aartiImage}
         onProgress={pulseGlow}
         onComplete={onAartiComplete}
         onClose={() => setAartiOpen(false)}
@@ -521,7 +596,7 @@ export function DarshanScreen() {
       {/* Diya — auto-rotating like aarti */}
       <AartiOverlay
         open={diyaOpen}
-        image="/images/diya-brass.png"
+        image={diyaImage}
         onProgress={pulseGlow}
         onComplete={onDiyaComplete}
         onClose={() => setDiyaOpen(false)}
@@ -548,16 +623,46 @@ export function DarshanScreen() {
         disabled={!gatesOpen || aartiOpen || diyaOpen || transitioning}
       />
 
-      {/* Flower & bhog pickers */}
+      {/* Ritual offering selection pickers */}
       <FlowerPicker
         open={flowerPickerOpen}
         onSelect={onFlowerSelect}
         onClose={() => setFlowerPickerOpen(false)}
       />
+      <AartiPicker
+        open={aartiPickerOpen}
+        onSelect={onAartiSelect}
+        onClose={() => setAartiPickerOpen(false)}
+      />
+      <DiyaPicker
+        open={diyaPickerOpen}
+        onSelect={onDiyaSelect}
+        onClose={() => setDiyaPickerOpen(false)}
+      />
+      <ShankhPicker
+        open={shankhPickerOpen}
+        onSelect={onShankhSelect}
+        onClose={() => setShankhPickerOpen(false)}
+      />
+      <BellPicker
+        open={bellPickerOpen}
+        onSelect={onBellSelect}
+        onClose={() => setBellPickerOpen(false)}
+      />
       <BhogPicker
         open={bhogPickerOpen}
         onSelect={onBhogSelect}
         onClose={() => setBhogPickerOpen(false)}
+      />
+      <DhoopPicker
+        open={dhoopPickerOpen}
+        onSelect={onDhoopSelect}
+        onClose={() => setDhoopPickerOpen(false)}
+      />
+      <MalaPicker
+        open={malaPickerOpen}
+        onSelect={onMalaSelect}
+        onClose={() => setMalaPickerOpen(false)}
       />
 
       {/* ─── FLOWER PETALS OVERLAY ────────────────────────────────────── */}

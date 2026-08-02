@@ -42,7 +42,7 @@ import omWebp from "./images/om.webp";
 import mandalaBeige from "./images/mandala-beige.svg";
 import mandalaGold from "./images/mandala-gold.svg";
 import devotionalBg3 from "./images/devotional_background(3).webp";
-import mandirSvg from "./images/svg/mandir.svg";
+import mandirSvg from "./images/svg/mandirorg.svg";
 import malaSvg from "./images/svg/mala.svg";
 import manjiraSvg from "./images/svg/manjira.svg";
 import prayingSvg from "./images/svg/praying-svgrepo-com.svg";

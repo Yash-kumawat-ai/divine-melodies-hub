@@ -457,17 +457,17 @@ export default function Home() {
               <motion.button
                 key={item.title}
                 onClick={() => navigate(item.path)}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-20px' }}
+                viewport={{ once: true, margin: '200px' }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ 
-                  scale: { duration: 0.18, ease: [0.22, 1, 0.36, 1] },
-                  default: { delay: i * 0.02, duration: 0.3 }
+                  scale: { duration: 0.15, ease: [0.22, 1, 0.36, 1] },
+                  default: { delay: i * 0.01, duration: 0.18 }
                 }}
                 className="flex flex-col items-center justify-center p-2 min-[420px]:p-2.5 md:p-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
                 style={{
-                  transitionDuration: '200ms',
+                  transitionDuration: '150ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
@@ -481,7 +481,7 @@ export default function Home() {
                     style={{
                       opacity: 0.15,
                       filter: 'invert(79%) sepia(35%) saturate(543%) hue-rotate(352%) brightness(91%) contrast(85%)',
-                      transitionDuration: '200ms',
+                      transitionDuration: '150ms',
                       transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   />
@@ -490,7 +490,7 @@ export default function Home() {
                   <div 
                     className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${item.gradient} transition-all group-hover:scale-[1.08] shadow-[0_6px_14px_rgba(0,0,0,0.08)] group-hover:shadow-[0_10px_20px_rgba(0,0,0,0.18)]`}
                     style={{
-                      transitionDuration: '200ms',
+                      transitionDuration: '150ms',
                       transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
@@ -525,10 +525,10 @@ export default function Home() {
       <section className="px-4 py-6 md:py-10 bg-[#FFFDF8] dark:bg-background">
         <div className="container mx-auto max-w-5xl px-0">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.55, ease: 'easeOut' }}
+            viewport={{ once: true, margin: '200px' }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className="relative overflow-hidden w-full rounded-2xl border border-[rgba(201,167,110,0.25)] dark:border-[rgba(201,167,110,0.15)] shadow-[0_6px_18px_rgba(95,72,38,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
           >
             {/* The actual poster image - scales naturally without cropping */}
@@ -636,10 +636,10 @@ export default function Home() {
                 onClick={() => navigate(f.route)}
                 className="relative group cursor-pointer rounded-3xl overflow-hidden border border-white/8 hover:border-white/18 transition-all duration-500 hover:scale-[1.03] select-none"
                 style={{ boxShadow: `0 0 0 0 rgba(${f.glow},0)` }}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.07, duration: 0.4 }}
+                viewport={{ once: true, margin: '200px' }}
+                transition={{ delay: i * 0.02, duration: 0.18 }}
                 whileHover={{ boxShadow: `0 16px 48px rgba(${f.glow},0.22)` }}
               >
                 {/* Image top half */}
@@ -710,9 +710,10 @@ export default function Home() {
               <motion.div
                 key={item.name}
                 className="rounded-2xl border border-border bg-card p-6"
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
+                viewport={{ once: true, margin: '200px' }}
+                transition={{ duration: 0.2 }}
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-brand-saffron/10 flex items-center justify-center font-bold text-brand-saffron text-sm">

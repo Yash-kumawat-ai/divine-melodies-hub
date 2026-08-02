@@ -66,13 +66,6 @@ export function DeityStrip({
                   >
                     {lang === 'hi' ? deity.nameHindi : deity.nameEnglish}
                   </span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeDeityIndicator"
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-[2.5px] bg-[#D4A853] shadow-[0_0_6px_#D4A853] rounded-full z-20"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
                 </button>
               </li>
             )

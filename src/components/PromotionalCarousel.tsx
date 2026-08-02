@@ -184,7 +184,7 @@ export function PromotionalCarousel() {
               <img 
                 src={banner.image} 
                 alt={banner.title}
-                loading={isActive ? "eager" : "lazy"}
+                loading="eager"
                 className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.01]"
                 draggable={false}
               />
