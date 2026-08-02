@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-01",
+  "date": "2026-08-02",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Tadiya",
+  "tithi": "Chavithi",
   "tithi_number": 0,
-  "nakshatra": "Satabhisha - 2",
-  "yoga": "Sobhana",
-  "karana": "Vanija",
+  "nakshatra": "Poorvabhadra - 2",
+  "yoga": "Atiganda",
+  "karana": "Bava",
   "paksha": "Krishna",
-  "sunrise": "05:46 AM",
-  "sunset": "07:08 PM",
-  "rahu_kaal": "09:06 AM - 10:47 AM",
-  "brahma_muhurat": "04:10 AM - 04:58 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-01T06:31:50+05:30"
+  "sunrise": "05:47 AM",
+  "sunset": "07:07 PM",
+  "rahu_kaal": "05:27 PM - 07:07 PM",
+  "brahma_muhurat": "04:11 AM - 04:59 AM",
+  "vara": "Ravivaar",
+  "updated_at": "2026-08-02T06:35:33+05:30"
 }
