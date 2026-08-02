@@ -23,6 +23,7 @@ import {
   Wind,
   Trash2,
   Trophy,
+  Menu,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
@@ -515,35 +516,31 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
       )}
 
       {/* ─── HEADER ─────────────────────────────────────────────── */}
-      <header className={`sticky top-0 z-40 px-4 py-3.5 lg:py-4 flex items-center justify-between border-b transition-colors duration-300 ${
+      <header className={`sticky top-0 z-40 px-4 py-3 flex items-center justify-between border-b transition-colors duration-300 ${
         isDark
-          ? 'bg-[#1a1008]/95 backdrop-blur-md border-amber-900/20 shadow-[0_2px_12px_rgba(0,0,0,0.4)]'
-          : 'bg-[#FDF3E3]/95 backdrop-blur-md border-amber-300/40 shadow-[0_2px_12px_rgba(214,152,74,0.12)]'
+          ? 'bg-[#080504]/95 backdrop-blur-md border-amber-900/20 shadow-sm'
+          : 'bg-[#FCF7F0]/95 backdrop-blur-md border-amber-200/40 shadow-sm'
       }`}>
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className={`flex items-center justify-center h-10 w-10 rounded-full active:scale-95 transition-all ${
-              isDark ? 'hover:bg-amber-900/30 text-amber-200' : 'hover:bg-amber-200/60 text-amber-800'
-            }`}
+            className="text-stone-800 dark:text-stone-200 hover:opacity-75 active:scale-95 transition-opacity"
             aria-label="Back"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6 stroke-[2.2]" />
           </button>
-          <div className="flex items-center gap-2">
-            <span className={`text-2xl lg:text-2xl font-display ${
-              isDark ? 'text-amber-400' : 'text-amber-700'
-            }`}>ॐ</span>
-            <h1 className={`text-xl lg:text-2xl font-bold font-display tracking-wide ${
-              isDark ? 'text-amber-100' : 'text-amber-900'
-            }`}>
-              {copy.title}
+          <div>
+            <h1 className="font-serif font-extrabold text-lg sm:text-xl tracking-tight leading-tight text-stone-900 dark:text-amber-100">
+              {isHi ? "जप साधना" : "Japa Sadhana"}
             </h1>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 font-medium leading-none mt-0.5">
+              {isHi ? "मंत्रों का अभ्यास, मन की शांति, आत्मा से जुड़ाव" : "Mantra practice, peace of mind, soul connection"}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isGuest && (
-            <span className={`text-[10px] px-2.5 py-1 rounded-full border font-bold ${
+            <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${
               isDark ? 'bg-amber-900/30 text-amber-300 border-amber-700/40' : 'bg-amber-100 text-amber-700 border-amber-300/60'
             }`}>
               {isHi ? "अतिथि" : "Guest"}
@@ -551,17 +548,10 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
           )}
           <button
             onClick={() => navigate("/leaderboard")}
-            className={`h-10 w-10 rounded-full flex items-center justify-center active:scale-95 transition-all ${
-              isDark ? 'hover:bg-amber-900/30 text-amber-400 hover:text-amber-300' : 'hover:bg-amber-200/60 text-amber-700 hover:text-amber-900'
-            }`}
+            className="text-stone-700 dark:text-amber-400 hover:opacity-75 active:scale-95 transition-opacity"
             title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
           >
-            <Trophy className="w-5 h-5" />
-          </button>
-          <button className={`h-10 w-10 rounded-full flex items-center justify-center transition-all ${
-            isDark ? 'hover:bg-amber-900/30 text-amber-300/70' : 'hover:bg-amber-200/60 text-amber-700'
-          }`}>
-            <Bell className="w-5 h-5" />
+            <Trophy className="w-5 h-5 stroke-[2]" />
           </button>
         </div>
       </header>

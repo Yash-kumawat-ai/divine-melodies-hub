@@ -1242,13 +1242,15 @@ export default function MantraDetailView({
       }`}>
         <button
           onClick={onStartJapa}
-          className="w-full group flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 active:scale-98 text-white font-bold px-8 py-4 rounded-3xl shadow-[0_12px_28px_rgba(249,115,22,0.45)] border border-amber-400/20 transition-all duration-300"
+          className="w-full h-14 group flex items-center gap-3 bg-[#5c1d0c] hover:bg-[#4a170a] active:scale-98 text-white font-bold px-5 rounded-full shadow-xl shadow-[#5c1d0c]/30 transition-all duration-300 cursor-pointer"
         >
-          <span className="text-xl font-display text-amber-100 leading-none">ॐ</span>
-          <span>
+          <span className="text-2xl font-serif font-black text-white/95 leading-none shrink-0">ॐ</span>
+          <span className="flex-1 text-center text-sm sm:text-base font-bold tracking-wide leading-snug">
             {isHi ? "जप सीखें और प्रारंभ करें" : "Learn & Start Japa"}
           </span>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <div className="w-9 h-9 rounded-full bg-white text-[#5c1d0c] flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform">
+            <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
+          </div>
         </button>
 
         <p className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 justify-center ${bottomText}`}>
