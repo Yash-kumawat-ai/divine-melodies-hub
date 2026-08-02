@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -125,6 +125,220 @@ const playConchSound = (volumeEnabled: boolean) => {
     console.error("Synthesized conch error:", err);
   }
 };
+
+// ─── REUSABLE CIRCULAR MALA RING COMPONENT ──────────────────────
+interface CircularMalaRingProps {
+  count: number;
+  targetCount: number;
+  isDark: boolean;
+  isMobile: boolean;
+  malaType: "rudraksha" | "tulsi" | "sandalwood";
+  activeMantra: any;
+  isHi: boolean;
+  floatingTexts?: FloatingText[];
+  radiusOverride?: number;
+  centerContent?: React.ReactNode;
+  onTap?: () => void;
+  showCenterStats?: boolean;
+}
+
+export const CircularMalaRing = memo(function CircularMalaRing({
+  count,
+  targetCount,
+  isDark,
+  isMobile,
+  malaType,
+  activeMantra,
+  isHi,
+  floatingTexts = [],
+  radiusOverride,
+  centerContent,
+  onTap,
+  showCenterStats = true,
+}: CircularMalaRingProps) {
+  const numBeads = 27;
+  const beadIndices = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i <= numBeads; i++) {
+      arr.push(i);
+    }
+    return arr;
+  }, [numBeads]);
+
+  const R = radiusOverride ?? (isMobile ? 120 : 195);
+  const regularBeadSize = radiusOverride ? (isMobile ? 15 : 24) : (isMobile ? 20 : 32);
+  const sumeruBeadSize = radiusOverride ? (isMobile ? 22 : 34) : (isMobile ? 28 : 44);
+
+  const activeBeadIndex = useMemo(() => {
+    if (count === 0) return 1;
+    return count % numBeads === 0 ? numBeads : count % numBeads;
+  }, [count, numBeads]);
+
+  const currentCompletedCount = useMemo(() => {
+    if (count === 0) return 0;
+    return count % numBeads === 0 ? numBeads : count % numBeads;
+  }, [count, numBeads]);
+
+  return (
+    <div
+      onClick={onTap}
+      className="relative flex items-center justify-center select-none"
+      style={{
+        width: `${(R + 24) * 2}px`,
+        height: `${(R + 24) * 2}px`,
+      }}
+    >
+      {/* Floating animated mantras rising from the center */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible z-40">
+        <AnimatePresence>
+          {floatingTexts.map((f) => (
+            <motion.div
+              key={f.id}
+              initial={{ opacity: 0, scale: 0.75, y: 15, x: f.x }}
+              animate={{ 
+                opacity: [0, 1, 1, 0], 
+                scale: [0.75, 1.15, 1.25, 1], 
+                y: -110, 
+                x: f.x 
+              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className={`absolute font-serif text-sm md:text-base font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px] transition-colors duration-200 ${
+                isDark ? "text-amber-400" : "text-[#591A0D]"
+              }`}
+              style={{ 
+                textShadow: isDark 
+                  ? "0 0 12px rgba(245, 158, 11, 0.75)" 
+                  : "0 0 8px rgba(89, 26, 13, 0.2)" 
+              }}
+            >
+              {f.text}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Mala Thread (Connecting line/string between beads) */}
+      <div 
+        className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
+        style={{
+          width: `${R * 2}px`,
+          height: `${R * 2}px`,
+          left: `calc(50% - ${R}px)`,
+          top: `calc(50% - ${R}px)`,
+        }}
+      />
+
+      {/* 28 Beads layout loop */}
+      {beadIndices.map((i) => {
+        const isSumeru = i === 0;
+        const isCompletedBead = !isSumeru && i <= currentCompletedCount;
+        const isActiveBead = !isSumeru && i === activeBeadIndex;
+
+        const angleDeg = -90 + (i * 360) / (numBeads + 1);
+        const angleRad = (angleDeg * Math.PI) / 180;
+        const beadSize = isSumeru ? sumeruBeadSize : regularBeadSize;
+        
+        const left = `calc(50% + ${R * Math.cos(angleRad)}px - ${beadSize / 2}px)`;
+        const top = `calc(50% + ${R * Math.sin(angleRad)}px - ${beadSize / 2}px)`;
+
+        return (
+          <div
+            key={i}
+            className="absolute transition-all duration-300"
+            style={{
+              left,
+              top,
+              width: `${beadSize}px`,
+              height: `${beadSize}px`,
+              zIndex: isSumeru ? 30 : isActiveBead ? 25 : 20,
+            }}
+          >
+            {isSumeru ? (
+              // Sumeru Bead
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-900 border border-amber-300 flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.5)] relative">
+                <span className="text-[9px] md:text-[11px] font-bold text-black font-serif select-none pointer-events-none">ॐ</span>
+                {/* Hanging Silk Tassel */}
+                <div 
+                  className="absolute left-1/2 -translate-x-1/2 w-3 h-10 flex flex-col items-center pointer-events-none z-30"
+                  style={{ top: `${Math.round(sumeruBeadSize * 0.88)}px` }}
+                >
+                  {/* Tassel bead/cap */}
+                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-sm border border-amber-600 shadow-sm" />
+                  {/* Red silk fringe */}
+                  <div className="w-1 h-8 bg-gradient-to-b from-red-600 via-orange-600 to-transparent rounded-b-md shadow-sm origin-top animate-pulse" />
+                </div>
+              </div>
+            ) : (
+              // Regular Bead (Rudraksha / Tulsi / Sandalwood)
+              <div
+                className={`w-full h-full rounded-full transition-all duration-300 ${
+                  isActiveBead
+                    ? isDark 
+                      ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
+                      : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
+                    : isCompletedBead
+                    ? "shadow-[0_0_8px_rgba(245,158,11,0.85)] border border-amber-400/35"
+                    : "opacity-45"
+                }`}
+                style={{
+                  backgroundImage: malaType === "rudraksha" ? "url('/images/rudraksha.webp')" : undefined,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundColor:
+                    malaType === "rudraksha"
+                      ? isCompletedBead || isActiveBead
+                        ? "#D97706"
+                        : isDark ? "#5c2a13" : "#A14D16"
+                      : malaType === "tulsi"
+                      ? isCompletedBead 
+                        ? "#f59e0b" 
+                        : isDark ? "#4a2e1d" : "#e8d3c4"
+                      : isCompletedBead 
+                      ? "#facc15" 
+                      : isDark ? "#c19a6b" : "#f5e6d3",
+                  filter:
+                    malaType === "rudraksha"
+                      ? isCompletedBead || isActiveBead
+                        ? "brightness(1.15) saturate(1.4) contrast(1.1)"
+                        : isDark
+                        ? "brightness(0.6) contrast(1.1) sepia(0.25)"
+                        : "brightness(0.95) contrast(1.1) sepia(0.2)"
+                      : undefined,
+                }}
+              />
+            )}
+          </div>
+        );
+      })}
+
+      {/* Center Content / Stats */}
+      {centerContent ? (
+        <div className="absolute inset-0 flex items-center justify-center text-center pointer-events-none select-none z-20">
+          {centerContent}
+        </div>
+      ) : showCenterStats ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none z-20">
+          <span className="font-serif text-[54px] md:text-[66px] font-semibold text-[#f59e0b] leading-none tracking-tight transition-all tabular-nums drop-shadow-[0_0_12px_rgba(245,158,11,0.22)]">
+            {count}
+          </span>
+          <span className={`text-sm md:text-base font-semibold tracking-wider ${
+            isDark ? "text-amber-200/40" : "text-amber-800/60"
+          }`}>
+            /{targetCount}
+          </span>
+          <div className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
+            isDark 
+              ? "bg-[#1b0d0a]/60 border-amber-500/20 text-amber-500" 
+              : "bg-amber-500/10 border-amber-500/30 text-amber-700"
+          }`}>
+            {isHi ? `माला ${Math.floor(count / numBeads) + 1}` : `ROUND ${Math.floor(count / numBeads) + 1}`}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+});
 
 // ─── PROPS TYPE ──────────────────────────────────────────────────
 type PremiumJapaCounterProps = {
@@ -1725,42 +1939,58 @@ export default function PremiumJapaCounter({
 
           {/* ── BODY ───────────────────────────────────────────────────── */}
           <div className="flex-1 flex flex-col items-center justify-between px-5 py-3 pb-28 md:pb-8 overflow-y-auto max-h-full gap-3 md:gap-4 scrollbar-none overscroll-contain">
-            {/* Deity Circle — glowing gold ring */}
-            <div className="relative flex-shrink-0">
-              {/* Outer glow ring animates when listening */}
-              <div
-                className={`absolute inset-0 rounded-full transition-all duration-700 ${
-                  voiceActive ? "shadow-[0_0_35px_8px_rgba(212,165,58,0.35)] scale-102" : "shadow-[0_0_15px_2px_rgba(212,165,58,0.15)]"
-                }`}
+            {/* Circular Mala Ring with central Deity Image & Voice Mic Badge */}
+            <div className="relative flex-shrink-0 my-1">
+              <CircularMalaRing
+                count={count}
+                targetCount={targetCount}
+                isDark={isDark}
+                isMobile={isMobile}
+                malaType={malaType}
+                activeMantra={activeMantra}
+                isHi={isHi}
+                floatingTexts={floatingTexts}
+                radiusOverride={isMobile ? 100 : 130}
+                showCenterStats={false}
+                centerContent={
+                  <div className="relative flex items-center justify-center">
+                    {/* Outer glow ring animates when listening */}
+                    <div
+                      className={`absolute inset-0 rounded-full transition-all duration-700 ${
+                        voiceActive ? "shadow-[0_0_35px_8px_rgba(212,165,58,0.35)] scale-102" : "shadow-[0_0_15px_2px_rgba(212,165,58,0.15)]"
+                      }`}
+                    />
+                    <div
+                      className="rounded-full border-[3px] overflow-hidden"
+                      style={{
+                        width: isMobile ? "96px" : "130px",
+                        height: isMobile ? "96px" : "130px",
+                        borderColor: isDark ? "#d4a53a" : "#591A0D",
+                        boxShadow: voiceActive
+                          ? "0 0 24px 4px rgba(212,165,58,0.3), inset 0 0 10px rgba(212,165,58,0.06)"
+                          : "0 0 10px 2px rgba(212,165,58,0.12)",
+                      }}
+                    >
+                      <img
+                        src={typeof deityImage === "string" ? deityImage : (deityImage as { src: string }).src ?? ""}
+                        alt={mantraDisplayName}
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                        draggable={false}
+                      />
+                    </div>
+                    {/* Mic active badge */}
+                    {voiceActive && (
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1] }}
+                        transition={{ repeat: Infinity, duration: 1.2 }}
+                        className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-green-500 border-2 border-black flex items-center justify-center shadow-lg"
+                      >
+                        <Mic className="w-3 h-3 text-white" />
+                      </motion.div>
+                    )}
+                  </div>
+                }
               />
-              <div
-                className="rounded-full border-[3px] overflow-hidden"
-                style={{
-                  width: "min(34vw, 140px)",
-                  height: "min(34vw, 140px)",
-                  borderColor: isDark ? "#d4a53a" : "#591A0D",
-                  boxShadow: voiceActive
-                    ? "0 0 24px 4px rgba(212,165,58,0.3), inset 0 0 10px rgba(212,165,58,0.06)"
-                    : "0 0 10px 2px rgba(212,165,58,0.12)",
-                }}
-              >
-                <img
-                  src={typeof deityImage === "string" ? deityImage : (deityImage as { src: string }).src ?? ""}
-                  alt={mantraDisplayName}
-                  className="w-full h-full object-cover"
-                  draggable={false}
-                />
-              </div>
-              {/* Mic active badge */}
-              {voiceActive && (
-                <motion.div
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.2 }}
-                  className="absolute bottom-1 right-1 w-7 h-7 rounded-full bg-green-500 border-2 border-black flex items-center justify-center shadow-lg"
-                >
-                  <Mic className="w-3.5 h-3.5 text-white" />
-                </motion.div>
-              )}
             </div>
 
             {/* Chants count big text */}
@@ -2378,155 +2608,18 @@ export default function PremiumJapaCounter({
             </svg>
           </div>
 
-          {/* Floating animated mantras rising from the center */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
-            <AnimatePresence>
-              {floatingTexts.map((f) => (
-                <motion.div
-                  key={f.id}
-                  initial={{ opacity: 0, scale: 0.75, y: 15, x: f.x }}
-                  animate={{ 
-                    opacity: [0, 1, 1, 0], 
-                    scale: [0.75, 1.15, 1.25, 1], 
-                    y: -110, 
-                    x: f.x 
-                  }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className={`absolute font-serif text-sm md:text-base font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px] transition-colors duration-200 ${
-                    isDark ? "text-amber-400" : "text-[#591A0D]"
-                  }`}
-                  style={{ 
-                    textShadow: isDark 
-                      ? "0 0 12px rgba(245, 158, 11, 0.75)" 
-                      : "0 0 8px rgba(89, 26, 13, 0.2)" 
-                  }}
-                >
-                  {f.text}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-
-          {/* Mala Thread (Connecting line/string between beads) */}
-          <div 
-            className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
-            style={{
-              width: `${R * 2}px`,
-              height: `${R * 2}px`,
-              left: `calc(50% - ${R}px)`,
-              top: `calc(50% - ${R}px)`,
-            }}
+          {/* Main Reusable Circular Mala Ring */}
+          <CircularMalaRing
+            count={count}
+            targetCount={targetCount}
+            isDark={isDark}
+            isMobile={isMobile}
+            malaType={malaType}
+            activeMantra={activeMantra}
+            isHi={isHi}
+            floatingTexts={floatingTexts}
+            onTap={incrementCount}
           />
-
-          {/* 55 Beads layout loop */}
-          {beadIndices.map((i) => {
-            const isSumeru = i === 0;
-            const isCompletedBead = !isSumeru && i <= currentCompletedCount;
-            const isActiveBead = !isSumeru && i === activeBeadIndex;
-
-            // Angle coordinates calculation (clockwise starting from Sumeru at -90deg)
-            const angleDeg = -90 + (i * 360) / (numBeads + 1);
-            const angleRad = (angleDeg * Math.PI) / 180;
-            const beadSize = isSumeru ? sumeruBeadSize : regularBeadSize;
-            
-            const left = `calc(50% + ${R * Math.cos(angleRad)}px - ${beadSize / 2}px)`;
-            const top = `calc(50% + ${R * Math.sin(angleRad)}px - ${beadSize / 2}px)`;
-
-            return (
-              <div
-                key={i}
-                className="absolute transition-all duration-300"
-                style={{
-                  left,
-                  top,
-                  width: `${beadSize}px`,
-                  height: `${beadSize}px`,
-                  zIndex: isSumeru ? 30 : isActiveBead ? 25 : 20,
-                }}
-              >
-                {isSumeru ? (
-                  // Sumeru Bead
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-900 border border-amber-300 flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.5)] relative">
-                    <span className="text-[9px] md:text-[11px] font-bold text-black font-serif select-none pointer-events-none">ॐ</span>
-                    {/* Hanging Silk Tassel */}
-                    <div 
-                      className="absolute left-1/2 -translate-x-1/2 w-3 h-10 flex flex-col items-center pointer-events-none z-30"
-                      style={{ top: `${Math.round(sumeruBeadSize * 0.88)}px` }}
-                    >
-                      {/* Tassel bead/cap */}
-                      <div className="w-1.5 h-1.5 bg-amber-400 rounded-sm border border-amber-600 shadow-sm" />
-                      {/* Red silk fringe */}
-                      <div className="w-1 h-8 bg-gradient-to-b from-red-600 via-orange-600 to-transparent rounded-b-md shadow-sm origin-top animate-pulse" />
-                    </div>
-                  </div>
-                ) : (
-                  // Regular Bead (Rudraksha / Tulsi / Sandalwood)
-                  <div
-                    className={`w-full h-full rounded-full transition-all duration-300 ${
-                      isActiveBead
-                        ? isDark 
-                          ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
-                          : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
-                        : isCompletedBead
-                        ? "shadow-[0_0_8px_rgba(245,158,11,0.85)] border border-amber-400/35"
-                        : "opacity-45"
-                    }`}
-                    style={{
-                      backgroundImage: malaType === "rudraksha" ? "url('/images/rudraksha.webp')" : undefined,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundColor:
-                        malaType === "rudraksha"
-                          ? undefined
-                          : malaType === "tulsi"
-                          ? isCompletedBead 
-                            ? "#f59e0b" 
-                            : isDark ? "#4a2e1d" : "#e8d3c4"
-                          : isCompletedBead 
-                          ? "#facc15" 
-                          : isDark ? "#c19a6b" : "#f5e6d3",
-                      filter:
-                        malaType === "rudraksha"
-                          ? isCompletedBead || isActiveBead
-                            ? "brightness(1.1) saturate(1.4) contrast(1.1)"
-                            : isDark
-                            ? "brightness(0.35) contrast(1.1) sepia(0.25)"
-                            : "brightness(0.85) contrast(0.9) sepia(0.2) opacity-50"
-                          : undefined,
-                    }}
-                  />
-                )}
-              </div>
-            );
-          })}
-
-          {/* Center stats info */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none">
-            <span className="font-serif text-[54px] md:text-[66px] font-semibold text-[#f59e0b] leading-none tracking-tight transition-all tabular-nums drop-shadow-[0_0_12px_rgba(245,158,11,0.22)]">
-              {count}
-            </span>
-            <span className={`text-sm md:text-base font-semibold tracking-wider ${
-              isDark ? "text-amber-200/40" : "text-amber-800/60"
-            }`}>
-              /{targetCount}
-            </span>
-            <div className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
-              isDark 
-                ? "bg-[#1b0d0a]/60 border-amber-500/20 text-amber-500" 
-                : "bg-amber-500/10 border-amber-500/30 text-amber-700"
-            }`}>
-              {isHi ? `माला ${Math.floor(count / numBeads) + 1}` : `ROUND ${Math.floor(count / numBeads) + 1}`}
-            </div>
-            
-            {/* Listening Indicator (in Voice mode) */}
-            {(practiceMode as string) === "voice" && voiceActive && (
-              <div className="absolute bottom-2 flex items-center gap-1 text-[9px] text-green-400 font-bold uppercase tracking-wider animate-pulse">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                {isHi ? "सुन रहे हैं..." : "Listening"}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Sacred Mantra Text Display */}
