@@ -20,7 +20,11 @@ import {
   Music,
   Flower2,
   Flame,
-  Trophy
+  Trophy,
+  Zap,
+  Sliders,
+  Edit3,
+  Clock,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
@@ -36,6 +40,7 @@ import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
 import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
 import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
 import ramJiSvg from "@/pages/images/svg/ram ji.svg";
+import playCircleSvg from "@/pages/images/svg/play-circle-svgrepo-com.svg";
 
 // ─── SHANKH & BELL SYNTH SOUND GENERATOR ──────────────────────────
 const playBellSound = (volumeEnabled: boolean) => {
@@ -194,22 +199,24 @@ export const CircularMalaRing = memo(function CircularMalaRing({
           {floatingTexts.map((f) => (
             <motion.div
               key={f.id}
-              initial={{ opacity: 0, scale: 0.75, y: 15, x: f.x }}
+              initial={{ opacity: 0, scale: 0.85, y: 15, x: f.x }}
               animate={{ 
                 opacity: [0, 1, 1, 0], 
-                scale: [0.75, 1.15, 1.25, 1], 
-                y: -110, 
+                scale: [0.85, 1.15, 1.2, 1], 
+                y: -115, 
                 x: f.x 
               }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className={`absolute font-serif text-sm md:text-base font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px] transition-colors duration-200 ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
+              className={`absolute font-serif text-base sm:text-lg md:text-xl font-extrabold text-center pointer-events-none whitespace-pre-line max-w-[260px] md:max-w-[360px] transition-colors duration-200 z-50 ${
+                isDark 
+                  ? "text-amber-300 drop-shadow-[0_2px_10px_rgba(245,158,11,0.7)]" 
+                  : "text-[#591A0D] drop-shadow-[0_2px_10px_rgba(89,26,13,0.25)]"
               }`}
               style={{ 
                 textShadow: isDark 
-                  ? "0 0 12px rgba(245, 158, 11, 0.75)" 
-                  : "0 0 8px rgba(89, 26, 13, 0.2)" 
+                  ? "0 0 12px rgba(245, 158, 11, 0.8)" 
+                  : "0 0 8px rgba(89, 26, 13, 0.3)" 
               }}
             >
               {f.text}
@@ -257,7 +264,7 @@ export const CircularMalaRing = memo(function CircularMalaRing({
             {isSumeru ? (
               // Sumeru Bead
               <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-900 border border-amber-300 flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.5)] relative">
-                <span className="text-[9px] md:text-[11px] font-bold text-black font-serif select-none pointer-events-none">ॐ</span>
+                <span className="text-[13px] md:text-[18px] font-black text-black font-serif select-none pointer-events-none leading-none">ॐ</span>
                 {/* Hanging Silk Tassel */}
                 <div 
                   className="absolute left-1/2 -translate-x-1/2 w-3 h-10 flex flex-col items-center pointer-events-none z-30"
@@ -512,6 +519,12 @@ export default function PremiumJapaCounter({
   const [secondsElapsed, setSecondsElapsed] = useState(initialSeconds);
   const [timerActive, setTimerActive] = useState(true);
 
+  // Auto Jap (ऑटो जप) states
+  const [isAutoJapaActive, setIsAutoJapaActive] = useState(false);
+  const [autoJapaIntervalSec, setAutoJapaIntervalSec] = useState<number>(1.5);
+  const [autoJapaSpeedModalOpen, setAutoJapaSpeedModalOpen] = useState(false);
+  const autoJapaTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Guided Mode specific states
   const [guidedPlaying, setGuidedPlaying] = useState(false);
 
@@ -676,6 +689,90 @@ export default function PremiumJapaCounter({
     // Play conch sound
     playConchSound(soundEnabled);
   }, [soundEnabled]);
+
+  // ─── AUTO JAP INCREMENT (bypasses tap throttle) ──────────────────
+  const autoIncrementCount = useCallback(() => {
+    if (isCompleted || count >= targetCount) {
+      setIsAutoJapaActive(false);
+      return;
+    }
+    
+    lastTapTimeRef.current = Date.now();
+    
+    setCount((prev) => {
+      if (prev >= targetCount) {
+        setIsAutoJapaActive(false);
+        return targetCount;
+      }
+      const next = Math.min(prev + 1, targetCount);
+      
+      // Play bell
+      playBellSound(soundEnabled);
+      
+      // Vibrate
+      if (vibrationEnabled && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(40);
+        } catch (_) {}
+      }
+
+      // Add floating mantra text
+      const mantraText = isHi
+        ? activeMantra.full_text_hindi || activeMantra.name_hindi
+        : activeMantra.transliteration || activeMantra.name_english;
+      
+      const newFloat: FloatingText = {
+        id: floatingIdCounter.current++,
+        text: mantraText,
+        x: (Math.random() - 0.5) * 50,
+        y: (Math.random() - 0.5) * 50,
+      };
+
+      setFloatingTexts((f) => [...f.slice(-4), newFloat]);
+      
+      // Add falling flower particle
+      const currentIdx = flowerIdCounter.current++;
+      const selectedFlowerImage = SACRED_FLOWERS[currentIdx % SACRED_FLOWERS.length];
+      const newFlower: FallingFlower = {
+        id: currentIdx,
+        x: 10 + Math.random() * 80,
+        size: 24 + Math.random() * 20,
+        duration: 3.5 + Math.random() * 2,
+        delay: 0,
+        driftX: (Math.random() - 0.5) * 120,
+        rotationSpeed: (Math.random() - 0.5) * 360,
+        image: selectedFlowerImage,
+      };
+      
+      setFallingFlowers((fl) => [...fl.slice(-8), newFlower]);
+
+      if (next >= targetCount) {
+        handleCompletion();
+      }
+      return next;
+    });
+  }, [isCompleted, count, targetCount, soundEnabled, vibrationEnabled, isHi, activeMantra, handleCompletion]);
+
+  // ─── AUTO JAP INTERVAL EFFECT ───────────────────────────────────
+  useEffect(() => {
+    if (isAutoJapaActive && !isCompleted && timerActive) {
+      const intervalMs = Math.max(300, autoJapaIntervalSec * 1000);
+      autoJapaTimerRef.current = setInterval(() => {
+        autoIncrementCount();
+      }, intervalMs);
+    } else {
+      if (autoJapaTimerRef.current) {
+        clearInterval(autoJapaTimerRef.current);
+        autoJapaTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (autoJapaTimerRef.current) {
+        clearInterval(autoJapaTimerRef.current);
+        autoJapaTimerRef.current = null;
+      }
+    };
+  }, [isAutoJapaActive, isCompleted, timerActive, autoJapaIntervalSec, autoIncrementCount]);
 
   // ─── INCREMENT ACTION ───────────────────────────────────────────
   const incrementCount = useCallback(() => {
@@ -1597,6 +1694,152 @@ export default function PremiumJapaCounter({
             </div>
           </motion.div>
         )}
+      </AnimatePresence>
+    );
+  };
+
+  // ─── AUTO JAP SPEED MODAL OVERLAY ──────────────────────────────
+  const renderAutoJapaSpeedModal = () => {
+    if (!autoJapaSpeedModalOpen) return null;
+    const presets = [0.5, 1.0, 1.5, 2.0, 3.0, 5.0];
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setAutoJapaSpeedModalOpen(false)}
+          className="fixed inset-0 z-[300] bg-black/75 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 select-none"
+        >
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 220 }}
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl border ${
+              isDark
+                ? "bg-[#140b07] border-amber-500/30 text-amber-100"
+                : "bg-[#FFFDF8] border-[#E8D8C4] text-[#33140A]"
+            }`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5 border-b pb-3 border-amber-500/20">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-500">
+                  <Zap className="w-5 h-5 fill-current" />
+                </div>
+                <div>
+                  <h3 className={`font-serif text-lg font-bold ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                    {isHi ? "ऑटो जप गति सेटिंग" : "Auto Jap Speed Settings"}
+                  </h3>
+                  <p className="text-[11px] font-medium opacity-70">
+                    {isHi ? "वह समय अंतराल चुनें जिसमें अगला जप स्वतः बढ़ेगा" : "Set interval time between automatic chants"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAutoJapaSpeedModalOpen(false)}
+                className={`w-8 h-8 rounded-full border flex items-center justify-center ${
+                  isDark ? "border-amber-500/30 text-amber-400" : "border-[#E8D8C4] text-[#591A0D]"
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current interval display card */}
+            <div className={`p-4 rounded-2xl text-center mb-5 border ${
+              isDark ? "bg-amber-950/30 border-amber-500/30" : "bg-[#FAF5E8] border-[#E8D8C4]"
+            }`}>
+              <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                {isHi ? "वर्तमान गति (Current Rate)" : "Current Interval"}
+              </span>
+              <div className="flex items-center justify-center gap-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setAutoJapaIntervalSec((prev) => Math.max(0.5, Number((prev - 0.5).toFixed(1))))}
+                  className={`w-10 h-10 rounded-full font-black text-xl flex items-center justify-center active:scale-95 transition-all shadow-sm ${
+                    isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-[#591A0D]/15 text-[#591A0D] border border-[#591A0D]/30"
+                  }`}
+                >
+                  -
+                </button>
+                <span className={`text-3xl font-serif font-black ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                  {autoJapaIntervalSec} <span className="text-sm font-sans font-semibold opacity-80">{isHi ? "सेकंड" : "sec"}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAutoJapaIntervalSec((prev) => Math.min(10, Number((prev + 0.5).toFixed(1))))}
+                  className={`w-10 h-10 rounded-full font-black text-xl flex items-center justify-center active:scale-95 transition-all shadow-sm ${
+                    isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-[#591A0D]/15 text-[#591A0D] border border-[#591A0D]/30"
+                  }`}
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-2">
+                ≈ {Math.round(60 / autoJapaIntervalSec)} {isHi ? "जाप प्रति मिनट" : "chants / min"}
+              </p>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="mb-6">
+              <label className="text-xs font-extrabold uppercase tracking-wider block mb-2 opacity-80">
+                {isHi ? "शीघ्र विकल्प (Quick Presets)" : "Quick Speed Presets"}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {presets.map((p) => {
+                  const isSelected = autoJapaIntervalSec === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setAutoJapaIntervalSec(p)}
+                      className={`py-2.5 px-2 rounded-xl text-xs font-black transition-all border ${
+                        isSelected
+                          ? isDark
+                            ? "bg-amber-500 text-black border-amber-400 shadow-md"
+                            : "bg-[#591A0D] text-[#FFFDF8] border-[#591A0D] shadow-md"
+                          : isDark
+                          ? "bg-stone-900/60 border-stone-800 text-amber-200/80 hover:bg-stone-800"
+                          : "bg-[#FFF9F2] border-[#E8D8C4] text-[#591A0D] hover:bg-orange-50"
+                      }`}
+                    >
+                      {p} {isHi ? "से." : "sec"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAutoJapaActive((prev) => !prev);
+                  setAutoJapaSpeedModalOpen(false);
+                }}
+                className={`flex-1 py-3.5 rounded-2xl font-black text-xs md:text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
+                  isAutoJapaActive
+                    ? "bg-rose-600 hover:bg-rose-700 text-white"
+                    : isDark
+                    ? "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                    : "bg-[#591A0D] hover:bg-[#451309] text-[#FFFDF8] shadow-[0_4px_12px_rgba(89,26,13,0.3)]"
+                }`}
+              >
+                <Zap className="w-4 h-4 fill-current" />
+                <span>
+                  {isAutoJapaActive
+                    ? (isHi ? "ऑटो जप रोकें" : "Stop Auto Jap")
+                    : (isHi ? "ऑटो जप चालू करें" : "Start Auto Jap")}
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
       </AnimatePresence>
     );
   };
@@ -2735,36 +2978,95 @@ export default function PremiumJapaCounter({
           <span>{Math.min(100, Math.round((count / targetCount) * 100))}%</span>
         </div>
 
-        {/* 5. CONTROL BUTTONS (Sitting inside to eliminate vertical layout gap) */}
-        <div className="flex items-center justify-center gap-3 mt-4 w-full select-none">
+        {/* 5. CONTROL BUTTONS */}
+        <div className="flex items-center justify-center gap-2.5 sm:gap-3 mt-4 w-full select-none flex-wrap">
+          {/* 1. Reset Button (Always solid border & text color, NO faded opacity drop) */}
           <button
             onClick={handleResetClick}
             disabled={count === 0}
-            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-sm text-xs font-bold tracking-wide ${
+            className={`inline-flex items-center justify-center gap-2 w-[115px] sm:w-[125px] h-11 rounded-full border-2 text-xs font-extrabold transition-all active:scale-95 shadow-sm leading-none cursor-pointer ${
               isDark 
-                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 disabled:opacity-40 text-amber-100" 
-                : "border-[#591A0D]/40 bg-[#FFFDF8] hover:bg-[#FFF5EB] disabled:opacity-50 text-[#591A0D]"
+                ? "border-amber-400 bg-black/40 text-amber-300 disabled:cursor-not-allowed" 
+                : "border-[#591A0D] bg-[#FFFDF8] hover:bg-[#FFF5EB] text-[#591A0D] disabled:cursor-not-allowed"
             }`}
           >
-            <RotateCcw className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`} />
-            <span>{isHi ? "पुनः सेट" : "Reset"}</span>
+            <RotateCcw className={`w-4 h-4 shrink-0 stroke-[2.2] ${isDark ? "text-amber-300" : "text-[#591A0D]"}`} />
+            <span className="leading-none flex items-center font-extrabold">{isHi ? "पुनः सेट" : "Reset"}</span>
           </button>
 
+          {/* 2. Pause / Resume Button (Fills with brand color when clicked / paused) */}
           <button
             onClick={() => setTimerActive(!timerActive)}
-            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-md text-xs font-bold tracking-wide ${
-              isDark 
-                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 text-amber-100" 
-                : "bg-[#591A0D] border-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] shadow-[0_4px_12px_rgba(89,26,13,0.15)]"
+            className={`inline-flex items-center justify-center gap-2 w-[125px] sm:w-[135px] h-11 rounded-full border-2 text-xs font-extrabold transition-all active:scale-95 shadow-sm leading-none cursor-pointer ${
+              !timerActive
+                ? isDark
+                  ? "bg-amber-500 border-amber-400 text-stone-950"
+                  : "bg-[#591A0D] border-[#591A0D] text-white shadow-inner"
+                : isDark
+                ? "bg-transparent border-amber-400 text-amber-300 hover:bg-amber-500/10"
+                : "bg-transparent border-[#591A0D] text-[#591A0D] hover:bg-[#591A0D]/10"
             }`}
           >
-            {timerActive ? (
-              <Pause className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-white"}`} />
+            {!timerActive ? (
+              <Play className={`w-4 h-4 shrink-0 stroke-[2.2] ${!timerActive ? (isDark ? "text-stone-950 fill-stone-950" : "text-white fill-white") : (isDark ? "text-amber-300" : "text-[#591A0D]")}`} />
             ) : (
-              <Play className={`w-4 h-4 fill-current ${isDark ? "text-amber-100" : "text-white"}`} />
+              <Pause className={`w-4 h-4 shrink-0 stroke-[2.2] ${isDark ? "text-amber-300" : "text-[#591A0D]"}`} />
             )}
-            <span>{timerActive ? (isHi ? "रोकें" : "Pause") : (isHi ? "शुरू करें" : "Resume")}</span>
+            <span className="leading-none flex items-center font-extrabold">
+              {!timerActive ? (isHi ? "शुरू करें" : "Resume") : (isHi ? "रोकें" : "Pause")}
+            </span>
           </button>
+
+          {/* 3. Auto Jap Combo Button (Fixed width pill, colored section on click, colorless settings icon) */}
+          <div className={`inline-flex items-center justify-center rounded-full border-2 overflow-hidden shadow-sm transition-all h-11 w-[160px] sm:w-[170px] ${
+            isDark ? "border-amber-400" : "border-[#591A0D]"
+          }`}>
+            <button
+              type="button"
+              onClick={() => setIsAutoJapaActive((prev) => !prev)}
+              className={`inline-flex items-center justify-center gap-1.5 flex-1 text-xs font-extrabold transition-all cursor-pointer leading-none text-center h-full ${
+                isAutoJapaActive
+                  ? isDark
+                    ? "bg-amber-500 text-stone-950 font-extrabold"
+                    : "bg-[#591A0D] text-white font-extrabold shadow-inner"
+                  : isDark
+                  ? "bg-[#FFFDF8] text-stone-900 font-extrabold hover:bg-amber-50"
+                  : "bg-[#FFFDF8] text-[#591A0D] font-extrabold hover:bg-[#FFF5EB]"
+              }`}
+            >
+              <img 
+                src={playCircleSvg} 
+                className="w-4 h-4 object-contain shrink-0 transition-all" 
+                style={{
+                  filter: isAutoJapaActive ? "brightness(0) invert(1)" : "none"
+                }}
+                alt="Auto Jap" 
+              />
+              <span className="leading-none flex items-center font-extrabold truncate">
+                {isAutoJapaActive
+                  ? (isHi ? `ऑटो (${autoJapaIntervalSec}s)` : `Auto (${autoJapaIntervalSec}s)`)
+                  : (isHi ? "ऑटो जप" : "Auto Jap")}
+              </span>
+            </button>
+
+            {/* Settings Sliders Icon (Always Colorless) */}
+            <button
+              type="button"
+              onClick={() => setAutoJapaSpeedModalOpen(true)}
+              title={isHi ? "गति बदलें (Edit Speed)" : "Edit Speed"}
+              className={`w-10 h-full border-l flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
+                isAutoJapaActive
+                  ? isDark
+                    ? "bg-[#FFFDF8] text-stone-900 border-stone-900/20 hover:bg-stone-100"
+                    : "bg-[#FFFDF8] text-[#591A0D] border-[#591A0D]/30 hover:bg-[#FFF5EB]"
+                  : isDark
+                  ? "bg-[#FFFDF8] text-stone-900 border-stone-900/20 hover:bg-stone-100"
+                  : "bg-[#FFFDF8] text-[#591A0D] border-[#591A0D]/30 hover:bg-[#FFF5EB]"
+              }`}
+            >
+              <Sliders className="w-4 h-4 shrink-0 stroke-[2.2]" />
+            </button>
+          </div>
         </div>
 
       </div>
@@ -3069,6 +3371,9 @@ export default function PremiumJapaCounter({
 
       {/* ─── CELEBRATION COMPLETED SCREEN OVERLAY ─────────────────── */}
       {renderCompletedOverlay()}
+
+      {/* ─── AUTO JAP SPEED MODAL OVERLAY ─────────────────────────── */}
+      {renderAutoJapaSpeedModal()}
 
       {/* ─── TOO FAST TAP WARNING TOAST ───────────────────────────── */}
       {renderTooFastToast()}

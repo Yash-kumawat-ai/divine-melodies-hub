@@ -12,6 +12,8 @@ import {
   Lock, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronUp,
+  ChevronDown,
   X, 
   Volume2, 
   VolumeX,
@@ -25,7 +27,13 @@ import {
   Move,
   Maximize2,
   RotateCw,
-  Trash2
+  Trash2,
+  Circle,
+  Square,
+  Eye,
+  EyeOff,
+  Plus,
+  Type
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -49,6 +57,8 @@ import radhaKrishnaImg from "./images/radha_krishna_hd mayapur tv.webp";
 import shyamMandirImg from "./images/shyam_mandir_desktop_hd.webp";
 import mandalaGoldImg from "./images/mandala-gold.svg";
 import mandalaBeigeImg from "./images/mandala-beige.svg";
+import devotionalHeaderBg from "./images/devotional_background_high_quality(1).webp";
+import omSvg from "./images/om.svg";
 
 // ─── SYNTHESIZED MEDITATIVE TANPURA DRONE ─────────────────────────
 class TempleDrone {
@@ -566,9 +576,10 @@ function BlessingsPosterEditor({
         </span>
         <button 
           onClick={() => onSave({ zoom: photoZoom, frameScale, offsetX, offsetY, shape, rotation })}
-          className="px-5 py-1.5 rounded-lg bg-[#e8960a] hover:bg-[#c97c04] text-[#1a0500] font-sans font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all cursor-pointer"
+          className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 font-sans font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
         >
-          {isHi ? "पूरा करें" : "Done"}
+          <Check className="w-4 h-4" />
+          <span>{isHi ? "संपन्न" : "Done"}</span>
         </button>
       </div>
 
@@ -604,11 +615,11 @@ function BlessingsPosterEditor({
         {/* TAB LIST BAR */}
         <div className="grid grid-cols-5 border-b border-white/5">
           {[
-            { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
-            { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-4 h-4" /> },
-            { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
-            { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
-            { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
+            { id: "shape", label: isHi ? "आकार" : "Shape", icon: <Circle className="w-4 h-4" /> },
+            { id: "move", label: isHi ? "खिसकाएं" : "Move", icon: <Move className="w-4 h-4" /> },
+            { id: "resize", label: isHi ? "आकार बदलें" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
+            { id: "rotate", label: isHi ? "घुमाएं" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
+            { id: "reset", label: isHi ? "पुनः सेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
           ].map(tab => {
             const isTabActive = activeTab === tab.id;
             return (
@@ -622,9 +633,9 @@ function BlessingsPosterEditor({
                   }
                 }}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1.5 py-3 border-b-2 text-[10px] font-sans font-black uppercase tracking-widest transition-all cursor-pointer",
+                  "flex flex-col items-center justify-center gap-1.5 py-3 border-b-2 text-xs font-semibold tracking-wide transition-all cursor-pointer select-none",
                   isTabActive
-                    ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                    ? "border-amber-500 bg-amber-500/10 text-amber-400 font-bold"
                     : "border-transparent text-stone-400 hover:text-stone-200"
                 )}
               >
@@ -643,27 +654,28 @@ function BlessingsPosterEditor({
             <div className="space-y-4">
               {poster.allowShapeChange ? (
                 <div className="space-y-2">
-                  <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-left">
-                    {isHi ? "आकार चुनें" : "Shape Options"}
+                  <span className="text-xs text-stone-400 font-bold uppercase tracking-wider block text-left">
+                    {isHi ? "तस्वीर का आकार चुनें" : "Shape Options"}
                   </span>
                   <div className="grid grid-cols-4 gap-2">
                     {[
-                      { id: "circle", label: isHi ? "गोल" : "Circle" },
-                      { id: "square", label: isHi ? "चौकोर" : "Square" },
-                      { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                      { id: "oval", label: isHi ? "ओवल" : "Oval" },
+                      { id: "circle", label: isHi ? "वृत्ताकार" : "Circle", icon: <Circle className="w-3.5 h-3.5" /> },
+                      { id: "square", label: isHi ? "वर्गाकार" : "Square", icon: <Square className="w-3.5 h-3.5" /> },
+                      { id: "rounded-square", label: isHi ? "मुड़ा वर्गाकार" : "Rounded", icon: <Square className="w-3.5 h-3.5 rounded-sm" /> },
+                      { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval", icon: <Circle className="w-3.5 h-3.5 scale-x-125" /> },
                     ].map((s) => (
                       <button
                         key={s.id}
                         onClick={() => setShape(s.id as any)}
                         className={cn(
-                          "py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                          "py-2 px-1 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center gap-1.5",
                           shape === s.id
-                            ? "bg-amber-500/15 border-amber-500 text-amber-300"
-                            : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
+                            ? "bg-amber-500/20 border-amber-500 text-amber-300 font-extrabold shadow-sm"
+                            : "bg-transparent border-[#651317] hover:border-amber-500/40 text-stone-300 hover:text-white"
                         )}
                       >
-                        {s.label}
+                        {s.icon}
+                        <span>{s.label}</span>
                       </button>
                     ))}
                   </div>
@@ -679,41 +691,41 @@ function BlessingsPosterEditor({
           {/* move panel (fine nudge arrow keys) */}
           {activeTab === "move" && (
             <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-center mb-1">
-                {isHi ? "पोजीशन फाइन-ट्यूनिंग" : "Fine-Tune Position"}
+              <span className="text-xs text-stone-400 font-bold uppercase tracking-wider block text-center mb-1">
+                {isHi ? "स्थान सूक्ष्म समायोजन" : "Fine-Tune Position"}
               </span>
               <div className="flex flex-col items-center gap-1.5">
                 <button 
                   onClick={() => setOffsetY(prev => prev - 2)}
-                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-[#651317] cursor-pointer active:scale-90"
                 >
-                  ▲
+                  <ChevronUp className="w-4 h-4" />
                 </button>
                 <div className="flex gap-4">
                   <button 
                     onClick={() => setOffsetX(prev => prev - 2)}
-                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-[#651317] cursor-pointer active:scale-90"
                   >
-                    ◀
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => { setOffsetX(0); setOffsetY(0); }}
-                    className="px-2.5 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-stone-300 font-black uppercase tracking-wider border border-white/5 cursor-pointer"
+                    className="px-3 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs text-stone-300 font-bold uppercase tracking-wider border border-[#651317] cursor-pointer"
                   >
-                    Center
+                    {isHi ? "मध्य में" : "Center"}
                   </button>
                   <button 
                     onClick={() => setOffsetX(prev => prev + 2)}
-                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-[#651317] cursor-pointer active:scale-90"
                   >
-                    ▶
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
                 <button 
                   onClick={() => setOffsetY(prev => prev + 2)}
-                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
+                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-[#651317] cursor-pointer active:scale-90"
                 >
-                  ▼
+                  <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -724,14 +736,14 @@ function BlessingsPosterEditor({
             <div className="space-y-4">
               {poster.allowShapeChange && (
                 <div className="space-y-1 text-left">
-                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
+                  <div className="flex justify-between text-xs text-stone-400 font-bold uppercase tracking-wider">
+                    <span>{isHi ? "फ़्रेम का आकार" : "Adjust Circle Size"}</span>
                     <span className="font-sans text-amber-400">{frameScale.toFixed(2)}x</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setFrameScale(prev => Math.max(0.4, prev - 0.05))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                     >
                       -
                     </button>
@@ -746,7 +758,7 @@ function BlessingsPosterEditor({
                     />
                     <button
                       onClick={() => setFrameScale(prev => Math.min(2.5, prev + 0.05))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                     >
                       +
                     </button>
@@ -755,14 +767,14 @@ function BlessingsPosterEditor({
               )}
 
               <div className="space-y-1 text-left">
-                <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                  <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
+                <div className="flex justify-between text-xs text-stone-400 font-bold uppercase tracking-wider">
+                  <span>{isHi ? "तस्वीर का ज़ूम" : "Zoom Photo"}</span>
                   <span className="font-sans text-amber-400">{photoZoom.toFixed(2)}x</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setPhotoZoom(prev => Math.max(0.8, prev - 0.05))}
-                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                   >
                     -
                   </button>
@@ -777,7 +789,7 @@ function BlessingsPosterEditor({
                   />
                   <button
                     onClick={() => setPhotoZoom(prev => Math.min(3.0, prev + 0.05))}
-                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                   >
                     +
                   </button>
@@ -789,16 +801,16 @@ function BlessingsPosterEditor({
           {/* rotate panel */}
           {activeTab === "rotate" && (
             <div className="space-y-3 text-left">
-              <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                <span>{isHi ? "फ्रेम रोटेशन" : "Frame Rotation"}</span>
+              <div className="flex justify-between text-xs text-stone-400 font-bold uppercase tracking-wider">
+                <span>{isHi ? "तस्वीर घुमाएं" : "Frame Rotation"}</span>
                 <span className="font-sans text-amber-400">{Math.round((rotation * 180) / Math.PI)}°</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setRotation(prev => prev - (5 * Math.PI) / 180)}
-                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                 >
-                  ↺
+                  <RotateCcw className="w-3.5 h-3.5" />
                 </button>
                 <input
                   type="range"
@@ -811,9 +823,9 @@ function BlessingsPosterEditor({
                 />
                 <button
                   onClick={() => setRotation(prev => prev + (5 * Math.PI) / 180)}
-                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
+                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 border border-[#651317] cursor-pointer"
                 >
-                  ↻
+                  <RotateCw className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -821,35 +833,35 @@ function BlessingsPosterEditor({
 
           {/* Adjust Photo Inside Helper Row */}
           <div className="border-t border-white/5 pt-3.5 space-y-2">
-            <span className="text-[9px] text-stone-500 font-black uppercase tracking-wider block text-left">
-              {isHi ? "फोटो एडजस्ट करें" : "Adjust Photo Inside"}
+            <span className="text-xs text-stone-400 font-bold uppercase tracking-wider block text-left">
+              {isHi ? "तस्वीर समायोजन निर्देश" : "Adjust Photo Inside"}
             </span>
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-[#651317]">
                 <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
-                  {isHi ? "ड्रैग करें" : "Drag to Move"}
+                <span className="text-xs font-sans font-bold text-stone-300 text-center tracking-wide leading-tight">
+                  {isHi ? "स्थान बदलें" : "Drag to Move"}
                 </span>
               </div>
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-[#651317]">
                 <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
+                <span className="text-xs font-sans font-bold text-stone-300 text-center tracking-wide leading-tight">
                   {isHi ? "पिंच ज़ूम" : "Pinch to Zoom"}
                 </span>
               </div>
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
+              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-[#651317]">
                 <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-2 2-2-2M9 6l2-2 2 2M11 4v16"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
+                <span className="text-xs font-sans font-bold text-stone-300 text-center tracking-wide leading-tight">
                   {isHi ? "डबल टैप रीसेट" : "Double Tap Reset"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Reset All Button */}
+          {/* Reset All Button - Colorless with maroon border */}
           <button
             onClick={handleResetAll}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[10px] font-black text-amber-400 border border-amber-500/20 transition-all active:scale-98 cursor-pointer select-none"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-transparent hover:bg-white/5 text-xs font-bold text-stone-300 border border-[#651317] transition-all active:scale-98 cursor-pointer select-none"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>{isHi ? "सब कुछ रीसेट करें" : "Reset All Settings"}</span>
@@ -1043,7 +1055,34 @@ export default function BlessingsPage() {
   const [posterNameScale, setPosterNameScale] = useState<number>(1.0);
   const [posterNameRotation, setPosterNameRotation] = useState<number>(0);
   const [posterNameShape, setPosterNameShape] = useState<"circle" | "square" | "rounded-square" | "oval">("rounded-square");
-  const [editingElement, setEditingElement] = useState<"photo" | "name">("photo");
+  const [extraTextBoxes, setExtraTextBoxes] = useState<Array<{ id: string; text: string; offsetX: number; offsetY: number; scale: number; rotation: number; shape: "circle" | "square" | "rounded-square" | "oval" }>>([]);
+  const [editingElement, setEditingElement] = useState<string>("photo");
+
+  const handleAddTextBox = () => {
+    const newId = `text_${Date.now()}`;
+    const newBox = {
+      id: newId,
+      text: "",
+      offsetX: 0,
+      offsetY: (extraTextBoxes.length + 1) * 45,
+      scale: 1.0,
+      rotation: 0,
+      shape: "rounded-square" as const,
+    };
+    setExtraTextBoxes(prev => [...prev, newBox]);
+    setEditingElement(newId);
+  };
+
+  const handleRemoveTextBox = (id: string) => {
+    setExtraTextBoxes(prev => prev.filter(b => b.id !== id));
+    if (editingElement === id) {
+      setEditingElement("name");
+    }
+  };
+
+  const handleUpdateCustomTextBox = (id: string, updates: Partial<{ text: string; offsetX: number; offsetY: number; scale: number; rotation: number; shape: "circle" | "square" | "rounded-square" | "oval" }>) => {
+    setExtraTextBoxes(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+  };
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<'temp' | 'user'>('temp');
@@ -2091,21 +2130,33 @@ export default function BlessingsPage() {
   };
 
   const drawPlaceholderOm = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
-    ctx.fillStyle = "rgba(251, 191, 36, 0.15)";
+    ctx.save();
+    ctx.fillStyle = isDark ? "rgba(20, 8, 4, 0.85)" : "#FFFDF8";
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = "#fbbf24";
+    ctx.strokeStyle = isDark ? "#fbbf24" : "#651317";
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
 
-    ctx.fillStyle = "#fbbf24";
-    ctx.font = getCanvasFont(language, 80, 'heading', true);
-    ctx.textAlign = "center";
-    ctx.fillText("ॐ", x, y + 25);
+    const omImg = new Image();
+    omImg.src = omSvg;
+    const size = r * 1.1;
+    if (omImg.complete && omImg.naturalWidth > 0) {
+      ctx.drawImage(omImg, x - size / 2, y - size / 2, size, size);
+    } else {
+      omImg.onload = () => {
+        ctx.drawImage(omImg, x - size / 2, y - size / 2, size, size);
+      };
+      ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
+      ctx.font = getCanvasFont(language, 80, 'heading', true);
+      ctx.textAlign = "center";
+      ctx.fillText("ॐ", x, y + 25);
+    }
   };
 
   const compilePoster = (poster: PosterTemplate, aspect: "status" | "square"): Promise<string> => {
@@ -2216,7 +2267,7 @@ export default function BlessingsPage() {
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          const displayName = userName.trim() ? userName : (isHi ? "भक्त" : "Devotee");
+          const displayName = userName.trim() ? userName : (isHi ? "आपका नाम..." : "Your Name...");
 
           // Fit text size dynamically using fitTextToWidth
           const resolvedFontString = fitTextToWidth(
@@ -2243,9 +2294,9 @@ export default function BlessingsPage() {
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 0;
 
-          // Rich dark glassmorphic style
-          ctx.fillStyle = "rgba(12, 5, 2, 0.85)";
-          ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
+          // Adaptive glassmorphic style
+          ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
+          ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
           ctx.lineWidth = 3;
           ctx.beginPath();
           
@@ -2262,16 +2313,71 @@ export default function BlessingsPage() {
           ctx.stroke();
 
           // Set high-contrast text shadow for devotee name
-          ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
-          ctx.shadowBlur = 8;
+          ctx.shadowColor = isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.8)";
+          ctx.shadowBlur = isDark ? 8 : 4;
           ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 3;
+          ctx.shadowOffsetY = isDark ? 3 : 1;
 
-          ctx.fillStyle = "#fbbf24";
+          ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
           // Draw text centered at translated 0,0 origin
           ctx.fillText(displayName, 0, 0);
 
           ctx.restore();
+
+          // Draw all extra text boxes
+          extraTextBoxes.forEach(box => {
+            if (!box.text.trim()) return;
+            ctx.save();
+            const finalX = nameX + posterNameOffsetX + box.offsetX;
+            const finalY = nameY + posterNameOffsetY + box.offsetY;
+            
+            ctx.translate(finalX, finalY);
+            ctx.rotate(box.rotation);
+            ctx.scale(box.scale, box.scale);
+            
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const resFont = fitTextToWidth(
+              ctx,
+              box.text,
+              w - 240,
+              posterTypography.nameSize * 0.85,
+              posterTypography.nameFont,
+              'bold'
+            );
+            ctx.font = resFont;
+            
+            const fMatch = resFont.match(/(\d+)px/);
+            const fSize = fMatch ? parseInt(fMatch[1], 10) : posterTypography.nameSize * 0.85;
+
+            const bW = ctx.measureText(box.text).width + 70;
+            const bH = fSize + 28;
+            const bX = -bW / 2;
+            const bY = -bH / 2;
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
+            ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            
+            const boxRadius = 
+              box.shape === "circle" || box.shape === "oval"
+                ? bH / 2
+                : box.shape === "square"
+                ? 0
+                : 14;
+                
+            ctx.roundRect(bX, bY, bW, bH, boxRadius);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
+            ctx.fillText(box.text, 0, 0);
+
+            ctx.restore();
+          });
 
           // Watermark - slightly larger and shadow supported
           ctx.save();
@@ -2779,6 +2885,41 @@ export default function BlessingsPage() {
             </button>
           </div>
         </header>
+      ) : activeTab === "maker" ? (
+        <header className={cn("relative z-40 px-4 pt-5 pb-4 flex flex-col items-center justify-center w-full border-b select-none overflow-hidden transition-colors", isDark ? "bg-[#140804] border-amber-950/20" : "bg-[#FFFDF8] border-[#EAD7C3]/80")}>
+          {/* Background image overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-15 bg-cover bg-left-top bg-no-repeat mix-blend-multiply dark:mix-blend-screen"
+            style={{ backgroundImage: `url(${devotionalHeaderBg})` }}
+          />
+          
+          <div className="relative z-10 flex items-center justify-between w-full max-w-4xl">
+            {/* Left: Circular Back button */}
+            <button
+              onClick={() => navigate("/")}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all focus:outline-none border shadow-sm shrink-0",
+                isDark ? "bg-black/50 border-amber-500/20 text-amber-400 hover:bg-black/70" : "bg-white/90 border-[#EAD7C3] text-[#D88A15] hover:bg-white"
+              )}
+            >
+              <ArrowLeft className="w-5 h-5 text-[#D88A15]" />
+            </button>
+
+            {/* Center: Title & Subtitle */}
+            <div className="text-center flex-1 px-3 flex flex-col items-center justify-center">
+              <h1 className={cn("font-serif text-xl sm:text-2xl font-black flex items-center gap-2 justify-center leading-tight tracking-wide", isDark ? "text-amber-300" : "text-[#651317]")}>
+                <span className="text-xl sm:text-2xl">🪔</span>
+                <span>{isHi ? "भक्तिमय पोस्टर" : "Devotional Posters"}</span>
+              </h1>
+              <p className={cn("font-sans text-xs sm:text-sm font-semibold block mt-1 leading-tight", isDark ? "text-amber-200/80" : "text-[#786252]")}>
+                {isHi ? "हर अवसर के लिए सुंदर धार्मिक पोस्टर" : "Beautiful spiritual posters for every occasion"}
+              </p>
+            </div>
+
+            {/* Right: Empty spacer for symmetry (1 din sadhana removed!) */}
+            <div className="w-10 h-10 shrink-0" />
+          </div>
+        </header>
       ) : (
         <header className={cn("sticky top-0 z-40 backdrop-blur-md px-4 py-3.5 flex items-center justify-between w-full border-b", isDark ? "bg-[#160a06]/90 border-amber-950/20" : "bg-[#FAF8F4]/95 border-[#EFE5DA]/60")}>
           <button
@@ -2796,10 +2937,7 @@ export default function BlessingsPage() {
               Raghavam Devotional Hub
             </span>
           </div>
-          <div className={cn("flex items-center gap-1.5 border rounded-full px-3 py-1.5 font-sans text-xs font-black shadow-inner", isDark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-[#D88A15]/10 border-[#D88A15]/25 text-[#D88A15]")}>
-            <Flame className="w-3.5 h-3.5 text-orange-500 fill-current animate-bounce" />
-            <span>{streakCount} {isHi ? "दिन साधना" : "Days Streak"}</span>
-          </div>
+          <div className="w-10 h-10 shrink-0" />
         </header>
       )}
 
@@ -5111,14 +5249,15 @@ export default function BlessingsPage() {
                                     transform: `translate(-50%, -50%) rotate(${isActive ? posterRotation : 0}rad)`,
                                     borderRadius: computedBorderRadius,
                                     border: isPhotoSelected 
-                                      ? "2px dashed #fbbf24" 
+                                      ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
                                       : isEditable 
-                                      ? "1.5px dashed rgba(251, 191, 36, 0.4)" 
-                                      : "1.5px solid #fbbf24",
-                                    background: "#1b0a05",
+                                      ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.4)" : "1.5px dashed rgba(101, 19, 23, 0.5)"
+                                      : isDark ? "1.5px solid #fbbf24" : "1.5px solid #651317",
+                                    background: isDark ? "#1b0a05" : "#FFFDF8",
                                     boxShadow: isPhotoSelected 
-                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
-                                      : "0 4px 12px rgba(0,0,0,0.6)",
+                                      ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.4)"
+                                      : isDark ? "0 4px 12px rgba(0,0,0,0.6)" : "0 4px 14px rgba(101, 19, 23, 0.15)",
+                                    touchAction: "none"
                                   }}
                                   // Drag handlers for in-place frame movement
                                   onPointerDown={isEditable ? (e) => {
@@ -5137,7 +5276,6 @@ export default function BlessingsPage() {
                                     if (!data) return;
                                     const rect = e.currentTarget.parentElement?.getBoundingClientRect();
                                     if (!rect) return;
-                                    // Scale mouse/touch move delta values to match the 1080px canvas coordinates
                                     const scale = 1080 / rect.width;
                                     const dx = (e.clientX - data.x) * scale;
                                     const dy = (e.clientY - data.y) * scale;
@@ -5179,18 +5317,14 @@ export default function BlessingsPage() {
                                       className="pointer-events-none"
                                     />
                                   ) : (
-                                    <span style={{ fontSize: "min(3.5vw, 22px)", fontFamily: "serif", color: "#fbbf24", fontWeight: "bold" }}>ॐ</span>
+                                    <img 
+                                      src={omSvg} 
+                                      alt="Om" 
+                                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain pointer-events-none drop-shadow" 
+                                    />
                                   )}
 
-                                  {/* White handle dots on the frame edges matching image-1782636742188.png */}
-                                  {isEditable && (
-                                    <>
-                                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                    </>
-                                  )}
+                                  {/* Clean selected frame without handle dots */}
                                 </div>
                               );
                             })()}
@@ -5208,82 +5342,163 @@ export default function BlessingsPage() {
                                   : "12px";
 
                               return (
-                                <div
-                                  className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
-                                  style={{
-                                    left: nameLeft,
-                                    top: nameTop,
-                                    transform: `translate(-50%, -50%) scale(${isActive ? posterNameScale : 1.0}) rotate(${isActive ? posterNameRotation : 0}rad)`,
-                                    background: "rgba(12, 5, 2, 0.85)",
-                                    border: isNameSelected 
-                                      ? "2px dashed #fbbf24" 
-                                      : isNameEditable
-                                      ? "1.5px dashed rgba(251, 191, 36, 0.5)"
-                                      : "1.5px solid rgba(251, 191, 36, 0.5)",
-                                    borderRadius: computedNameBorderRadius,
-                                    padding: "4px min(4vw, 16px)",
-                                    boxShadow: isNameSelected
-                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
-                                      : "0 6px 16px rgba(0,0,0,0.7)",
-                                    transition: "border 0.2s, box-shadow 0.2s",
-                                  }}
-                                  onPointerDown={isNameEditable ? (e) => {
-                                    e.stopPropagation();
-                                    setEditingElement("name");
-                                    e.currentTarget.setPointerCapture(e.pointerId);
-                                    (e.currentTarget as any)._dragStart = {
-                                      x: e.clientX,
-                                      y: e.clientY,
-                                      ox: posterNameOffsetX,
-                                      oy: posterNameOffsetY
-                                    };
-                                  } : undefined}
-                                  onPointerMove={isNameEditable ? (e) => {
-                                    const data = (e.currentTarget as any)._dragStart;
-                                    if (!data) return;
-                                    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                    if (!rect) return;
-                                    const scale = 1080 / rect.width;
-                                    const dx = (e.clientX - data.x) * scale;
-                                    const dy = (e.clientY - data.y) * scale;
-                                    setPosterNameOffsetX(data.ox + dx);
-                                    setPosterNameOffsetY(data.oy + dy);
-                                  } : undefined}
-                                  onPointerUp={isNameEditable ? (e) => {
-                                    delete (e.currentTarget as any)._dragStart;
-                                    e.currentTarget.releasePointerCapture(e.pointerId);
-                                  } : undefined}
-                                  onPointerCancel={isNameEditable ? (e) => {
-                                    delete (e.currentTarget as any)._dragStart;
-                                    e.currentTarget.releasePointerCapture(e.pointerId);
-                                  } : undefined}
-                                  onWheel={isNameSelected ? (e) => {
-                                    e.preventDefault();
-                                    const delta = -e.deltaY * 0.001;
-                                    setPosterNameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
-                                  } : undefined}
-                                >
-                                  <span
+                                <>
+                                  <div
+                                    className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
                                     style={{
-                                      fontFamily: "serif",
-                                      fontWeight: 800,
-                                      color: "#fbbf24",
-                                      fontSize: "min(3.2vw, 16px)",
-                                      letterSpacing: isHi ? "normal" : "0.02em",
+                                      left: nameLeft,
+                                      top: nameTop,
+                                      transform: `translate(-50%, -50%) scale(${isActive ? posterNameScale : 1.0}) rotate(${isActive ? posterNameRotation : 0}rad)`,
+                                      background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
+                                      border: isNameSelected 
+                                        ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
+                                        : isNameEditable
+                                        ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.5)" : "1.5px dashed rgba(101, 19, 23, 0.6)"
+                                        : isDark ? "1.5px solid rgba(251, 191, 36, 0.5)" : "1.5px solid #651317",
+                                      borderRadius: computedNameBorderRadius,
+                                      padding: "4px min(4vw, 16px)",
+                                      boxShadow: isNameSelected
+                                        ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.3)"
+                                        : isDark ? "0 6px 16px rgba(0,0,0,0.7)" : "0 4px 14px rgba(101, 19, 23, 0.18)",
+                                      transition: "border 0.2s, box-shadow 0.2s",
+                                      touchAction: "none"
                                     }}
+                                    onPointerDown={isNameEditable ? (e) => {
+                                      e.stopPropagation();
+                                      setEditingElement("name");
+                                      e.currentTarget.setPointerCapture(e.pointerId);
+                                      (e.currentTarget as any)._dragStart = {
+                                        x: e.clientX,
+                                        y: e.clientY,
+                                        ox: posterNameOffsetX,
+                                        oy: posterNameOffsetY
+                                      };
+                                    } : undefined}
+                                    onPointerMove={isNameEditable ? (e) => {
+                                      const data = (e.currentTarget as any)._dragStart;
+                                      if (!data) return;
+                                      const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                      if (!rect) return;
+                                      const scale = 1080 / rect.width;
+                                      const dx = (e.clientX - data.x) * scale;
+                                      const dy = (e.clientY - data.y) * scale;
+                                      setPosterNameOffsetX(data.ox + dx);
+                                      setPosterNameOffsetY(data.oy + dy);
+                                    } : undefined}
+                                    onPointerUp={isNameEditable ? (e) => {
+                                      delete (e.currentTarget as any)._dragStart;
+                                      e.currentTarget.releasePointerCapture(e.pointerId);
+                                    } : undefined}
+                                    onPointerCancel={isNameEditable ? (e) => {
+                                      delete (e.currentTarget as any)._dragStart;
+                                      e.currentTarget.releasePointerCapture(e.pointerId);
+                                    } : undefined}
+                                    onWheel={isNameSelected ? (e) => {
+                                      e.preventDefault();
+                                      const delta = -e.deltaY * 0.001;
+                                      setPosterNameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
+                                    } : undefined}
                                   >
-                                    {userName.trim() ? userName : (isHi ? "भक्त" : "Devotee")}
-                                  </span>
+                                    <span
+                                      style={{
+                                        fontFamily: "serif",
+                                        fontWeight: 800,
+                                        color: isDark ? "#fbbf24" : "#651317",
+                                        fontSize: "min(3.2vw, 16px)",
+                                        letterSpacing: isHi ? "normal" : "0.02em",
+                                      }}
+                                    >
+                                      {userName.trim() ? userName : (isHi ? "आपका नाम..." : "Your Name...")}
+                                    </span>
+                                  </div>
 
-                                  {isNameSelected && (
-                                    <>
-                                      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                    </>
-                                  )}
-                                </div>
+                                  {/* Render Extra Custom Text Boxes */}
+                                  {isActive && extraTextBoxes.map((box) => {
+                                    if (!isEditingPhoto && !box.text.trim()) return null;
+                                    const isBoxEditable = isActive && isEditingPhoto;
+                                    const isBoxSelected = isBoxEditable && editingElement === box.id;
+                                    const computedBoxBorderRadius = 
+                                      box.shape === "circle" || box.shape === "oval" ? "999px" : box.shape === "square" ? "0px" : "12px";
+
+                                    const boxLeft = `${((tpl.namePosition.x + posterNameOffsetX + box.offsetX) / 1080) * 100}%`;
+                                    const boxTop = `${((tpl.namePosition.y + posterNameOffsetY + box.offsetY) / 1920) * 100}%`;
+
+                                    const displayText = box.text.trim() ? box.text : (isBoxEditable ? (isHi ? "नया पाठ..." : "New Text...") : "");
+                                    if (!displayText) return null;
+
+                                    return (
+                                      <div
+                                        key={box.id}
+                                        className={`absolute flex items-center justify-center whitespace-nowrap select-none ${
+                                          isBoxEditable 
+                                            ? "cursor-grab active:cursor-grabbing touch-none z-[130]" 
+                                            : "pointer-events-none z-[100]"
+                                        }`}
+                                        style={{
+                                          left: boxLeft,
+                                          top: boxTop,
+                                          transform: `translate(-50%, -50%) scale(${box.scale}) rotate(${box.rotation}rad)`,
+                                          background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
+                                          border: isBoxSelected 
+                                            ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
+                                            : isBoxEditable
+                                            ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.5)" : "1.5px dashed rgba(101, 19, 23, 0.6)"
+                                            : isDark ? "1.5px solid rgba(251, 191, 36, 0.5)" : "1.5px solid #651317",
+                                          borderRadius: computedBoxBorderRadius,
+                                          padding: "4px min(4vw, 16px)",
+                                          boxShadow: isBoxSelected
+                                            ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.3)"
+                                            : isDark ? "0 6px 16px rgba(0,0,0,0.7)" : "0 4px 14px rgba(101, 19, 23, 0.18)",
+                                          touchAction: isBoxEditable ? "none" : "auto"
+                                        }}
+                                        onPointerDown={isBoxEditable ? (e) => {
+                                          e.stopPropagation();
+                                          setEditingElement(box.id);
+                                          e.currentTarget.setPointerCapture(e.pointerId);
+                                          (e.currentTarget as any)._dragStart = {
+                                            x: e.clientX,
+                                            y: e.clientY,
+                                            ox: box.offsetX,
+                                            oy: box.offsetY
+                                          };
+                                        } : undefined}
+                                        onPointerMove={isBoxEditable ? (e) => {
+                                          const data = (e.currentTarget as any)._dragStart;
+                                          if (!data) return;
+                                          const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                          if (!rect) return;
+                                          const scale = 1080 / rect.width;
+                                          const dx = (e.clientX - data.x) * scale;
+                                          const dy = (e.clientY - data.y) * scale;
+                                          handleUpdateCustomTextBox(box.id, {
+                                            offsetX: data.ox + dx,
+                                            offsetY: data.oy + dy
+                                          });
+                                        } : undefined}
+                                        onPointerUp={isBoxEditable ? (e) => {
+                                          delete (e.currentTarget as any)._dragStart;
+                                          e.currentTarget.releasePointerCapture(e.pointerId);
+                                        } : undefined}
+                                        onPointerCancel={isBoxEditable ? (e) => {
+                                          delete (e.currentTarget as any)._dragStart;
+                                          e.currentTarget.releasePointerCapture(e.pointerId);
+                                        } : undefined}
+                                      >
+                                        <span
+                                          style={{
+                                            fontFamily: "serif",
+                                            fontWeight: 800,
+                                            color: isDark ? "#fbbf24" : "#651317",
+                                            fontSize: "min(3.0vw, 15px)",
+                                            opacity: !box.text.trim() && isBoxEditable ? 0.6 : 1.0
+                                          }}
+                                        >
+                                          {displayText}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </>
                               );
                             })()}
                           </div>
@@ -5365,9 +5580,9 @@ export default function BlessingsPage() {
                       <div className={cn("flex justify-between items-center px-4 py-2.5 border-b", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                         <div className="flex flex-col text-left">
                           <span style={{ fontSize: 13, fontFamily: "serif", fontWeight: 800, color: isDark ? "#fbbf24" : "#3A2418", letterSpacing: "0.02em" }}>
-                            {isHi ? "तस्वीर और नाम एडजस्ट करें" : "Adjust Photo & Name"}
+                            {isHi ? "तस्वीर और नाम समायोजन" : "Adjust Photo & Name"}
                           </span>
-                          <span style={{ fontSize: 9, fontFamily: "sans-serif", color: isDark ? "rgba(255,255,255,0.4)" : "#786252" }}>
+                          <span style={{ fontSize: 10, fontFamily: "sans-serif", color: isDark ? "rgba(255,255,255,0.4)" : "#786252" }}>
                             {isHi ? "लेयर चुनें और उंगली से ड्रैग करें" : "Select layer and drag directly"}
                           </span>
                         </div>
@@ -5386,46 +5601,81 @@ export default function BlessingsPage() {
                             setPosterNameShape("rounded-square");
                             setHidePhotoFrame(false);
                           }}
-                          className={cn("px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold uppercase tracking-wider active:scale-95 transition-all cursor-pointer", isDark ? "bg-white/5 text-amber-300 hover:bg-white/10" : "bg-[#651317]/10 text-[#651317] hover:bg-[#651317]/20")}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border border-[#651317] dark:border-amber-500/40 bg-white dark:bg-stone-900 text-[#651317] dark:text-amber-300 select-none active:scale-95 shadow-sm hover:bg-stone-50"
+                          )}
                         >
-                          🔄 {isHi ? "रीसेट" : "Reset"}
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>{isHi ? "पुनः सेट" : "Reset"}</span>
                         </button>
                       </div>
 
-                      {/* 2. LAYER SELECTOR (Photo vs Name toggle) */}
-                      <div className={cn("grid grid-cols-2 gap-1.5 px-4 py-2 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                      {/* 2. LAYER SELECTOR (Photo, Name, Custom Textboxes + Add Text Button) */}
+                      <div className={cn("flex items-center gap-2 px-4 py-2.5 border-b overflow-x-auto no-scrollbar", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                        {/* Photo Layer button */}
                         <button
                           onClick={() => setEditingElement("photo")}
                           className={cn(
-                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
                             editingElement === "photo"
-                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
-                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
+                              ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
                           )}
                         >
-                          📷 {isHi ? "तस्वीर (Photo)" : "Photo Layer"}
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>{isHi ? "तस्वीर" : "Photo"}</span>
                         </button>
+
+                        {/* Primary Name Layer button */}
                         <button
                           onClick={() => setEditingElement("name")}
                           className={cn(
-                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
                             editingElement === "name"
-                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
-                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
+                              ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
                           )}
                         >
-                          ✍️ {isHi ? "नाम (Name)" : "Name Layer"}
+                          <UserIcon className="w-3.5 h-3.5" />
+                          <span>{isHi ? "नाम" : "Name"}</span>
+                        </button>
+
+                        {/* Custom Text Box buttons */}
+                        {extraTextBoxes.map((box, idx) => (
+                          <button
+                            key={box.id}
+                            onClick={() => setEditingElement(box.id)}
+                            className={cn(
+                              "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
+                              editingElement === box.id
+                                ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                                : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
+                            )}
+                          >
+                            <Type className="w-3.5 h-3.5" />
+                            <span>{box.text.substring(0, 10) || `${isHi ? 'पाठ' : 'Text'} ${idx + 1}`}</span>
+                          </button>
+                        ))}
+
+                        {/* Add Textbox Button */}
+                        <button
+                          onClick={handleAddTextBox}
+                          className={cn(
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0 bg-white text-[#651317] dark:bg-stone-900 dark:text-amber-300 hover:bg-stone-50 shadow-sm"
+                          )}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>{isHi ? "नया टेक्स्ट" : "+ Text"}</span>
                         </button>
                       </div>
 
-                      {/* 3. TAB LIST BAR */}
-                      <div className={cn("grid grid-cols-5 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                      {/* 3. TAB LIST BAR (Simplified without Move tab) */}
+                      <div className={cn("grid grid-cols-4 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
                         {[
-                          { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
-                          { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-3.5 h-3.5" /> },
-                          { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-3.5 h-3.5" /> },
-                          { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-3.5 h-3.5" /> },
-                          { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-3.5 h-3.5" /> }
+                          { id: "shape", label: isHi ? "आकार" : "Shape", icon: <Circle className="w-4 h-4" /> },
+                          { id: "resize", label: isHi ? "आकार बदलें" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
+                          { id: "rotate", label: isHi ? "घुमाएं" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
+                          { id: "reset", label: isHi ? "पुनः सेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
                         ].map(tab => {
                           const isTabActive = posterActiveTab === tab.id;
                           return (
@@ -5440,21 +5690,29 @@ export default function BlessingsPage() {
                                     setPosterOffsetY(0);
                                     setPosterShape(selectedPoster.defaultShape || "circle");
                                     setPosterRotation(0);
-                                  } else {
+                                  } else if (editingElement === "name") {
                                     setPosterNameOffsetX(0);
                                     setPosterNameOffsetY(0);
                                     setPosterNameScale(1.0);
                                     setPosterNameRotation(0);
                                     setPosterNameShape("rounded-square");
+                                  } else {
+                                    handleUpdateCustomTextBox(editingElement, {
+                                      offsetX: 0,
+                                      offsetY: 0,
+                                      scale: 1.0,
+                                      rotation: 0,
+                                      shape: "rounded-square"
+                                    });
                                   }
                                 } else {
                                   setPosterActiveTab(tab.id as any);
                                 }
                               }}
                               className={cn(
-                                "flex flex-col items-center justify-center gap-1 py-2 border-b-2 text-[9px] font-sans font-black uppercase tracking-wider transition-all cursor-pointer",
+                                "flex flex-col items-center justify-center gap-1 py-2.5 border-b-2 text-xs font-semibold tracking-wide transition-all cursor-pointer select-none",
                                 isTabActive
-                                  ? isDark ? "border-amber-500 bg-amber-500/10 text-amber-400" : "border-[#651317] bg-[#651317]/10 text-[#651317]"
+                                  ? isDark ? "border-amber-500 bg-amber-500/10 text-amber-400 font-bold" : "border-[#651317] bg-[#651317]/10 text-[#651317] font-bold"
                                   : isDark ? "border-transparent text-stone-400 hover:text-stone-200" : "border-transparent text-[#786252] hover:text-[#3A2418]"
                               )}
                             >
@@ -5466,12 +5724,12 @@ export default function BlessingsPage() {
                       </div>
 
                       {/* 4. ACTIVE PANEL CONTENT */}
-                      <div className={cn("p-3 space-y-3", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")}>
+                      <div className={cn("p-3.5 space-y-3.5", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")}>
                         
-                        {/* Real-time name text editor */}
+                        {/* Edit Primary Name Text */}
                         {editingElement === "name" && (
-                          <div className={cn("space-y-1 text-left border-b pb-2.5", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
-                            <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                          <div className={cn("space-y-1.5 text-left border-b pb-3", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                            <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
                               {isHi ? "नाम बदलें" : "Edit Name Text"}
                             </span>
                             <div className="relative">
@@ -5482,88 +5740,146 @@ export default function BlessingsPage() {
                                 value={userName}
                                 onChange={(e) => setUserName(e.target.value)}
                                 className={cn(
-                                  "w-full rounded-xl py-2 px-3 text-xs focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                                  "w-full rounded-xl py-2 px-3 text-xs sm:text-sm focus:outline-none tracking-wide font-sans font-medium border transition-colors",
                                   isDark 
                                     ? "bg-black/45 border-amber-500/20 text-amber-100 placeholder:text-amber-200/40"
-                                    : "bg-white border-[#EAD7C3] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
+                                    : "bg-white border-[#651317] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
                                 )}
                               />
-                              <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
+                              <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-xs font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
                                 {userName.length}/30
                               </span>
                             </div>
                           </div>
                         )}
+
+                        {/* Edit Custom Textbox Content & Delete Option */}
+                        {editingElement.startsWith("text_") && (() => {
+                          const currentBox = extraTextBoxes.find(b => b.id === editingElement);
+                          if (!currentBox) return null;
+                          return (
+                            <div className={cn("space-y-2 text-left border-b pb-3", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                              <div className="flex items-center justify-between">
+                                <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  {isHi ? "पाठ बदलें" : "Edit Custom Text"}
+                                </span>
+                                <button
+                                  onClick={() => handleRemoveTextBox(currentBox.id)}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950/40 dark:text-red-400 border border-red-300 dark:border-red-800/40 hover:bg-red-200 transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>{isHi ? "हटाएं" : "Remove"}</span>
+                                </button>
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  maxLength={40}
+                                  placeholder={isHi ? "नया पाठ लिखें..." : "Type text..."}
+                                  value={currentBox.text}
+                                  onChange={(e) => handleUpdateCustomTextBox(currentBox.id, { text: e.target.value })}
+                                  className={cn(
+                                    "w-full rounded-xl py-2 px-3 text-xs sm:text-sm focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                                    isDark 
+                                      ? "bg-black/45 border-amber-500/20 text-amber-100 placeholder:text-amber-200/40"
+                                      : "bg-white border-[#651317] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
+                                  )}
+                                />
+                                <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-xs font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
+                                  {currentBox.text.length}/40
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                         
                         {/* shape panel */}
                         {posterActiveTab === "shape" && (
-                          <div className="space-y-2.5">
+                          <div className="space-y-3">
                             {editingElement === "photo" ? (
-                              <div className="space-y-2 text-left">
+                              <div className="space-y-2.5 text-left">
                                 <div className="flex items-center justify-between">
-                                  <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    {isHi ? "फोटो का आकार और दृश्यता" : "Photo Shape & Visibility"}
+                                  <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    {isHi ? "तस्वीर का आकार एवं फ़्रेम" : "Photo Shape & Visibility"}
                                   </span>
                                   {/* Hide/Show Photo Frame Toggle */}
                                   <button
                                     onClick={() => setHidePhotoFrame(prev => !prev)}
                                     className={cn(
-                                      "px-2.5 py-1 rounded-lg text-[9.5px] font-sans font-bold transition-all cursor-pointer border select-none",
+                                      "px-3 py-1.5 rounded-xl text-xs font-sans font-bold transition-all cursor-pointer border border-[#651317] flex items-center gap-1.5 select-none bg-white text-[#651317]",
                                       hidePhotoFrame
                                         ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                        : isDark ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10" : "bg-white border-[#EAD7C3] text-[#651317] hover:bg-[#FFFDF8]"
+                                        : isDark ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
                                     )}
                                   >
-                                    {hidePhotoFrame ? "👁️ " + (isHi ? "फ़्रेम दिखाएं" : "Show Frame") : "🙈 " + (isHi ? "फ़्रेम छिपाएं" : "Hide Frame")}
+                                    {hidePhotoFrame ? (
+                                      <>
+                                        <Eye className="w-3.5 h-3.5" />
+                                        <span>{isHi ? "फ़्रेम दिखाएं" : "Show Frame"}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <EyeOff className="w-3.5 h-3.5" />
+                                        <span>{isHi ? "फ़्रेम छिपाएं" : "Hide Frame"}</span>
+                                      </>
+                                    )}
                                   </button>
                                 </div>
-                                <div className="grid grid-cols-4 gap-1.5">
+                                <div className="grid grid-cols-4 gap-2">
                                   {[
-                                    { id: "circle", label: isHi ? "गोल" : "Circle" },
-                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
-                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                                    { id: "oval", label: isHi ? "ओवल" : "Oval" },
+                                    { id: "circle", label: isHi ? "वृत्ताकार" : "Circle" },
+                                    { id: "square", label: isHi ? "वर्गाकार" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "मुड़ा हुआ" : "Rounded" },
+                                    { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval" },
                                   ].map((s) => (
                                     <button
                                       key={s.id}
                                       onClick={() => { setPosterShape(s.id as any); setHidePhotoFrame(false); }}
                                       className={cn(
-                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                                        "py-2.5 px-2 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center text-center",
                                         posterShape === s.id && !hidePhotoFrame
-                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
+                                          ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300 font-extrabold shadow-sm" : "bg-[#651317] border-[#651317] text-white font-extrabold shadow"
+                                          : isDark ? "bg-transparent border-white/10 text-stone-400 hover:text-stone-200" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
                                       )}
                                     >
-                                      {s.label}
+                                      <span>{s.label}</span>
                                     </button>
                                   ))}
                                 </div>
                               </div>
                             ) : (
-                              <div className="space-y-1.5 text-left">
-                                <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                  {isHi ? "नाम पट्टी का आकार चुनें" : "Select Name Plate Shape"}
+                              <div className="space-y-2 text-left">
+                                <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  {isHi ? "पाठ पट्टी का आकार चुनें" : "Select Text Plate Shape"}
                                 </span>
-                                <div className="grid grid-cols-4 gap-1.5">
+                                <div className="grid grid-cols-4 gap-2">
                                   {[
                                     { id: "circle", label: isHi ? "कैप्सूल" : "Capsule" },
-                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
-                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                                    { id: "oval", label: isHi ? "अंडाकार" : "Oval" },
-                                  ].map((s) => (
-                                    <button
-                                      key={s.id}
-                                      onClick={() => setPosterNameShape(s.id as any)}
-                                      className={cn(
-                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
-                                        posterNameShape === s.id
-                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
-                                      )}
-                                    >
-                                      {s.label}
-                                    </button>
-                                  ))}
+                                    { id: "square", label: isHi ? "वर्गाकार" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "मुड़ा हुआ" : "Rounded" },
+                                    { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval" },
+                                  ].map((s) => {
+                                    const currentShape = editingElement === "name" 
+                                      ? posterNameShape 
+                                      : (extraTextBoxes.find(x => x.id === editingElement)?.shape || "rounded-square");
+                                    return (
+                                      <button
+                                        key={s.id}
+                                        onClick={() => {
+                                          if (editingElement === "name") setPosterNameShape(s.id as any);
+                                          else handleUpdateCustomTextBox(editingElement, { shape: s.id as any });
+                                        }}
+                                        className={cn(
+                                          "py-2.5 px-2 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center text-center",
+                                          currentShape === s.id
+                                            ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300 font-extrabold shadow-sm" : "bg-[#651317] border-[#651317] text-white font-extrabold shadow"
+                                            : isDark ? "bg-transparent border-white/10 text-stone-400 hover:text-stone-200" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
+                                        )}
+                                      >
+                                        <span>{s.label}</span>
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -5572,62 +5888,83 @@ export default function BlessingsPage() {
 
                         {/* move panel (fine nudge arrows) */}
                         {posterActiveTab === "move" && (
-                          <div className="flex flex-col items-center gap-1.5">
-                            <span className={cn("text-[9px] font-bold uppercase tracking-wider block text-center mb-0.5", isDark ? "text-stone-400" : "text-[#786252]")}>
-                              {isHi ? `${editingElement === "photo" ? "फोटो" : "नाम"} पोजीशन फाइन-ट्यूनिंग` : `Fine-Tune ${editingElement === "photo" ? "Photo" : "Name"} Position`}
+                          <div className="flex flex-col items-center gap-2">
+                            <span className={cn("text-xs font-bold uppercase tracking-wider block text-center mb-0.5", isDark ? "text-stone-400" : "text-[#786252]")}>
+                              {isHi 
+                                ? `${editingElement === "photo" ? "तस्वीर" : editingElement === "name" ? "नाम" : "पाठ"} स्थान सूक्ष्म समायोजन` 
+                                : `Fine-Tune ${editingElement === "photo" ? "Photo" : editingElement === "name" ? "Name" : "Text"} Position`}
                             </span>
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-1.5">
                               <button 
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev - 2);
-                                  else setPosterNameOffsetY(prev => prev - 2);
+                                  else if (editingElement === "name") setPosterNameOffsetY(prev => prev - 2);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { offsetY: b.offsetY - 2 });
+                                  }
                                 }}
-                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ▲
+                                <ChevronUp className="w-4 h-4" />
                               </button>
                               <div className="flex gap-3">
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev - 2);
-                                    else setPosterNameOffsetX(prev => prev - 2);
+                                    else if (editingElement === "name") setPosterNameOffsetX(prev => prev - 2);
+                                    else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: b.offsetX - 2 });
+                                    }
                                   }}
-                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                  className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                 >
-                                  ◀
+                                  <ChevronLeft className="w-4 h-4" />
                                 </button>
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") {
                                       setPosterOffsetX(0);
                                       setPosterOffsetY(0);
-                                    } else {
+                                    } else if (editingElement === "name") {
                                       setPosterNameOffsetX(0);
                                       setPosterNameOffsetY(0);
+                                    } else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: 0, offsetY: 0 });
                                     }
                                   }}
-                                  className={cn("px-2 h-7 rounded-lg flex items-center justify-center text-[9px] font-black uppercase tracking-wider border cursor-pointer", isDark ? "bg-white/5 text-stone-300 border-white/5" : "bg-white text-[#543D2B] border-[#EAD7C3]")}
+                                  className={cn("px-3 h-8 rounded-lg flex items-center justify-center text-xs font-bold uppercase tracking-wider border border-[#651317] cursor-pointer", isDark ? "bg-white/5 text-stone-300 border-white/10" : "bg-white text-[#543D2B] border-[#651317]")}
                                 >
-                                  Center
+                                  {isHi ? "मध्य में" : "Center"}
                                 </button>
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev + 2);
-                                    else setPosterNameOffsetX(prev => prev + 2);
+                                    else if (editingElement === "name") setPosterNameOffsetX(prev => prev + 2);
+                                    else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: b.offsetX + 2 });
+                                    }
                                   }}
-                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                  className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                 >
-                                  ▶
+                                  <ChevronRight className="w-4 h-4" />
                                 </button>
                               </div>
                               <button 
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev + 2);
-                                  else setPosterNameOffsetY(prev => prev + 2);
+                                  else if (editingElement === "name") setPosterNameOffsetY(prev => prev + 2);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { offsetY: b.offsetY + 2 });
+                                  }
                                 }}
-                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ▼
+                                <ChevronDown className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
@@ -5639,14 +5976,14 @@ export default function BlessingsPage() {
                             {editingElement === "photo" ? (
                               <>
                                 <div className="space-y-1 text-left">
-                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
+                                  <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    <span>{isHi ? "फ़्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
                                     <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterFrameScale.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.max(0.5, prev - 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5657,11 +5994,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterFrameScale}
                                       onChange={(e) => setPosterFrameScale(parseFloat(e.target.value))}
-                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                      className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.min(2.5, prev + 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5669,14 +6006,14 @@ export default function BlessingsPage() {
                                 </div>
 
                                 <div className="space-y-1 text-left">
-                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
+                                  <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    <span>{isHi ? "तस्वीर का ज़ूम" : "Zoom Photo"}</span>
                                     <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterZoom.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.max(0.8, prev - 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5687,11 +6024,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterZoom}
                                       onChange={(e) => setPosterZoom(parseFloat(e.target.value))}
-                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                      className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.min(3.0, prev + 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5700,14 +6037,25 @@ export default function BlessingsPage() {
                               </>
                             ) : (
                               <div className="space-y-1 text-left">
-                                <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                  <span>{isHi ? "नाम का आकार बदलें" : "Adjust Name Scale"}</span>
-                                  <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterNameScale.toFixed(2)}x</span>
+                                <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  <span>{isHi ? "पाठ का आकार बदलें" : "Adjust Text Scale"}</span>
+                                  <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>
+                                    {(editingElement === "name" 
+                                      ? posterNameScale 
+                                      : (extraTextBoxes.find(x => x.id === editingElement)?.scale || 1.0)
+                                    ).toFixed(2)}x
+                                  </span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <button
-                                    onClick={() => setPosterNameScale(prev => Math.max(0.5, prev - 0.05))}
-                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                    onClick={() => {
+                                      if (editingElement === "name") setPosterNameScale(prev => Math.max(0.5, prev - 0.05));
+                                      else {
+                                        const b = extraTextBoxes.find(x => x.id === editingElement);
+                                        if (b) handleUpdateCustomTextBox(b.id, { scale: Math.max(0.5, b.scale - 0.05) });
+                                      }
+                                    }}
+                                    className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                   >
                                     -
                                   </button>
@@ -5716,13 +6064,25 @@ export default function BlessingsPage() {
                                     min="0.5"
                                     max="2.5"
                                     step="0.05"
-                                    value={posterNameScale}
-                                    onChange={(e) => setPosterNameScale(parseFloat(e.target.value))}
-                                    className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                    value={editingElement === "name" 
+                                      ? posterNameScale 
+                                      : (extraTextBoxes.find(x => x.id === editingElement)?.scale || 1.0)}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.target.value);
+                                      if (editingElement === "name") setPosterNameScale(val);
+                                      else handleUpdateCustomTextBox(editingElement, { scale: val });
+                                    }}
+                                    className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                   />
                                   <button
-                                    onClick={() => setPosterNameScale(prev => Math.min(2.5, prev + 0.05))}
-                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                    onClick={() => {
+                                      if (editingElement === "name") setPosterNameScale(prev => Math.min(2.5, prev + 0.05));
+                                      else {
+                                        const b = extraTextBoxes.find(x => x.id === editingElement);
+                                        if (b) handleUpdateCustomTextBox(b.id, { scale: Math.min(2.5, b.scale + 0.05) });
+                                      }
+                                    }}
+                                    className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                   >
                                     +
                                   </button>
@@ -5735,61 +6095,83 @@ export default function BlessingsPage() {
                         {/* rotate panel */}
                         {posterActiveTab === "rotate" && (
                           <div className="space-y-2.5 text-left">
-                            <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                              <span>{isHi ? `${editingElement === "photo" ? "फ्रेम" : "नाम"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Name"} Rotation`}</span>
+                            <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                              <span>
+                                {isHi ? `${editingElement === "photo" ? "तस्वीर" : "पाठ"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Text"} Rotation`}
+                              </span>
                               <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>
-                                {Math.round(((editingElement === "photo" ? posterRotation : posterNameRotation) * 180) / Math.PI)}°
+                                {Math.round(((
+                                  editingElement === "photo" 
+                                    ? posterRotation 
+                                    : editingElement === "name" 
+                                    ? posterNameRotation 
+                                    : (extraTextBoxes.find(x => x.id === editingElement)?.rotation || 0)
+                                ) * 180) / Math.PI)}°
                               </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <button
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterRotation(prev => prev - (5 * Math.PI) / 180);
-                                  else setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
+                                  else if (editingElement === "name") setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { rotation: b.rotation - (5 * Math.PI) / 180 });
+                                  }
                                 }}
-                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ↺
+                                <RotateCcw className="w-3.5 h-3.5" />
                               </button>
                               <input
                                 type="range"
                                 min={-Math.PI}
                                 max={Math.PI}
                                 step={0.05}
-                                value={editingElement === "photo" ? posterRotation : posterNameRotation}
+                                value={
+                                  editingElement === "photo" 
+                                    ? posterRotation 
+                                    : editingElement === "name" 
+                                    ? posterNameRotation 
+                                    : (extraTextBoxes.find(x => x.id === editingElement)?.rotation || 0)
+                                }
                                 onChange={(e) => {
-                                  if (editingElement === "photo") setPosterRotation(parseFloat(e.target.value));
-                                  else setPosterNameRotation(parseFloat(e.target.value));
+                                  const val = parseFloat(e.target.value);
+                                  if (editingElement === "photo") setPosterRotation(val);
+                                  else if (editingElement === "name") setPosterNameRotation(val);
+                                  else handleUpdateCustomTextBox(editingElement, { rotation: val });
                                 }}
-                                className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                               />
                               <button
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterRotation(prev => prev + (5 * Math.PI) / 180);
-                                  else setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
+                                  else if (editingElement === "name") setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { rotation: b.rotation + (5 * Math.PI) / 180 });
+                                  }
                                 }}
-                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ↻
+                                <RotateCw className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
                         )}
 
-                        {/* Action buttons done / cancel — elevated slightly for clear footer space */}
-                        <div className={cn("flex gap-2 pt-2 pb-2 border-t", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                        {/* Action buttons done / cancel */}
+                        <div className={cn("flex gap-3 pt-3 pb-1 border-t", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                           <button
                             onClick={() => {
                               setIsEditingPhoto(false);
                             }}
                             className={cn(
-                              "flex-1 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all",
-                              isDark
-                                ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10"
-                                : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
+                              "flex-1 py-3 rounded-xl border border-[#651317] text-xs sm:text-sm font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 bg-white text-[#651317] dark:bg-stone-900 dark:text-stone-300 dark:border-white/10 hover:bg-stone-50 shadow-sm"
                             )}
                           >
-                            {isHi ? "रद्द करें" : "Cancel"}
+                            <X className="w-4 h-4" />
+                            <span>{isHi ? "रद्द करें" : "Cancel"}</span>
                           </button>
                           <button
                             onClick={async () => {
@@ -5804,13 +6186,14 @@ export default function BlessingsPage() {
                               }
                             }}
                             className={cn(
-                              "flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-md",
+                              "flex-1 py-3 rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 border border-[#651317]",
                               isDark
-                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/10"
-                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/10 border-amber-400"
+                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20 border-[#651317]"
                             )}
                           >
-                            {isHi ? "पूर्ण (Done)" : "Done"}
+                            <Check className="w-4 h-4" />
+                            <span>{isHi ? "संपन्न" : "Done"}</span>
                           </button>
                         </div>
 

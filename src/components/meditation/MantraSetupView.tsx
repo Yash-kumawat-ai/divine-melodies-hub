@@ -19,8 +19,11 @@ import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { fetchGroups } from "@/lib/naamSangh/naamSanghApi";
 import devotionalBackground from "@/pages/images/devotional_background_high_quality(1).webp";
 import omSvg from "@/pages/images/om.svg";
+import groupUsersSvg from "@/pages/images/svg/group-of-users-svgrepo-com.svg";
+import prayingSvg from "@/pages/images/svg/praying-svgrepo-com.svg";
+import malaSvg from "@/pages/images/svg/mala.svg";
 
-// ─── CUSTOM GOLD ICONS ───────────────────────────────────────────
+// ── CUSTOM GOLD ICONS ───────────────────────────────────────────
 const MalaIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.0" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <circle cx="12" cy="10" r="6" strokeDasharray="3 3" />
@@ -170,30 +173,34 @@ export default function MantraSetupView({
           </button>
         </div>
 
-        {/* TOP HERO IMAGE BANNER CARD (Full Opacity Crisp Image with Om Icon) */}
-        <div className="relative w-full rounded-[24px] overflow-hidden shadow-md border border-[#E8D8C4] dark:border-amber-500/30 mb-6 p-6 flex flex-col items-center justify-center text-center select-none min-h-[160px]">
-          {/* Full opacity crisp background image with no dark blur or fade */}
+        {/* TOP HERO IMAGE BANNER CARD (Direct Text on Image with Om Icon) */}
+        <div className="relative w-full rounded-[24px] overflow-hidden shadow-md border border-[#E8D8C4] dark:border-amber-500/30 mb-6 p-6 flex flex-col items-center justify-center text-center select-none min-h-[170px]">
+          {/* Full opacity crisp background image */}
           <img
             src={devotionalBackground}
             alt="Devotional Background"
             className="absolute inset-0 w-full h-full object-cover object-center opacity-100"
           />
 
-          {/* Crisp Glass Box for text to keep image 100% un-faded & text 100% readable */}
-          <div className="relative z-10 flex flex-col items-center px-4 py-3 rounded-2xl bg-[#FFFDF8]/80 dark:bg-black/60 backdrop-blur-sm border border-amber-500/20 shadow-sm max-w-[90%]">
-            <div className="w-13 h-13 rounded-full bg-[#FFFDF8] dark:bg-[#1f120c] border border-[#E8D8C4] dark:border-amber-500/40 flex items-center justify-center mb-2 shadow-sm">
-              <img src={omSvg} alt="Om" className="w-7 h-7 object-contain" />
+          {/* Direct text overlay on top of the image without any inner white box */}
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="w-9 h-9 rounded-full bg-[#FFFDF8]/95 dark:bg-[#180d09]/90 border border-amber-500/40 flex items-center justify-center mb-1.5 shadow-sm">
+              <img src={omSvg} alt="Om" className="w-5 h-5 object-contain" />
             </div>
-            <h1 className={`font-serif text-2xl md:text-3xl font-black tracking-wide leading-none ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+            <h1
+              className="font-serif text-2xl md:text-3xl font-black text-[#591A0D] dark:text-amber-300 tracking-wide drop-shadow-[0_1px_3px_rgba(255,253,248,0.9)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+            >
               {isHi ? "जप साधना" : "Japa Sadhana"}
             </h1>
-            <p className={`text-xs md:text-sm font-medium mt-1 ${isDark ? "text-amber-100/90" : "text-[#786252]"}`}>
+            <p
+              className="text-xs md:text-sm font-extrabold text-[#3B0E07] dark:text-amber-100 mt-1 drop-shadow-[0_1px_2px_rgba(255,253,248,0.9)] dark:drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+            >
               {isHi ? "अपनी साधना चुनें और आज से आरंभ करें" : "Set your intention and begin practice"}
             </p>
           </div>
         </div>
 
-        {/* UNIFIED OPTION GROUP CARD */}
+        {/* UNIFIED OPTION GROUP CARD (Production-grade typography & custom SVGs) */}
         <div
           className={`w-full rounded-[24px] border overflow-hidden shadow-sm mb-6 ${
             isDark
@@ -211,23 +218,25 @@ export default function MantraSetupView({
           >
             <div className="flex items-center gap-3.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-base ${
-                  isDark ? "bg-amber-500/10 text-amber-300" : "bg-[#FAF5E8] text-[#591A0D]"
+                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 p-2 shadow-sm border ${
+                  isDark
+                    ? "bg-rose-950/40 border-rose-800/40 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-600"
                 }`}
               >
-                🌸
+                <img src={prayingSvg} alt="Intention" className="w-5 h-5 object-contain" />
               </div>
               <div className="min-w-0">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider block leading-none ${
-                    isDark ? "text-amber-500/70" : "text-[#786252]"
+                  className={`text-sm md:text-base font-black block leading-none ${
+                    isDark ? "text-amber-300" : "text-[#591A0D]"
                   }`}
                 >
                   {isHi ? "लक्ष्य" : "Intention"}
                 </span>
                 <span
-                  className={`text-sm md:text-base font-extrabold block truncate mt-1 ${
-                    isDark ? "text-amber-100" : "text-[#591A0D]"
+                  className={`text-xs md:text-sm font-semibold block truncate mt-1 ${
+                    isDark ? "text-amber-100/80" : "text-[#786252]"
                   }`}
                 >
                   {currentSankalpText}
@@ -250,23 +259,25 @@ export default function MantraSetupView({
           >
             <div className="flex items-center gap-3.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-base ${
-                  isDark ? "bg-amber-500/10 text-amber-300" : "bg-[#FAF5E8] text-[#591A0D]"
+                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 p-2 shadow-sm border ${
+                  isDark
+                    ? "bg-amber-950/40 border-amber-800/40 text-amber-300"
+                    : "bg-amber-50 border-amber-200 text-amber-700"
                 }`}
               >
-                📿
+                <img src={malaSvg} alt="Mala Count" className="w-5 h-5 object-contain" />
               </div>
               <div className="min-w-0">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider block leading-none ${
-                    isDark ? "text-amber-500/70" : "text-[#786252]"
+                  className={`text-sm md:text-base font-black block leading-none ${
+                    isDark ? "text-amber-300" : "text-[#591A0D]"
                   }`}
                 >
                   {isHi ? "संख्या" : "Mantra Count"}
                 </span>
                 <span
-                  className={`text-sm md:text-base font-extrabold block truncate mt-1 ${
-                    isDark ? "text-amber-100" : "text-[#591A0D]"
+                  className={`text-xs md:text-sm font-semibold block truncate mt-1 ${
+                    isDark ? "text-amber-100/80" : "text-[#786252]"
                   }`}
                 >
                   {targetCount} {isHi ? "मंत्र" : "Mantras"}{" "}
@@ -292,23 +303,25 @@ export default function MantraSetupView({
           >
             <div className="flex items-center gap-3.5 min-w-0">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-base ${
-                  isDark ? "bg-amber-500/10 text-amber-300" : "bg-[#FAF5E8] text-[#591A0D]"
+                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 p-2 shadow-sm border ${
+                  isDark
+                    ? "bg-purple-950/40 border-purple-800/40 text-purple-300"
+                    : "bg-purple-50 border-purple-200 text-purple-700"
                 }`}
               >
-                👥
+                <img src={groupUsersSvg} alt="Group Users" className="w-5 h-5 object-contain" />
               </div>
               <div className="min-w-0">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider block leading-none ${
-                    isDark ? "text-amber-500/70" : "text-[#786252]"
+                  className={`text-sm md:text-base font-black block leading-none ${
+                    isDark ? "text-amber-300" : "text-[#591A0D]"
                   }`}
                 >
                   {isHi ? "समूह" : "Group Destination"}
                 </span>
                 <span
-                  className={`text-sm md:text-base font-extrabold block truncate mt-1 ${
-                    isDark ? "text-amber-100" : "text-[#591A0D]"
+                  className={`text-xs md:text-sm font-semibold block truncate mt-1 ${
+                    isDark ? "text-amber-100/80" : "text-[#786252]"
                   }`}
                 >
                   {selectedGroupName}
@@ -331,6 +344,7 @@ export default function MantraSetupView({
           </h3>
 
           <div className="grid grid-cols-2 gap-4 w-full">
+            {/* Mala Jap */}
             <button
               type="button"
               onClick={() => setPracticeMode("mala")}
@@ -338,7 +352,7 @@ export default function MantraSetupView({
                 practiceMode === "mala"
                   ? isDark
                     ? "border-amber-500 bg-amber-500/10 text-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.2)]"
-                    : "border-[#591A0D] bg-[#591A0D]/5 text-[#591A0D] shadow-sm font-black"
+                    : "border-[#591A0D] bg-[#591A0D]/10 text-[#591A0D] shadow-sm font-black"
                   : isDark
                   ? "border-stone-800 bg-[#120a06] text-stone-400 hover:border-amber-500/20"
                   : "border-[#E8D8C4] bg-[#FFFDF8] text-[#786252] hover:bg-[#FAF5E8]"
@@ -346,7 +360,7 @@ export default function MantraSetupView({
             >
               <MalaIcon
                 className={`w-8 h-8 mb-2 transition-transform group-hover:scale-105 ${
-                  practiceMode === "mala" ? "text-amber-600 dark:text-amber-500" : "text-stone-400"
+                  practiceMode === "mala" ? "text-[#591A0D] dark:text-amber-400" : "text-amber-700/60"
                 }`}
               />
               <span className="text-sm font-extrabold block">{isHi ? "माला जप" : "Mala Jap"}</span>
@@ -361,6 +375,7 @@ export default function MantraSetupView({
               )}
             </button>
 
+            {/* Voice Jap */}
             <button
               type="button"
               onClick={() => setPracticeMode("voice")}
@@ -368,7 +383,7 @@ export default function MantraSetupView({
                 practiceMode === "voice"
                   ? isDark
                     ? "border-amber-500 bg-amber-500/10 text-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.2)]"
-                    : "border-[#591A0D] bg-[#591A0D]/5 text-[#591A0D] shadow-sm font-black"
+                    : "border-[#591A0D] bg-[#591A0D]/10 text-[#591A0D] shadow-sm font-black"
                   : isDark
                   ? "border-stone-800 bg-[#120a06] text-stone-400 hover:border-amber-500/20"
                   : "border-[#E8D8C4] bg-[#FFFDF8] text-[#786252] hover:bg-[#FAF5E8]"
@@ -376,7 +391,7 @@ export default function MantraSetupView({
             >
               <Mic
                 className={`w-8 h-8 mb-2 transition-transform group-hover:scale-105 ${
-                  practiceMode === "voice" ? "text-amber-600 dark:text-amber-500 animate-pulse" : "text-stone-400"
+                  practiceMode === "voice" ? "text-[#591A0D] dark:text-amber-400 animate-pulse" : "text-amber-700/60"
                 }`}
               />
               <span className="text-sm font-extrabold block">{isHi ? "स्वर जप" : "Voice Jap"}</span>
@@ -452,6 +467,7 @@ export default function MantraSetupView({
         </p>
       </div>
 
+      {/* ─── BOTTOM SHEETS WITH VIBRANT COLORED SELECTIONS ──────────────── */}
       <AnimatePresence>
         {isSankalpSheetOpen && (
           <>
@@ -467,104 +483,127 @@ export default function MantraSetupView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-12 z-[100] ${sheetClass}`}
+              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-28 md:pb-12 max-h-[85vh] overflow-y-auto z-[100] ${sheetClass}`}
             >
               <div className="w-12 h-1 bg-stone-800/80 rounded-full mx-auto mb-5" />
+
               <h3 className={`text-base font-bold mb-4 flex items-center gap-2 ${sheetTitle}`}>
                 🌸 {isHi ? "संकल्प का चयन करें" : "Select Intention (Sankalpa)"}
               </h3>
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+
+              {/* VIBRANT COLORED SANKALP OPTIONS */}
+              <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
                 {sankalpOptions.map((opt, idx) => {
                   const isSelected = selectedSankalpIndex === idx;
                   const Icon = opt.icon;
+
+                  // Define vibrant colors per option
+                  const iconBgColors = [
+                    "bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400",
+                    "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
+                    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
+                    "bg-purple-100 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400",
+                    "bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400",
+                    "bg-orange-100 text-orange-600 dark:bg-orange-950/50 dark:text-orange-400",
+                  ];
+
                   return (
                     <button
                       key={opt.id}
                       type="button"
                       onClick={() => {
                         setSelectedSankalpIndex(idx);
+                        setCustomSankalp("");
                         setIsSankalpSheetOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border ${
+                      className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                         isSelected
                           ? isDark
-                            ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                            ? "bg-amber-950/30 border-amber-500/60 text-amber-300 shadow-md"
                             : "bg-[#591A0D]/10 border-[#591A0D] text-[#591A0D] shadow-sm font-black"
                           : isDark
-                          ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
-                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                          ? "bg-stone-950/50 border-stone-800 text-stone-200 hover:bg-stone-900/40"
+                          : "bg-[#FFFDF8] border-amber-900/15 text-[#33140A] hover:bg-orange-50/50"
                       }`}
                     >
                       <div className="flex items-center gap-3 text-left">
                         <div
-                          className={`p-2 rounded-xl ${
-                            isSelected
-                              ? isDark
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-[#591A0D]/15 text-[#591A0D]"
-                              : isDark
-                              ? "bg-stone-900 text-stone-400"
-                              : "bg-stone-100 text-stone-500"
-                          }`}
+                          className={`p-2.5 rounded-xl ${iconBgColors[idx % iconBgColors.length]} shadow-sm`}
                         >
-                          <Icon className="w-4 h-4" />
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div>
-                          <div
-                            className={`font-bold text-xs ${
-                              isSelected ? "" : isDark ? "text-stone-300" : "text-stone-850"
-                            }`}
-                          >
+                          <div className="font-extrabold text-xs md:text-sm text-[#591A0D] dark:text-amber-200">
                             {isHi ? opt.labelHi : opt.labelEn}
                           </div>
-                          <div className="text-[10px] opacity-60 mt-0.5">
+                          <div className="text-[11px] font-medium text-[#786252] dark:text-stone-400 mt-0.5">
                             {isHi ? opt.subHi : opt.subEn}
                           </div>
                         </div>
                       </div>
-                      {isSelected && <span className="text-amber-500 font-bold text-sm">✓</span>}
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-[#591A0D] dark:bg-amber-500 text-white dark:text-black flex items-center justify-center text-xs font-black shadow">
+                          ✓
+                        </div>
+                      )}
                     </button>
                   );
                 })}
               </div>
+
+              {/* CUSTOM INTENTION INPUT FIELD WITH EXPLICIT SAVE BUTTON */}
               <div className="mt-4 pt-4 border-t border-stone-800/40">
-                <label className="text-[10px] font-bold uppercase tracking-wider block mb-1.5 opacity-70">
-                  {isHi ? "या अपना custom संकल्प लिखें" : "Or type custom intention"}
+                <label className="text-[11px] font-extrabold uppercase tracking-wider block mb-2 text-[#591A0D] dark:text-amber-400">
+                  {isHi ? "या अपना CUSTOM संकल्प लिखें:" : "Or type your custom intention:"}
                 </label>
-                <div className="flex gap-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (customSankalp.trim()) {
+                      setSelectedSankalpIndex(-1);
+                      setIsSankalpSheetOpen(false);
+                    }
+                  }}
+                  className="flex gap-2"
+                >
                   <input
                     type="text"
                     value={customSankalp}
                     onChange={(e) => {
                       setCustomSankalp(e.target.value);
-                      if (e.target.value.trim()) setSelectedSankalpIndex(-1);
+                      setSelectedSankalpIndex(-1);
                     }}
                     placeholder={isHi ? "जैसे: परीक्षा में सफलता, स्वास्थ्य..." : "e.g., Exam success..."}
-                    className={`flex-1 px-3 py-2 text-xs rounded-xl border font-semibold outline-none transition-all ${
+                    className={`flex-1 px-3.5 py-2.5 text-xs md:text-sm rounded-xl border-2 font-bold outline-none transition-all ${
                       isDark
-                        ? "bg-black/40 border-stone-800 focus:border-amber-500/50 text-white"
-                        : "bg-white border-stone-200 focus:border-orange-500 text-stone-900"
+                        ? "bg-black/60 border-amber-500/40 focus:border-amber-400 text-white"
+                        : "bg-white border-[#591A0D]/30 focus:border-[#591A0D] text-[#591A0D]"
                     }`}
                   />
-                  {customSankalp.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => {
+                  <button
+                    type="submit"
+                    onClick={() => {
+                      if (customSankalp.trim()) {
                         setSelectedSankalpIndex(-1);
                         setIsSankalpSheetOpen(false);
-                      }}
-                      className="px-4 py-2 bg-amber-500 text-stone-950 font-bold text-xs rounded-xl"
-                    >
-                      {isHi ? "चुनें" : "Set"}
-                    </button>
-                  )}
-                </div>
+                      }
+                    }}
+                    className={`px-4 py-2.5 font-black text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-95 ${
+                      isDark
+                        ? "bg-amber-500 text-stone-950 hover:bg-amber-400"
+                        : "bg-[#591A0D] text-white hover:bg-[#451309]"
+                    }`}
+                  >
+                    {isHi ? "लागू करें" : "Apply"}
+                  </button>
+                </form>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
+      {/* Goal / Count Bottom Sheet */}
       <AnimatePresence>
         {isGoalSheetOpen && (
           <>
@@ -580,17 +619,27 @@ export default function MantraSetupView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-12 z-[100] ${sheetClass}`}
+              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-28 md:pb-12 max-h-[85vh] overflow-y-auto z-[100] ${sheetClass}`}
             >
               <div className="w-12 h-1 bg-stone-800/80 rounded-full mx-auto mb-5" />
-              
+
               <h3 className={`text-base font-bold mb-4 flex items-center gap-2 ${sheetTitle}`}>
                 🎯 {isHi ? "मंत्र संख्या का चयन करें" : "Select Target Count"}
               </h3>
-              
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                {goalOptions.map((g) => {
+
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                {goalOptions.map((g, idx) => {
                   const isSelected = targetCount === g.count;
+
+                  // Define colorful badges per count option
+                  const badgeColors = [
+                    "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300",
+                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+                    "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
+                    "bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300",
+                    "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
+                  ];
+
                   return (
                     <button
                       key={g.count}
@@ -602,36 +651,26 @@ export default function MantraSetupView({
                       className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                         isSelected
                           ? isDark
-                            ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                            ? "bg-amber-950/30 border-amber-500/60 text-amber-300 shadow-md"
                             : "bg-[#591A0D]/10 border-[#591A0D] text-[#591A0D] shadow-sm font-black"
                           : isDark
-                          ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
-                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                          ? "bg-stone-950/50 border-stone-800 text-stone-200 hover:bg-stone-900/40"
+                          : "bg-[#FFFDF8] border-amber-900/15 text-[#33140A] hover:bg-orange-50/50"
                       }`}
                     >
                       <div className="flex items-center gap-3 text-left">
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${
-                            isSelected
-                              ? isDark
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-[#591A0D]/15 text-[#591A0D]"
-                              : isDark
-                              ? "bg-stone-900 text-stone-400"
-                              : "bg-stone-100 text-stone-500"
+                          className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs shadow-sm ${
+                            badgeColors[idx % badgeColors.length]
                           }`}
                         >
                           {g.count}
                         </div>
                         <div>
-                          <div
-                            className={`font-bold text-xs ${
-                              isSelected ? "" : isDark ? "text-stone-300" : "text-stone-850"
-                            }`}
-                          >
+                          <div className="font-extrabold text-xs md:text-sm text-[#591A0D] dark:text-amber-200">
                             {isHi ? g.labelHi : g.labelEn}
                           </div>
-                          <div className="text-[10px] text-stone-500">
+                          <div className="text-[11px] font-medium text-[#786252] dark:text-stone-400 mt-0.5">
                             {isHi ? `अनुमानित समय: ~${g.estMin} मिनट` : `Est. Time: ~${g.estMin} min`}
                           </div>
                         </div>
@@ -639,12 +678,12 @@ export default function MantraSetupView({
 
                       <div className="flex items-center gap-2">
                         {g.recommended && (
-                          <span className="text-[8px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                            {isHi ? "अनुशंसित" : "Recommended"}
+                          <span className="text-[9px] bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            {isHi ? "⭐ अनुशंसित" : "⭐ Recommended"}
                           </span>
                         )}
                         {isSelected && (
-                          <div className="w-4.5 h-4.5 rounded-full bg-amber-500/20 border border-amber-500 flex items-center justify-center text-[10px] text-amber-400 font-bold">
+                          <div className="w-6 h-6 rounded-full bg-[#591A0D] dark:bg-amber-500 text-white dark:text-black flex items-center justify-center text-xs font-black shadow">
                             ✓
                           </div>
                         )}
@@ -658,7 +697,7 @@ export default function MantraSetupView({
         )}
       </AnimatePresence>
 
-      {/* Group Bottom Sheet */}
+      {/* Group Destination Bottom Sheet */}
       <AnimatePresence>
         {isGroupSheetOpen && (
           <>
@@ -674,7 +713,7 @@ export default function MantraSetupView({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-12 z-[100] ${sheetClass}`}
+              className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto border-t rounded-t-[28px] p-6 pb-28 md:pb-12 max-h-[85vh] overflow-y-auto z-[100] ${sheetClass}`}
             >
               <div className="w-12 h-1 bg-stone-800/80 rounded-full mx-auto mb-5" />
 
@@ -682,7 +721,7 @@ export default function MantraSetupView({
                 👥 {isHi ? "साधना गंतव्य (समूह)" : "Select Group Destination"}
               </h3>
 
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {/* Personal Option */}
                 <button
                   type="button"
@@ -693,23 +732,31 @@ export default function MantraSetupView({
                   className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                     selectedGroupId === null
                       ? isDark
-                        ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                        ? "bg-amber-950/30 border-amber-500/60 text-amber-300 shadow-md"
                         : "bg-[#591A0D]/10 border-[#591A0D] text-[#591A0D] shadow-sm font-black"
                       : isDark
-                      ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
-                      : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                      ? "bg-stone-950/50 border-stone-800 text-stone-200 hover:bg-stone-900/40"
+                      : "bg-[#FFFDF8] border-amber-900/15 text-[#33140A] hover:bg-orange-50/50"
                   }`}
                 >
                   <div className="flex items-center gap-3 text-left">
-                    <div className={`p-2 rounded-xl ${selectedGroupId === null ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-[#591A0D]/15 text-[#591A0D]") : (isDark ? "bg-stone-900 text-stone-400" : "bg-stone-100 text-stone-500")}`}>
-                      <User className="w-4 h-4" />
+                    <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 shadow-sm">
+                      <User className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-bold text-xs">{isHi ? "व्यक्तिगत साधना" : "Personal Sadhana"}</div>
-                      <div className="text-[10px] opacity-60">{isHi ? "केवल आपके प्रोफाइल में रिकॉर्ड होगी" : "Recorded in your profile"}</div>
+                      <div className="font-extrabold text-xs md:text-sm text-[#591A0D] dark:text-amber-200">
+                        {isHi ? "व्यक्तिगत साधना" : "Personal Sadhana"}
+                      </div>
+                      <div className="text-[11px] font-medium text-[#786252] dark:text-stone-400 mt-0.5">
+                        {isHi ? "केवल आपके प्रोफाइल में रिकॉर्ड होगी" : "Recorded in your profile"}
+                      </div>
                     </div>
                   </div>
-                  {selectedGroupId === null && <span className="text-amber-500 font-bold text-sm">✓</span>}
+                  {selectedGroupId === null && (
+                    <div className="w-6 h-6 rounded-full bg-[#591A0D] dark:bg-amber-500 text-white dark:text-black flex items-center justify-center text-xs font-black shadow">
+                      ✓
+                    </div>
+                  )}
                 </button>
 
                 {/* User Groups */}
@@ -726,23 +773,31 @@ export default function MantraSetupView({
                       className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
                         isSelected
                           ? isDark
-                            ? "bg-amber-950/20 border-amber-500/50 text-amber-300 shadow-md shadow-amber-950/30"
+                            ? "bg-amber-950/30 border-amber-500/60 text-amber-300 shadow-md"
                             : "bg-[#591A0D]/10 border-[#591A0D] text-[#591A0D] shadow-sm font-black"
                           : isDark
-                          ? "bg-stone-950/40 border-stone-850 text-stone-300 hover:bg-stone-900/30"
-                          : "bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100"
+                          ? "bg-stone-950/50 border-stone-800 text-stone-200 hover:bg-stone-900/40"
+                          : "bg-[#FFFDF8] border-amber-900/15 text-[#33140A] hover:bg-orange-50/50"
                       }`}
                     >
                       <div className="flex items-center gap-3 text-left">
-                        <div className={`p-2 rounded-xl ${isSelected ? (isDark ? "bg-amber-500/20 text-amber-400" : "bg-[#591A0D]/15 text-[#591A0D]") : (isDark ? "bg-stone-900 text-stone-400" : "bg-stone-100 text-stone-500")}`}>
-                          <Users className="w-4 h-4" />
+                        <div className="p-2.5 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 shadow-sm">
+                          <Users className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="font-bold text-xs">{g.name}</div>
-                          <div className="text-[10px] opacity-60">{isHi ? "समूह में आहुति दें" : "Contribute to group"}</div>
+                          <div className="font-extrabold text-xs md:text-sm text-[#591A0D] dark:text-amber-200">
+                            {g.name}
+                          </div>
+                          <div className="text-[11px] font-medium text-[#786252] dark:text-stone-400 mt-0.5">
+                            {isHi ? "समूह में आहुति दें" : "Contribute to group"}
+                          </div>
                         </div>
                       </div>
-                      {isSelected && <span className="text-amber-500 font-bold text-sm">✓</span>}
+                      {isSelected && (
+                        <div className="w-6 h-6 rounded-full bg-[#591A0D] dark:bg-amber-500 text-white dark:text-black flex items-center justify-center text-xs font-black shadow">
+                          ✓
+                        </div>
+                      )}
                     </button>
                   );
                 })}

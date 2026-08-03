@@ -266,34 +266,40 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
       {/* HERO BANNER — boxed card inside content container */}
       <div className="mx-auto max-w-5xl px-4 mt-6 space-y-8">
 
-        <section className="relative min-h-[380px] md:min-h-[420px] overflow-hidden rounded-3xl shadow-xl flex flex-col justify-center px-6 md:px-12 py-10 md:py-14 w-full">
+        <section className="relative min-h-[380px] md:min-h-[420px] overflow-hidden rounded-3xl shadow-xl flex flex-col justify-center px-6 md:px-12 py-10 md:py-14 w-full border border-[#E8D8C4] dark:border-amber-500/30">
           <div className="absolute inset-0 z-0">
             <img
               src={meditationDesktopBg}
               alt="Meditation"
               className="w-full h-full object-cover object-center"
             />
+            {/* Left-aligned gradient overlay so deity artwork on right is crisp while text is 100% readable */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-transparent" />
           </div>
 
-          {/* Banner Content — always white on image */}
-          <div className="relative z-10 max-w-xl text-left">
-            <p className="text-amber-400 font-bold tracking-[0.2em] text-xs md:text-sm uppercase mb-3">
+          {/* Banner Content — crisp readable text */}
+          <div className="relative z-10 max-w-lg text-left">
+            <p className="text-amber-300 font-black tracking-[0.2em] text-xs md:text-sm uppercase mb-3 drop-shadow">
               {copy.hero.tag}
             </p>
 
-            <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight drop-shadow-lg whitespace-pre-line">
+            <h1 className="text-3xl md:text-5xl font-display font-black text-white leading-tight drop-shadow-md whitespace-pre-line">
               {copy.hero.title}
             </h1>
 
-            <p className="text-amber-100/80 text-sm md:text-base mt-3 mb-8 font-light drop-shadow">
+            <p className="text-amber-100/90 text-sm md:text-base mt-3 mb-8 font-medium drop-shadow">
               {copy.hero.subtitle}
             </p>
 
             <button
               onClick={handleScrollToPractices}
-              className="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-bold px-7 py-3.5 rounded-full shadow-[0_10px_30px_-10px_rgba(249,115,22,0.5)] transition-all duration-300"
+              className={`flex items-center gap-3 font-extrabold px-7 py-3.5 rounded-full transition-all duration-300 active:scale-95 shadow-lg cursor-pointer ${
+                isDark
+                  ? "bg-[#D4A53A] text-[#1A120B] hover:bg-[#c4952a] border border-[#E6C46A]/50 shadow-[0_8px_24px_rgba(212,165,58,0.3)]"
+                  : "bg-[#591A0D] text-[#FFFDF8] hover:bg-[#451309] border border-[#591A0D] shadow-[0_8px_24px_rgba(89,26,13,0.3)]"
+              }`}
             >
-              <Play className="w-5 h-5 fill-white stroke-none" />
+              <Play className="w-5 h-5 fill-current stroke-none" />
               <span>{copy.hero.cta}</span>
             </button>
           </div>
@@ -304,18 +310,19 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           
           {/* Card Left: जारी ध्यान */}
           <div className={`${cardBg} backdrop-blur-xl border ${cardBorder} rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group/recent`}>
-            <div className="absolute -top-10 -left-10 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-10 -left-10 w-32 h-32 bg-[#591A0D]/5 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
             
             <div>
-              <h2 className="text-amber-500 font-display font-bold uppercase tracking-wider text-xs md:text-sm mb-4 flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+              <h2 className={`font-display font-bold uppercase tracking-wider text-xs md:text-sm mb-4 flex items-center gap-2 ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
+                <span className={`h-2 w-2 rounded-full animate-pulse ${isDark ? "bg-amber-400" : "bg-[#591A0D]"}`}></span>
                 {copy.recent.title}
               </h2>
               
               <div className="flex items-center gap-4">
-                <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-500 font-display text-2xl font-bold`}>
+                <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border font-display text-2xl font-bold ${
+                  isDark ? "bg-amber-500/15 border-amber-500/30 text-amber-300" : "bg-[#591A0D]/10 border-[#591A0D]/30 text-[#591A0D]"
+                }`}>
                   <span>ॐ</span>
-                  <div className="absolute inset-0 rounded-2xl bg-orange-500/5 blur-md" />
                 </div>
                 
                 <div className="min-w-0">
@@ -325,7 +332,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
                   <p className={`text-[13px] ${textMuted} mt-1 font-medium`}>
                     {lastPractice 
                       ? copy.recent.type(lastPractice.defaultDurationMinutes, lastPractice.type) 
-                      : (isHi ? "10 मिनट • मंत्र ध्यान" : "10 mins • Mantra Meditation")}
+                      : (isHi ? "11 मिनट • मंत्र ध्यान" : "11 mins • Mantra Meditation")}
                   </p>
                 </div>
               </div>
@@ -334,23 +341,29 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             <div className="mt-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
-                  <div className={`h-1 rounded-full ${trackBg} overflow-hidden`}>
-                    <div className="h-full w-[65%] bg-gradient-to-r from-orange-500 to-amber-400" />
+                  <div className={`h-1.5 rounded-full ${trackBg} overflow-hidden`}>
+                    <div className={`h-full w-[65%] ${isDark ? "bg-amber-400" : "bg-[#591A0D]"}`} />
                   </div>
                 </div>
                 
                 <button 
                   onClick={onQuickStart}
-                  className="flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 hover:bg-orange-600 transition-colors"
+                  className={`flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${
+                    isDark ? "bg-[#D4A53A] text-[#1A120B]" : "bg-[#591A0D] text-[#FFFDF8]"
+                  }`}
                 >
-                  <Play className="h-4 w-4 fill-white text-white translate-x-[1px]" />
+                  <Play className="h-4 w-4 fill-current translate-x-[1px]" />
                 </button>
               </div>
 
               <div className="hidden md:block mt-4">
                 <button 
                   onClick={onQuickStart}
-                  className="inline-flex items-center gap-2 rounded-xl bg-orange-500/10 border border-orange-500/30 px-4 py-2 text-[13px] md:text-xs font-bold text-orange-500 hover:bg-orange-500/20 hover:border-orange-500/50 transition-colors"
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[13px] md:text-xs font-bold transition-colors border ${
+                    isDark
+                      ? "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20"
+                      : "bg-[#591A0D]/10 border-[#591A0D]/30 text-[#591A0D] hover:bg-[#591A0D]/20"
+                  }`}
                 >
                   <Play className="h-3.5 w-3.5 fill-current" />
                   <span>{copy.recent.btn}</span>
@@ -370,7 +383,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-black/95 via-black/40 to-black/95" : "bg-gradient-to-t from-white/90 via-white/50 to-white/90"}`} />
             </div>
 
-            <h2 className="relative z-10 text-amber-500 font-display font-bold uppercase tracking-wider text-xs md:text-sm flex items-center gap-2 justify-center">
+            <h2 className={`relative z-10 font-display font-bold uppercase tracking-wider text-xs md:text-sm flex items-center gap-2 justify-center ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
               <span>✦</span>
               {copy.quote.title}
               <span>✦</span>
@@ -388,8 +401,8 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           </div>
         </section>
 
-        {/* STREAK JOURNEY SECTION */}
-        <section className={`relative overflow-hidden ${streakCardBg} backdrop-blur-xl border ${cardBorder} rounded-[2.5rem] p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl`}>
+        {/* STREAK JOURNEY SECTION (Side-by-side layout: Lotus on Left, Content on Right matching Image 3) */}
+        <section className={`relative overflow-hidden ${streakCardBg} backdrop-blur-xl border ${cardBorder} rounded-[2.5rem] p-5 md:p-8 shadow-2xl`}>
           <div className="absolute inset-0 z-0 select-none pointer-events-none">
             <img 
               src={hanumanHd2} 
@@ -399,156 +412,119 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
             <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-br from-[#120804]/50 to-[#0c050a]/60" : "bg-gradient-to-br from-white/60 to-orange-50/70"}`} />
           </div>
 
-          <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-48 h-48 bg-orange-500/[0.03] rounded-full blur-3xl pointer-events-none" />
-          
-          {/* Left: Mandala with Lotus */}
-          <div className="relative z-10 w-40 h-40 md:w-44 md:h-44 shrink-0 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border border-orange-500/15 animate-[spin_80s_linear_infinite]" />
-            <div className="absolute inset-2 rounded-full border border-dashed border-orange-500/20 animate-[spin_50s_linear_infinite_reverse]" />
-            <div className="absolute inset-4 rounded-full border border-orange-500/10" />
-            <div className="absolute inset-8 rounded-full border border-dashed border-orange-500/25" />
-            
-            <svg className="absolute inset-0 w-full h-full -rotate-90 z-20 pointer-events-none" viewBox="0 0 100 100">
-              <defs>
-                <linearGradient id="orangeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f97316" />
-                  <stop offset="100%" stopColor="#ea580c" />
-                </linearGradient>
-                <filter id="orangeShadow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#f97316" floodOpacity="0.6" />
-                </filter>
-              </defs>
-              <circle cx="50" cy="50" r="44" fill="none" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"} strokeWidth="2.5" />
-              {completionFraction > 0 && (
-                <circle
-                  cx="50" cy="50" r="44" fill="none"
-                  stroke="url(#orangeGlow)" strokeWidth="3.2"
-                  strokeDasharray={276.46}
-                  strokeDashoffset={276.46 * (1 - completionFraction)}
-                  strokeLinecap="round"
-                  filter="url(#orangeShadow)"
-                  className="transition-all duration-1000 ease-out"
-                />
-              )}
-            </svg>
+          <div className="relative z-10 flex flex-row items-center gap-4 sm:gap-6 md:gap-8 w-full">
+            {/* LEFT COLUMN: Lotus Flower Circle */}
+            <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 shrink-0 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border border-[#591A0D]/20 dark:border-amber-500/20 animate-[spin_80s_linear_infinite]" />
+              <div className="absolute inset-1.5 rounded-full border border-dashed border-[#591A0D]/30 dark:border-amber-500/30 animate-[spin_50s_linear_infinite_reverse]" />
 
-            <div className="absolute w-24 h-24 bg-orange-500/10 rounded-full blur-xl" />
-            <img 
-              src={redLotus} 
-              alt="Golden Lotus" 
-              className="relative z-10 w-32 h-32 md:w-36 md:h-36 object-cover rounded-full shadow-[0_0_20px_rgba(249,115,22,0.45)] animate-lotus-float"
-            />
-            
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-30">
-              <div className="h-[1px] w-6 bg-gradient-to-r from-transparent to-orange-500" />
-              <span className="text-orange-400 text-[6px]">◆</span>
-              <span className="text-orange-400 text-[8px]">◆</span>
-              <span className="text-orange-400 text-[6px]">◆</span>
-              <div className="h-[1px] w-6 bg-gradient-to-l from-transparent to-orange-500" />
-            </div>
-          </div>
-
-          {/* Right: Streak info */}
-          <div className="relative z-10 flex-1 w-full text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 text-orange-500">
-              <Flame className="w-5 h-5 fill-current animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/25">
-                {isHi ? "साधना यात्रा" : "Sadhana Yatra"}
-              </span>
+              <div className="absolute inset-0 rounded-full bg-[#591A0D]/10 dark:bg-amber-500/10 blur-xl" />
+              <img 
+                src={redLotus} 
+                alt="Lotus Flower" 
+                className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-full shadow-[0_0_20px_rgba(89,26,13,0.3)] dark:shadow-[0_0_20px_rgba(212,165,58,0.4)] animate-lotus-float"
+              />
             </div>
 
-            <h2 className={`text-3xl md:text-4xl font-display font-bold ${textHead} tracking-tight mt-3`}>
-              {headingText}
-            </h2>
-            
-            <p className={`text-sm md:text-base ${textMuted} mt-2 font-light max-w-md mx-auto md:mx-0`}>
-              {subtitleText}
-            </p>
-
-            {/* Weekday Tracker */}
-            <div className="w-full max-w-md md:max-w-none mx-auto md:mx-0 mt-6 pb-6 select-none">
-              <div className={`flex justify-between w-full text-xs font-bold ${weekLabelColor} mb-3 px-1`}>
-                {weekProgress.map((day, idx) => (
-                  <span key={idx} className="w-7 text-center">{day.label}</span>
-                ))}
-              </div>
-
-              <div className="relative flex justify-between w-full items-center px-1">
-                <div className={`absolute left-[14px] right-[14px] h-[2px] ${trackBg} top-1/2 -translate-y-1/2 -z-10`}>
-                  {hasMeditated && orangeLinePosition.width > 0 && (
-                    <div 
-                      className="absolute h-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_0_12px_rgba(249,115,22,0.85)] transition-all duration-500"
-                      style={{ left: `${orangeLinePosition.left}%`, width: `${orangeLinePosition.width}%` }}
-                    />
-                  )}
+            {/* RIGHT COLUMN: Streak Info & Content */}
+            <div className="relative z-10 flex-1 min-w-0 text-left">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                    {isHi ? "आपका ध्यान यात्रा" : "Your Sadhana Yatra"}
+                  </span>
                 </div>
 
-                {weekProgress.map((day, idx) => (
-                  <div key={idx} className="w-7 h-7 flex items-center justify-center shrink-0">
-                    {hasMeditated && day.completed ? (
+                <span className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full border ${
+                  isDark ? "bg-amber-500/20 border-amber-500/40 text-amber-300" : "bg-[#591A0D]/10 border-[#591A0D]/30 text-[#591A0D]"
+                }`}>
+                  {stats.streakDays > 0 ? `${stats.streakDays}वां दिन` : (isHi ? "1वां दिन" : "Day 1")}
+                </span>
+              </div>
+
+              <h2 className={`text-xl sm:text-2xl md:text-3xl font-display font-black tracking-tight mt-1.5 truncate ${
+                isDark ? "text-amber-300" : "text-[#591A0D]"
+              }`}>
+                {headingText}
+              </h2>
+              
+              <p className={`text-xs md:text-sm ${textMuted} mt-0.5 font-medium line-clamp-1`}>
+                {subtitleText}
+              </p>
+
+              {/* Weekday Tracker Timeline */}
+              <div className="w-full mt-4 select-none">
+                <div className={`flex justify-between w-full text-[10px] sm:text-xs font-extrabold ${weekLabelColor} mb-2`}>
+                  {weekProgress.map((day, idx) => (
+                    <span key={idx} className="w-6 sm:w-7 text-center">{day.label}</span>
+                  ))}
+                </div>
+
+                <div className="relative flex justify-between w-full items-center">
+                  <div className={`absolute left-[12px] right-[12px] h-[2.5px] ${trackBg} top-1/2 -translate-y-1/2 -z-10`}>
+                    {hasMeditated && orangeLinePosition.width > 0 && (
                       <div 
-                        className="relative flex h-7 w-7 items-center justify-center rounded-full bg-orange-500 text-white font-bold text-xs shadow-[0_0_15px_rgba(249,115,22,0.85)] border border-orange-400 animate-node-pulse"
-                        style={{ animationDelay: `${idx * 0.25}s` }}
-                      >
-                        <Check className="w-3.5 h-3.5 stroke-[3px]" />
-                      </div>
-                    ) : (
-                      <div 
-                        className={cn(`flex h-7 w-7 items-center justify-center rounded-full ${dayCircleBg} text-transparent text-xs animate-node-pulse`,
-                          hasMeditated && day.isToday && "border-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.3)]"
-                        )}
-                        style={{ animationDelay: `${idx * 0.25}s` }}
+                        className={`absolute h-full transition-all duration-500 ${isDark ? "bg-amber-400" : "bg-[#591A0D]"}`}
+                        style={{ left: `${orangeLinePosition.left}%`, width: `${orangeLinePosition.width}%` }}
                       />
                     )}
                   </div>
-                ))}
+
+                  {weekProgress.map((day, idx) => (
+                    <div key={idx} className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shrink-0">
+                      {hasMeditated && day.completed ? (
+                        <div 
+                          className={`relative flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-white font-bold text-xs shadow-md border ${
+                            isDark ? "bg-amber-500 border-amber-400 text-black" : "bg-[#591A0D] border-[#591A0D] text-white"
+                          }`}
+                        >
+                          <Check className="w-3.5 h-3.5 stroke-[3px]" />
+                        </div>
+                      ) : (
+                        <div 
+                          className={cn(`flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full ${dayCircleBg} text-transparent text-xs`,
+                            hasMeditated && day.isToday && "border-amber-500 shadow-sm"
+                          )}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="relative flex justify-between w-full mt-2 px-1 min-h-[20px]">
-                {weekProgress.map((day, idx) => (
-                  <div key={idx} className="w-7 flex flex-col items-center shrink-0">
-                    {hasMeditated && day.isToday && (
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-orange-500 text-[7px] leading-none animate-bounce">▲</span>
-                        <span className="text-[10px] font-bold text-orange-500 tracking-wider uppercase">
-                          {isHi ? "आज" : "Today"}
-                        </span>
-                      </div>
-                    )}
+              {/* Stats Panel */}
+              <div className="grid grid-cols-2 gap-3 mt-4 w-full">
+                <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-sm`}>
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    isDark ? "bg-amber-500/15 text-amber-400" : "bg-[#591A0D]/10 text-[#591A0D]"
+                  }`}>
+                    <Clock3 className="w-4 h-4" strokeWidth={2.5} />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats Panel */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 w-full">
-              <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300`}>
-                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-500">
-                  <Clock3 className="w-5 h-5 text-orange-500" strokeWidth={2} />
-                  <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-md opacity-70" />
+                  <div className="min-w-0 text-left">
+                    <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider opacity-70`}>
+                      {isHi ? "कुल ध्यान समय" : "Meditation Time"}
+                    </p>
+                    <p className={`text-xs sm:text-sm font-black mt-0.5 truncate ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                      {formatMeditationTime(stats.totalMindfulMinutes)}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 text-left">
-                  <p className={`text-[11px] font-black ${statLabelColor} uppercase tracking-wider`}>
-                    {isHi ? "कुल ध्यान समय" : "Meditation Time"}
-                  </p>
-                  <p className={`text-xl font-black ${statValueColor} mt-1 select-text tracking-wide`}>
-                    {formatMeditationTime(stats.totalMindfulMinutes)}
-                  </p>
-                </div>
-              </div>
-              
-              <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-4 flex items-center gap-4 shadow-lg hover:border-orange-500/25 transition-all duration-300`}>
-                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-500">
-                  <Flame className="w-5 h-5 text-orange-500" strokeWidth={2} />
-                  <div className="absolute inset-0 rounded-full bg-orange-500/20 blur-md opacity-70" />
-                </div>
-                <div className="min-w-0 text-left">
-                  <p className={`text-[11px] font-black ${statLabelColor} uppercase tracking-wider`}>
-                    {isHi ? "कुल सत्र" : "Total Sessions"}
-                  </p>
-                  <p className={`text-xl font-black ${statValueColor} mt-1 select-text tracking-wide`}>
-                    {formatSessionsCount(stats.sessionCount)}
-                  </p>
+                
+                <div className={`${cardBg2} backdrop-blur-md border ${cardBorder} rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-sm`}>
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                    isDark ? "bg-amber-500/15 text-amber-400" : "bg-[#591A0D]/10 text-[#591A0D]"
+                  }`}>
+                    <Flame className="w-4 h-4" strokeWidth={2.5} />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider opacity-70`}>
+                      {isHi ? "कुल सत्र" : "Total Sessions"}
+                    </p>
+                    <p className={`text-xs sm:text-sm font-black mt-0.5 truncate ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                      {formatSessionsCount(stats.sessionCount)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

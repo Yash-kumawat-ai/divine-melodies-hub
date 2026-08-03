@@ -142,14 +142,14 @@ export default function PosterMakerPage() {
       ? "ड्रैग मोड चुनें और खिसकाने के लिए सीधे कैनवास पर ड्रैग करें।"
       : "Select Drag Mode and drag directly on canvas to adjust.",
     zoomLabel: isHi ? "ज़ूम (Zoom)" : "Zoom",
-    shapeLabel: isHi ? "आकार बदलें (Shape)" : "Photo Frame Shape",
-    btnReset: isHi ? "रीसेट करें" : "Reset Photo",
+    shapeLabel: isHi ? "तस्वीर का आकार" : "Photo Frame Shape",
+    btnReset: isHi ? "पुनः सेट करें" : "Reset Photo",
     btnDownload: isHi ? "एचडी डाउनलोड करें" : "Download HD Poster",
     demoBtn: isHi ? "डेमो फोटो का उपयोग करें" : "Use Demo Photo",
-    shapeCircle: isHi ? "गोलाकार" : "Circle",
-    shapeSquare: isHi ? "चौकोर" : "Square",
-    shapeRounded: isHi ? "गोल किनारा" : "Rounded",
-    shapeOval: isHi ? "अंडाकार" : "Oval",
+    shapeCircle: isHi ? "वृत्ताकार" : "Circle",
+    shapeSquare: isHi ? "वर्गाकार" : "Square",
+    shapeRounded: isHi ? "मुड़ा वर्गाकार" : "Rounded",
+    shapeOval: isHi ? "दीर्घवृत्ताकार" : "Oval",
   };
 
   // Sync shape state when template changes
