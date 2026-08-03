@@ -46,6 +46,7 @@ import { ImageCropModal } from "@/components/ImageCropModal";
 import { cn } from "@/lib/utils";
 import type { DailyDarshan, DevotionalWallpaper, DevotionalLiveWallpaper, Petal, PosterTemplate, BlessingsPosterEditorProps } from "./Blessings";
 import { DAILY_DARSHANS, WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST, WALLPAPER_SECTIONS, WEEKDAYS, POSTER_TEMPLATES, MoreIcon, CustomDownloadIcon, CircleIcon, PosterLikeButton, WallpaperLikeButton, PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay, PhoneFrame } from "./Blessings";
+import Moveable from "react-moveable";
 
 // ─── LOCAL IMAGES STILL USED DIRECTLY IN THIS FILE ────────────────
 import litDiyaImg from "./images/lit_diya.png";
@@ -1032,6 +1033,7 @@ export default function BlessingsPage() {
     return localStorage.getItem("hk_profile_photo") || null;
   });
   const [selectedPoster, setSelectedPoster] = useState<PosterTemplate | null>(null);
+  const previousSelectedPosterRef = useRef<PosterTemplate | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showSetupSheet, setShowSetupSheet] = useState(false);
   const [compiledPosterUrl, setCompiledPosterUrl] = useState<string | null>(null);
@@ -1057,6 +1059,11 @@ export default function BlessingsPage() {
   const [posterNameShape, setPosterNameShape] = useState<"circle" | "square" | "rounded-square" | "oval">("rounded-square");
   const [extraTextBoxes, setExtraTextBoxes] = useState<Array<{ id: string; text: string; offsetX: number; offsetY: number; scale: number; rotation: number; shape: "circle" | "square" | "rounded-square" | "oval" }>>([]);
   const [editingElement, setEditingElement] = useState<string>("photo");
+
+  const posterCardRef = useRef<HTMLDivElement>(null);
+  const photoLayerRef = useRef<HTMLDivElement>(null);
+  const nameLayerRef = useRef<HTMLDivElement>(null);
+  const boxLayerRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleAddTextBox = () => {
     const newId = `text_${Date.now()}`;
@@ -1217,16 +1224,18 @@ export default function BlessingsPage() {
     } else {
       setCompiledPosterUrl(null);
     }
-  }, [selectedPoster, userName, userPhoto, generationType, posterZoom, posterOffsetX, posterOffsetY, posterShape]);
+  }, [selectedPoster, userName, userPhoto, generationType, posterZoom, posterOffsetX, posterOffsetY, posterShape, posterFrameScale, posterRotation, posterNameOffsetX, posterNameOffsetY, posterNameScale, posterNameRotation, posterNameShape, extraTextBoxes, hidePhotoFrame]);
 
   useEffect(() => {
-    if (selectedPoster) {
+    if (selectedPoster && !previousSelectedPosterRef.current) {
+      // Only reset when the modal first OPENS (null → poster), not when scrolling between posters
       const defaultShape = selectedPoster.defaultShape || "circle";
       setPosterShape(defaultShape);
       setPosterZoom(1.0);
       setPosterOffsetX(0);
       setPosterOffsetY(0);
     }
+    previousSelectedPosterRef.current = selectedPoster;
   }, [selectedPoster]);
 
   // Synchronize vertical scrolling with selected poster template inside the modal
@@ -2129,34 +2138,51 @@ export default function BlessingsPage() {
     });
   };
 
-  const drawPlaceholderOm = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
+  const drawPlaceholderOm = (
+    ctx: CanvasRenderingContext2D, 
+    cx: number, 
+    cy: number, 
+    r: number, 
+    shape: string = "circle", 
+    rot: number = 0
+  ) => {
     ctx.save();
-    ctx.fillStyle = isDark ? "rgba(20, 8, 4, 0.85)" : "#FFFDF8";
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
 
+    ctx.fillStyle = isDark ? "rgba(20, 8, 4, 0.85)" : "#FFFDF8";
     ctx.strokeStyle = isDark ? "#fbbf24" : "#651317";
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 4.5;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+
+    if (shape === "circle") {
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+    } else if (shape === "square") {
+      ctx.rect(-r, -r, r * 2, r * 2);
+    } else if (shape === "rounded-square") {
+      ctx.roundRect(-r, -r, r * 2, r * 2, r * 2 * 0.15);
+    } else if (shape === "oval") {
+      ctx.ellipse(0, 0, r, r * 1.33, 0, 0, Math.PI * 2);
+    }
+    ctx.fill();
     ctx.stroke();
-    ctx.restore();
 
     const omImg = new Image();
     omImg.src = omSvg;
     const size = r * 1.1;
     if (omImg.complete && omImg.naturalWidth > 0) {
-      ctx.drawImage(omImg, x - size / 2, y - size / 2, size, size);
+      ctx.drawImage(omImg, -size / 2, -size / 2, size, size);
     } else {
       omImg.onload = () => {
-        ctx.drawImage(omImg, x - size / 2, y - size / 2, size, size);
+        ctx.drawImage(omImg, -size / 2, -size / 2, size, size);
       };
       ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
-      ctx.font = getCanvasFont(language, 80, 'heading', true);
+      ctx.font = "bold 80px serif";
       ctx.textAlign = "center";
-      ctx.fillText("ॐ", x, y + 25);
+      ctx.textBaseline = "middle";
+      ctx.fillText("ॐ", 0, 0);
     }
+    ctx.restore();
   };
 
   const compilePoster = (poster: PosterTemplate, aspect: "status" | "square"): Promise<string> => {
@@ -2269,27 +2295,16 @@ export default function BlessingsPage() {
 
           const displayName = userName.trim() ? userName : (isHi ? "आपका नाम..." : "Your Name...");
 
-          // Fit text size dynamically using fitTextToWidth
-          const resolvedFontString = fitTextToWidth(
-            ctx,
-            displayName,
-            w - 240, // max width limit for safety
-            posterTypography.nameSize,
-            posterTypography.nameFont,
-            'bold'
-          );
-          ctx.font = resolvedFontString;
+          // Match CSS preview proportions (3.2vw on 390px preview -> 35px on 1080px canvas)
+          const targetFontSize = 35;
+          ctx.font = `800 ${targetFontSize}px serif, "Tiro Devanagari Hindi", "Noto Sans Devanagari", sans-serif`;
           
-          const fontSizeMatch = resolvedFontString.match(/(\d+)px/);
-          const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : posterTypography.nameSize;
-
           const nameWidth = ctx.measureText(displayName).width;
-          const bannerW = nameWidth + 80;
-          const bannerH = fontSize + 32;
+          const bannerW = nameWidth + 86;
+          const bannerH = targetFontSize + 22;
           const bannerX = -bannerW / 2;
           const bannerY = -bannerH / 2;
 
-          // Clear shadow for banner background
           ctx.shadowBlur = 0;
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 0;
@@ -2297,16 +2312,16 @@ export default function BlessingsPage() {
           // Adaptive glassmorphic style
           ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
           ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.beginPath();
           
-          // Custom corner radius based on posterNameShape setting
+          // Custom corner radius matching preview (12px on 390px card = 33px in canvas scale)
           const nameRadius = 
             posterNameShape === "circle" || posterNameShape === "oval"
-              ? bannerH / 2 // perfect capsule
+              ? bannerH / 2
               : posterNameShape === "square"
               ? 0
-              : 16; // rounded-square
+              : 33;
               
           ctx.roundRect(bannerX, bannerY, bannerW, bannerH, nameRadius);
           ctx.fill();
@@ -2314,12 +2329,11 @@ export default function BlessingsPage() {
 
           // Set high-contrast text shadow for devotee name
           ctx.shadowColor = isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.8)";
-          ctx.shadowBlur = isDark ? 8 : 4;
+          ctx.shadowBlur = isDark ? 6 : 3;
           ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = isDark ? 3 : 1;
+          ctx.shadowOffsetY = 1;
 
           ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
-          // Draw text centered at translated 0,0 origin
           ctx.fillText(displayName, 0, 0);
 
           ctx.restore();
@@ -2338,28 +2352,18 @@ export default function BlessingsPage() {
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
 
-            const resFont = fitTextToWidth(
-              ctx,
-              box.text,
-              w - 240,
-              posterTypography.nameSize * 0.85,
-              posterTypography.nameFont,
-              'bold'
-            );
-            ctx.font = resFont;
-            
-            const fMatch = resFont.match(/(\d+)px/);
-            const fSize = fMatch ? parseInt(fMatch[1], 10) : posterTypography.nameSize * 0.85;
+            const boxFontSize = 32; // Matches CSS preview 3.0vw (~32px on 1080 canvas)
+            ctx.font = `800 ${boxFontSize}px serif, "Tiro Devanagari Hindi", "Noto Sans Devanagari", sans-serif`;
 
-            const bW = ctx.measureText(box.text).width + 70;
-            const bH = fSize + 28;
+            const bW = ctx.measureText(box.text).width + 80;
+            const bH = boxFontSize + 22;
             const bX = -bW / 2;
             const bY = -bH / 2;
 
             ctx.shadowBlur = 0;
             ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
             ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 4;
             ctx.beginPath();
             
             const boxRadius = 
@@ -2367,7 +2371,7 @@ export default function BlessingsPage() {
                 ? bH / 2
                 : box.shape === "square"
                 ? 0
-                : 14;
+                : 30; // Matches CSS 12px on 390px card
                 
             ctx.roundRect(bX, bY, bW, bH, boxRadius);
             ctx.fill();
@@ -2401,10 +2405,9 @@ export default function BlessingsPage() {
           avatarImg.onload = () => {
             ctx.save();
             
-            const isFlexible = poster.allowShapeChange;
-            const finalCX = isFlexible ? (photoX + posterOffsetX) : photoX;
-            const finalCY = isFlexible ? (photoY + posterOffsetY) : photoY;
-            const finalRadius = isFlexible ? (radius * posterFrameScale) : radius;
+            const finalCX = photoX + posterOffsetX;
+            const finalCY = photoY + posterOffsetY;
+            const finalRadius = radius * posterFrameScale;
 
             // Translate and rotate around the shape center
             ctx.translate(finalCX, finalCY);
@@ -2426,27 +2429,24 @@ export default function BlessingsPage() {
             ctx.clip();
 
             const targetW = finalRadius * 2;
-            const targetH = finalRadius * 2;
+            const targetH = posterShape === "oval" ? finalRadius * 2.66 : finalRadius * 2;
 
             const userZoom = posterZoom;
-            const userOffsetX = isFlexible ? 0 : posterOffsetX;
-            const userOffsetY = isFlexible ? 0 : posterOffsetY;
-
             const baseScale = Math.max(targetW / avatarImg.width, targetH / avatarImg.height);
             const DW = avatarImg.width * baseScale * userZoom;
             const DH = avatarImg.height * baseScale * userZoom;
-            const drawX = -DW / 2 + userOffsetX;
-            const drawY = -DH / 2 + userOffsetY;
+            const drawX = -DW / 2;
+            const drawY = -DH / 2;
 
             ctx.drawImage(avatarImg, drawX, drawY, DW, DH);
             ctx.restore();
 
-            // Gold border matching active shape
+            // Border matching active shape and preview style
             ctx.save();
             ctx.translate(finalCX, finalCY);
             ctx.rotate(posterRotation);
-            ctx.strokeStyle = "#fbbf24";
-            ctx.lineWidth = 6;
+            ctx.strokeStyle = isDark ? "#fbbf24" : "#651317";
+            ctx.lineWidth = 4.5;
             ctx.beginPath();
             if (posterShape === "circle") {
               ctx.arc(0, 0, finalRadius, 0, Math.PI * 2);
@@ -2465,11 +2465,17 @@ export default function BlessingsPage() {
             drawNameText();
           };
           avatarImg.onerror = () => {
-            drawPlaceholderOm(ctx, photoX, photoY, radius);
+            const finalCX = photoX + posterOffsetX;
+            const finalCY = photoY + posterOffsetY;
+            const finalRadius = radius * posterFrameScale;
+            drawPlaceholderOm(ctx, finalCX, finalCY, finalRadius, posterShape, posterRotation);
             drawNameText();
           };
         } else {
-          drawPlaceholderOm(ctx, photoX, photoY, radius);
+          const finalCX = photoX + posterOffsetX;
+          const finalCY = photoY + posterOffsetY;
+          const finalRadius = radius * posterFrameScale;
+          drawPlaceholderOm(ctx, finalCX, finalCY, finalRadius, posterShape, posterRotation);
           drawNameText();
         }
       };
@@ -2886,40 +2892,42 @@ export default function BlessingsPage() {
           </div>
         </header>
       ) : activeTab === "maker" ? (
-        <header className={cn("relative z-40 px-4 pt-5 pb-4 flex flex-col items-center justify-center w-full border-b select-none overflow-hidden transition-colors", isDark ? "bg-[#140804] border-amber-950/20" : "bg-[#FFFDF8] border-[#EAD7C3]/80")}>
-          {/* Background image overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-15 bg-cover bg-left-top bg-no-repeat mix-blend-multiply dark:mix-blend-screen"
-            style={{ backgroundImage: `url(${devotionalHeaderBg})` }}
-          />
-          
-          <div className="relative z-10 flex items-center justify-between w-full max-w-4xl">
-            {/* Left: Circular Back button */}
-            <button
-              onClick={() => navigate("/")}
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all focus:outline-none border shadow-sm shrink-0",
-                isDark ? "bg-black/50 border-amber-500/20 text-amber-400 hover:bg-black/70" : "bg-white/90 border-[#EAD7C3] text-[#D88A15] hover:bg-white"
-              )}
-            >
-              <ArrowLeft className="w-5 h-5 text-[#D88A15]" />
-            </button>
+        selectedPoster ? null : (
+          <header className={cn("relative z-40 px-4 pt-5 pb-4 flex flex-col items-center justify-center w-full border-b select-none overflow-hidden transition-colors", isDark ? "bg-[#140804] border-amber-950/20" : "bg-[#FFFDF8] border-[#EAD7C3]/80")}>
+            {/* Background image overlay */}
+            <div 
+              className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-15 bg-cover bg-left-top bg-no-repeat mix-blend-multiply dark:mix-blend-screen"
+              style={{ backgroundImage: `url(${devotionalHeaderBg})` }}
+            />
+            
+            <div className="relative z-10 flex items-center justify-between w-full max-w-4xl">
+              {/* Left: Circular Back button */}
+              <button
+                onClick={() => navigate("/")}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all focus:outline-none border shadow-sm shrink-0",
+                  isDark ? "bg-black/50 border-amber-500/20 text-amber-400 hover:bg-black/70" : "bg-white/90 border-[#EAD7C3] text-[#D88A15] hover:bg-white"
+                )}
+              >
+                <ArrowLeft className="w-5 h-5 text-[#D88A15]" />
+              </button>
 
-            {/* Center: Title & Subtitle */}
-            <div className="text-center flex-1 px-3 flex flex-col items-center justify-center">
-              <h1 className={cn("font-serif text-xl sm:text-2xl font-black flex items-center gap-2 justify-center leading-tight tracking-wide", isDark ? "text-amber-300" : "text-[#651317]")}>
-                <span className="text-xl sm:text-2xl">🪔</span>
-                <span>{isHi ? "भक्तिमय पोस्टर" : "Devotional Posters"}</span>
-              </h1>
-              <p className={cn("font-sans text-xs sm:text-sm font-semibold block mt-1 leading-tight", isDark ? "text-amber-200/80" : "text-[#786252]")}>
-                {isHi ? "हर अवसर के लिए सुंदर धार्मिक पोस्टर" : "Beautiful spiritual posters for every occasion"}
-              </p>
+              {/* Center: Title & Subtitle */}
+              <div className="text-center flex-1 px-3 flex flex-col items-center justify-center">
+                <h1 className={cn("font-serif text-xl sm:text-2xl font-black flex items-center gap-2 justify-center leading-tight tracking-wide", isDark ? "text-amber-300" : "text-[#651317]")}>
+                  <span className="text-xl sm:text-2xl">🪔</span>
+                  <span>{isHi ? "भक्तिमय पोस्टर" : "Devotional Posters"}</span>
+                </h1>
+                <p className={cn("font-sans text-xs sm:text-sm font-semibold block mt-1 leading-tight", isDark ? "text-amber-200/80" : "text-[#786252]")}>
+                  {isHi ? "हर अवसर के लिए सुंदर धार्मिक पोस्टर" : "Beautiful spiritual posters for every occasion"}
+                </p>
+              </div>
+
+              {/* Right: Empty spacer for symmetry (1 din sadhana removed!) */}
+              <div className="w-10 h-10 shrink-0" />
             </div>
-
-            {/* Right: Empty spacer for symmetry (1 din sadhana removed!) */}
-            <div className="w-10 h-10 shrink-0" />
-          </div>
-        </header>
+          </header>
+        )
       ) : (
         <header className={cn("sticky top-0 z-40 backdrop-blur-md px-4 py-3.5 flex items-center justify-between w-full border-b", isDark ? "bg-[#160a06]/90 border-amber-950/20" : "bg-[#FAF8F4]/95 border-[#EFE5DA]/60")}>
           <button
@@ -5110,7 +5118,7 @@ export default function BlessingsPage() {
                 {/* ── TOP: Close button + Share button + Poster card ── */}
                 <div
                   className="flex-1 min-h-0 flex flex-col items-center justify-end relative"
-                  style={{ padding: "14px 12px 6px" }}
+                  style={{ padding: "14px 12px 6px", overflow: "hidden" }}
                 >
                   {/* Close button — top left */}
                   <button
@@ -5156,22 +5164,24 @@ export default function BlessingsPage() {
                       maxHeight: "calc(100% - 10px)",
                       opacity: hasScrolledPosterToInitial ? 1 : 0,
                       transition: "opacity 0.12s ease-in-out",
+                      WebkitOverflowScrolling: "touch",
+                      scrollBehavior: "smooth",
+                      overscrollBehavior: "contain",
                     }}
                   >
                     {filteredPosterTemplates.map((tpl) => {
                       const isActive = selectedPoster.id === tpl.id;
                       
                       // Calculate relative coordinate percentages matching 1080x1920 canvas
-                      const isFlexible = tpl.allowShapeChange;
-                      const CX_tpl = isFlexible ? (tpl.photoPosition.x + (isActive ? posterOffsetX : 0)) : tpl.photoPosition.x;
-                      const CY_tpl = isFlexible ? (tpl.photoPosition.y + (isActive ? posterOffsetY : 0)) : tpl.photoPosition.y;
-                      const R_tpl = isFlexible ? (tpl.photoPosition.radius * (isActive ? posterFrameScale : 1.0)) : tpl.photoPosition.radius;
+                      const CX_tpl = tpl.photoPosition.x + posterOffsetX;
+                      const CY_tpl = tpl.photoPosition.y + posterOffsetY;
+                      const R_tpl = tpl.photoPosition.radius * posterFrameScale;
 
                       const photoLeft = `${(CX_tpl / 1080) * 100}%`;
                       const photoTop = `${(CY_tpl / 1920) * 100}%`;
                       const avatarWidthPercent = `${((R_tpl * 2) / 1080) * 100}%`;
-                      const nameLeft = `${((tpl.namePosition.x + (isActive ? posterNameOffsetX : 0)) / 1080) * 100}%`;
-                      const nameTop = `${((tpl.namePosition.y + (isActive ? posterNameOffsetY : 0)) / 1920) * 100}%`;
+                      const nameLeft = `${((tpl.namePosition.x + posterNameOffsetX) / 1080) * 100}%`;
+                      const nameTop = `${((tpl.namePosition.y + posterNameOffsetY) / 1920) * 100}%`;
 
                       return (
                         <div
@@ -5181,6 +5191,7 @@ export default function BlessingsPage() {
                           style={{ scrollSnapStop: "always", height: "100%" }}
                         >
                           <div
+                            ref={isActive ? posterCardRef : undefined}
                             className="relative overflow-hidden"
                             style={{
                               aspectRatio: "9/16",
@@ -5210,10 +5221,10 @@ export default function BlessingsPage() {
                             {(() => {
                               if (hidePhotoFrame) return null;
 
-                              const shapeForTpl = isActive ? posterShape : (tpl.defaultShape || "circle");
-                              const zoomForTpl = isActive ? posterZoom : 1.0;
-                              const offsetXForTpl = isActive ? posterOffsetX : 0;
-                              const offsetYForTpl = isActive ? posterOffsetY : 0;
+                              const shapeForTpl = posterShape;
+                              const zoomForTpl = posterZoom;
+                              const offsetXForTpl = posterOffsetX;
+                              const offsetYForTpl = posterOffsetY;
 
                               const computedBorderRadius = 
                                 shapeForTpl === "circle" || shapeForTpl === "oval"
@@ -5227,6 +5238,7 @@ export default function BlessingsPage() {
 
                               return (
                                 <div
+                                  ref={photoLayerRef}
                                   className={`absolute overflow-hidden flex items-center justify-center cursor-pointer ${isEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : 'z-[100]'}`}
                                   onClick={() => {
                                     if (!isEditable) {
@@ -5246,7 +5258,7 @@ export default function BlessingsPage() {
                                     top: photoTop,
                                     width: avatarWidthPercent,
                                     aspectRatio: shapeForTpl === "oval" ? "3/4" : "1/1",
-                                    transform: `translate(-50%, -50%) rotate(${isActive ? posterRotation : 0}rad)`,
+                                    transform: `translate(-50%, -50%) rotate(${posterRotation}rad)`,
                                     borderRadius: computedBorderRadius,
                                     border: isPhotoSelected 
                                       ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
@@ -5276,9 +5288,10 @@ export default function BlessingsPage() {
                                     if (!data) return;
                                     const rect = e.currentTarget.parentElement?.getBoundingClientRect();
                                     if (!rect) return;
-                                    const scale = 1080 / rect.width;
-                                    const dx = (e.clientX - data.x) * scale;
-                                    const dy = (e.clientY - data.y) * scale;
+                                    const scaleX = 1080 / rect.width;
+                                    const scaleY = 1920 / rect.height;
+                                    const dx = (e.clientX - data.x) * scaleX;
+                                    const dy = (e.clientY - data.y) * scaleY;
                                     setPosterOffsetX(data.ox + dx);
                                     setPosterOffsetY(data.oy + dy);
                                   } : undefined}
@@ -5309,9 +5322,7 @@ export default function BlessingsPage() {
                                         width: "100%",
                                         height: "100%",
                                         objectFit: "cover",
-                                        transform: isFlexible 
-                                          ? `scale(${zoomForTpl})` 
-                                          : `scale(${zoomForTpl}) translate(${(offsetXForTpl / (tpl.photoPosition.radius * 2)) * 100}%, ${(offsetYForTpl / (tpl.photoPosition.radius * 2)) * 100}%)`,
+                                        transform: `scale(${zoomForTpl})`,
                                         transformOrigin: "center center",
                                       }} 
                                       className="pointer-events-none"
@@ -5335,20 +5346,21 @@ export default function BlessingsPage() {
                               const isNameSelected = isNameEditable && editingElement === "name";
 
                               const computedNameBorderRadius = 
-                                (isActive ? posterNameShape : "rounded-square") === "circle" || (isActive ? posterNameShape : "rounded-square") === "oval"
+                                posterNameShape === "circle" || posterNameShape === "oval"
                                   ? "999px"
-                                  : (isActive ? posterNameShape : "rounded-square") === "square"
+                                  : posterNameShape === "square"
                                   ? "0px"
                                   : "12px";
 
                               return (
                                 <>
                                   <div
+                                    ref={nameLayerRef}
                                     className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
                                     style={{
                                       left: nameLeft,
                                       top: nameTop,
-                                      transform: `translate(-50%, -50%) scale(${isActive ? posterNameScale : 1.0}) rotate(${isActive ? posterNameRotation : 0}rad)`,
+                                      transform: `translate(-50%, -50%) scale(${posterNameScale}) rotate(${posterNameRotation}rad)`,
                                       background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
                                       border: isNameSelected 
                                         ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
@@ -5379,9 +5391,10 @@ export default function BlessingsPage() {
                                       if (!data) return;
                                       const rect = e.currentTarget.parentElement?.getBoundingClientRect();
                                       if (!rect) return;
-                                      const scale = 1080 / rect.width;
-                                      const dx = (e.clientX - data.x) * scale;
-                                      const dy = (e.clientY - data.y) * scale;
+                                      const scaleX = 1080 / rect.width;
+                                      const scaleY = 1920 / rect.height;
+                                      const dx = (e.clientX - data.x) * scaleX;
+                                      const dy = (e.clientY - data.y) * scaleY;
                                       setPosterNameOffsetX(data.ox + dx);
                                       setPosterNameOffsetY(data.oy + dy);
                                     } : undefined}
@@ -5429,27 +5442,21 @@ export default function BlessingsPage() {
                                     return (
                                       <div
                                         key={box.id}
-                                        className={`absolute flex items-center justify-center whitespace-nowrap select-none ${
-                                          isBoxEditable 
-                                            ? "cursor-grab active:cursor-grabbing touch-none z-[130]" 
-                                            : "pointer-events-none z-[100]"
-                                        }`}
+                                        className={`absolute flex items-center justify-center touch-none z-[130] ${isBoxEditable ? "cursor-grab active:cursor-grabbing select-none" : "pointer-events-none"}`}
                                         style={{
                                           left: boxLeft,
                                           top: boxTop,
                                           transform: `translate(-50%, -50%) scale(${box.scale}) rotate(${box.rotation}rad)`,
                                           background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
-                                          border: isBoxSelected 
-                                            ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
-                                            : isBoxEditable
-                                            ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.5)" : "1.5px dashed rgba(101, 19, 23, 0.6)"
+                                          border: isBoxSelected
+                                            ? isDark ? "2px solid #fbbf24" : "2px solid #651317"
                                             : isDark ? "1.5px solid rgba(251, 191, 36, 0.5)" : "1.5px solid #651317",
                                           borderRadius: computedBoxBorderRadius,
                                           padding: "4px min(4vw, 16px)",
                                           boxShadow: isBoxSelected
-                                            ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.3)"
+                                            ? isDark ? "0 0 0 3px rgba(251,191,36,0.25)" : "0 0 0 3px rgba(101,19,23,0.18)"
                                             : isDark ? "0 6px 16px rgba(0,0,0,0.7)" : "0 4px 14px rgba(101, 19, 23, 0.18)",
-                                          touchAction: isBoxEditable ? "none" : "auto"
+                                          touchAction: "none",
                                         }}
                                         onPointerDown={isBoxEditable ? (e) => {
                                           e.stopPropagation();
@@ -5469,7 +5476,7 @@ export default function BlessingsPage() {
                                           if (!rect) return;
                                           const scale = 1080 / rect.width;
                                           const dx = (e.clientX - data.x) * scale;
-                                          const dy = (e.clientY - data.y) * scale;
+                                          const dy = (e.clientY - data.y) * (1920 / rect.height);
                                           handleUpdateCustomTextBox(box.id, {
                                             offsetX: data.ox + dx,
                                             offsetY: data.oy + dy
@@ -5490,7 +5497,9 @@ export default function BlessingsPage() {
                                             fontWeight: 800,
                                             color: isDark ? "#fbbf24" : "#651317",
                                             fontSize: "min(3.0vw, 15px)",
-                                            opacity: !box.text.trim() && isBoxEditable ? 0.6 : 1.0
+                                            opacity: !box.text.trim() && isBoxEditable ? 0.55 : 1.0,
+                                            userSelect: "none",
+                                            pointerEvents: "none",
                                           }}
                                         >
                                           {displayText}
@@ -5501,6 +5510,8 @@ export default function BlessingsPage() {
                                 </>
                               );
                             })()}
+
+
                           </div>
                         </div>
                       );
@@ -5571,7 +5582,7 @@ export default function BlessingsPage() {
                 {/* ── BOTTOM: Control panel ── */}
                 <div
                   className="shrink-0 w-full flex flex-col"
-                  style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0 }}
+                  style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0, maxHeight: "52vh", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}
                 >
                   {isEditingPhoto ? (
                     <div className={cn("flex flex-col w-full", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")} style={{ paddingTop: 0 }}>
@@ -5847,7 +5858,7 @@ export default function BlessingsPage() {
                                   ))}
                                 </div>
                               </div>
-                            ) : (
+                            ) : editingElement.startsWith("text_") ? (
                               <div className="space-y-2 text-left">
                                 <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
                                   {isHi ? "पाठ पट्टी का आकार चुनें" : "Select Text Plate Shape"}
@@ -5859,16 +5870,11 @@ export default function BlessingsPage() {
                                     { id: "rounded-square", label: isHi ? "मुड़ा हुआ" : "Rounded" },
                                     { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval" },
                                   ].map((s) => {
-                                    const currentShape = editingElement === "name" 
-                                      ? posterNameShape 
-                                      : (extraTextBoxes.find(x => x.id === editingElement)?.shape || "rounded-square");
+                                    const currentShape = extraTextBoxes.find(x => x.id === editingElement)?.shape || "rounded-square";
                                     return (
                                       <button
                                         key={s.id}
-                                        onClick={() => {
-                                          if (editingElement === "name") setPosterNameShape(s.id as any);
-                                          else handleUpdateCustomTextBox(editingElement, { shape: s.id as any });
-                                        }}
+                                        onClick={() => handleUpdateCustomTextBox(editingElement, { shape: s.id as any })}
                                         className={cn(
                                           "py-2.5 px-2 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center text-center",
                                           currentShape === s.id
@@ -5882,7 +5888,7 @@ export default function BlessingsPage() {
                                   })}
                                 </div>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         )}
 
@@ -6672,3 +6678,5 @@ export default function BlessingsPage() {
     </div>
   );
 }
+
+
