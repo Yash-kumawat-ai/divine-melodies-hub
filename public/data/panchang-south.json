@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-02",
+  "date": "2026-08-03",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Chavithi",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Poorvabhadra - 2",
-  "yoga": "Atiganda",
-  "karana": "Bava",
+  "nakshatra": "Uttarabhadra - 2",
+  "yoga": "Sukarma",
+  "karana": "Kaulava",
   "paksha": "Krishna",
-  "sunrise": "06:08 AM",
+  "sunrise": "06:09 AM",
   "sunset": "06:42 PM",
-  "rahu_kaal": "05:08 PM - 06:42 PM",
-  "brahma_muhurat": "04:32 AM - 05:20 AM",
-  "vara": "Ravivaar",
-  "updated_at": "2026-08-02T06:35:33+05:30"
+  "rahu_kaal": "07:43 AM - 09:17 AM",
+  "brahma_muhurat": "04:33 AM - 05:21 AM",
+  "vara": "Somvaar",
+  "updated_at": "2026-08-03T06:35:21+05:30"
 }
