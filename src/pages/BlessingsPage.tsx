@@ -5676,7 +5676,7 @@ export default function BlessingsPage() {
                           )}
                         >
                           <Plus className="w-3.5 h-3.5" />
-                          <span>{isHi ? "नया टेक्स्ट" : "+ Text"}</span>
+                          <span>{isHi ? "नया टेक्स्ट" : "Add Text"}</span>
                         </button>
                       </div>
 

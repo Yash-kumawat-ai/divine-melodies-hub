@@ -3,6 +3,11 @@ import {
   CalendarDays,
   BellRing,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  RotateCcw,
+  History,
   Clock,
   CheckCircle2,
   Compass,
@@ -223,6 +228,17 @@ function formatDateParts(date: string, language: 'en' | 'hi') {
   };
 }
 
+function getShiftedDate(baseDate: string, daysOffset: number): string {
+  const d = new Date(`${baseDate}T00:00:00+05:30`);
+  d.setDate(d.getDate() + daysOffset);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(d);
+}
+
 function FestivalMiniCard({
   festival,
   language,
@@ -235,7 +251,7 @@ function FestivalMiniCard({
   onToggleReminder: (festival: FestivalSummary) => void;
 }) {
   return (
-    <div className="temple-panel-soft min-w-0 p-3 shadow-[0_16px_50px_-40px_rgba(245,158,11,0.7)]">
+    <div className="temple-panel-soft min-w-0 p-3 shadow-1">
       <div className="flex min-w-0 flex-col gap-3 min-[380px]:flex-row min-[380px]:items-start">
         <span className="mt-1 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: festival.color }} />
         <div className="min-w-0 flex-1">
@@ -246,24 +262,25 @@ function FestivalMiniCard({
             {formatDate(festival.date, language)}
           </p>
           {reminder && (
-            <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500/12 px-2 py-1 text-[11px] font-bold text-amber-800 dark:text-amber-100">
+            <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-brand-primary/10 px-2 py-1 text-[11px] font-bold text-brand-primary dark:text-brand-gold border border-brand-gold-border">
               <BellRing className="h-3 w-3" />
               {language === 'hi' ? `${reminder.leadDays} दिन पहले` : `${reminder.leadDays} day alert`}
             </p>
           )}
         </div>
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={reminder ? 'default' : 'secondary'}
           onClick={() => onToggleReminder(festival)}
           className={cn(
-            'min-h-10 w-full shrink-0 rounded-full border px-3 text-xs font-bold transition min-[380px]:w-auto',
-            reminder
-              ? 'border-amber-400 bg-amber-500/15 text-amber-800 dark:text-amber-100'
-              : 'border-border bg-background text-amber-700/80 dark:text-amber-100/70 hover:border-amber-400 hover:text-amber-800 dark:hover:text-amber-100',
+            'shrink-0 rounded-full font-bold transition min-[380px]:w-auto',
+            reminder ? 'btn-primary' : 'btn-secondary',
           )}
         >
+          <BellRing className="h-3.5 w-3.5" />
           {reminder ? (language === 'hi' ? 'मार्क किया' : 'Marked') : (language === 'hi' ? 'रिमाइंड' : 'Remind')}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -325,7 +342,7 @@ function ReminderCenter({
     <section className={wrapperClass}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-amber-700/80 dark:text-amber-200/80">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-primary dark:text-brand-gold">
             <BellRing className="h-3.5 w-3.5" />
             {t.marked}
           </p>
@@ -334,8 +351,8 @@ function ReminderCenter({
         <Button
           type="button"
           size="sm"
-          variant="outline"
-          className="w-full rounded-full border-amber-500/30 bg-background/60 text-amber-700 dark:text-amber-100 sm:w-auto"
+          variant="secondary"
+          className="btn-secondary w-full rounded-full sm:w-auto"
           onClick={onPermission}
         >
           {notificationStatus === 'granted' ? (language === 'hi' ? 'चालू' : 'On') : t.permission}
@@ -343,9 +360,9 @@ function ReminderCenter({
       </div>
 
       {due.length > 0 && (
-        <div className="mt-4 rounded-2xl border border-orange-300/45 bg-orange-500/10 p-3">
-          <p className="text-sm font-bold text-orange-100">{t.due}</p>
-          <p className="mt-1 text-xs text-orange-100/70">
+        <div className="mt-4 rounded-2xl border border-brand-gold-border bg-brand-primary/10 p-3">
+          <p className="text-sm font-bold text-brand-primary dark:text-amber-100">{t.due}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             {language === 'hi' ? 'आपके मार्क किए गए पर्व का समय आ गया है।' : 'A marked festival reminder is due.'}
           </p>
         </div>
@@ -367,28 +384,30 @@ function ReminderCenter({
                 </p>
                 {reminder.note && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{reminder.note}</p>}
               </div>
-              <button
+              <Button
                 type="button"
+                variant="destructive"
+                size="icon"
                 onClick={() => onRemove(reminder.id)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground"
+                className="btn-danger btn-icon h-9 w-9 shrink-0 rounded-full"
                 aria-label={language === 'hi' ? 'रिमाइंडर हटाएं' : 'Remove reminder'}
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ))
         )}
       </div>
 
-      <form onSubmit={submitCustom} className="mt-4 rounded-2xl border border-amber-300/25 bg-amber-500/8 p-3">
+      <form onSubmit={submitCustom} className="mt-4 rounded-2xl border border-brand-gold-border bg-surface-alt/70 p-3">
         <p className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground">
-          <Plus className="h-4 w-4 text-amber-600 dark:text-amber-200" />
+          <Plus className="h-4 w-4 text-brand-primary dark:text-brand-gold" />
           {t.addDate}
         </p>
         <div className="grid gap-2">
-          <Input type="date" value={date} min={todayInIndiaKey()} onChange={(event) => setDate(event.target.value)} />
-          <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t.eventName} maxLength={56} />
-          <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder={t.note} maxLength={180} />
+          <Input type="date" value={date} min={todayInIndiaKey()} onChange={(event) => setDate(event.target.value)} className="input-base" />
+          <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t.eventName} maxLength={56} className="input-base" />
+          <Textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder={t.note} maxLength={180} className="input-base min-h-[70px]" />
           <div className="grid grid-cols-4 gap-2">
             {([0, 1, 3, 7] as const).map((day) => (
               <button
@@ -396,15 +415,15 @@ function ReminderCenter({
                 type="button"
                 onClick={() => setLeadDays(day)}
                 className={cn(
-                  'min-h-10 rounded-xl border text-xs font-bold',
-                  leadDays === day ? 'border-amber-500 bg-amber-500/15 text-amber-800 dark:text-amber-100' : 'border-border bg-background text-muted-foreground',
+                  'h-10 rounded-xl text-xs font-bold transition-all',
+                  leadDays === day ? 'chip-selected' : 'chip-unselected',
                 )}
               >
                 {day === 0 ? (language === 'hi' ? 'आज' : 'Same') : `${day}d`}
               </button>
             ))}
           </div>
-          <Button type="submit" className="h-11 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+          <Button type="submit" className="btn-primary btn-full h-11 rounded-xl font-bold">
             {t.save}
           </Button>
         </div>
@@ -432,21 +451,8 @@ export default function PanchangPage() {
   const lang = language === 'hi' ? 'hi' : 'en';
   const isMobile = useIsMobile();
   const [zone, setZone] = useState<PanchangZone | null>(null);
-  const [panchang, setPanchang] = useState<PanchangData | null>(() => {
-    try {
-      if (typeof window === 'undefined') return null;
-      const today = todayInIndia();
-      const zoneName = window.sessionStorage.getItem('panchang_zone_cached');
-      if (!zoneName) return null;
-      const raw = window.sessionStorage.getItem(`panchang_cache_${zoneName}`);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as { data?: PanchangData };
-      if (parsed.data?.date === today) return parsed.data;
-    } catch {
-      // ignore cache read errors
-    }
-    return null;
-  });
+  const [selectedDate, setSelectedDate] = useState<string>(() => todayInIndia());
+  const [panchang, setPanchang] = useState<PanchangData | null>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<FestivalSummary[]>([]);
   const [reminders, setReminders] = useState<FestivalReminder[]>(() => loadFestivalReminders());
   const [notificationStatus, setNotificationStatus] = useState<string>(() => {
@@ -495,7 +501,7 @@ export default function PanchangPage() {
       setError(null);
 
       try {
-        const result = await loadPanchang(zone.name, controller.signal);
+        const result = await loadPanchang(zone.name, selectedDate, controller.signal);
         if (!result?.data) {
           throw new Error('Panchang response unavailable.');
         }
@@ -511,7 +517,7 @@ export default function PanchangPage() {
 
     void fetchPanchang();
     return () => controller.abort();
-  }, [zone]);
+  }, [zone, selectedDate]);
 
   useEffect(() => {
     let isMounted = true;
@@ -891,11 +897,10 @@ export default function PanchangPage() {
       <div className="mt-8 flex justify-center">
         <Link
           to="/panchang/details"
-          className="group relative flex items-center gap-3 overflow-hidden rounded-full border border-amber-600/40 bg-amber-500/10 dark:bg-white/5 dark:border-white/10 px-8 py-3.5 text-sm font-bold uppercase tracking-[0.15em] text-amber-700 dark:text-amber-100 backdrop-blur-xl transition-all hover:border-amber-500 hover:bg-amber-500/20 dark:hover:bg-white/10 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
+          className="btn-primary btn-lg rounded-full px-8 text-sm font-bold uppercase tracking-[0.15em]"
         >
-          <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-t from-amber-500/15 to-transparent dark:from-white/5 transition-transform duration-500 group-hover:translate-y-0" />
-          <span className="relative">{text.seeMore}</span>
-          <ArrowRight className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          <span>{text.seeMore}</span>
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     </section>
@@ -904,12 +909,12 @@ export default function PanchangPage() {
   const upcomingEventsList = (
     <div className={cn('mt-4 space-y-3 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden', isMobile ? 'max-h-60 overflow-y-auto pr-1' : 'max-h-[360px] overflow-y-auto pr-1')}>
       {festivalLoading && (
-        <p className="temple-panel-soft p-3 text-sm text-amber-700/70 dark:text-amber-100/70">
+        <p className="temple-panel-soft p-3 text-sm text-muted-foreground">
           {lang === 'hi' ? 'पर्व लोड हो रहे हैं...' : 'Loading festivals...'}
         </p>
       )}
       {!festivalLoading && upcomingEvents.length === 0 && (
-        <p className="temple-panel-soft p-3 text-sm text-amber-700/70 dark:text-amber-100/70">{text.noUpcomingEvents}</p>
+        <p className="temple-panel-soft p-3 text-sm text-muted-foreground">{text.noUpcomingEvents}</p>
       )}
       {upcomingEvents.map((festival) => (
         <FestivalMiniCard
@@ -932,7 +937,7 @@ export default function PanchangPage() {
 
   const upcomingEventsEmbedded = (
     <div className="temple-panel-soft p-3 sm:p-4">
-      <h3 className="text-sm font-semibold text-amber-100">{text.upcomingEvents}</h3>
+      <h3 className="text-sm font-semibold text-foreground">{text.upcomingEvents}</h3>
       {upcomingEventsList}
     </div>
   );
@@ -979,91 +984,180 @@ export default function PanchangPage() {
           animate={{ opacity: 1, y: 0 }}
           className="temple-panel relative overflow-hidden p-3 sm:p-7"
         >
-          <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-amber-400/15 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 left-6 h-52 w-52 rounded-full bg-orange-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute -right-14 -top-16 h-40 w-40 rounded-full bg-brand-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-6 h-52 w-52 rounded-full bg-brand-gold/10 blur-3xl" />
 
           <div className="relative flex flex-col items-center text-center gap-6">
             <div className="flex flex-col items-center w-full gap-2">
               <div className="min-w-0 max-w-2xl">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-700/80 dark:text-amber-200/70 sm:text-[12px] sm:tracking-[0.4em]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-primary dark:text-brand-gold sm:text-[12px] sm:tracking-[0.4em]">
                   {lang === 'hi' ? '|| श्री गणेशाय नमः ||' : '|| Shri Ganeshay Namah ||'}
                 </p>
                 <h1 className="mt-4 font-display text-4xl font-bold text-foreground sm:text-6xl tracking-tight">
                   {text.title}
                 </h1>
                 
-                <div className="mt-8 flex items-center justify-center gap-4 text-amber-500/40">
+                <div className="mt-6 flex items-center justify-center gap-4 text-brand-gold/40">
                   <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-current" />
-                  <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400/90">
+                  <div className="flex items-center gap-3 text-brand-primary dark:text-brand-gold font-bold">
                     <span className="text-xl">ॐ</span>
-                    <span className="font-display text-xl font-bold tracking-[0.15em]">{lang === 'hi' ? 'जय श्री राम' : 'Jai Shri Ram'}</span>
+                    <span className="font-display text-xl tracking-[0.15em]">{lang === 'hi' ? 'जय श्री राम' : 'Jai Shri Ram'}</span>
                     <span className="text-xl">ॐ</span>
                   </div>
                   <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-current" />
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center gap-2">
-                <span className="rounded-full border border-amber-300/35 bg-amber-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700 dark:text-amber-100/80">
-                  {isStale ? text.updating : text.updated}
+              <div className="mt-3 flex items-center gap-2">
+                <span className="rounded-full border border-brand-gold-border bg-brand-primary/10 px-3.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-primary dark:text-brand-gold">
+                  {selectedDate === today ? (isStale ? text.updating : text.updated) : (lang === 'hi' ? 'पुराना पंचांग रिकॉर्ड' : 'Historical Panchang Record')}
                 </span>
               </div>
             </div>
 
+            {/* Date Navigation Control Bar */}
+            <div className="w-full max-w-5xl rounded-2xl border border-brand-gold-border bg-surface-raised/80 p-3 sm:p-4 shadow-1 backdrop-blur-md">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                {/* Left: Quick Date Presets using fixed Chip System */}
+                <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+                  {[
+                    { label: lang === 'hi' ? 'आज' : 'Today', date: today },
+                    { label: lang === 'hi' ? 'कल (बीता)' : 'Yesterday', date: getShiftedDate(today, -1) },
+                    { label: lang === 'hi' ? '2 दिन पहले' : '2 Days Ago', date: getShiftedDate(today, -2) },
+                    { label: lang === 'hi' ? '3 दिन पहले' : '3 Days Ago', date: getShiftedDate(today, -3) },
+                  ].map((item) => {
+                    const isActive = selectedDate === item.date;
+                    return (
+                      <button
+                        key={item.date}
+                        type="button"
+                        onClick={() => setSelectedDate(item.date)}
+                        className={cn(
+                          'px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+                          isActive ? 'chip-selected' : 'chip-unselected'
+                        )}
+                      >
+                        <Calendar className="h-3.5 w-3.5" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Right: Prev / Next / Date Picker */}
+                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => setSelectedDate(getShiftedDate(selectedDate, -1))}
+                      className="btn-icon btn-secondary h-9 w-9 rounded-full"
+                      title={lang === 'hi' ? 'पिछला दिन' : 'Previous Day'}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    <div className="relative flex items-center">
+                      <CalendarDays className="pointer-events-none absolute left-3 h-4 w-4 text-brand-primary dark:text-brand-gold" />
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        max={today}
+                        onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+                        className="input-base h-9 rounded-full pl-9 pr-3 text-xs font-bold focus:border-brand-primary dark:focus:border-brand-gold"
+                      />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      disabled={selectedDate >= today}
+                      onClick={() => setSelectedDate(getShiftedDate(selectedDate, 1))}
+                      className="btn-icon btn-secondary h-9 w-9 rounded-full disabled:opacity-40"
+                      title={lang === 'hi' ? 'अगला दिन' : 'Next Day'}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {selectedDate !== today && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setSelectedDate(today)}
+                      className="btn-secondary btn-sm rounded-full flex items-center gap-1"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      {lang === 'hi' ? 'आज पर जाएं' : 'Back to Today'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-3 w-full max-w-5xl min-[480px]:grid-cols-2 lg:grid-cols-3">
-              {/* Date Card */}
-              <div className="temple-panel-soft p-4 flex flex-col items-center justify-center text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60 mb-3">{text.dateLabel}</p>
-                <div className="flex items-center gap-4">
-                  <span className="text-5xl font-display font-bold text-amber-900 dark:text-amber-100">{dateParts.day}</span>
+              {/* Sacred Date Display Card */}
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center relative overflow-hidden border-brand-gold-border bg-surface-raised/90 shadow-1">
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-primary via-brand-gold to-brand-primary" />
+                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2 flex items-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {text.dateLabel}
+                </p>
+                <div className="flex items-center gap-4 my-1">
+                  <span className="text-5xl font-display font-extrabold text-brand-primary dark:text-amber-100 tracking-tight">{dateParts.day}</span>
                   <div className="text-left">
-                    <p className="text-base font-bold text-amber-900 dark:text-amber-100 leading-none">{dateParts.month}</p>
-                    <p className="text-sm font-semibold text-amber-800/70 dark:text-amber-100/70 mt-1">{dateParts.year}</p>
-                    <p className="text-xs font-bold text-amber-400/90 mt-1">{dateParts.weekday}</p>
+                    <p className="text-lg font-bold text-foreground leading-none">{dateParts.month}</p>
+                    <p className="text-sm font-semibold text-muted-foreground mt-1">{dateParts.year}</p>
+                    <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-gold text-[11px] font-bold">
+                      {dateParts.weekday}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Vikram Card */}
-              <div className="temple-panel-soft p-4 flex flex-col items-center justify-center text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60 mb-2">{text.vikram}</p>
-                <p className="text-xl font-bold text-amber-900 dark:text-amber-100">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
-                <div className="mt-3 flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
-                   <span className="text-xs font-bold text-amber-800 dark:text-amber-200">{pakshaText}</span>
+              {/* Vikram Samvat Card */}
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center border-brand-gold-border bg-surface-raised/90 shadow-1">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2">{text.vikram}</p>
+                <p className="text-xl font-bold text-foreground">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
+                <div className="mt-3 flex items-center gap-2 px-3 py-1 rounded-full chip-selected text-xs font-bold">
+                   <span>{pakshaText}</span>
                 </div>
               </div>
 
-              {/* Sun Info Card */}
-              <div className="temple-panel-soft p-4 flex flex-col items-center justify-center min-[480px]:col-span-2 lg:col-span-1">
-                <div className="grid grid-cols-2 gap-8 w-full">
-                  <div className="flex flex-col items-center gap-2">
-                    <Sunrise className="h-6 w-6 text-amber-400" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60">{text.sunrise}</p>
-                    <p className="text-base font-bold text-amber-900 dark:text-amber-100">{displayValue(panchang?.sunrise)}</p>
+              {/* Sunrise & Sunset Card */}
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center min-[480px]:col-span-2 lg:col-span-1 border-brand-gold-border bg-surface-raised/90 shadow-1">
+                <div className="grid grid-cols-2 gap-6 w-full">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Sunrise className="h-6 w-6 text-brand-gold" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{text.sunrise}</p>
+                    <p className="text-base font-bold text-foreground">{displayValue(panchang?.sunrise)}</p>
                   </div>
-                  <div className="flex flex-col items-center gap-2">
-                    <Sunset className="h-6 w-6 text-amber-400" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/80 dark:text-amber-200/60">{text.sunset}</p>
-                    <p className="text-base font-bold text-amber-900 dark:text-amber-100">{displayValue(panchang?.sunset)}</p>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <Sunset className="h-6 w-6 text-brand-primary dark:text-amber-300" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{text.sunset}</p>
+                    <p className="text-base font-bold text-foreground">{displayValue(panchang?.sunset)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-4 w-full">
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400/90">
+            <div className="flex flex-col items-center gap-3 w-full">
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-gold-border text-brand-primary dark:text-brand-gold font-semibold text-xs tracking-wide">
                 <MapPin className="h-3.5 w-3.5" />
-                <span className="text-sm font-semibold tracking-wide">{currentZone.city}, {lang === 'hi' ? 'भारत' : 'India'}</span>
+                <span>{currentZone.city}, {lang === 'hi' ? 'भारत' : 'India'}</span>
               </div>
 
               <label className="relative block w-full max-w-[320px]">
-                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700/80 dark:text-amber-200/70">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   {text.changeZone}
                 </span>
                 <select
                   value={currentZone.name}
                   onChange={(event) => handleZoneChange(event.target.value)}
-                  className="h-11 w-full appearance-none rounded-full border border-amber-300/30 bg-background/70 px-6 pr-10 text-sm font-semibold text-foreground outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20"
+                  className="input-base h-11 w-full appearance-none rounded-full px-6 pr-10 text-sm font-semibold focus:border-brand-primary"
                 >
                   {ZONES.map((item) => (
                     <option key={item.name} value={item.name}>
@@ -1071,7 +1165,7 @@ export default function PanchangPage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute bottom-3.5 right-5 h-4 w-4 text-amber-700/80 dark:text-amber-200/70" />
+                <ChevronDown className="pointer-events-none absolute bottom-3.5 right-5 h-4 w-4 text-muted-foreground" />
               </label>
             </div>
           </div>

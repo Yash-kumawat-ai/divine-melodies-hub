@@ -1,7 +1,8 @@
 import React from "react";
-import { Image, ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import meditationSvg from "./images/meditation svg.svg";
 
 export default function WallpaperPage() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function WallpaperPage() {
   const isHi = language === "hi";
 
   const t = {
-    title: isHi ? "दिव्य वॉलपेपर्स" : "Divine Wallpapers",
+    title: isHi ? "आध्यात्मिक वॉलपेपर" : "Adhyatmic Wallpaper",
     subtitle: isHi 
       ? "अपने मोबाइल और डेस्कटॉप के लिए सुंदर आध्यात्मिक वॉलपेपर डाउनलोड करें" 
       : "Download beautiful spiritual wallpapers for your phone and desktop",
@@ -21,7 +22,7 @@ export default function WallpaperPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <div className="min-h-screen bg-background py-12 px-4 select-none">
       <div className="container mx-auto max-w-4xl space-y-8">
         {/* Back Button */}
         <div>
@@ -35,14 +36,14 @@ export default function WallpaperPage() {
         </div>
 
         {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-            <Image className="w-8 h-8 text-primary" />
+        <div className="text-center space-y-2 flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-card border border-amber-500/30 p-2 flex items-center justify-center shadow-sm">
+            <img src={meditationSvg} alt="Meditation" className="w-7 h-7 object-contain" />
           </div>
-          <h1 className="font-display text-3xl md:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="font-serif text-3xl md:text-5xl font-black tracking-tight text-foreground text-center">
             {t.title}
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto text-center leading-relaxed font-medium">
             {t.subtitle}
           </p>
         </div>

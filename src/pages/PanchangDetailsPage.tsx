@@ -23,25 +23,28 @@ import { todayInIndia, type PanchangData } from "@/lib/panchang/types";
 import { getZoneFromBrowser, ZONES } from "@/utils/panchangZone";
 import { computeShubhAshubhKarya } from "@/utils/shubhKaryaEngine";
 import { panchangMuhuratTiles } from "@/data/panchangTemple";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function PanchangDetailsPage() {
   const { language: lang } = useLanguage();
   const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState<string>(() => todayInIndia());
   const [panchang, setPanchang] = useState<PanchangData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchPanchang() {
+      setLoading(true);
       const zone = await getZoneFromBrowser();
-      const result = await loadPanchang(zone.name);
+      const result = await loadPanchang(zone.name, selectedDate);
       if (result?.data) {
         setPanchang(result.data);
       }
       setLoading(false);
     }
     fetchPanchang();
-  }, []);
+  }, [selectedDate]);
 
   const parsePanchangTime = (timeStr?: string): { start: Date; end: Date } | null => {
     if (!timeStr || !timeStr.includes('-')) return null;
@@ -144,13 +147,14 @@ export default function PanchangDetailsPage() {
             {text.subtitle}
           </p>
 
-          <button
+          <Button
             onClick={() => navigate('/panchang')}
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-brand-saffron/20 bg-brand-saffron/5 text-brand-saffron font-bold text-sm hover:bg-brand-saffron/10 transition-all"
+            variant="secondary"
+            className="btn-secondary rounded-full px-6 font-bold"
           >
             {text.viewDetails}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
 
       </div>

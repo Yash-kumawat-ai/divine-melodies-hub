@@ -1289,10 +1289,12 @@ img.h-16.sm\:h-20.md\:h-22.w-auto.max-w-\[300px\].sm\:max-w-\[380px\].md\:max-w-
 
 
 .w-\[6\.5rem\] {
+  
     width: 7rem;
 }
 
 .h-44 {
+  
     height: 5rem;
 }
 
@@ -1326,3 +1328,6 @@ img.h-16.sm\:h-20.md\:h-22.w-auto.max-w-\[300px\].sm\:max-w-\[380px\].md\:max-w-
 }
 
 
+.text-xl {
+    font-size: 18px;
+}

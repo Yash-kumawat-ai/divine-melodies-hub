@@ -22,7 +22,8 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const data = await buildPanchangForZone(zone);
+    const targetDate = url.searchParams.get('date') ?? undefined;
+    const data = await buildPanchangForZone(zone, targetDate);
     const headers = new Headers({
       'Content-Type': 'application/json',
       'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',

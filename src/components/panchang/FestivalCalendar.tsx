@@ -127,14 +127,16 @@ function FestivalDetailContent({
                   {festival.deity} · {festival.importance}
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant={findReminder(reminders, 'festival', festival.date, festival.id) ? 'default' : 'secondary'}
                 onClick={() => onToggleReminder(festival)}
                 className={cn(
-                  'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition',
+                  'shrink-0 rounded-full font-bold transition',
                   findReminder(reminders, 'festival', festival.date, festival.id)
-                    ? 'border-amber-400 bg-amber-500/15 text-amber-800 dark:text-amber-100'
-                    : 'border-border bg-background text-muted-foreground hover:border-amber-400 hover:text-amber-700',
+                    ? 'btn-primary'
+                    : 'btn-secondary',
                 )}
               >
                 <BellRing className="h-3.5 w-3.5" />
@@ -145,7 +147,7 @@ function FestivalDetailContent({
                   : language === 'hi'
                     ? 'रिमाइंड'
                     : 'Remind'}
-              </button>
+              </Button>
             </div>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -153,13 +155,13 @@ function FestivalDetailContent({
             </p>
 
             {festival.fasting.observed && (
-              <div className="mt-3 rounded-lg border border-amber-300/30 bg-amber-500/10 p-3">
-                <p className="flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-100">
+              <div className="mt-3 rounded-lg border border-brand-gold-border bg-brand-primary/10 p-3">
+                <p className="flex items-center gap-2 text-sm font-bold text-brand-primary dark:text-amber-100">
                   <Flame className="h-4 w-4" />
                   {language === 'hi' ? 'व्रत' : 'Fasting'}: {festival.fasting.type || (language === 'hi' ? 'पालन' : 'Observed')}
                 </p>
                 {(festival.fasting.rules_hi || festival.fasting.rules_en) && (
-                  <p className="mt-1 text-sm leading-relaxed text-amber-900/80 dark:text-amber-100/80">
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                     {language === 'hi' ? festival.fasting.rules_hi || festival.fasting.rules_en : festival.fasting.rules_en}
                   </p>
                 )}
@@ -254,11 +256,11 @@ export default function FestivalCalendar() {
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
-      className="festival-calendar rounded-[1.5rem] border border-amber-300/25 bg-card/92 p-3 shadow-[0_24px_80px_-44px_rgba(245,158,11,0.72)] backdrop-blur-md sm:p-5"
+      className="festival-calendar temple-panel p-3 backdrop-blur-md sm:p-5"
     >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-amber-600 dark:text-amber-300">
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-brand-primary dark:text-brand-gold">
             <CalendarDays className="h-3.5 w-3.5" />
             {lang === 'hi' ? 'हिंदू कैलेंडर' : 'Hindu Calendar'}
           </p>
@@ -267,13 +269,13 @@ export default function FestivalCalendar() {
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, -1))}>
+          <Button type="button" size="icon" variant="secondary" className="btn-icon btn-secondary h-9 w-9 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, -1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button type="button" variant="outline" className="h-10 rounded-full px-4 text-xs font-bold" onClick={() => setVisibleMonth(getCurrentFestivalMonth())}>
+          <Button type="button" variant="secondary" size="sm" className="btn-secondary rounded-full px-4 text-xs font-bold" onClick={() => setVisibleMonth(getCurrentFestivalMonth())}>
             {lang === 'hi' ? 'आज' : 'Today'}
           </Button>
-          <Button type="button" size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, 1))}>
+          <Button type="button" size="icon" variant="secondary" className="btn-icon btn-secondary h-9 w-9 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
