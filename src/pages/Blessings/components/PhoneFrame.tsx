@@ -2,8 +2,21 @@ import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay } from "./Overlays";
 
+import { cn } from "@/lib/utils";
+
 // ─── PHONE CONTAINER MOCKUP ───────────────────────────────────────
-export const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUrl: string; previewMode?: "lock" | "home"; effect?: string }) => {
+export const PhoneFrame = ({
+  imageUrl,
+  previewMode = "lock",
+  effect,
+  className,
+}: {
+  imageUrl: string;
+  previewMode?: "lock" | "home";
+  effect?: string;
+  isDark?: boolean;
+  className?: string;
+}) => {
   const { language } = useLanguage();
   const isHi = language === "hi";
 
@@ -27,13 +40,16 @@ export const PhoneFrame = ({ imageUrl, previewMode = "lock", effect }: { imageUr
 
   return (
     <div
-      className="relative w-[145px] h-[298px] md:w-[230px] md:h-[474px] select-none flex-shrink-0 rounded-[24px] md:rounded-[40px]"
-      style={{ boxShadow: "0 25px 60px rgba(0, 0, 0, 0.55)" }}
+      className={cn(
+        "relative w-[130px] h-[267px] sm:w-[165px] sm:h-[338px] md:w-[200px] md:h-[410px] select-none flex-shrink-0 rounded-[20px] sm:rounded-[26px] md:rounded-[34px]",
+        className
+      )}
+      style={{ boxShadow: "0 18px 45px rgba(0, 0, 0, 0.5)" }}
     >
       {/* Wallpaper Image (Behind bezel) */}
       <div
-        className="absolute rounded-[16px] md:rounded-[28px] overflow-hidden bg-black z-0"
-        style={{ top: '1.4%', bottom: '1.4%', left: '2.8%', right: '2.8%' }}
+        className="absolute rounded-[20px] md:rounded-[34px] overflow-hidden bg-black z-0"
+        style={{ top: '2.2%', bottom: '2.2%', left: '4.2%', right: '4.2%' }}
       >
         <img
           src={imageUrl}

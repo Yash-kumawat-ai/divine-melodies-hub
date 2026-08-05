@@ -23,6 +23,7 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
   hideHeader = false,
   isSearchOpen: isSearchOpenProp,
   onToggleSearch: onToggleSearchProp,
+  onPreviewStateChange,
 }) => {
   const {
     wallpaperType,
@@ -42,7 +43,9 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
 
   const {
     showPreviewModal,
+    setShowPreviewModal,
     showLivePreviewModal,
+    setShowLivePreviewModal,
     isCardVisible,
     setIsCardVisible,
     previewMode,
@@ -51,6 +54,12 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
     handleLiveWallpaperAction,
     closePreviewModal,
   } = useWallpaperPreview();
+
+  React.useEffect(() => {
+    if (onPreviewStateChange) {
+      onPreviewStateChange(!!(showPreviewModal || showLivePreviewModal));
+    }
+  }, [showPreviewModal, showLivePreviewModal, onPreviewStateChange]);
 
   const { downloadWallpaper } = useWallpaperDownload(isHi);
 
@@ -134,7 +143,9 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
         isDark={isDark}
         isHi={isHi}
         showPreviewModal={showPreviewModal}
+        setShowPreviewModal={setShowPreviewModal}
         showLivePreviewModal={showLivePreviewModal}
+        setShowLivePreviewModal={setShowLivePreviewModal}
         isCardVisible={isCardVisible}
         setIsCardVisible={setIsCardVisible}
         previewMode={previewMode}

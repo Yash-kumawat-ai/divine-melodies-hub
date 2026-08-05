@@ -25,4 +25,5 @@ export interface WallpaperPageProps {
   hideHeader?: boolean;
   isSearchOpen?: boolean;
   onToggleSearch?: () => void;
+  onPreviewStateChange?: (isOpen: boolean) => void;
 }
