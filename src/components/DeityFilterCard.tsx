@@ -2,13 +2,13 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 import basuriSvg from "@/pages/images/svg/basuri.svg";
+import mandirOrgSvg from "@/pages/images/svg/mandirorg.svg";
+import shivayyWhiteFlowerSvg from "@/pages/images/svg/shivayy white flower.svg";
+import ramYellowFlowerSvg from "@/pages/images/svg/ram yellow flower.svg";
+import radhePinkFlowerSvg from "@/pages/images/svg/radhe pink flower.svg";
+import shyamBlueFlowerSvg from "@/pages/images/svg/shyam blue flower.svg";
 
-import shivWallpaperImg from "@/pages/images/shiv_wallpaper.webp";
-import deityRamImg from "@/pages/images/deity-ram.webp";
-import krishnaImg from "@/pages/images/krishna main.webp";
 import hanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
-import radhaKrishnaImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
-import shyamMandirImg from "@/pages/images/shyam_mandir_desktop_hd.webp";
 
 export interface DeityItem {
   id: string | null;
@@ -16,16 +16,17 @@ export interface DeityItem {
   nameEn: string;
   isIcon?: boolean;
   image?: string;
+  symbol?: string;
 }
 
 export const DEFAULT_DEITIES_LIST: DeityItem[] = [
-  { id: null,          name: "सभी",    nameEn: "All",    isIcon: true,  image: "" },
-  { id: "Shiva",        name: "शिव",    nameEn: "Shiva",  isIcon: false, image: shivWallpaperImg },
-  { id: "Rama",         name: "राम",    nameEn: "Ram",    isIcon: false, image: deityRamImg },
-  { id: "Krishna",      name: "कृष्ण",  nameEn: "Krishna",isIcon: false, image: krishnaImg },
+  { id: null,          name: "सभी",    nameEn: "All",    isIcon: false, image: mandirOrgSvg },
+  { id: "Shiva",        name: "शिव",    nameEn: "Shiva",  isIcon: false, image: shivayyWhiteFlowerSvg },
+  { id: "Rama",         name: "राम",    nameEn: "Ram",    isIcon: false, image: ramYellowFlowerSvg },
+  { id: "Krishna",      name: "कृष्ण",  nameEn: "Krishna",isIcon: false, image: basuriSvg },
   { id: "Hanuman",      name: "हनुमान", nameEn: "Hanuman",isIcon: false, image: hanumanImg },
-  { id: "Radha",        name: "राधा",   nameEn: "Radha",  isIcon: false, image: radhaKrishnaImg },
-  { id: "Khatu Shyam",  name: "श्याम",  nameEn: "Shyam",  isIcon: false, image: shyamMandirImg },
+  { id: "Radha",        name: "राधा",   nameEn: "Radha",  isIcon: false, image: radhePinkFlowerSvg },
+  { id: "Khatu Shyam",  name: "श्याम",  nameEn: "Shyam",  isIcon: false, image: shyamBlueFlowerSvg },
 ];
 
 export interface DeityFilterCardProps {

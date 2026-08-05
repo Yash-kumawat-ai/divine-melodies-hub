@@ -61,6 +61,18 @@ import mandalaBeigeImg from "./images/mandala-beige.svg";
 import devotionalHeaderBg from "./images/devotional_background_high_quality(1).webp";
 import omSvg from "./images/om.svg";
 
+// ─── CUSTOM DEITY SVGS ─────────────────────────────────────────────
+import mandirOrgSvg from "./images/svg/mandirorg.svg";
+import shivayyWhiteFlowerSvg from "./images/svg/shivayy white flower.svg";
+import ramYellowFlowerSvg from "./images/svg/ram yellow flower.svg";
+import radhePinkFlowerSvg from "./images/svg/radhe pink flower.svg";
+import shyamBlueFlowerSvg from "./images/svg/shyam blue flower.svg";
+import basuriSvg from "./images/svg/basuri.svg";
+import meditationSvg from "./images/meditation svg.svg";
+import posterSvg from "./images/svg/poster.svg";
+import mobileEditedSvg from "./images/svg/mobile edited.svg";
+import playButtonLiveSvg from "./images/svg/play button live.svg";
+
 // ─── SYNTHESIZED MEDITATIVE TANPURA DRONE ─────────────────────────
 class TempleDrone {
   private ctx: AudioContext | null = null;
@@ -957,7 +969,11 @@ export default function BlessingsPage() {
   // UI state variables
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<"maker" | "wallpapers" | "saved">(
-    () => (tabParam === "maker" || tabParam === "wallpapers" || tabParam === "saved") ? tabParam : "wallpapers"
+    () => (tabParam === "maker" || tabParam === "wallpapers" || tabParam === "saved") 
+      ? tabParam 
+      : (typeof window !== 'undefined' && window.location.pathname.includes("poster")) 
+        ? "maker" 
+        : "wallpapers"
   );
 
   const [showLivePreviewModal, setShowLivePreviewModal] = useState<string | null>(null);
@@ -2862,32 +2878,37 @@ export default function BlessingsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/")}
-              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#D88A15] hover:bg-[#FAF8F4]")}
+              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#651317] hover:bg-[#FAF8F4]")}
             >
-              <ArrowLeft className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#D88A15]")} />
+              <ArrowLeft className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#651317]")} />
             </button>
-            <div className="text-left">
-              <h1 className={cn("font-serif text-lg font-black leading-none", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-                {isHi ? "वॉलपेपर" : "Wallpapers"}
-              </h1>
-              <span className={cn("font-sans text-[10px] block mt-1.5 font-semibold leading-none", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
-                {isHi ? "अपने मोबाइल को दिव्यता से सजाएँ" : "Decorate your mobile with divinity"}
-              </span>
+            <div className="flex items-center gap-2.5">
+              <div className={cn("w-9 h-9 rounded-full border p-1.5 flex items-center justify-center shadow-sm", isDark ? "bg-card border-amber-500/30" : "bg-white border-[#651317]/20")}>
+                <img src={meditationSvg} alt="Meditation" className="w-5 h-5 object-contain" />
+              </div>
+              <div className="text-left">
+                <h1 className={cn("font-serif text-lg font-black leading-none", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
+                  {isHi ? "आध्यात्मिक वॉलपेपर" : "Adhyatmic Wallpaper"}
+                </h1>
+                <span className={cn("font-sans text-[10px] block mt-1.5 font-semibold leading-none", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
+                  {isHi ? "अपने मोबाइल को दिव्यता से सजाएँ" : "Decorate your mobile with divinity"}
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate("/pricing")}
-              className={cn("flex items-center gap-1.5 border rounded-full px-3 py-1.5 font-sans text-xs font-black shadow-sm active:scale-95 transition-all", isDark ? "bg-[#fbbf24]/10 border-[#fbbf24]/30 text-[#fbbf24] hover:bg-[#fbbf24]/25" : "bg-[#D88A15]/10 border-[#D88A15]/30 text-[#D88A15] hover:bg-[#D88A15]/20")}
+              className={cn("flex items-center gap-1.5 border rounded-full px-3 py-1.5 font-sans text-xs font-black shadow-sm active:scale-95 transition-all", isDark ? "bg-[#fbbf24]/10 border-[#fbbf24]/30 text-[#fbbf24] hover:bg-[#fbbf24]/25" : "bg-[#651317]/10 border-[#651317]/30 text-[#651317] hover:bg-[#651317]/20")}
             >
               <Sparkles className="w-3.5 h-3.5 fill-current animate-pulse text-[#fbbf24]" />
               <span>{isHi ? "महाभक्त" : "Mahabhakt"}</span>
             </button>
             <button
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#D88A15] hover:bg-[#FAF8F4]")}
+              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#651317] hover:bg-[#FAF8F4]")}
             >
-              <Search className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#D88A15]")} />
+              <Search className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#651317]")} />
             </button>
           </div>
         </header>
@@ -2906,10 +2927,10 @@ export default function BlessingsPage() {
                 onClick={() => navigate("/")}
                 className={cn(
                   "flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all focus:outline-none border shadow-sm shrink-0",
-                  isDark ? "bg-black/50 border-amber-500/20 text-amber-400 hover:bg-black/70" : "bg-white/90 border-[#EAD7C3] text-[#D88A15] hover:bg-white"
+                  isDark ? "bg-black/50 border-amber-500/20 text-amber-400 hover:bg-black/70" : "bg-white/90 border-[#EAD7C3] text-[#651317] hover:bg-white"
                 )}
               >
-                <ArrowLeft className="w-5 h-5 text-[#D88A15]" />
+                <ArrowLeft className="w-5 h-5 text-[#651317]" />
               </button>
 
               {/* Center: Title & Subtitle */}
@@ -2969,7 +2990,7 @@ export default function BlessingsPage() {
                   : "text-[#543D2B] hover:text-[#651317]"
             )}
           >
-            <span>✨</span>
+            <img src={posterSvg} alt="Poster" className="w-4 h-4 object-contain" />
             <span>{isHi ? "पोस्टर" : "Posters"}</span>
           </button>
           <button
@@ -2989,7 +3010,7 @@ export default function BlessingsPage() {
                   : "text-[#543D2B] hover:text-[#651317]"
             )}
           >
-            <span>📱</span>
+            <img src={mobileEditedSvg} alt="Wallpaper" className="w-4 h-4 object-contain" />
             <span>{isHi ? "वॉलपेपर" : "Wallpapers"}</span>
           </button>
           <button
@@ -3028,7 +3049,7 @@ export default function BlessingsPage() {
                 
                 {/* Good Morning Greeting Header */}
                 <div 
-                  className={cn("w-full rounded-3xl p-5 text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300 hover:shadow-xl border group/card", isDark ? "border-amber-500/20 hover:shadow-amber-500/5" : "border-[#EFE5DA] hover:shadow-[#D88A15]/5")}
+                  className={cn("w-full rounded-3xl p-5 text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300 hover:shadow-xl border group/card", isDark ? "border-amber-500/20 hover:shadow-amber-500/5" : "border-[#EFE5DA] hover:shadow-[#651317]/5")}
                   style={{
                     background: isDark ? 'linear-gradient(135deg, rgba(32,13,5,0.9) 0%, rgba(20,7,3,0.95) 50%, rgba(12,3,1,0.98) 100%)' : '#FFFFFF',
                     boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 30px rgba(239, 229, 218, 0.2)'
@@ -3489,9 +3510,9 @@ export default function BlessingsPage() {
                   <div 
                     className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10 text-[8px] font-black uppercase font-sans tracking-wider"
                     style={{
-                      background: wp.tier !== "free" ? "#D88A15" : "rgba(0,0,0,0.55)",
+                      background: wp.tier !== "free" ? "#651317" : "rgba(0,0,0,0.55)",
                       color: wp.tier !== "free" ? "#FFFFFF" : "#fbbf24",
-                      border: wp.tier !== "free" ? "1px solid #D88A15" : "1px solid rgba(251,191,36,0.25)"
+                      border: wp.tier !== "free" ? "1px solid #651317" : "1px solid rgba(251,191,36,0.25)"
                     }}
                   >
                     {wp.tier !== "free" ? "👑 Pro" : "Free"}
@@ -3509,26 +3530,26 @@ export default function BlessingsPage() {
                 <div className="p-1 rounded-full flex items-center shadow-lg border" style={{background: isDark ? "rgba(18,7,4,0.6)" : "#FFFFFF", border: isDark ? "1px solid rgba(120,60,10,0.25)" : "1px solid #EFE5DA"}}>
                   <button
                     onClick={() => setWallpaperType("static")}
-                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
+                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none active:scale-95 ${isHi ? '' : 'tracking-wider'} ${
                       wallpaperType === "static"
-                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#D88A15] shadow-md")
+                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#651317] shadow-md")
                         : (isDark ? "text-amber-200/75 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
                     }`}
-                    style={wallpaperType==="static"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(216, 138, 21, 0.1)",border:"1px solid rgba(216, 138, 21, 0.25)"}):{}}
+                    style={wallpaperType==="static"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(101, 19, 23, 0.1)",border:"1px solid rgba(101, 19, 23, 0.25)"}):{}}
                   >
-                    <Smartphone className="w-3.5 h-3.5" />
+                    <img src={mobileEditedSvg} alt="Static" className="w-4 h-4 object-contain" />
                     <span>{isHi ? "स्थिर (STATIC)" : "Static"}</span>
                   </button>
                   <button
                     onClick={() => setWallpaperType("live")}
-                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
+                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none active:scale-95 ${isHi ? '' : 'tracking-wider'} ${
                       wallpaperType === "live"
-                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#D88A15] shadow-md")
+                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#651317] shadow-md")
                         : (isDark ? "text-amber-200/75 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
                     }`}
-                    style={wallpaperType==="live"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(216, 138, 21, 0.1)",border:"1px solid rgba(216, 138, 21, 0.25)"}):{}}
+                    style={wallpaperType==="live"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(101, 19, 23, 0.1)",border:"1px solid rgba(101, 19, 23, 0.25)"}):{}}
                   >
-                    <Flame className="w-3.5 h-3.5" />
+                    <img src={playButtonLiveSvg} alt="Live" className="w-4 h-4 object-contain" />
                     <span>{isHi ? "सजीव (LIVE)" : "Live"}</span>
                   </button>
                 </div>
@@ -3543,14 +3564,14 @@ export default function BlessingsPage() {
                       placeholder={isHi ? "वॉलपेपर खोजें..." : "Search wallpapers..."}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className={cn("w-full rounded-full py-3 pl-5 pr-11 text-xs focus:outline-none tracking-wide font-sans font-medium border", isDark ? "bg-black/45 border-amber-500/20 focus:border-amber-500/45 text-amber-100 placeholder:text-amber-200/20" : "bg-[#FFFFFF] border-[#EFE5DA] focus:border-[#D88A15]/50 text-[#2B1F18] placeholder-[#8A7A6B]/40")}
+                      className={cn("w-full rounded-full py-3 pl-5 pr-11 text-xs focus:outline-none tracking-wide font-sans font-medium border shadow-sm", isDark ? "bg-[#1f0f08]/90 border-[#651317]/35 focus:border-[#651317] text-amber-100 placeholder:text-amber-200/20" : "bg-[#FFFFFF] border-[#651317]/20 focus:border-[#651317]/50 text-[#2B1F18] placeholder-[#8A7A6B]/40")}
                     />
                     {searchQuery ? (
-                      <button onClick={() => setSearchQuery("")} className={cn("absolute right-4 top-1/2 -translate-y-1/2 focus:outline-none", isDark ? "text-amber-400 hover:text-amber-200" : "text-[#D88A15] hover:text-[#2B1F18]")}>
+                      <button onClick={() => setSearchQuery("")} className={cn("absolute right-4 top-1/2 -translate-y-1/2 focus:outline-none active:scale-95", isDark ? "text-amber-400 hover:text-amber-200" : "text-[#651317] hover:text-[#2B1F18]")}>
                         <X className="w-4 h-4" />
                       </button>
                     ) : (
-                      <Search className={cn("absolute right-4.5 top-1/2 -translate-y-1/2 w-4 h-4", isDark ? "text-amber-500/30" : "text-[#D88A15]/35")} />
+                      <Search className={cn("absolute right-4.5 top-1/2 -translate-y-1/2 w-4 h-4", isDark ? "text-amber-500/30" : "text-[#651317]/35")} />
                     )}
                   </div>
                 </div>
@@ -3578,51 +3599,40 @@ export default function BlessingsPage() {
                     </div>
                     <div className="flex items-start gap-1.5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
                       {[
-                        { id: null,          name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
-                        { id:"Shiva",        name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
-                        { id:"Rama",         name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
-                        { id:"Krishna",      name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
-                        { id:"Hanuman",      name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"",   image:hanumanImg },
-                        { id:"Radha",        name:"राधा",   nameEn:"Radha",  isIcon:false, symbol:"",   image:radhaKrishnaImg },
-                        { id:"Khatu Shyam",  name:"श्याम",  nameEn:"Shyam",  isIcon:false, symbol:"",   image:shyamMandirImg },
+                        { id: null,          name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"", image:basuriSvg },
+                        { id:"Shiva",        name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"", image:shivWallpaperImg },
+                        { id:"Rama",         name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"", image:deityRamImg },
+                        { id:"Krishna",      name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"", image:krishnaImg },
+                        { id:"Hanuman",      name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"", image:hanumanImg },
+                        { id:"Radha",        name:"राधा",   nameEn:"Radha",  isIcon:false, symbol:"", image:radhaKrishnaImg },
+                        { id:"Khatu Shyam",  name:"श्याम",  nameEn:"Shyam",  isIcon:false, symbol:"", image:shyamMandirImg },
                       ].map((deity) => {
                         const isActive = selectedDeityFilter === deity.id;
                         return (
                           <button
                             key={deity.id ?? "all"}
                             onClick={() => setSelectedDeityFilter(deity.id)}
+                            style={{ touchAction: "manipulation" }}
                             className={cn(
-                              "w-[92px] h-[132px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-300 relative shrink-0 outline-none focus:outline-none group",
+                              "w-[92px] h-[124px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-100 ease-out active:scale-95 active:opacity-80 relative shrink-0 outline-none focus:outline-none group cursor-pointer select-none border",
                               isActive
-                                ? "bg-[#FFFDF9] border-2 border-[#D89B1F] -translate-y-[3px] shadow-[0_4px_16px_rgba(216,155,31,0.22)]"
+                                ? "bg-[#FFFDF9] border-[#651317] shadow-[0_4px_16px_rgba(101,19,23,0.18)]"
                                 : (isDark 
-                                    ? "bg-[#1f0f08]/90 border border-amber-900/30 shadow-sm" 
-                                    : "bg-[#FFFDF9] border border-[#E9D7B3] shadow-sm shadow-[#E9D7B3]/10 hover:-translate-y-[1px]")
+                                    ? "bg-[#1f0f08]/90 border-[#651317]/35 hover:border-[#651317] shadow-sm" 
+                                    : "bg-[#FFFDF9] border-[#651317]/25 hover:border-[#651317] shadow-sm shadow-[#651317]/5")
                             )}
                           >
-                            {/* Centering container for watermark and crop */}
-                            <div className="relative w-[78px] h-[78px] flex items-center justify-center shrink-0">
-                              {/* Mandala Watermark */}
-                              <img 
-                                src={isActive ? mandalaGoldImg : mandalaBeigeImg} 
-                                alt="" 
-                                className={cn(
-                                  "absolute w-[78px] h-[78px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-700 select-none",
-                                  isActive 
-                                    ? "opacity-[0.88] scale-110 rotate-[25deg]" 
-                                    : "opacity-[0.45] scale-100 rotate-0 group-hover:rotate-[15deg] group-hover:opacity-[0.62]"
-                                )} 
-                              />
-                              
-                              {/* Centered 62px circular image crop */}
-                              <div className={cn("relative z-10 w-[62px] h-[62px] rounded-full overflow-hidden flex items-center justify-center bg-white shadow-inner transition-all", isActive ? "border-2 border-[#D89B1F]" : "border-2 border-[#E9D7B3]")}>
+                            {/* Centering container for crop */}
+                            <div className="relative w-[76px] h-[76px] flex items-center justify-center shrink-0">
+                              {/* Centered rounded-xl SQUARE card crop with #651317 border */}
+                              <div className={cn("relative z-10 w-[74px] h-[74px] rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-inner transition-colors border", isActive ? "border-[#651317]" : "border-[#651317]/30 group-hover:border-[#651317]")}>
                                 {deity.isIcon ? (
-                                  <span className={cn("text-2xl transition-transform duration-300", isActive ? "scale-110" : "")}>{deity.symbol}</span>
+                                  <img src={basuriSvg} alt="Bansuri" className="w-7.5 h-7.5 object-contain p-0.5" />
                                 ) : (
                                   <img 
                                     src={deity.image} 
                                     alt={deity.nameEn}
-                                    className={cn("w-full h-full object-cover transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-105")}
+                                    className="w-full h-full object-cover"
                                   />
                                 )}
                               </div>
@@ -3630,22 +3640,14 @@ export default function BlessingsPage() {
 
                             {/* Deity name */}
                             <span className={cn(
-                              "relative z-10 text-[15px] font-bold font-serif text-center leading-tight tracking-wide mt-2.5 pb-0.5",
+                              "relative z-10 font-bold font-serif text-center leading-tight tracking-wide mt-2 pb-0.5",
+                              isHi ? "text-[16px] sm:text-[17px] font-black" : "text-[14px] sm:text-[15px]",
                               isActive
-                                ? (isDark ? "text-amber-300" : "text-[#D89B1F]")
+                                ? (isDark ? "text-amber-300" : "text-[#651317]")
                                 : (isDark ? "text-amber-200/80" : "text-[#2B1F18]")
                             )}>
                               {isHi ? deity.name : deity.nameEn}
                             </span>
-
-                            {/* Selected gold check badge */}
-                            {isActive && (
-                              <span className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-[#D89B1F] flex items-center justify-center shadow-md z-20 border border-white">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-[10px] h-[10px]">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              </span>
-                            )}
                           </button>
                         );
                       })}
@@ -3669,7 +3671,7 @@ export default function BlessingsPage() {
                           <div key={sec.key} className="w-full space-y-3.5 text-left mb-4">
                             <div className="flex items-center justify-between w-full mb-1 px-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[#D88A15] text-xs">✨</span>
+                                <span className="text-[#651317] text-xs">✨</span>
                                 <h3 className={cn("font-serif text-sm font-black uppercase", isDark ? "text-amber-400" : "text-[#2B1F18]")}>
                                   {isHi ? sec.nameHindi : sec.name}
                                 </h3>
@@ -3711,7 +3713,7 @@ export default function BlessingsPage() {
                     <button
                       onClick={()=>navigate("/pricing")}
                       className={`px-4 py-2.5 font-sans text-[10px] font-black uppercase rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-md shrink-0 cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
-                      style={{background:"linear-gradient(135deg,#D88A15,#D88A15)",color:"#FFFFFF"}}
+                      style={{background:"linear-gradient(135deg,#651317,#651317)",color:"#FFFFFF"}}
                     >
                       <span>{isHi?"देखें":"Explore"}</span><span>→</span>
                     </button>
@@ -3738,7 +3740,7 @@ export default function BlessingsPage() {
                     </div>
                     <div className="flex items-start gap-1.5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
                       {[
-                        { id:null,     name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
+                        { id:null,     name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"",   image:basuriSvg },
                         { id:"Shiva",  name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
                         { id:"Rama",   name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
                         { id:"Krishna",name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
@@ -3749,38 +3751,27 @@ export default function BlessingsPage() {
                           <button
                             key={deity.id ?? "all"}
                             onClick={() => setSelectedDeityFilter(deity.id)}
+                            style={{ touchAction: "manipulation" }}
                             className={cn(
-                              "w-[92px] h-[132px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-300 relative shrink-0 outline-none focus:outline-none group",
+                              "w-[92px] h-[124px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-100 ease-out active:scale-95 active:opacity-80 relative shrink-0 outline-none focus:outline-none group cursor-pointer select-none border",
                               isActive
-                                ? "bg-[#FFFDF9] border-2 border-[#D89B1F] -translate-y-[3px] shadow-[0_4px_16px_rgba(216,155,31,0.22)]"
+                                ? "bg-[#FFFDF9] border-[#651317] shadow-[0_4px_16px_rgba(101,19,23,0.18)]"
                                 : (isDark 
-                                    ? "bg-[#1f0f08]/90 border border-amber-900/30 shadow-sm" 
-                                    : "bg-[#FFFDF9] border border-[#E9D7B3] shadow-sm shadow-[#E9D7B3]/10 hover:-translate-y-[1px]")
+                                    ? "bg-[#1f0f08]/90 border-[#651317]/35 hover:border-[#651317] shadow-sm" 
+                                    : "bg-[#FFFDF9] border-[#651317]/25 hover:border-[#651317] shadow-sm shadow-[#651317]/5")
                             )}
                           >
-                            {/* Centering container for watermark and crop */}
-                            <div className="relative w-[78px] h-[78px] flex items-center justify-center shrink-0">
-                              {/* Mandala Watermark */}
-                              <img 
-                                src={isActive ? mandalaGoldImg : mandalaBeigeImg} 
-                                alt="" 
-                                className={cn(
-                                  "absolute w-[78px] h-[78px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-700 select-none",
-                                  isActive 
-                                    ? "opacity-[0.88] scale-110 rotate-[25deg]" 
-                                    : "opacity-[0.45] scale-100 rotate-0 group-hover:rotate-[15deg] group-hover:opacity-[0.62]"
-                                )} 
-                              />
-                              
-                              {/* Centered 62px circular image crop */}
-                              <div className={cn("relative z-10 w-[62px] h-[62px] rounded-full overflow-hidden flex items-center justify-center bg-white shadow-inner transition-all", isActive ? "border-2 border-[#D89B1F]" : "border-2 border-[#E9D7B3]")}>
+                            {/* Centering container for crop */}
+                            <div className="relative w-[76px] h-[76px] flex items-center justify-center shrink-0">
+                              {/* Centered rounded-xl SQUARE card crop with #651317 border */}
+                              <div className={cn("relative z-10 w-[74px] h-[74px] rounded-xl overflow-hidden flex items-center justify-center bg-white shadow-inner transition-colors border", isActive ? "border-[#651317]" : "border-[#651317]/30 group-hover:border-[#651317]")}>
                                 {deity.isIcon ? (
-                                  <span className={cn("text-2xl transition-transform duration-300", isActive ? "scale-110" : "")}>{deity.symbol}</span>
+                                  <img src={basuriSvg} alt="Bansuri" className="w-7.5 h-7.5 object-contain p-0.5" />
                                 ) : (
                                   <img 
                                     src={deity.image} 
                                     alt={deity.nameEn}
-                                    className={cn("w-full h-full object-cover transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-105")}
+                                    className="w-full h-full object-cover"
                                   />
                                 )}
                               </div>
@@ -3788,22 +3779,14 @@ export default function BlessingsPage() {
 
                             {/* Deity name */}
                             <span className={cn(
-                              "relative z-10 text-[15px] font-bold font-serif text-center leading-tight tracking-wide mt-2.5 pb-0.5",
+                              "relative z-10 font-bold font-serif text-center leading-tight tracking-wide mt-2 pb-0.5",
+                              isHi ? "text-[16px] sm:text-[17px] font-black" : "text-[14px] sm:text-[15px]",
                               isActive
-                                ? (isDark ? "text-amber-300" : "text-[#D89B1F]")
+                                ? (isDark ? "text-amber-300" : "text-[#651317]")
                                 : (isDark ? "text-amber-200/80" : "text-[#2B1F18]")
                             )}>
                               {isHi ? deity.name : deity.nameEn}
                             </span>
-
-                            {/* Selected gold check badge */}
-                            {isActive && (
-                              <span className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-[#D89B1F] flex items-center justify-center shadow-md z-20 border border-white">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-[10px] h-[10px]">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              </span>
-                            )}
                           </button>
                         );
                       })}
@@ -3818,7 +3801,7 @@ export default function BlessingsPage() {
                           <span>🌌</span>
                           {isHi?"आज की दिव्य सजीव लीला":"Today's Living Darshan"}
                         </h3>
-                        <span className="text-[9px] font-sans text-white bg-[#D88A15] px-2 py-0.5 rounded-full font-black animate-pulse">{isHi?"लाइव":"Live"}</span>
+                        <span className="text-[9px] font-sans text-white bg-[#651317] px-2 py-0.5 rounded-full font-black animate-pulse">{isHi?"लाइव":"Live"}</span>
                       </div>
                       <div className="w-full rounded-[20px] overflow-hidden relative cursor-pointer group"
                         style={{
@@ -3882,7 +3865,7 @@ export default function BlessingsPage() {
                           <div key={sec.key} className="w-full space-y-3.5 text-left mb-4">
                             <div className="flex items-center justify-between w-full mb-1 px-0.5">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-[#D88A15] text-xs">🎬</span>
+                                <span className="text-[#651317] text-xs">🎬</span>
                                 <h3 className={cn("font-serif text-sm font-black uppercase", isDark ? "text-amber-400" : "text-[#2B1F18]")}>
                                   {isHi ? sec.nameHindi : sec.name}
                                 </h3>
@@ -3911,7 +3894,7 @@ export default function BlessingsPage() {
                       background: isDark ? "rgba(27,13,7,0.4)" : "#FFFFFF",
                       border: isDark ? "1px solid rgba(120,60,10,0.2)" : "1px solid #EFE5DA"
                     }}>
-                    <span className={cn("text-xs", isDark ? "text-amber-400" : "text-[#D88A15]")}>💡 {isHi?"सजीव वॉलपेपर कैसे लगाएं?":"How to Apply Live Wallpapers?"}</span>
+                    <span className={cn("text-xs", isDark ? "text-amber-400" : "text-[#651317]")}>💡 {isHi?"सजीव वॉलपेपर कैसे लगाएं?":"How to Apply Live Wallpapers?"}</span>
                     <p className={cn("text-[9px] font-sans text-center tracking-wide leading-relaxed max-w-md", isDark ? "text-amber-200/85" : "text-[#8A7A6B]")}>
                       {isHi
                         ? "सजीव वॉलपेपर डाउनलोड करने पर एचडी मोशन जिफ/वेबपी प्राप्त होगी। किसी भी लाइव वॉलपेपर लॉन्चर की सहायता से इसे अपने लॉकस्क्रीन पर सेट करें।"

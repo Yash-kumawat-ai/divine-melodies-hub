@@ -237,6 +237,7 @@ function AppContent() {
               }
             />
             <Route path="/wallpaper" element={<WallpaperPage />} />
+            <Route path="/poster-maker" element={<WallpaperPage />} />
             <Route
               path="/upload-bhajan"
               element={
@@ -253,7 +254,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/poster-maker" element={<PosterMakerPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

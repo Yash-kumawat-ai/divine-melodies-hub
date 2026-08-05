@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Sparkles, Upload, RotateCcw, Download, Info, Image } from "lucide-react";
+import { ArrowLeft, Sparkles, Upload, RotateCcw, Download, Info, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import { toast } from "sonner";
@@ -180,16 +180,23 @@ export default function PosterMakerPage() {
       return;
     }
     setLoading(true);
-    const img = new Image();
-    img.crossOrigin = "anonymous";
+    let isMounted = true;
+    const img = new window.Image();
     img.src = selectedTemplate.imageUrl;
     img.onload = () => {
-      setTemplateImgElement(img);
-      setLoading(false);
+      if (isMounted) {
+        setTemplateImgElement(img);
+        setLoading(false);
+      }
     };
     img.onerror = () => {
-      toast.error("Failed to load poster background.");
-      setLoading(false);
+      if (isMounted) {
+        toast.error("Failed to load poster background.");
+        setLoading(false);
+      }
+    };
+    return () => {
+      isMounted = false;
     };
   }, [selectedTemplate]);
 
@@ -199,13 +206,21 @@ export default function PosterMakerPage() {
       setUserImgElement(null);
       return;
     }
-    const img = new Image();
+    let isMounted = true;
+    const img = new window.Image();
     img.src = userImageSrc;
     img.onload = () => {
-      setUserImgElement(img);
+      if (isMounted) {
+        setUserImgElement(img);
+      }
     };
     img.onerror = () => {
-      toast.error("Failed to parse the uploaded image.");
+      if (isMounted) {
+        toast.error("Failed to parse the uploaded image.");
+      }
+    };
+    return () => {
+      isMounted = false;
     };
   }, [userImageSrc]);
 
@@ -248,7 +263,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -281,7 +300,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -301,7 +324,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -341,7 +368,11 @@ export default function PosterMakerPage() {
       ctx.strokeStyle = "rgba(251, 191, 36, 0.6)";
       ctx.lineWidth = Math.min(W, H) * 0.003;
       ctx.beginPath();
-      ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+      } else {
+        ctx.rect(bannerX, bannerY, bannerW, bannerH);
+      }
       ctx.fill();
       ctx.stroke();
 
@@ -694,7 +725,7 @@ export default function PosterMakerPage() {
                       onClick={handleLoadDemo}
                       className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white font-sans font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer"
                     >
-                      <Image className="w-4 h-4 text-brand-gold" />
+                      <ImageIcon className="w-4 h-4 text-brand-gold" />
                       <span>{t.demoBtn}</span>
                     </button>
                   </div>
