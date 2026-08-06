@@ -6,9 +6,12 @@ import LayoutFooter from "@/components/layout/Footer";
 import PageContentFallback from "@/components/layout/PageContentFallback";
 import { cn } from "@/lib/utils";
 
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
+
 export default function AppShell() {
   const { pathname, search } = useLocation();
   const searchParams = new URLSearchParams(search || window.location.search);
+  const { isBhajanModalOpen } = useBhajanModalOpen();
   
   // Prevent visual flash of header/footer on first mount if router defaults to "/" initially
   const resolvedPath = pathname === "/" && window.location.pathname !== "/" ? window.location.pathname : pathname;
@@ -31,9 +34,9 @@ export default function AppShell() {
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");
   const isNotifications = resolvedPath === "/notifications";
-  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage;
+  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage || isBhajanModalOpen;
 
-  const showMobileBottomNav = !isFullScreenApp || isTemplePage || isShortsPage || resolvedPath.startsWith("/meditation");
+  const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath.startsWith("/meditation")) && !isBhajanModalOpen;
 
   useEffect(() => {
     if (!isFullScreenApp && !isShortsPage) {

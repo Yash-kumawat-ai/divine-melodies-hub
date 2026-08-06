@@ -26,23 +26,23 @@ export const BlessingsHeader: React.FC<BlessingsHeaderProps> = React.memo(({
       case "wallpapers":
         return {
           icon: (
-            <div className={cn("w-9 h-9 rounded-full border p-1.5 flex items-center justify-center shadow-sm shrink-0", isDark ? "bg-card border-amber-500/30" : "bg-white border-[#651317]/20")}>
-              <img src={meditationSvg} alt="Meditation" className="w-5 h-5 object-contain" />
-            </div>
+            <img src={meditationSvg} alt="Meditation" className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0" />
           ),
           title: isHi ? "आध्यात्मिक वॉलपेपर" : "Adhyatmic Wallpaper",
           subtitle: isHi ? "पावन मोबाइल वॉलपेपर व सजीव दर्शन" : "Sacred phone backgrounds & live motion darshans",
         };
       case "saved":
         return {
-          icon: <span className="text-xl sm:text-2xl shrink-0">📖</span>,
+          icon: <span className="text-2xl sm:text-3xl shrink-0">📖</span>,
           title: isHi ? "मेरी सहेजी गई डायरी" : "My Saved Gallery Diary",
           subtitle: isHi ? "आपके सहेजे गए पोस्टर एवं पसंदीदा वॉलपेपर" : "Your saved blessings & favorite wallpapers",
         };
       case "maker":
       default:
         return {
-          icon: <span className="text-xl sm:text-2xl shrink-0">🪔</span>,
+          icon: (
+            <img src={meditationSvg} alt="Meditation" className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0" />
+          ),
           title: isHi ? "भक्तिमय पोस्टर" : "Devotional Posters",
           subtitle: isHi ? "हर अवसर के लिए सुंदर धार्मिक पोस्टर" : "Beautiful spiritual posters for every occasion",
         };
@@ -54,7 +54,7 @@ export const BlessingsHeader: React.FC<BlessingsHeaderProps> = React.memo(({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 backdrop-blur-md px-4 py-3 flex items-center justify-between w-full select-none border-b transition-colors duration-200",
+        "sticky top-0 z-40 backdrop-blur-md px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 sm:py-4 flex items-center justify-between w-full select-none border-b transition-colors duration-200",
         isDark ? "bg-[#0d0502]/95 border-amber-950/10" : "bg-[#FAF8F4]/95 border-[#EFE5DA]/60"
       )}
     >
@@ -70,13 +70,13 @@ export const BlessingsHeader: React.FC<BlessingsHeaderProps> = React.memo(({
         >
           <ArrowLeft className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#651317]")} />
         </button>
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-3 min-w-0">
           {icon}
-          <div className="text-left min-w-0">
-            <h1 className={cn("font-serif text-base sm:text-lg font-black leading-none truncate", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
+          <div className="text-left min-w-0 flex flex-col justify-center py-0.5">
+            <h1 className={cn("font-serif text-base sm:text-xl font-black leading-snug truncate pt-0.5", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
               {title}
             </h1>
-            <span className={cn("font-sans text-[10px] sm:text-xs block mt-1 font-semibold leading-none truncate", isDark ? "text-amber-200/80" : "text-[#8A7A6B]")}>
+            <span className={cn("font-sans text-[10px] sm:text-xs block mt-0.5 font-semibold leading-normal truncate", isDark ? "text-amber-200/80" : "text-[#8A7A6B]")}>
               {subtitle}
             </span>
           </div>

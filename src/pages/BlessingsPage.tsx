@@ -178,6 +178,7 @@ export default function BlessingsPage() {
 
   const [showLivePreviewModal, setShowLivePreviewModal] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState<string | null>(null);
+  const [isWallpaperPreviewOpen, setIsWallpaperPreviewOpen] = useState(false);
   const [isCardVisible, setIsCardVisible] = useState(true);
 
   useEffect(() => {
@@ -334,6 +335,8 @@ export default function BlessingsPage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPremiumTplModal, setShowPremiumTplModal] = useState<string | null>(null);
+
+  const isAnyModalOpen = isWallpaperPreviewOpen || !!(showPreviewModal || showLivePreviewModal || showPremiumTplModal || selectedPoster);
 
   // Phone Mockup Preview Settings
   const [previewMode, setPreviewMode] = useState<"lock" | "home">("lock");
@@ -708,11 +711,11 @@ export default function BlessingsPage() {
     };
   }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster]);
 
-  // Wire modal visibility to app context to hide FAB Narad assistant
+  // Wire modal visibility to app context to hide FAB Narad assistant & app shell navigation
   useEffect(() => {
-    setBhajanModalOpen(!!(showPreviewModal || showLivePreviewModal || showPremiumTplModal || selectedPoster));
+    setBhajanModalOpen(isAnyModalOpen);
     return () => setBhajanModalOpen(false);
-  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster, setBhajanModalOpen]);
+  }, [isAnyModalOpen, setBhajanModalOpen]);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -2062,7 +2065,7 @@ export default function BlessingsPage() {
       <canvas ref={canvasRef} className="hidden" />
 
       {/* ─── PERSISTENT HEADER BAR ─────────────────────────────────── */}
-      {!selectedPoster && (
+      {!isAnyModalOpen && (
         <BlessingsHeader
           isDark={isDark}
           isHi={isHi}
@@ -2074,7 +2077,7 @@ export default function BlessingsPage() {
       )}
 
       {/* ─── PERSISTENT TAB NAVIGATION SWITCHER ────────────────────── */}
-      {!selectedPoster && (
+      {!isAnyModalOpen && (
         <FeatureTabNav
           isDark={isDark}
           isHi={isHi}
@@ -2482,6 +2485,7 @@ export default function BlessingsPage() {
             hideHeader={true}
             isSearchOpen={isWallpaperSearchOpen}
             onToggleSearch={() => setIsWallpaperSearchOpen((prev) => !prev)}
+            onPreviewStateChange={setIsWallpaperPreviewOpen}
           />
         )}        {/* ========================================================= */}
         {/* TAB 3: MY SAVED GALLERY DIARY                             */}
@@ -2549,7 +2553,7 @@ export default function BlessingsPage() {
                   onClick={() => setShowPreviewModal(null)}
                   className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 z-[141]"
                 >
-                  <X className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2">
                   <button
@@ -2570,7 +2574,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
-                    className={`fixed bottom-[8%] left-[25px] w-[90%] max-w-[430px] md:max-w-[500px] md:left-1/2 md:-translate-x-1/2 backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                    className={`fixed bottom-[calc(4.25rem+10px+env(safe-area-inset-bottom,0px))] md:bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-auto sm:right-auto w-[calc(100%-1.5rem)] sm:w-full sm:max-w-xl md:max-w-2xl mx-auto backdrop-blur-xl border rounded-[2rem] p-5 z-[190] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
                       isDark 
                         ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
                         : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"
@@ -2764,7 +2768,7 @@ export default function BlessingsPage() {
                   onClick={() => setShowLivePreviewModal(null)}
                   className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 z-[141]"
                 >
-                  <X className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2">
                   <button
@@ -2785,7 +2789,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
-                    className={`fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                    className={`fixed bottom-[calc(4.25rem+10px+env(safe-area-inset-bottom,0px))] md:bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-auto sm:right-auto w-[calc(100%-1.5rem)] sm:w-full sm:max-w-xl md:max-w-2xl mx-auto backdrop-blur-xl border rounded-[2rem] p-5 z-[190] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
                       isDark 
                         ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
                         : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"

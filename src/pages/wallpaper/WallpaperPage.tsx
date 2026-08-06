@@ -10,6 +10,7 @@ import { StaticWallpaperSection } from "./components/StaticWallpaperSection";
 import { LiveWallpaperSection } from "./components/LiveWallpaperSection";
 import { WallpaperPreviewModal } from "./components/WallpaperPreviewModal";
 import { FeatureTabNav } from "@/pages/Blessings/components/FeatureTabNav";
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 
 export const WallpaperPage: React.FC<WallpaperPageProps> = ({
   isDark,
@@ -55,18 +56,23 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
     closePreviewModal,
   } = useWallpaperPreview();
 
+  const isModalOpen = !!(showPreviewModal || showLivePreviewModal);
+  const { setBhajanModalOpen } = useBhajanModalOpen();
+
   React.useEffect(() => {
+    setBhajanModalOpen(isModalOpen);
     if (onPreviewStateChange) {
-      onPreviewStateChange(!!(showPreviewModal || showLivePreviewModal));
+      onPreviewStateChange(isModalOpen);
     }
-  }, [showPreviewModal, showLivePreviewModal, onPreviewStateChange]);
+    return () => setBhajanModalOpen(false);
+  }, [isModalOpen, onPreviewStateChange, setBhajanModalOpen]);
 
   const { downloadWallpaper } = useWallpaperDownload(isHi);
 
   return (
     <div className="w-full flex flex-col items-center animate-fade-in select-none">
       {/* 1. Wallpaper Page Header (if standalone) */}
-      {!hideHeader && (
+      {!hideHeader && !isModalOpen && (
         <WallpaperHeader
           isDark={isDark}
           isHi={isHi}
@@ -78,7 +84,7 @@ export const WallpaperPage: React.FC<WallpaperPageProps> = ({
       )}
 
       {/* 2. Feature Navigation (if standalone) */}
-      {!hideHeader && onSelectTab && (
+      {!hideHeader && !isModalOpen && onSelectTab && (
         <FeatureTabNav
           isDark={isDark}
           isHi={isHi}
