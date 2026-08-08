@@ -161,8 +161,8 @@ export const LiveWallpaperSection: React.FC<LiveWallpaperSectionProps> = React.m
                   </button>
                 </div>
 
-                {/* 2-Column Equal Grid with Thin Gap */}
-                <div className="grid grid-cols-2 gap-2 w-full">
+                {/* 2-Column Equal Grid on Mobile, 4-5 Columns on Desktop */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3 md:gap-4 w-full">
                   {sectionItems.map((wp, idx) => (
                     <DevotionalCard
                       key={wp.id}

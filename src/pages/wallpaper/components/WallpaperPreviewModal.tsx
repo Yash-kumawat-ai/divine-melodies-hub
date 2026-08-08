@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, X, Share2, Download, Heart, Lock, Smartphone, Flag, Sparkles, Check, Mail, PhoneCall, Copy, Link } from "lucide-react";
+import { ArrowLeft, X, Share2, Download, Heart, Lock, Smartphone, Flag, Sparkles, Check, Mail, PhoneCall, Copy, Link, Maximize2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { PhoneFrame, CustomDownloadIcon } from "@/pages/Blessings";
 import { WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST } from "@/pages/Blessings/constants";
@@ -215,66 +215,67 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
       )}
     >
       {/* LEFT: Info & CTA */}
-      <div className="flex-1 flex flex-col justify-between self-stretch py-0.5 gap-2 md:gap-3 select-none text-left min-w-0 pr-1 sm:pr-2">
-        <div className="space-y-2 md:space-y-3">
-          <div className="space-y-0.5">
-            <h2 className={cn("text-sm md:text-xl font-bold font-hindi flex items-center gap-1 leading-tight", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-              <span className={cn("text-[10px] md:text-xs", isDark ? "text-amber-500/60" : "text-[#651317]/60")}>❈</span>
-              <span className="truncate">{isHi ? wp.nameHindi : wp.name}</span>
-              <span className={cn("text-[10px] md:text-xs", isDark ? "text-amber-500/60" : "text-[#651317]/60")}>❈</span>
-            </h2>
-            <p className={cn("text-[9px] md:text-xs font-sans flex items-center gap-1", isDark ? "text-amber-300/80" : "text-[#786252]")}>
+      <div className="flex-1 flex flex-col justify-center md:justify-between md:self-stretch py-0.5 md:py-2 gap-2.5 sm:gap-3.5 md:gap-4 select-none text-left min-w-0 pr-1 sm:pr-2">
+        {/* Top Info */}
+        <div className="space-y-1.5 sm:space-y-2 md:space-y-3">
+          <h2 className={cn("text-base sm:text-lg md:text-2xl font-bold font-hindi flex items-center gap-1.5 md:gap-2 leading-snug md:leading-normal", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
+            <span className={cn("text-xs md:text-sm shrink-0", isDark ? "text-amber-500/60" : "text-[#651317]/60")}>❈</span>
+            <span className="truncate min-w-0">{isHi ? wp.nameHindi : wp.name}</span>
+            <span className={cn("text-xs md:text-sm shrink-0", isDark ? "text-amber-500/60" : "text-[#651317]/60")}>❈</span>
+          </h2>
+          <div className="space-y-1 md:space-y-1.5">
+            <p className={cn("text-xs md:text-sm font-sans flex items-center gap-1.5 md:gap-2 leading-normal", isDark ? "text-amber-300/80" : "text-[#786252]")}>
               <span>{getDeityEmoji(wp.deity)}</span>
               <span className="font-extrabold uppercase tracking-wide">{isHi ? getDeityHindi(wp.deity) : wp.deity}</span>
               {extraBadge}
             </p>
-            <p className={cn("text-[9px] md:text-[10px] font-sans font-medium flex items-center gap-1 opacity-75 pt-0.5", isDark ? "text-amber-200/80" : "text-[#786252]")}>
+            <p className={cn("text-[10px] sm:text-xs md:text-xs font-sans font-medium flex items-center gap-1.5 opacity-80 leading-normal", isDark ? "text-amber-200/80" : "text-[#786252]")}>
               <span>👆</span>
-              <span>{isHi ? "फोन पर स्वाइप करें | स्क्रीन टैप करें" : "Swipe phone box | Tap screen"}</span>
+              <span className="truncate">{isHi ? "फोन पर स्वाइप करें | स्क्रीन टैप करें" : "Swipe phone box | Tap screen"}</span>
             </p>
-          </div>
-
-          {/* Lock/Home toggle */}
-          <div className={cn("flex border rounded-2xl p-1 max-w-[240px] select-none font-sans text-xs md:text-[13px] gap-1", isDark ? "bg-stone-950/60 border-amber-500/20" : "bg-[#F4EAD8]/60 border-[#EAD7C3]")}>
-            {(["lock", "home"] as PreviewMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setPreviewMode(mode)}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl transition-all duration-200 cursor-pointer border text-xs md:text-[13px] font-semibold leading-none",
-                  previewMode === mode
-                    ? isDark ? "bg-amber-500 border-amber-500 text-stone-950 shadow-sm" : "bg-[#651317] border-[#651317] text-white shadow-sm"
-                    : isDark ? "bg-black/30 border-white/5 text-amber-200/70 hover:text-amber-200 hover:bg-black/50" : "bg-[#F9F5EC] border-[#EAD7C3]/60 text-[#786252] hover:text-[#2B1F18] hover:bg-[#F4EAD8]"
-                )}
-              >
-                {mode === "lock" ? <Lock className="w-4 h-4 flex-shrink-0" /> : <Smartphone className="w-4 h-4 flex-shrink-0" />}
-                <span>{isHi ? (mode === "lock" ? "लॉक स्क्रीन" : "होम स्क्रीन") : (mode === "lock" ? "Lock Screen" : "Home Screen")}</span>
-              </button>
-            ))}
           </div>
         </div>
 
+        {/* Lock/Home toggle */}
+        <div className={cn("flex border rounded-2xl p-1 select-none font-sans gap-1 w-full md:max-w-xs", isDark ? "bg-stone-950/60 border-amber-500/20" : "bg-[#F4EAD8]/60 border-[#EAD7C3]")}>
+          {(["lock", "home"] as PreviewMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setPreviewMode(mode)}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-1.5 md:py-2 px-2.5 md:px-4 rounded-xl transition-all duration-200 cursor-pointer border text-xs sm:text-xs md:text-sm font-semibold leading-normal min-w-0 h-8 md:h-10",
+                previewMode === mode
+                  ? isDark ? "bg-amber-500 border-amber-500 text-stone-950 shadow-sm" : "bg-[#651317] border-[#651317] text-white shadow-sm"
+                  : isDark ? "bg-black/30 border-white/5 text-amber-200/70 hover:text-amber-200 hover:bg-black/50" : "bg-[#F9F5EC] border-[#EAD7C3]/60 text-[#786252] hover:text-[#2B1F18] hover:bg-[#F4EAD8]"
+              )}
+            >
+              {mode === "lock" ? <Lock className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" /> : <Smartphone className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />}
+              <span className="truncate shrink min-w-0">{isHi ? (mode === "lock" ? "लॉक स्क्रीन" : "होम स्क्रीन") : (mode === "lock" ? "Lock Screen" : "Home Screen")}</span>
+            </button>
+          ))}
+        </div>
+
         {/* Actions */}
-        <div className="space-y-2 mt-2 md:mt-3 select-none">
+        <div className="space-y-2 md:space-y-3 select-none">
           <button
             type="button"
             onClick={onDownload}
             className={cn(
-              "w-full h-[46px] md:h-[50px] px-4 font-sans font-bold text-xs md:text-[13px] uppercase tracking-wider rounded-[18px] transition-all duration-200 active:scale-[0.97] flex items-center justify-center gap-2 focus:outline-none cursor-pointer border",
+              "w-full h-[44px] sm:h-[48px] md:h-[52px] px-4 font-sans font-bold text-xs sm:text-[13px] md:text-sm uppercase tracking-wider rounded-[16px] md:rounded-[18px] transition-all duration-200 active:scale-[0.97] flex items-center justify-center gap-2 focus:outline-none cursor-pointer border",
               isDark
                 ? "bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-500 hover:to-orange-600 text-stone-950 shadow-[0_6px_20px_rgba(245,158,11,0.2)] border-amber-400/30"
                 : "bg-gradient-to-r from-[#651317] via-[#7D191E] to-[#651317] hover:from-[#7D191E] hover:to-[#651317] text-white shadow-[0_6px_20px_rgba(101,19,23,0.22)] border-[#651317]/20"
             )}
           >
             {isLive
-              ? <CustomDownloadIcon className={cn("w-[18px] h-[18px] flex-shrink-0", isDark ? "text-stone-950" : "text-white")} />
-              : <Download className={cn("w-[18px] h-[18px] flex-shrink-0", isDark ? "text-stone-950" : "text-white")} />}
+              ? <CustomDownloadIcon className={cn("w-[18px] h-[18px] md:w-5 md:h-5 flex-shrink-0", isDark ? "text-stone-950" : "text-white")} />
+              : <Download className={cn("w-[18px] h-[18px] md:w-5 md:h-5 flex-shrink-0", isDark ? "text-stone-950" : "text-white")} />}
             <span>{isHi ? (isLive ? "सजीव वॉलपेपर डाउनलोड करें" : "वॉलपेपर डाउनलोड करें") : (isLive ? "Download Live Wallpaper" : "Download Wallpaper")}</span>
           </button>
 
           {/* Save / Share / Report chips */}
-          <div className="grid grid-cols-3 gap-1.5 md:gap-2 select-none w-full">
+          <div className="grid grid-cols-3 gap-1.5 md:gap-2.5 select-none w-full">
             <button type="button" onClick={() => onToggleLikeWallpaper(wp.id)} className={chipCls}>
               <Heart
                 className={cn(
@@ -363,8 +364,8 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
                   onClick={onCloseModal}
                   aria-label="Back"
                   className={cn(
-                    "w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-lg shrink-0",
-                    isDark ? "bg-black/60 border-white/10 text-white hover:bg-black/80" : "bg-white/90 border-[#EAD7C3] text-[#651317] hover:bg-white"
+                    "w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xl shrink-0 backdrop-blur-md",
+                    isDark ? "bg-stone-950/80 border-amber-500/30 text-amber-200 hover:bg-stone-900 hover:border-amber-400" : "bg-white/95 border-[#EAD7C3] text-[#651317] hover:bg-white"
                   )}
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -372,12 +373,16 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
                 <div
                   onClick={toggleCardVisibility}
                   className={cn(
-                    "px-3.5 py-2 rounded-full border text-[11px] sm:text-xs font-semibold font-sans flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer active:scale-95 max-w-[280px] sm:max-w-none",
-                    isDark ? "bg-stone-950/85 border-amber-500/30 text-amber-200 hover:bg-stone-900" : "bg-white/95 border-[#651317]/30 text-[#651317] hover:bg-white"
+                    "px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-xs font-medium font-hindi flex items-center gap-2 shadow-xl backdrop-blur-xl transition-all cursor-pointer active:scale-95 select-none",
+                    isDark
+                      ? "bg-stone-950/85 border-amber-400/40 text-amber-100 hover:bg-stone-900 shadow-[0_4px_20px_rgba(245,158,11,0.2)]"
+                      : "bg-white/90 border-[#651317]/30 text-[#651317] hover:bg-white shadow-[0_4px_20px_rgba(101,19,23,0.15)]"
                   )}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span className="truncate">{isHi ? "पूरा वॉलपेपर देखने के लिए स्क्रीन पर टैप करें" : "Tap screen to see full wallpaper"}</span>
+                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-amber-500/20 text-amber-300" : "bg-[#651317]/10 text-[#651317]")}>
+                    <Maximize2 className="w-3 h-3" />
+                  </div>
+                  <span className="truncate">{isHi ? "फूल स्क्रीन मोड • स्क्रीन टैप करें" : "Full Screen Mode • Tap screen"}</span>
                 </div>
               </motion.div>
             )}
@@ -398,18 +403,22 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
           {/* Hint pill when card hidden */}
           {!isCardVisibleInternal && (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
               onClick={toggleCardVisibility}
-              className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,0px))] inset-x-0 flex justify-center items-center z-[190] pointer-events-auto cursor-pointer"
+              className="fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] inset-x-0 flex justify-center items-center z-[190] pointer-events-auto cursor-pointer px-4"
             >
               <div className={cn(
-                "px-4 py-2 rounded-full border text-xs font-semibold font-sans flex items-center gap-2 shadow-2xl backdrop-blur-md transition-all active:scale-95",
-                isDark ? "bg-stone-950/85 border-amber-500/30 text-amber-200 hover:bg-stone-900" : "bg-white/95 border-[#651317]/30 text-[#651317] hover:bg-white"
+                "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border text-xs sm:text-sm font-medium font-hindi flex items-center gap-2.5 shadow-2xl backdrop-blur-2xl transition-all active:scale-95",
+                isDark
+                  ? "bg-stone-950/90 border-amber-400/40 text-amber-200 hover:bg-stone-900 shadow-[0_8px_30px_rgba(245,158,11,0.25)]"
+                  : "bg-white/95 border-[#651317]/40 text-[#651317] hover:bg-white shadow-[0_8px_30px_rgba(101,19,23,0.2)]"
               )}>
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{isHi ? "विवरण देखने के लिए टैप करें" : "Tap to show details"}</span>
+                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-amber-500/20 text-amber-300" : "bg-[#651317]/10 text-[#651317]")}>
+                  <Eye className="w-3.5 h-3.5" />
+                </div>
+                <span>{isHi ? "विवरण और कंट्रोल देखें • टैप करें" : "Show Details & Controls • Tap"}</span>
               </div>
             </motion.div>
           )}
@@ -455,8 +464,8 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
                   onClick={onCloseModal}
                   aria-label="Back"
                   className={cn(
-                    "w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-lg shrink-0",
-                    isDark ? "bg-black/60 border-white/10 text-white hover:bg-black/80" : "bg-white/90 border-[#EAD7C3] text-[#651317] hover:bg-white"
+                    "w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 cursor-pointer shadow-xl shrink-0 backdrop-blur-md",
+                    isDark ? "bg-stone-950/80 border-amber-500/30 text-amber-200 hover:bg-stone-900 hover:border-amber-400" : "bg-white/95 border-[#EAD7C3] text-[#651317] hover:bg-white"
                   )}
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -464,12 +473,16 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
                 <div
                   onClick={toggleCardVisibility}
                   className={cn(
-                    "px-3.5 py-2 rounded-full border text-[11px] sm:text-xs font-semibold font-sans flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer active:scale-95 max-w-[280px] sm:max-w-none",
-                    isDark ? "bg-stone-950/85 border-amber-500/30 text-amber-200 hover:bg-stone-900" : "bg-white/95 border-[#651317]/30 text-[#651317] hover:bg-white"
+                    "px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-xs font-medium font-hindi flex items-center gap-2 shadow-xl backdrop-blur-xl transition-all cursor-pointer active:scale-95 select-none",
+                    isDark
+                      ? "bg-stone-950/85 border-amber-400/40 text-amber-100 hover:bg-stone-900 shadow-[0_4px_20px_rgba(245,158,11,0.2)]"
+                      : "bg-white/90 border-[#651317]/30 text-[#651317] hover:bg-white shadow-[0_4px_20px_rgba(101,19,23,0.15)]"
                   )}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span className="truncate">{isHi ? "पूरा वॉलपेपर देखने के लिए स्क्रीन पर टैप करें" : "Tap screen to see full wallpaper"}</span>
+                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-amber-500/20 text-amber-300" : "bg-[#651317]/10 text-[#651317]")}>
+                    <Maximize2 className="w-3 h-3" />
+                  </div>
+                  <span className="truncate">{isHi ? "फूल स्क्रीन मोड • स्क्रीन टैप करें" : "Full Screen Mode • Tap screen"}</span>
                 </div>
               </motion.div>
             )}
@@ -489,18 +502,22 @@ export const WallpaperPreviewModal: React.FC<WallpaperPreviewModalProps> = React
 
           {!isCardVisibleInternal && (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 0, scale: 1 }}
               onClick={toggleCardVisibility}
-              className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,0px))] inset-x-0 flex justify-center items-center z-[190] pointer-events-auto cursor-pointer"
+              className="fixed bottom-[calc(20px+env(safe-area-inset-bottom,0px))] inset-x-0 flex justify-center items-center z-[190] pointer-events-auto cursor-pointer px-4"
             >
               <div className={cn(
-                "px-4 py-2 rounded-full border text-xs font-semibold font-sans flex items-center gap-2 shadow-2xl backdrop-blur-md transition-all active:scale-95",
-                isDark ? "bg-stone-950/85 border-amber-500/30 text-amber-200 hover:bg-stone-900" : "bg-white/95 border-[#651317]/30 text-[#651317] hover:bg-white"
+                "px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border text-xs sm:text-sm font-medium font-hindi flex items-center gap-2.5 shadow-2xl backdrop-blur-2xl transition-all active:scale-95",
+                isDark
+                  ? "bg-stone-950/90 border-amber-400/40 text-amber-200 hover:bg-stone-900 shadow-[0_8px_30px_rgba(245,158,11,0.25)]"
+                  : "bg-white/95 border-[#651317]/40 text-[#651317] hover:bg-white shadow-[0_8px_30px_rgba(101,19,23,0.2)]"
               )}>
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{isHi ? "विवरण देखने के लिए टैप करें" : "Tap to show details"}</span>
+                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center shrink-0", isDark ? "bg-amber-500/20 text-amber-300" : "bg-[#651317]/10 text-[#651317]")}>
+                  <Eye className="w-3.5 h-3.5" />
+                </div>
+                <span>{isHi ? "विवरण और कंट्रोल देखें • टैप करें" : "Show Details & Controls • Tap"}</span>
               </div>
             </motion.div>
           )}

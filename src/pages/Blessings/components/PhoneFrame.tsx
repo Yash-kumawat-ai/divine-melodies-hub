@@ -48,13 +48,20 @@ export const PhoneFrame = ({
     >
       {/* Wallpaper Image (Behind bezel) */}
       <div
-        className="absolute rounded-[20px] md:rounded-[34px] overflow-hidden bg-black z-0"
-        style={{ top: '2.2%', bottom: '2.2%', left: '4.2%', right: '4.2%' }}
+        className="absolute overflow-hidden bg-black z-0"
+        style={{
+          top: '7.1%',
+          bottom: '7.6%',
+          left: '4.7%',
+          right: '4.7%',
+          borderRadius: 'clamp(10px, 4%, 20px)',
+        }}
       >
         <img
           src={imageUrl}
           alt="Phone wallpaper screen"
-          className="w-full h-full object-cover select-none pointer-events-none"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+          style={{ display: 'block' }}
         />
 
         {/* Live Wallpaper Effects */}

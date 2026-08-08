@@ -2284,12 +2284,12 @@ export default function BlessingsPage() {
                           {isHi ? "आज के पावन पोस्टर" : "Today's Sacred Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "todays").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -2350,12 +2350,12 @@ export default function BlessingsPage() {
                           {isHi ? "उत्सव एवं विशेष पर्व पोस्टर" : "Festival Special Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "festival").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -2410,12 +2410,12 @@ export default function BlessingsPage() {
                           {isHi ? "सुप्रभात दर्शन पोस्टर" : "Morning Special Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "good_morning").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -3194,7 +3194,7 @@ export default function BlessingsPage() {
             />
 
             {/* Modal */}
-            <div className="fixed inset-x-0 top-0 bottom-[4.2rem] md:bottom-0 z-[35] flex items-center justify-center pointer-events-none">
+            <div className="fixed inset-0 z-[35] flex items-center justify-center pointer-events-none">
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -3672,7 +3672,7 @@ export default function BlessingsPage() {
 
                 {/* ── BOTTOM: Control panel ── */}
                 <div
-                  className="shrink-0 w-full flex flex-col"
+                  className="shrink-0 w-full flex flex-col pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
                   style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0, maxHeight: "52vh", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}
                 >
                   {isEditingPhoto ? (

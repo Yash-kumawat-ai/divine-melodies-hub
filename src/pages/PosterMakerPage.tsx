@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Sparkles, Upload, RotateCcw, Download, Info, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -94,10 +95,18 @@ type DragMode = "photo" | "frame" | "name";
 export default function PosterMakerPage() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { setBhajanModalOpen } = useBhajanModalOpen();
   const isHi = language === "hi";
 
   // Editor States
   const [selectedTemplate, setSelectedTemplate] = useState<PosterTemplateConfig | null>(null);
+
+  useEffect(() => {
+    if (selectedTemplate) {
+      setBhajanModalOpen(true);
+      return () => setBhajanModalOpen(false);
+    }
+  }, [selectedTemplate, setBhajanModalOpen]);
   const [userImageSrc, setUserImageSrc] = useState<string | null>(null);
   const [zoom, setZoom] = useState<number>(1.0);
   const [offsetX, setOffsetX] = useState<number>(0);
@@ -615,7 +624,7 @@ export default function PosterMakerPage() {
               <h2 className="font-display text-lg md:text-xl font-bold border-l-2 border-brand-saffron pl-3 text-left">
                 {t.selectTitle}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {POSTER_TEMPLATES.map((item) => (
                   <div
                     key={item.id}

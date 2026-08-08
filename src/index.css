@@ -1376,3 +1376,35 @@ height: 15rem!important;
 
 
 }
+
+
+.relative.w-\[130px\].h-\[267px\].sm\:w-\[165px\].sm\:h-\[338px\].md\:w-\[200px\].md\:h-\[410px\].select-none.flex-shrink-0.rounded-\[20px\].sm\:rounded-\[26px\].md\:rounded-\[34px\] {
+
+  box-shadow: none!important; 
+
+}
+
+
+@media (max-width: 769px) {
+  .absolute.overflow-hidden.bg-black.z-0 {
+    height: 224px;
+    width: 105px;
+    top: 50px;
+    margin-top: -9px;
+    margin-left: -2.5px;
+}
+
+
+    }
+
+
+@media(min-width:769px){
+  .absolute.overflow-hidden.bg-black.z-0{
+        border-radius: clamp(10px, 8%, 20px);
+  height: 402px;
+    margin-top: -25px;
+    margin-left: -3px;
+    width: 189px;
+  }
+}
+
