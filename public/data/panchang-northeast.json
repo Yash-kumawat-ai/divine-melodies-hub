@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-08",
+  "date": "2026-08-09",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Dasimi",
-  "tithi_number": 10,
-  "nakshatra": "Rohini - 2",
-  "yoga": "Dhruva",
-  "karana": "Visti",
-  "paksha": "Shukla",
+  "tithi": "Ekadasi",
+  "tithi_number": 0,
+  "nakshatra": "Mrigasira - 3",
+  "yoga": "Vyagatha",
+  "karana": "Balava",
+  "paksha": "Krishna",
   "sunrise": "05:14 AM",
-  "sunset": "06:09 PM",
-  "rahu_kaal": "08:28 AM - 10:05 AM",
+  "sunset": "06:08 PM",
+  "rahu_kaal": "04:31 PM - 06:08 PM",
   "brahma_muhurat": "03:38 AM - 04:26 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-08T05:27:18+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-08-09T05:24:05+05:30"
 }
