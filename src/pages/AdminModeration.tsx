@@ -257,13 +257,13 @@ export default function AdminModeration() {
         </div>
 
         {/* Tab switchers */}
-        <div className="flex border-b border-orange-900/30 gap-2">
+        <div className="flex border-b border-[#EFE4D7] dark:border-zinc-800 gap-2">
           <button
             onClick={() => setActiveAdminTab('submissions')}
             className={`pb-3.5 px-4 font-bold text-sm transition-all border-b-2 ${
               activeAdminTab === 'submissions'
-                ? 'text-orange-400 border-orange-500'
-                : 'text-muted-foreground border-transparent hover:text-foreground'
+                ? 'text-[#7A2D28] border-[#7A2D28] dark:text-orange-400 dark:border-orange-500'
+                : 'text-[#7A6B60] dark:text-stone-400 border-transparent hover:text-[#32251E] dark:hover:text-stone-200'
             }`}
           >
             Library Submissions ({items.length})
@@ -272,8 +272,8 @@ export default function AdminModeration() {
             onClick={() => setActiveAdminTab('community_requests')}
             className={`pb-3.5 px-4 font-bold text-sm transition-all border-b-2 ${
               activeAdminTab === 'community_requests'
-                ? 'text-orange-400 border-orange-500'
-                : 'text-muted-foreground border-transparent hover:text-foreground'
+                ? 'text-[#7A2D28] border-[#7A2D28] dark:text-orange-400 dark:border-orange-500'
+                : 'text-[#7A6B60] dark:text-stone-400 border-transparent hover:text-[#32251E] dark:hover:text-stone-200'
             }`}
           >
             Bhajan Requests ({requests.length})
@@ -289,16 +289,16 @@ export default function AdminModeration() {
                 placeholder="Filter by submitter..."
                 value={filters.submittedBy || ''}
                 onChange={(e) => setFilters((prev) => ({ ...prev, submittedBy: e.target.value }))}
-                className="border-orange-900/30 bg-[#2a1a08]"
+                className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]"
               />
               <Select
                 value={filters.language || 'All'}
                 onValueChange={(value) => setFilters((prev) => ({ ...prev, language: value }))}
               >
-                <SelectTrigger className="border-orange-900/30 bg-[#2a1a08]">
+                <SelectTrigger className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-[#1E1710] border-[#E8D8C4] dark:border-zinc-800">
                   <SelectItem value="All">All Languages</SelectItem>
                   <SelectItem value="Hindi">Hindi</SelectItem>
                   <SelectItem value="English">English</SelectItem>
@@ -309,10 +309,10 @@ export default function AdminModeration() {
                 value={(filters as any).contentType || 'All'}
                 onValueChange={(value) => setFilters((prev) => ({ ...prev, contentType: value } as any))}
               >
-                <SelectTrigger className="border-orange-900/30 bg-[#2a1a08]">
+                <SelectTrigger className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]">
                   <SelectValue placeholder="All Content Types" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-[#1E1710] border-[#E8D8C4] dark:border-zinc-800">
                   <SelectItem value="All">All Types</SelectItem>
                   <SelectItem value="bhajan">Bhajan</SelectItem>
                   <SelectItem value="aarti">Aarti</SelectItem>
@@ -325,10 +325,10 @@ export default function AdminModeration() {
                 value={filters.status || 'All'}
                 onValueChange={(value) => setFilters((prev) => ({ ...prev, status: value }))}
               >
-                <SelectTrigger className="border-orange-900/30 bg-[#2a1a08]">
+                <SelectTrigger className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-[#1E1710] border-[#E8D8C4] dark:border-zinc-800">
                   <SelectItem value="All">All Statuses</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="resubmitted">Resubmitted</SelectItem>
@@ -337,22 +337,22 @@ export default function AdminModeration() {
               <Button
                 variant="outline"
                 onClick={() => { loadQueue(); setRefreshKey((k) => k + 1); }}
-                className="border-orange-900/30 hover:bg-orange-500/10"
+                className="border-[#EFE4D7] dark:border-zinc-700 hover:bg-[#FAF2E8] dark:hover:bg-amber-950/40"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4 mr-2 text-[#7A2D28] dark:text-orange-400" />
                 Refresh
               </Button>
             </div>
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#7A2D28] dark:text-orange-400" />
               </div>
             ) : items.length === 0 ? (
-              <div className="text-center py-20 border border-orange-900/20 rounded-xl bg-[#2a1a08]">
-                <Music className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground font-medium">No pending submissions</p>
-                <p className="text-xs text-muted-foreground mt-1">New uploads will appear here automatically</p>
+              <div className="text-center py-20 border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#1E1710]">
+                <Music className="w-10 h-10 mx-auto text-[#7A6B60] dark:text-stone-400 mb-3" />
+                <p className="text-[#32251E] dark:text-[#FFFDF8] font-bold">No pending submissions</p>
+                <p className="text-xs text-[#7A6B60] dark:text-[#D4C5B9] mt-1">New uploads will appear here automatically</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -373,7 +373,7 @@ export default function AdminModeration() {
                       key={item.id}
                       type="button"
                       onClick={() => setSelectedItem(item)}
-                      className="w-full text-left border border-orange-900/30 rounded-xl bg-[#2a1a08] p-4 hover:border-orange-500/50 hover:bg-[#2a1a08]/80 transition-colors group"
+                      className="w-full text-left border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#1E1710] p-4 hover:border-[#7A2D28]/50 dark:hover:border-orange-500/50 hover:bg-[#FAF2E8]/40 dark:hover:bg-amber-950/20 transition-all shadow-xs group"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">

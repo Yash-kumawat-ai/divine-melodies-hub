@@ -156,7 +156,7 @@ export default function LyricsUpload({ onLyricsSelect, onLoading, contentType = 
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Mode Selector */}
       <div className="flex gap-2 mb-6 bg-[#FAF2E8] dark:bg-[#2A1F14] p-1.5 rounded-2xl border border-[#EFE4D7] dark:border-zinc-800 w-fit mx-auto shadow-sm">
         <button

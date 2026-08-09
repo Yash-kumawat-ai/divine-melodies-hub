@@ -68,52 +68,52 @@ export default function AdminAuditLog() {
           placeholder="Search action, entity, reason, or IP..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border-orange-900/30 bg-[#2a1a08]"
+          className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]"
         />
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#7A2D28] dark:text-orange-400" />
           </div>
         ) : filteredRows.length === 0 ? (
-          <div className="text-center py-16 border border-orange-900/20 rounded-xl bg-[#2a1a08]">
-            <FileText className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No audit records found</p>
+          <div className="text-center py-16 border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#1E1710]">
+            <FileText className="w-10 h-10 mx-auto text-[#7A6B60] dark:text-stone-400 mb-3" />
+            <p className="text-[#32251E] dark:text-[#FFFDF8] font-bold">No audit records found</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {filteredRows.map((row) => (
               <article
                 key={row.id}
-                className="border border-orange-900/30 rounded-xl bg-[#2a1a08] p-4"
+                className="border-2 border-[#E8D8C4] dark:border-zinc-800 rounded-2xl bg-white dark:bg-[#1E1710] p-4 shadow-xs"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className={`text-[10px] uppercase ${ACTION_COLORS[row.action] || 'border-orange-900/30'}`}
+                      className={`text-[10px] font-bold uppercase ${ACTION_COLORS[row.action] || 'border-[#EFE4D7]'}`}
                     >
                       {row.action.replace('_', ' ')}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-[#7A6B60] dark:text-[#D4C5B9] font-medium">
                       {row.entity_type} #{row.entity_id}
                     </span>
                     {row.new_status && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-[#7A6B60] dark:text-[#D4C5B9]">
                         &rarr; {row.new_status}
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-muted-foreground tabular-nums">
+                  <p className="text-[10px] text-[#7A6B60] dark:text-[#D4C5B9] tabular-nums font-mono">
                     {new Date(row.created_at).toLocaleString()}
                   </p>
                 </div>
                 {row.reason && (
-                  <p className="text-sm text-muted-foreground mt-2 pl-1 border-l-2 border-orange-900/30">
+                  <p className="text-sm text-[#32251E] dark:text-[#FFFDF8] mt-2 pl-2 border-l-2 border-[#7A2D28] dark:border-orange-500 font-medium">
                     {row.reason}
                   </p>
                 )}
-                <p className="text-[10px] text-muted-foreground mt-2">
+                <p className="text-[10px] text-[#7A6B60] dark:text-[#D4C5B9] mt-2 font-mono">
                   Admin: {row.admin_user_id.slice(0, 8)}... • IP: {row.action_ip || 'n/a'}
                 </p>
               </article>

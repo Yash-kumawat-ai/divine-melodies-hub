@@ -6,14 +6,17 @@ import { Loader2, ChevronLeft, Upload, X } from 'lucide-react';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useDeities, normalizeDeityKey } from '@/hooks/useDeities';
+import { toast } from 'sonner';
 
 interface AddDeityProps {
-  onDeityAdded: (deity: { id?: number; name: string; emoji: string; description: string; imageUrl: string }) => void;
+  onDeityAdded: (deity: { id?: number; name: string; emoji: string; description?: string; imageUrl?: string }) => void;
   onBack: () => void;
 }
 
 export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
   const { user } = useAuth();
+  const { deities } = useDeities();
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('🙏');
   const [description, setDescription] = useState('');
@@ -56,6 +59,22 @@ export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
       return;
     }
 
+    // Check if deity already exists in deities list
+    const inputKey = normalizeDeityKey(name);
+    const existing = deities.find(
+      (d) =>
+        normalizeDeityKey(d.name) === inputKey ||
+        (d.nameHindi && normalizeDeityKey(d.nameHindi) === inputKey)
+    );
+
+    if (existing) {
+      toast.info(`'${existing.name}' सूची में पहले से मौजूद हैं!`, {
+        description: 'आपके द्वारा चुना गया देव पहले से ही सूची में उपलब्ध है।',
+      });
+      onDeityAdded(existing);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -71,9 +90,9 @@ export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
         .insert([
           {
             user_id: user.id,
-            name,
+            name: name.trim(),
             emoji,
-            description,
+            description: description.trim(),
             image_url: imageUrl,
           },
         ])
@@ -85,6 +104,7 @@ export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
       }
 
       if (data) {
+        toast.success(`'${data.name}' जोड़े गए!`);
         onDeityAdded({
           id: data.id,
           name: data.name,
@@ -102,7 +122,8 @@ export default function AddDeity({ onDeityAdded, onBack }: AddDeityProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto bg-card rounded-lg p-6 space-y-6">
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1E1710] rounded-2xl p-6 sm:p-8 border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-md space-y-6">
+
       <div className="flex items-center justify-between">
         <h3 className="text-2xl font-bold">Add New Deity</h3>
       </div>

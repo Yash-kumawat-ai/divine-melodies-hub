@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { deities, bhajans, Bhajan as StaticBhajan } from '@/data/bhajans';
-import { Loader2, User, CheckCircle2, AlertTriangle, Video } from 'lucide-react';
+import { Loader2, User, CheckCircle2, AlertTriangle, Video, FileText, ExternalLink, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { CHALISA_SUB_TYPES, OTHER_SUB_TYPES } from '@/constants/uploadCategories';
 
@@ -21,9 +21,31 @@ interface BhajanFormProps {
   categoryId?: string;
 }
 
-interface DuplicateBhajan {
-  bhajan: StaticBhajan;
+interface MatchResult {
+  title: string;
+  titleHindi?: string;
+  url: string;
+  singer?: string;
+  category?: string;
   similarity: number;
+}
+
+// Calculate title similarity score (0.0 to 1.0)
+function calculateSimilarity(str1: string, str2: string): number {
+  if (!str1 || !str2) return 0;
+  const s1 = str1.toLowerCase().trim().replace(/[^a-z0-9\u0900-\u097F]/gi, '');
+  const s2 = str2.toLowerCase().trim().replace(/[^a-z0-9\u0900-\u097F]/gi, '');
+  if (s1 === s2) return 1.0;
+  if (s1.includes(s2) || s2.includes(s1)) return 0.85;
+
+  const words1 = s1.split(/\s+/).filter(w => w.length > 2);
+  const words2 = s2.split(/\s+/).filter(w => w.length > 2);
+  if (words1.length === 0 || words2.length === 0) return 0;
+
+  const common = words1.filter((w) => words2.includes(w));
+  const total = new Set([...words1, ...words2]).size;
+
+  return total > 0 ? common.length / total : 0;
 }
 
 export default function BhajanForm({
@@ -42,7 +64,6 @@ export default function BhajanForm({
   const { language } = useLanguage();
   const isHi = language === 'hi';
 
-  // Normalize categoryId string
   const normalizedContentType = (categoryId || 'bhajan').toLowerCase().replace('custom_', '');
   const isBhajan = normalizedContentType === 'bhajan';
   const isAarti = normalizedContentType === 'aarti';
@@ -62,10 +83,12 @@ export default function BhajanForm({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [extractingMetadata, setExtractingMetadata] = useState(false);
-  const [duplicates, setDuplicates] = useState<DuplicateBhajan[]>([]);
-  const [checkedDuplicates, setCheckedDuplicates] = useState(false);
+  const [showFullLyricsPreview, setShowFullLyricsPreview] = useState(false);
 
-  // Dynamic field labels according to the Phase 4 Specification Matrix
+  // Duplicate detection state
+  const [potentialDuplicate, setPotentialDuplicate] = useState<MatchResult | null>(null);
+  const [ignoredDuplicateWarning, setIgnoredDuplicateWarning] = useState(false);
+
   const getFieldConfig = () => {
     if (isAarti) {
       return {
@@ -120,7 +143,6 @@ export default function BhajanForm({
       };
     }
 
-    // Default Bhajan
     return {
       formTitle: isHi ? 'भजन विवरण' : 'Bhajan Details',
       singerLabel: isHi ? 'गायक/प्रस्तुतकर्ता *' : 'Singer / Artist Name *',
@@ -151,14 +173,69 @@ export default function BhajanForm({
     if (d) setDeityName(d.name);
   }, [deityId, initialDeityName]);
 
-  // Auto-populate singer name with user profile name if empty
+  // Real-time Duplicate Check against static bhajans and user_uploads
   useEffect(() => {
-    if (profile?.name && !singerName && fieldConfig.singerRequired) {
-      setSingerName(profile.name);
-    }
-  }, [profile, fieldConfig.singerRequired]);
+    const inputT = title.trim();
+    const inputTH = titleHindi.trim();
 
-  // Auto-populate YouTube metadata
+    if (!inputT && !inputTH) {
+      setPotentialDuplicate(null);
+      setIgnoredDuplicateWarning(false);
+      return;
+    }
+
+    // Check static bhajans list
+    for (const item of bhajans) {
+      const simEn = calculateSimilarity(inputT, item.title);
+      const simHi = calculateSimilarity(inputTH, item.titleHindi);
+
+      if (simEn > 0.65 || simHi > 0.65) {
+        setPotentialDuplicate({
+          title: item.title,
+          titleHindi: item.titleHindi,
+          url: `/bhajan/${item.slug}`,
+          singer: item.singerName,
+          category: 'bhajan',
+          similarity: Math.max(simEn, simHi),
+        });
+        return;
+      }
+    }
+
+    // Also check Supabase existing uploads if input is long enough
+    const checkSupabaseDuplicates = async () => {
+      try {
+        const queryTerm = inputTH || inputT;
+        if (queryTerm.length < 3) return;
+
+        const { data } = await supabase
+          .from('user_uploads')
+          .select('*')
+          .or(`title.ilike.%${queryTerm}%,title_hindi.ilike.%${queryTerm}%`)
+          .limit(3);
+
+        if (data && data.length > 0) {
+          const match = data[0];
+          setPotentialDuplicate({
+            title: match.title,
+            titleHindi: match.title_hindi,
+            url: match.content_type === 'katha' ? `/katha` : match.content_type === 'aarti' ? `/aarti` : `/all-bhajans`,
+            singer: match.singer_name,
+            category: match.content_type,
+            similarity: 0.8,
+          });
+          return;
+        }
+      } catch (err) {
+        console.error('Duplicate check error:', err);
+      }
+      setPotentialDuplicate(null);
+    };
+
+    const timer = setTimeout(checkSupabaseDuplicates, 300);
+    return () => clearTimeout(timer);
+  }, [title, titleHindi]);
+
   const handleYouTubeUrlChange = async (url: string) => {
     setYoutubeUrl(url);
     if (!url.includes('youtube.com') && !url.includes('youtu.be')) return;
@@ -175,7 +252,6 @@ export default function BhajanForm({
       if (response.ok) {
         const data = await response.json();
         if (!title && data.title) setTitle(data.title);
-        if (!singerName && data.author_name) setSingerName(data.author_name);
       }
     } catch (err) {
       console.log('YouTube metadata fetch error:', err);
@@ -191,27 +267,33 @@ export default function BhajanForm({
       return;
     }
 
-    // Required title validation
     if (!titleHindi.trim()) {
       setError(isHi ? 'कृपया हिंदी शीर्षक दर्ज करें' : 'Please provide Hindi title');
       return;
     }
 
-    // Sub-type dropdown validation for Chalisa and Other
     if ((isChalisa || isOther) && !subType) {
       setError(isHi ? 'कृपया उप-श्रेणी (Sub-type) चुनें' : 'Please select sub-type');
       return;
     }
 
-    // Singer name validation per field matrix
     if (fieldConfig.singerRequired && !singerName.trim()) {
       setError(isHi ? 'कृपया प्रस्तुतकर्ता/गायक का नाम दर्ज करें' : 'Please provide artist/singer name');
       return;
     }
 
-    // Deity validation (Katha can be null if General selected)
     if (!isKatha && !deityId) {
       setError(isHi ? 'कृपया भगवान/देवी का चयन करें' : 'Please select a deity');
+      return;
+    }
+
+    // Require user to check duplicate or click 'Proceed anyway'
+    if (potentialDuplicate && !ignoredDuplicateWarning) {
+      setError(
+        isHi
+          ? `संभावित समान रचना मिली: '${potentialDuplicate.titleHindi || potentialDuplicate.title}'! कृपया इसे देखें या 'अलग संस्करण है' पर क्लिक करें।`
+          : `Potential duplicate found: '${potentialDuplicate.title}'! Please check existing content or click 'Different Version' to proceed.`
+      );
       return;
     }
 
@@ -221,24 +303,28 @@ export default function BhajanForm({
     try {
       const dbContentType = isAarti ? 'aarti' : isChalisa ? 'chalisa' : isKatha ? 'katha' : isOther ? 'other' : 'bhajan';
 
+      const insertPayload: Record<string, any> = {
+        user_id: user.id,
+        content_type: dbContentType,
+        sub_type: subType || null,
+        title: title.trim() || titleHindi.trim(),
+        title_hindi: titleHindi.trim(),
+        deity_id: deityId ? parseInt(deityId) : null,
+        singer_name: singerName.trim() || null,
+        composer_name: composerName.trim() || null,
+        lyrics_hindi: lyrics.trim(),
+        image_url: imageUrl || '',
+        youtube_url: youtubeUrl.trim() || '',
+        status: 'pending',
+      };
+
+      if (potentialDuplicate) {
+        insertPayload.admin_notes = `[DUPLICATE_CHECK] Matched: ${potentialDuplicate.titleHindi || potentialDuplicate.title} | User Claimed Different: ${ignoredDuplicateWarning}`;
+      }
+
       const { error: insertError } = await supabase
         .from('user_uploads')
-        .insert([
-          {
-            user_id: user.id,
-            content_type: dbContentType,
-            sub_type: subType || null,
-            title: title.trim() || titleHindi.trim(),
-            title_hindi: titleHindi.trim(),
-            deity_id: deityId ? parseInt(deityId) : null,
-            singer_name: singerName.trim() || null,
-            composer_name: composerName.trim() || null,
-            lyrics_hindi: lyrics.trim(),
-            image_url: imageUrl || '',
-            youtube_url: youtubeUrl.trim() || '',
-            status: 'pending',
-          },
-        ]);
+        .insert([insertPayload]);
 
       if (insertError) throw new Error(insertError.message || 'Submission failed');
 
@@ -253,7 +339,7 @@ export default function BhajanForm({
 
   if (success) {
     return (
-      <div className="w-full max-w-2xl mx-auto bg-white dark:bg-[#1E1710] rounded-2xl p-6 sm:p-8 border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-md text-center">
+      <div className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1E1710] rounded-2xl p-6 sm:p-8 border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-md text-center">
         <div className="w-16 h-16 bg-green-100 dark:bg-green-950/40 border border-green-300 dark:border-green-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-green-600 dark:text-green-400">
           <CheckCircle2 className="w-10 h-10" />
         </div>
@@ -273,7 +359,7 @@ export default function BhajanForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto bg-white dark:bg-[#1E1710] rounded-2xl p-5 sm:p-7 border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-md space-y-5">
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto bg-white dark:bg-[#1E1710] rounded-2xl p-6 sm:p-8 border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-md space-y-6">
       {/* Top Header */}
       <div className="flex items-center justify-between border-b border-[#EFE4D7] dark:border-zinc-800 pb-4">
         <div className="flex items-center gap-2">
@@ -289,6 +375,44 @@ export default function BhajanForm({
           </div>
         )}
       </div>
+
+      {/* Step 3 Lyrics & Media Preview Card */}
+      {(lyrics || imageUrl) && (
+        <div className="bg-[#FAF2E8]/70 dark:bg-amber-950/20 border border-[#EFE4D7] dark:border-amber-900/40 rounded-2xl p-4 space-y-2.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] flex items-center gap-1.5">
+              <FileText className="w-4 h-4" />
+              <span>{isHi ? "आपके द्वारा पिछले चरण (Step 3) में जोड़े गए बोल व मीडिया:" : "Lyrics & media added in Step 3:"}</span>
+            </span>
+            {lyrics && (
+              <button
+                type="button"
+                onClick={() => setShowFullLyricsPreview(!showFullLyricsPreview)}
+                className="text-xs text-[#7A2D28] dark:text-[#E8B15C] font-bold hover:underline flex items-center gap-1"
+              >
+                <span>{showFullLyricsPreview ? (isHi ? 'कम दिखाएं' : 'Show less') : (isHi ? 'पूरी रचना देखें' : 'View full')}</span>
+                {showFullLyricsPreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+            )}
+          </div>
+
+          {lyrics && (
+            <div className="text-xs text-[#32251E] dark:text-[#FFFDF8] font-sans bg-white/90 dark:bg-[#1E1710]/90 p-3 rounded-xl border border-[#EFE4D7] dark:border-zinc-800 leading-relaxed whitespace-pre-wrap max-h-44 overflow-y-auto">
+              {showFullLyricsPreview ? lyrics : lyrics.slice(0, 200) + (lyrics.length > 200 ? '...' : '')}
+            </div>
+          )}
+
+          {imageUrl && (
+            <div className="flex items-center gap-3 pt-1">
+              <img src={imageUrl} alt="Lyrics Image" className="w-14 h-14 object-cover rounded-xl border border-[#EFE4D7]" />
+              <a href={imageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-[#7A2D28] dark:text-[#E8B15C] font-bold underline flex items-center gap-1">
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>{isHi ? "अपलोड की गई फोटो देखें" : "View uploaded image"}</span>
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-300 rounded-xl text-xs sm:text-sm font-medium">
@@ -327,7 +451,7 @@ export default function BhajanForm({
           <Input
             value={titleHindi}
             onChange={(e) => setTitleHindi(e.target.value)}
-            placeholder="शीर्षक हिंदी में"
+            placeholder="शीर्षक हिंदी में (उदा: हरे कृष्ण)"
             required
             className="rounded-xl border border-[#D8C9B9] dark:border-zinc-700 bg-[#FCF8F2] dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8] h-11 text-sm font-medium"
           />
@@ -345,6 +469,52 @@ export default function BhajanForm({
           />
         </div>
       </div>
+
+      {/* Interactive Duplicate Alert Warning Card */}
+      {potentialDuplicate && !ignoredDuplicateWarning && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-800 space-y-3 shadow-sm animate-in fade-in-50">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-sm text-amber-900 dark:text-amber-200">
+                {isHi ? "संभावित समान रचना पहले से मौजूद है" : "Potential Duplicate Found"}
+              </h4>
+              <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5 leading-relaxed">
+                {isHi
+                  ? `'${potentialDuplicate.titleHindi || potentialDuplicate.title}' नाम की रचना वेबसाइट पर पहले से उपलब्ध है।`
+                  : `'${potentialDuplicate.title}' is already available on the website.`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5 pt-1">
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="btn-sm btn-primary"
+              onClick={() => {
+                const searchUrl = potentialDuplicate.url || `/search?q=${encodeURIComponent(potentialDuplicate.titleHindi || potentialDuplicate.title)}`;
+                window.open(searchUrl, '_blank');
+              }}
+            >
+              <Search className="w-3.5 h-3.5 mr-1" />
+              <span>{isHi ? "मौजूदा रचना देखें" : "View Existing Content"}</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="btn-sm btn-secondary"
+              onClick={() => setIgnoredDuplicateWarning(true)}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-green-600 dark:text-green-400" />
+              <span>{isHi ? "अलग संस्करण / गायक है (आगे बढ़ें)" : "Different Version / Singer (Proceed)"}</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Singer & Composer Inputs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,11 +546,11 @@ export default function BhajanForm({
         </div>
       </div>
 
-      {/* YouTube URL (Primary for Katha, optional for rest) */}
+      {/* YouTube URL */}
       <div className={isKatha ? "p-4 rounded-xl border-2 border-[#7A2D28]/40 dark:border-[#E8B15C]/40 bg-[#FAF2E8]/40 dark:bg-amber-950/20" : ""}>
         <label className="block text-sm font-bold text-[#32251E] dark:text-[#FFFDF8] mb-1 flex items-center gap-1.5">
           {isKatha && <Video className="w-4 h-4 text-[#7A2D28] dark:text-[#E8B15C]" />}
-          <span>{isHi ? "यूट्यूब वीडियो/ऑडियो लिंक" : "YouTube Video/Audio Link"} {isKatha ? "(कथा हेतु मुख्य फ़ील्ड)" : "(Optional)"}</span>
+          <span>{isHi ? "यूट्यूब वीडियो/ऑдио लिंक" : "YouTube Video/Audio Link"} {isKatha ? "(कथा हेतु मुख्य फ़ील्ड)" : "(Optional)"}</span>
         </label>
         <Input
           type="url"
