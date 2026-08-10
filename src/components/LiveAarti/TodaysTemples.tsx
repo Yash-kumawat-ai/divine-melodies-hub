@@ -3,7 +3,7 @@ import { Landmark, MapPin, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import { useLanguage } from '@/hooks/useLanguage';
-import { resolveTempleBanner } from './WatchModal';
+import { resolveTempleBanner } from './templeBanners';
 
 interface TodaysTemplesProps {
   temples: Temple[];

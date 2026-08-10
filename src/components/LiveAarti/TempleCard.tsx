@@ -6,7 +6,7 @@ import LiveBadge from './LiveBadge';
 import CountdownTimer from './CountdownTimer';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getNextAarti, formatVerifiedTime } from '@/hooks/useLiveAarti';
-import { resolveTempleBanner } from './WatchModal';
+import { resolveTempleBanner } from './templeBanners';
 
 interface TempleCardProps {
   temple: Temple;

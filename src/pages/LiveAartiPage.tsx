@@ -49,6 +49,8 @@ export default function LiveAartiPage() {
   const { liveNow, startingSoon, upcoming, todaysTemples, allTemples, isLoading } = useLiveAarti();
   const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [livePage, setLivePage] = useState(1);
+  const LIVE_PAGE_SIZE = 6;
 
   const handleWhatsAppShare = () => {
     const url = window.location.href;
@@ -392,8 +394,9 @@ export default function LiveAartiPage() {
           </h2>
           
           {liveNow.length > 0 ? (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveNow.map((item, idx) => (
+              {liveNow.slice(0, livePage * LIVE_PAGE_SIZE).map((item, idx) => (
                 <TempleCard
                   key={`live-${item.temple.id}-${idx}`}
                   temple={item.temple}
@@ -405,6 +408,18 @@ export default function LiveAartiPage() {
                 />
               ))}
             </div>
+              {livePage * LIVE_PAGE_SIZE < liveNow.length && (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setLivePage((p) => p + 1)}
+                    className="btn-royal-secondary h-11 px-6 rounded-full text-sm font-semibold"
+                  >
+                    {isHi ? 'और दिखाएँ' : 'Show more'}
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="p-6 md:p-8 rounded-3xl border border-orange-500/10 bg-white/60 dark:bg-white/[0.01] text-left max-w-xl mx-auto space-y-5 shadow-xl dark:shadow-2xl relative overflow-hidden">
               {/* Spiritual glow background decoration */}

@@ -1,6 +1,7 @@
 import { Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
+import { LiveAartiIcon } from '@/components/LiveAartiIcon';
 
 export function ActionButtons() {
   const navigate = useNavigate();
@@ -8,23 +9,23 @@ export function ActionButtons() {
   const isHi = language === 'hi';
 
   return (
-    <div className="w-full grid grid-cols-2 gap-[12px]">
-      <button 
+    <div className="w-full grid grid-cols-2 gap-2.5">
+      <button
+        type="button"
         onClick={() => navigate('/all-bhajans')}
-        className="btn-royal-primary h-[48px] rounded-[16px] text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(74,14,18,0.1)] active:scale-95 transition-all"
+        className="btn-royal-primary w-full min-w-0 h-11 sm:h-12 rounded-2xl !px-2.5 text-[12px] sm:text-sm font-semibold gap-1.5"
       >
-        <Play className="w-4.5 h-4.5 fill-white stroke-none text-white" />
-        <span>{isHi ? 'भजन खोजें' : 'Bhajan Search'}</span>
+        <Play className="!w-3.5 !h-3.5 fill-current stroke-none shrink-0" />
+        <span className="truncate leading-tight">{isHi ? 'भजन खोजें' : 'Explore Bhajans'}</span>
       </button>
-      
-      <button 
+
+      <button
+        type="button"
         onClick={() => navigate('/live-aarti')}
-        className="btn-royal-secondary h-[48px] rounded-[16px] text-sm font-bold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(74,14,18,0.03)] active:scale-95 transition-all"
+        className="btn-royal-secondary w-full min-w-0 h-11 sm:h-12 rounded-2xl !px-2.5 text-[12px] sm:text-sm font-semibold gap-1.5 !bg-[#FFFDF8] hover:!bg-[#FFFDF8] dark:!bg-[#1A120B] dark:hover:!bg-[#1A120B]"
       >
-        <span className="relative flex h-4 w-4 items-center justify-center rounded-full bg-rose-700/20 border border-rose-700/30 shrink-0">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#651317] animate-pulse" />
-        </span>
-        <span>{isHi ? 'लाइव दर्शन' : 'Live Darshan'}</span>
+        <LiveAartiIcon className="!h-5 !w-5" />
+        <span className="truncate leading-tight">{isHi ? 'लाइव आरती' : 'Live Aarti'}</span>
       </button>
     </div>
   );

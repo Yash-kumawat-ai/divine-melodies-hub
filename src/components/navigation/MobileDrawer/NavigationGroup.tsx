@@ -37,7 +37,7 @@ export const NavigationGroup = memo(
             {label}
           </p>
         )}
-        <div role="list" className="flex flex-col gap-0.5 px-2">
+        <div role="list" className="flex flex-col gap-1.5 px-2">
           {children}
         </div>
       </motion.div>

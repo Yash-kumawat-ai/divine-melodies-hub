@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import data from '../data/liveAartis.json';
 import type { Temple, AartiWithStatus } from '../types/liveAarti';
+import { supabase } from '@/lib/supabaseClient';
 
 export function getIST(): Date {
   return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
@@ -80,47 +81,113 @@ export function useLiveAarti() {
   const [todaysTemples, setTodaysTemples] = useState<Temple[]>([]);
   const [allTemples, setAllTemples] = useState<Temple[]>(data.temples as Temple[]);
   const [verifiedStatuses, setVerifiedStatuses] = useState<Record<string, VerificationState>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  // Page renders immediately from schedule JSON; live verification updates in background.
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
 
-  // Helper to fetch live verification from backend API
-  const fetchLiveStatus = async (templeId: string): Promise<VerificationState> => {
+  // Hostinger is static — call Supabase Edge Function (DB-cached YouTube checks).
+  const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
+  const SUPABASE_ANON_KEY =
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ??
+    (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined);
+
+  const fallbackStatus = (templeId: string): VerificationState => {
+    const temple = data.temples.find(t => t.id === templeId);
+    const hasSchedule = temple ? temple.aartiSchedule.length > 0 : false;
+    return {
+      id: templeId,
+      status: hasSchedule ? 'UPCOMING' : 'OFFLINE',
+      liveTitle: null,
+      videoId: null,
+      lastVerifiedAt: new Date().toISOString(),
+    };
+  };
+
+  /** Prefer instant DB cache, then Edge Function (may refresh YouTube in background). */
+  const fetchAllLiveStatuses = async (): Promise<Record<string, VerificationState>> => {
+    const out: Record<string, VerificationState> = {};
+    for (const temple of data.temples) {
+      out[temple.id] = fallbackStatus(temple.id);
+    }
+
+    // 1) Instant path: read cached rows from Supabase (RLS allows public SELECT)
     try {
-      const res = await fetch(`/api/live-aarti/check?templeId=${templeId}`);
-      if (!res.ok) throw new Error('API failed');
-      return await res.json();
+      const { data: rows, error } = await supabase
+        .from('live_aarti_status')
+        .select('temple_id, status, live_title, video_id, last_verified_at');
+      if (!error && rows?.length) {
+        for (const row of rows) {
+          const id = row.temple_id as string;
+          if (!out[id]) continue;
+          out[id] = {
+            id,
+            status: row.status,
+            liveTitle: row.live_title ?? null,
+            videoId: row.video_id ?? null,
+            lastVerifiedAt: row.last_verified_at ?? new Date().toISOString(),
+          };
+        }
+      }
     } catch (err) {
-      console.warn(`Could not verify live status for ${templeId}, falling back to offline/schedule`, err);
-      // Fallback: never show LIVE. Show UPCOMING if has schedule, otherwise OFFLINE.
-      const temple = data.temples.find(t => t.id === templeId);
-      const hasSchedule = temple ? temple.aartiSchedule.length > 0 : false;
-      return {
-        status: hasSchedule ? 'UPCOMING' : 'OFFLINE',
-        liveTitle: null,
-        videoId: null,
-        lastVerifiedAt: new Date().toISOString()
-      };
+      console.warn('DB live status read failed, continuing to Edge Function', err);
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      console.warn('Missing VITE_SUPABASE_URL or anon/publishable key — live status unavailable');
+      return out;
+    }
+
+    // 2) Edge Function: returns cache immediately + refreshes stale in background
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/live-aarti-check`, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      });
+      if (!res.ok) throw new Error(`Edge function returned ${res.status}`);
+
+      const body = await res.json();
+
+      if (body?.statuses && typeof body.statuses === 'object') {
+        for (const temple of data.temples) {
+          const row = body.statuses[temple.id];
+          if (row?.status) {
+            out[temple.id] = {
+              id: temple.id,
+              status: row.status,
+              liveTitle: row.liveTitle ?? null,
+              videoId: row.videoId ?? null,
+              lastVerifiedAt: row.lastVerifiedAt ?? new Date().toISOString(),
+            };
+          }
+        }
+        return out;
+      }
+
+      if (body?.status && body?.id) {
+        out[body.id] = {
+          id: body.id,
+          status: body.status,
+          liveTitle: body.liveTitle ?? null,
+          videoId: body.videoId ?? null,
+          lastVerifiedAt: body.lastVerifiedAt ?? new Date().toISOString(),
+        };
+      }
+      return out;
+    } catch (err) {
+      console.warn('Could not verify live statuses via Edge Function; using DB/schedule fallback', err);
+      return out;
     }
   };
 
-  async function compute() {
+  /** Apply status map into page sections without blocking first paint. */
+  function applyStatuses(newStatuses: Record<string, VerificationState>) {
     const now = getIST();
     const dayName = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
 
-    // Fetch live status in parallel for all temples from server check endpoint
-    const statusPromises = data.temples.map(async (temple) => {
-      const status = await fetchLiveStatus(temple.id);
-      return { id: temple.id, data: status };
-    });
-
-    const statusResults = await Promise.all(statusPromises);
-    const newStatuses: Record<string, VerificationState> = {};
-    for (const res of statusResults) {
-      newStatuses[res.id] = res.data;
-    }
     setVerifiedStatuses(newStatuses);
-    setIsLoading(false);
 
-    // Create a complete list of temples with their live statuses merged
     const templesWithStatus = (data.temples as Temple[]).map(temple => {
       const verified = newStatuses[temple.id] || {
         status: temple.aartiSchedule.length > 0 ? 'UPCOMING' : 'OFFLINE',
@@ -138,7 +205,6 @@ export function useLiveAarti() {
     });
     setAllTemples(templesWithStatus);
 
-    // Today's auspicious temples (exclude mixed-content channels)
     const auspiciousIds = (data.weeklyAuspiciousMapping as Record<string, string[]>)[dayName] ?? [];
     const auspicious = templesWithStatus
       .filter(t => auspiciousIds.includes(t.id) && !t.requiresTitleFilter)
@@ -157,7 +223,6 @@ export function useLiveAarti() {
         lastVerifiedAt: new Date().toISOString()
       };
 
-      // If actually live, push to live section
       if (verified.status === 'LIVE') {
         const matchingAarti = temple.aartiSchedule.find(a => {
           const start = parseISTTime(a.time);
@@ -182,8 +247,6 @@ export function useLiveAarti() {
         });
       }
 
-      // Check scheduled items for starting soon or upcoming
-      // Skip if the channel is currently verified as LIVE or STREAM_UNAVAILABLE or if it requires filtering
       if (verified.status === 'LIVE' || verified.status === 'STREAM_UNAVAILABLE') continue;
       if (temple.requiresTitleFilter && temple.aartiSchedule.length === 0) continue;
 
@@ -209,9 +272,62 @@ export function useLiveAarti() {
     setUpcoming(up.sort((a, b) => a.minutesUntilStart - b.minutesUntilStart).slice(0, 8));
   }
 
+  async function compute(options?: { background?: boolean }) {
+    if (!options?.background) setIsVerifying(true);
+
+    // Instant: DB cache → paint LIVE ASAP, then Edge Function may refine.
+    try {
+      const { data: rows } = await supabase
+        .from('live_aarti_status')
+        .select('temple_id, status, live_title, video_id, last_verified_at');
+      if (rows?.length) {
+        const quick: Record<string, VerificationState> = {};
+        for (const temple of data.temples) quick[temple.id] = fallbackStatus(temple.id);
+        for (const row of rows) {
+          const id = row.temple_id as string;
+          if (!quick[id]) continue;
+          quick[id] = {
+            id,
+            status: row.status,
+            liveTitle: row.live_title ?? null,
+            videoId: row.video_id ?? null,
+            lastVerifiedAt: row.last_verified_at ?? new Date().toISOString(),
+          };
+        }
+        applyStatuses(quick);
+      }
+    } catch {
+      // ignore — Edge Function path below still runs
+    }
+
+    const newStatuses = await fetchAllLiveStatuses();
+    applyStatuses(newStatuses);
+    setIsVerifying(false);
+  }
+
   useEffect(() => {
-    compute();
-    const interval = setInterval(compute, 60000);
+    // Paint schedule UI first, then verify live streams.
+    const bootstrap = () => {
+      const now = getIST();
+      const dayName = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
+      const seeded = (data.temples as Temple[]).map((temple) => ({
+        ...temple,
+        status: (temple.aartiSchedule.length > 0 ? 'UPCOMING' : 'OFFLINE') as Temple['status'],
+        videoId: null,
+        liveTitle: null,
+        lastVerifiedAt: undefined,
+      }));
+      setAllTemples(seeded);
+      const auspiciousIds = (data.weeklyAuspiciousMapping as Record<string, string[]>)[dayName] ?? [];
+      setTodaysTemples(
+        seeded
+          .filter((t) => auspiciousIds.includes(t.id) && !t.requiresTitleFilter)
+          .sort((a, b) => b.streamReliability - a.streamReliability),
+      );
+    };
+    bootstrap();
+    void compute();
+    const interval = setInterval(() => void compute({ background: true }), 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -222,6 +338,7 @@ export function useLiveAarti() {
     todaysTemples, 
     allTemples,
     verifiedStatuses,
-    isLoading
+    isLoading,
+    isVerifying,
   };
 }

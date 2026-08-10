@@ -16,7 +16,7 @@ export const DrawerFooter = memo(
   ) {
     const navigate = useNavigate();
     const { user, signOut } = useAuth();
-    const { footerBorder, secondaryText, danger, dangerBg, dangerBorder } = useDrawerTheme();
+    const { footerBorder, secondaryText } = useDrawerTheme();
 
     const handleLogout = async () => {
       await signOut();
@@ -34,12 +34,7 @@ export const DrawerFooter = memo(
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all active:scale-[0.98] duration-300"
-            style={{
-              background: dangerBg,
-              border: `1px solid ${dangerBorder}`,
-              color: danger,
-            }}
+            className="btn-royal-secondary btn-full h-11 rounded-2xl text-[#B42318] dark:text-red-300 border-[#F2C7C0] dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30"
           >
             <LogOut size={16} />
             Sign Out

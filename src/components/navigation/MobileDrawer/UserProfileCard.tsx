@@ -35,7 +35,7 @@ export const UserProfileCard = memo(
     const cardStyle = {
       background: profileCardGradient,
       border: `1px solid ${border}`,
-      boxShadow: '0 4px 16px rgba(198,122,45,0.08)',
+        boxShadow: '0 4px 16px rgba(101,19,23,0.08)',
     };
 
     if (!user) {
@@ -52,7 +52,7 @@ export const UserProfileCard = memo(
             <div className="mb-3 flex items-center gap-3">
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'rgba(198,122,45,0.12)' }}
+                style={{ background: 'rgba(101,19,23,0.10)' }}
               >
                 <User size={22} style={{ color: accent }} />
               </div>
@@ -69,11 +69,7 @@ export const UserProfileCard = memo(
             <button
               type="button"
               onClick={() => { signInWithGoogle(); onClose(); }}
-              className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #C67A2D 0%, #E89A4A 100%)',
-                boxShadow: '0 4px 14px rgba(198,122,45,0.35)',
-              }}
+              className="btn-royal-primary btn-full mb-2 h-11 rounded-2xl"
             >
               <Sparkles size={16} />
               Continue with Google
@@ -82,8 +78,7 @@ export const UserProfileCard = memo(
             <button
               type="button"
               onClick={() => { navigate(ROUTES.AUTH_LOGIN); onClose(); }}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
-              style={{ borderColor: border, color: primaryText, background: 'transparent' }}
+              className="btn-royal-secondary btn-full h-11 rounded-2xl"
             >
               <LogIn size={16} />
               Login
@@ -109,14 +104,14 @@ export const UserProfileCard = memo(
           <Avatar className="h-12 w-12" style={{ border: `2px solid ${accent}` }}>
             <AvatarImage src={profile?.avatarUrl} alt={displayName} />
             <AvatarFallback
-              style={{ background: 'linear-gradient(135deg, #C67A2D, #E89A4A)', color: 'white', fontSize: '14px', fontWeight: 600 }}
+              style={{ background: 'linear-gradient(135deg, #651317, #8B1E24)', color: 'white', fontSize: '14px', fontWeight: 600 }}
             >
               {initials}
             </AvatarFallback>
           </Avatar>
           <div
             className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full"
-            style={{ background: accent, border: '1.5px solid rgba(198,122,45,0.2)' }}
+            style={{ background: accent, border: '1.5px solid rgba(101,19,23,0.2)' }}
           >
             <Flame size={10} color="white" />
           </div>
