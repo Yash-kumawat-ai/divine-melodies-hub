@@ -164,7 +164,7 @@ export default function SignupForm() {
     const { error } = await signUp(data.email, data.password, data.name, data.phone);
     
     if (error) {
-      const parsed = toFriendlySignupError(error.message || copy.signupFailed);
+      const parsed = toFriendlySignupError((error as any)?.message || copy.signupFailed);
       if (!parsed.isRateLimit) {
         setError(parsed.message);
       }
@@ -180,7 +180,7 @@ export default function SignupForm() {
     try {
       const { error } = await signInWithGoogle('/upload-bhajan');
       if (error) {
-        const parsed = toFriendlySignupError(error.message);
+        const parsed = toFriendlySignupError((error as any)?.message || copy.googleFailed);
         if (!parsed.isRateLimit) {
           setError(parsed.message);
         }

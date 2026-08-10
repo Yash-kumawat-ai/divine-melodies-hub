@@ -82,11 +82,21 @@ export function useLiveAarti() {
   const [verifiedStatuses, setVerifiedStatuses] = useState<Record<string, VerificationState>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // Helper to fetch live verification from backend API
+  // Helper to fetch live verification from Supabase Edge Function.
+  // Works on any static host (Hostinger, Netlify, Cloudflare Pages, etc.)
+  // because it does NOT rely on the Vite dev-server middleware.
+  const SUPABASE_EDGE_URL = 'https://khnqyhzlrxwmolyevaqo.supabase.co/functions/v1/live-aarti-check';
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
   const fetchLiveStatus = async (templeId: string): Promise<VerificationState> => {
     try {
-      const res = await fetch(`/api/live-aarti/check?templeId=${templeId}`);
-      if (!res.ok) throw new Error('API failed');
+      const res = await fetch(`${SUPABASE_EDGE_URL}?templeId=${templeId}`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      });
+      if (!res.ok) throw new Error(`Edge function returned ${res.status}`);
       return await res.json();
     } catch (err) {
       console.warn(`Could not verify live status for ${templeId}, falling back to offline/schedule`, err);

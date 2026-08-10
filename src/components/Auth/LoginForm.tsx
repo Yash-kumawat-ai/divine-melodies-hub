@@ -74,8 +74,9 @@ export default function LoginForm() {
 
     const { error } = await signIn(data.email, data.password);
     if (error) {
-      setError(toFriendlyError(error.message || copy.loginFailed));
-      if (error.message?.toLowerCase().includes('email not confirmed')) {
+      const errMessage = (error as any)?.message || '';
+      setError(toFriendlyError(errMessage || copy.loginFailed));
+      if (errMessage.toLowerCase().includes('email not confirmed')) {
         setCanResendConfirmation(true);
       }
       setLoading(false);
@@ -112,7 +113,7 @@ export default function LoginForm() {
     setLoading(true);
     try {
       const { error } = await signInWithGoogle('/upload-bhajan');
-      if (error) setError(error.message);
+      if (error) setError((error as any)?.message || copy.googleFailed);
     } catch (err: unknown) {
       setError(toFriendlyError(err instanceof Error ? err.message : copy.googleFailed));
     } finally {
@@ -129,7 +130,7 @@ export default function LoginForm() {
     const { error } = await resendEmailConfirmation(lastEmail);
 
     if (error) {
-      setError(toFriendlyError(error.message || copy.resendFailed));
+      setError(toFriendlyError((error as any)?.message || copy.resendFailed));
     } else {
       setNotice(copy.verificationSent);
       setCanResendConfirmation(false);

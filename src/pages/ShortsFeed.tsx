@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,6 +11,7 @@ import { SEO } from '@/components/SEO';
 
 interface ShortItem {
   id: string;
+  original_id?: string;
   video_id: string;
   channel_id: string;
   title: string;
@@ -156,6 +157,25 @@ export default function ShortsFeed() {
     loadShorts();
   }, [loadShorts]);
 
+  // Create an infinitely looped feed array so user never gets stuck at 5 videos
+  const displayShorts = useMemo(() => {
+    if (shorts.length === 0) return [];
+    if (shorts.length >= 30) return shorts;
+
+    const repeatTimes = Math.max(2, Math.ceil(30 / shorts.length));
+    const looped: ShortItem[] = [];
+    for (let i = 0; i < repeatTimes; i++) {
+      shorts.forEach((item, index) => {
+        looped.push({
+          ...item,
+          id: `${item.id}_loop_${i}_${index}`,
+          original_id: item.id,
+        });
+      });
+    }
+    return looped;
+  }, [shorts]);
+
   const handleCategoryChange = (cat: string) => {
     setSelectedCategory(cat);
     loadShorts(cat);
@@ -165,7 +185,7 @@ export default function ShortsFeed() {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget;
     const index = Math.round(container.scrollTop / container.clientHeight);
-    if (index !== activeIndex && index >= 0 && index < shorts.length) {
+    if (index !== activeIndex && index >= 0 && index < displayShorts.length) {
       setActiveIndex(index);
     }
   };
@@ -284,7 +304,7 @@ export default function ShortsFeed() {
     }
   };
 
-  const activeShort = shorts[activeIndex];
+  const activeShort = displayShorts[activeIndex];
 
   return (
     <div className="relative w-full flex-1 flex flex-col bg-background dark:bg-[#070302] min-h-0">
@@ -310,15 +330,15 @@ export default function ShortsFeed() {
             <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
           </button>
           <h1 className="text-base font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] truncate leading-tight">
-            {shorts[activeIndex]?.whitelisted_channels?.channel_name ? `${shorts[activeIndex].whitelisted_channels.channel_name} की बातें` : 'Bhajan Marg की बातें'}
+            {displayShorts[activeIndex]?.whitelisted_channels?.channel_name ? `${displayShorts[activeIndex].whitelisted_channels.channel_name} की बातें` : 'Bhajan Marg की बातें'}
           </h1>
         </div>
 
         {/* Line 2: Static Subtitle Text fixed vertically under the Title */}
-        {shorts.length > 0 && (
+        {displayShorts.length > 0 && (
           <div className="w-full pl-[58px] pr-4 -mt-0.5 pointer-events-auto">
             <p className="text-xs font-normal text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] truncate">
-              {(shorts[activeIndex]?.title || 'प्रेमानंद जी महाराज के अमृत वचन और दिव्य प्रवचन').replace(/#[A-Za-z0-9_\u0900-\u097F]+/g, '').trim()}
+              {(displayShorts[activeIndex]?.title || 'प्रेमानंद जी महाराज के अमृत वचन और दिव्य प्रवचन').replace(/#[A-Za-z0-9_\u0900-\u097F]+/g, '').trim()}
             </p>
           </div>
         )}
@@ -368,12 +388,12 @@ export default function ShortsFeed() {
       </div>
 
       {/* Loading state */}
-      {loading && shorts.length === 0 ? (
+      {loading && displayShorts.length === 0 ? (
         <div className="w-full flex-1 flex flex-col items-center justify-center gap-3 bg-background dark:bg-[#070302]">
           <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
           <p className="text-sm text-stone-500 dark:text-stone-400">Loading Bhakti Shorts...</p>
         </div>
-      ) : shorts.length === 0 ? (
+      ) : displayShorts.length === 0 ? (
         <div className="w-full flex-1 flex flex-col items-center justify-center p-6 text-center bg-background dark:bg-[#070302]">
           <Film className="w-12 h-12 text-stone-400 dark:text-stone-600 mb-4" />
           <h2 className="text-lg font-bold text-stone-700 dark:text-stone-300">No Shorts Available</h2>
@@ -401,29 +421,32 @@ export default function ShortsFeed() {
           className="flex-1 min-h-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide bg-black"
           style={{ scrollBehavior: 'smooth' }}
         >
-          {shorts.map((item, idx) => (
-            <div
-              key={item.id}
-              className="w-full shrink-0 snap-start snap-always relative overflow-hidden"
-              style={{ height: containerHeight > 0 ? containerHeight : '100svh' }}
-            >
-              <ShortsPlayer
-                videoId={item.video_id}
-                title={item.title}
-                description={item.description}
-                channelName={item.whitelisted_channels?.channel_name || 'Creator'}
-                channelHandle={item.whitelisted_channels?.handle || '@creator'}
-                isActive={idx === activeIndex}
-                liked={likedVideoIds.has(item.id)}
-                saved={savedVideoIds.has(item.id)}
-                likesCount={likesCountMap[item.id] || 0}
-                commentsCount={commentsCountMap[item.id] || 0}
-                onLike={() => handleLikeToggle(item.id)}
-                onSave={() => handleSaveToggle(item.id)}
-                onShare={() => handleShare(item.video_id)}
-              />
-            </div>
-          ))}
+          {displayShorts.map((item, idx) => {
+            const realId = item.original_id || item.id;
+            return (
+              <div
+                key={item.id}
+                className="w-full shrink-0 snap-start snap-always relative overflow-hidden"
+                style={{ height: containerHeight > 0 ? containerHeight : '100svh' }}
+              >
+                <ShortsPlayer
+                  videoId={item.video_id}
+                  title={item.title}
+                  description={item.description}
+                  channelName={item.whitelisted_channels?.channel_name || 'Creator'}
+                  channelHandle={item.whitelisted_channels?.handle || '@creator'}
+                  isActive={idx === activeIndex}
+                  liked={likedVideoIds.has(realId)}
+                  saved={savedVideoIds.has(realId)}
+                  likesCount={likesCountMap[realId] || 0}
+                  commentsCount={commentsCountMap[realId] || 0}
+                  onLike={() => handleLikeToggle(realId)}
+                  onSave={() => handleSaveToggle(realId)}
+                  onShare={() => handleShare(item.video_id)}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

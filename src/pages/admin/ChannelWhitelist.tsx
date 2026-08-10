@@ -107,17 +107,19 @@ export default function ChannelWhitelist() {
     const parsedInput = extractHandleOrChannelId(inputVal);
 
     try {
-      const { data, error } = await supabase.functions.invoke('pull-shorts', {
-        body: { action: 'resolve', input: parsedInput },
-      });
+      const res = await supabase.functions
+        .invoke('pull-shorts', {
+          body: { action: 'resolve', input: parsedInput },
+        })
+        .catch(() => ({ data: null, error: new Error('Edge function 500 fallback') }));
 
-      if (!error && data && data.channel_id) {
+      if (!res.error && res.data && res.data.channel_id) {
         setResolvedChannel({
-          channel_id: data.channel_id,
-          channel_name: data.channel_name,
-          handle: data.handle || parsedInput,
+          channel_id: res.data.channel_id,
+          channel_name: res.data.channel_name,
+          handle: res.data.handle || parsedInput,
         });
-        toast.success(`Resolved: ${data.channel_name}`);
+        toast.success(`Resolved: ${res.data.channel_name}`);
         setResolving(false);
         return;
       }
@@ -153,7 +155,6 @@ export default function ChannelWhitelist() {
           handle: resolvedChannel.handle || null,
           category,
           status: 'active',
-          notes: notes.trim() || null,
         })
         .select('id')
         .single();
@@ -190,7 +191,6 @@ export default function ChannelWhitelist() {
           handle: item.handle,
           category: item.category,
           status: 'active',
-          notes: 'Verified default devotional channel',
         });
       }
       toast.success('Default channels added successfully');
