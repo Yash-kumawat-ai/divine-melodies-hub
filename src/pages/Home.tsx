@@ -20,19 +20,8 @@ import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
 import mandalaSvg from '@/pages/images/mandala.svg';
-// Feature card images
-import panchangImg from '@/pages/images/panchang_spiritual_icon.webp';
-import meditationImg from '@/pages/images/meditation_spiritual_icon.webp';
-import templeImg from '@/pages/images/temple_icon.webp';
-import krishnaAIImg from '@/pages/images/devrishi_narad_icon.webp';
-import lyricsImg from '@/pages/images/bhajan_lyrics_icon.webp';
-import aartiImg from '@/pages/images/live_aarti_icon.webp';
-import posterImg from '@/pages/images/poster_high_quality.webp';
-import wallpaperImg from '@/pages/images/dev_wallpaper_high_quality.webp';
-import communityImg from '@/pages/images/bhakti_samuday_high_quality.webp';
-import naamJapImg from '@/pages/images/naam_jap_high_quality.webp';
-import bhajansImg from '@/pages/images/bhajan_sangrah_high_quality(1).webp';
-import darshImg from '@/pages/images/darshan_high_quality.webp';
+import mandirOrgSvg from '@/pages/images/svg/mandirorg.svg';
+import manjiraSvg from '@/pages/images/svg/manjira.svg';
 
 const PinkLotusSvg = ({ className = "w-5 h-5", fill = "#ec4899" }: { className?: string; fill?: string }) => (
   <svg className={className} viewBox="0 0 1006.6461 574.1317" fill={fill} xmlns="http://www.w3.org/2000/svg">
@@ -207,81 +196,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ bhajans: 0, artists: 0, devotees: 0 });
   const [communityStats, setCommunityStats] = useState({ members: 0, totalJaps: 0, todayParticipants: 0 });
-
-  const features = [
-    {
-      img: panchangImg,
-      emoji: "📅",
-      title: isHi ? "पंचांग" : "Panchang",
-      subtitle: isHi ? "तिथि · नक्षत्र · मुहूर्त" : "Tithi · Nakshatra · Muhurta",
-      desc: isHi ? "आज का पंचांग देखें" : "Check today's Hindu calendar",
-      accent: "from-sky-600 to-blue-800",
-      glow: "59,130,246",
-      route: "/panchang",
-      imgBg: "#0a0500",
-      imgScale: 1.42,
-    },
-    {
-      img: meditationImg,
-      emoji: "🧘",
-      title: isHi ? "ध्यान" : "Meditation",
-      subtitle: isHi ? "मन की शांति" : "Peace of Mind",
-      desc: isHi ? "ध्यान गाइडेड सेशन" : "Guided meditation sessions",
-      accent: "from-violet-600 to-purple-900",
-      glow: "139,92,246",
-      route: "/meditation",
-      imgBg: "#040204",
-      imgScale: 1.42,
-    },
-    {
-      img: templeImg,
-      emoji: "🛕",
-      title: isHi ? "मंदिर" : "Temples",
-      subtitle: isHi ? "पवित्र स्थान" : "Sacred Pilgrimages",
-      desc: isHi ? "भारत के प्रसिद्ध मंदिर" : "Famous temples of India",
-      accent: "from-amber-600 to-orange-900",
-      glow: "245,158,11",
-      route: "/temple",
-      imgBg: "#f5efe4",
-      imgScale: 1.38,
-    },
-    {
-      img: krishnaAIImg,
-      emoji: "🤖",
-      title: isHi ? "कृष्णा एआई" : "Krishna AI",
-      subtitle: isHi ? "दिव्य संवाद" : "Divine Conversation",
-      desc: isHi ? "एआई से भक्ति ज्ञान पाएं" : "Get devotional wisdom from AI",
-      accent: "from-emerald-600 to-teal-900",
-      glow: "16,185,129",
-      route: "/kirtan-ai",
-      imgBg: "#1a0800",
-      imgScale: 1.0,
-    },
-    {
-      img: lyricsImg,
-      emoji: "🎼",
-      title: isHi ? "गीत व बोल" : "Bhajan Lyrics",
-      subtitle: isHi ? "संपूर्ण भजन संग्रह" : "Complete lyric library",
-      desc: isHi ? "हजारों भजनों के बोल" : "Lyrics for thousands of bhajans",
-      accent: "from-rose-600 to-pink-900",
-      glow: "244,63,94",
-      route: "/all-bhajans",
-      imgBg: "#0d0204",
-      imgScale: 1.0,
-    },
-    {
-      img: aartiImg,
-      emoji: "🔔",
-      title: isHi ? "लाइव आरती" : "Live Aarti",
-      subtitle: isHi ? "प्रतिदिन आरती" : "Daily morning & evening",
-      desc: isHi ? "सुबह–शाम की आरती" : "Participate in live aarti",
-      accent: "from-yellow-500 to-amber-800",
-      glow: "234,179,8",
-      route: "/live-aarti",
-      imgBg: "#0d0204",
-      imgScale: 1.0,
-    },
-  ];
+  const [featurePage, setFeaturePage] = useState(1);
+  const FEATURE_PAGE_SIZE = 8;
 
   const testimonials = isHi ? [
     { name: 'प्रिया शर्मा', city: 'जयपुर', initials: 'PS', quote: 'राघवम् में भजनों का सबसे संपूर्ण संग्रह है जो मुझे ऑनलाइन मिला है। मैं अपनी सुबह की पूजा के लिए हर दिन इसका उपयोग करती हूँ।' },
@@ -441,19 +357,19 @@ export default function Home() {
           {/* Grid Layout: 4 columns on all device sizes (mobile, tablet, desktop) */}
           <div className="grid grid-cols-3 min-[420px]:grid-cols-4 gap-2.5 min-[420px]:gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
             {([
-              { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', gradient: 'from-[#FF9737] to-[#F46A1D]', icon: <HeadphonesIcon /> },
+              { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', gradient: 'from-[#FF9737] to-[#F46A1D]', icon: <HeadphonesIcon />, isImageCard: true, imageSrc: manjiraSvg, isContain: true, showTitle: true },
               { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', gradient: 'from-[#FF8A2A] to-[#E65A0D]', icon: <FlameIcon /> },
               { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', gradient: 'from-[#8B5CF6] to-[#6D28D9]', icon: <CalendarIcon /> },
               { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', gradient: 'from-[#18A768] to-[#0C8D59]', icon: <LotusIcon /> },
-              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon /> },
-              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', gradient: 'from-[#EC4899] to-[#DB2777]', icon: <SparklesIcon /> },
+              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon />, isImageCard: true, imageSrc: mandirOrgSvg, isContain: true, showTitle: true },
+              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', gradient: 'from-[#EC4899] to-[#DB2777]', icon: <SparklesIcon />, isImageCard: true, imageSrc: '/images/narad-ai.webp' },
               { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', gradient: 'from-[#06B6D4] to-[#0891B2]', icon: <SkyBlueImageIcon /> },
               { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', gradient: 'from-[#F59E0B] to-[#D97706]', icon: <PaletteIcon /> },
               { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', gradient: 'from-[#8B5CF6] to-[#7C3AED]', icon: <ActivityIcon /> },
               { title: isHi ? 'समुदाय' : 'Community', path: '/community', gradient: 'from-[#14B8A6] to-[#0F766E]', icon: <UsersIcon /> },
               { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', gradient: 'from-[#EF4444] to-[#DC2626]', icon: <VideoIcon /> },
               { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', gradient: 'from-[#6B7280] to-[#4B5563]', icon: <EyeIcon /> },
-            ]).map((item, i) => (
+            ]).slice(0, featurePage * FEATURE_PAGE_SIZE).map((item, i) => (
               <motion.button
                 key={item.title}
                 onClick={() => navigate(item.path)}
@@ -465,57 +381,90 @@ export default function Home() {
                   scale: { duration: 0.15, ease: [0.22, 1, 0.36, 1] },
                   default: { delay: i * 0.01, duration: 0.18 }
                 }}
-                className="flex flex-col items-center justify-center p-2 min-[420px]:p-2.5 md:p-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
+                className={`flex flex-col items-center justify-center ${
+                  item.isImageCard ? 'p-0' : 'p-2 min-[420px]:p-2.5 md:p-3'
+                } rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60`}
                 style={{
                   transitionDuration: '150ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
-                {/* Dedicated Icon Wrapper: Centering parent for Mandala and Gradient Circle */}
-                <div className="relative flex items-center justify-center w-16 h-16 md:w-[72px] md:h-[72px] shrink-0 z-10">
-                  {/* Mandala SVG (Absolute inside wrapper, centered behind icon, 72px width on all, 15% opacity) */}
-                  <img 
-                    src={mandalaSvg} 
-                    alt="" 
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0 transition-transform group-hover:rotate-3 group-hover:scale-105"
-                    style={{
-                      opacity: 0.15,
-                      filter: 'invert(79%) sepia(35%) saturate(543%) hue-rotate(352%) brightness(91%) contrast(85%)',
-                      transitionDuration: '150ms',
-                      transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  />
-
-                  {/* Gradient Icon Circle (Relative z-10 inside wrapper, 40px width, centered) */}
-                  <div 
-                    className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${item.gradient} transition-all group-hover:scale-[1.08] shadow-[0_6px_14px_rgba(0,0,0,0.08)] group-hover:shadow-[0_10px_20px_rgba(0,0,0,0.18)]`}
-                    style={{
-                      transitionDuration: '150ms',
-                      transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
-                  >
-                    {item.icon}
+                {item.isImageCard ? (
+                  <div className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-[15px] min-[420px]:rounded-[17px] md:rounded-[23px] bg-[#FFFDF8] dark:bg-[#1A120B] ${
+                    item.isContain ? (item.showTitle ? 'p-2 pt-1.5 pb-6 md:p-3 md:pt-2 md:pb-7' : 'p-2 md:p-3') : 'p-0'
+                  }`}>
+                    <img
+                      src={item.imageSrc}
+                      alt={item.title}
+                      className={`w-full h-full ${item.isContain ? 'object-contain' : 'object-cover'} object-center group-hover:scale-105 transition-transform duration-200`}
+                    />
+                    {item.showTitle && (
+                      <span className="absolute bottom-1 md:bottom-2 text-[13px] md:text-[15px] font-bold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
+                        {item.title}
+                      </span>
+                    )}
                   </div>
-                </div>
+                ) : (
+                  <>
+                    {/* Dedicated Icon Wrapper: Centering parent for Mandala and Gradient Circle */}
+                    <div className="relative flex items-center justify-center w-16 h-16 md:w-[72px] md:h-[72px] shrink-0 z-10">
+                      {/* Mandala SVG (Absolute inside wrapper, centered behind icon, 72px width on all, 15% opacity) */}
+                      <img 
+                        src={mandalaSvg} 
+                        alt="" 
+                        className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0 transition-transform group-hover:rotate-3 group-hover:scale-105"
+                        style={{
+                          opacity: 0.15,
+                          filter: 'invert(79%) sepia(35%) saturate(543%) hue-rotate(352%) brightness(91%) contrast(85%)',
+                          transitionDuration: '150ms',
+                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                        }}
+                      />
 
-                {/* Title */}
-                <div className="flex flex-col items-center justify-center z-10 mt-2">
-                  <span className="text-[16px] font-semibold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
-                    {item.title}
-                  </span>
-                </div>
+                      {/* Gradient Icon Circle (Relative z-10 inside wrapper, 40px width, centered) */}
+                      <div 
+                        className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${item.gradient} transition-all group-hover:scale-[1.08] shadow-[0_6px_14px_rgba(0,0,0,0.08)] group-hover:shadow-[0_10px_20px_rgba(0,0,0,0.18)]`}
+                        style={{
+                          transitionDuration: '150ms',
+                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                        }}
+                      >
+                        {item.icon}
+                      </div>
+                    </div>
 
-                {/* Small Circular Arrow Button */}
-                <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 dark:border-[#D4A437]/40 items-center justify-center text-xs text-amber-600 dark:text-[#D4A437] group-hover:bg-[#651317] dark:group-hover:bg-[#D4A437] group-hover:text-white dark:group-hover:text-[#1A120B] transition-all duration-150 ease-out transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 shrink-0 z-10">
-                  →
-                </div>
+                    {/* Title */}
+                    <div className="flex flex-col items-center justify-center z-10 mt-2">
+                      <span className="text-[16px] font-semibold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
+                        {item.title}
+                      </span>
+                    </div>
+
+                    {/* Small Circular Arrow Button */}
+                    <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 dark:border-[#D4A437]/40 items-center justify-center text-xs text-amber-600 dark:text-[#D4A437] group-hover:bg-[#651317] dark:group-hover:bg-[#D4A437] group-hover:text-white dark:group-hover:text-[#1A120B] transition-all duration-150 ease-out transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 shrink-0 z-10">
+                      →
+                    </div>
+                  </>
+                )}
               </motion.button>
             ))}
           </div>
+
+          {featurePage * FEATURE_PAGE_SIZE < 12 && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setFeaturePage((p) => p + 1)}
+                className="btn-royal-secondary h-11 px-6 rounded-full text-sm font-semibold"
+              >
+                {isHi ? 'और दिखाएँ' : 'Show more'}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Devotional Divider Ticker — placed JUST BELOW Raghavam Ki Visheshataayein */}
+      {/* राम divider — after Features */}
       <DevotionalDivider language={language} />
 
       {/* Promotional Banner Carousel */}
@@ -566,6 +515,9 @@ export default function Home() {
         <DeityGrid />
       </div>
 
+      {/* राम divider — after Hanuman + Deity */}
+      <DevotionalDivider language={language} />
+
       {/* Community Bhajans */}
       {!loading && userBhajans.length > 0 && (
         <section className="py-16 px-4 bg-[#FFFDF8] dark:bg-background">
@@ -606,99 +558,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* Features */}
-      <section className="py-20 px-4 bg-[#FFFDF8] dark:bg-background relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
-        </div>
-        <div className="container mx-auto max-w-6xl relative">
-          {/* Section Header */}
-          <div className="text-center mb-10">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="h-px w-10 bg-gradient-to-r from-transparent to-amber-500/60" />
-              <span className="text-amber-600 dark:text-amber-400 text-[11px] font-black uppercase tracking-[0.2em] font-sans">✦ ✦ ✦</span>
-              <div className="h-px w-10 bg-gradient-to-l from-transparent to-amber-500/60" />
-            </div>
-            <h2 className="font-serif text-3xl md:text-4xl font-black text-foreground mb-2">
-              {isHi ? "सब कुछ एक जगह" : "Everything You Need"}
-            </h2>
-            <p className="text-muted-foreground text-base max-w-xl mx-auto">
-              {isHi ? "भक्ति की संपूर्ण डिजिटल यात्रा" : "Your complete digital devotion journey"}
-            </p>
-          </div>
-
-          {/* 3 x 2 Feature Grid with real images */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-5">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.title}
-                onClick={() => navigate(f.route)}
-                className="relative group cursor-pointer rounded-3xl overflow-hidden border border-white/8 hover:border-white/18 transition-all duration-500 hover:scale-[1.03] select-none"
-                style={{ boxShadow: `0 0 0 0 rgba(${f.glow},0)` }}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '200px' }}
-                transition={{ delay: i * 0.02, duration: 0.18 }}
-                whileHover={{ boxShadow: `0 16px 48px rgba(${f.glow},0.22)` }}
-              >
-                {/* Image top half */}
-                <div className="relative w-full aspect-square" style={{ backgroundColor: f.imgBg }}>
-                  {/* Image fills the full card — scaled up for circular icons to hide corner whitespace */}
-                  <img
-                    src={f.img}
-                    alt={f.title}
-                    className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700"
-                    style={{ transform: `scale(${(f.imgScale ?? 1) * 1.0}) ${f.imgScale > 1 ? '' : ''}`, transformOrigin: 'center center' }}
-                    onMouseOver={e => (e.currentTarget.style.transform = `scale(${((f.imgScale ?? 1) * 1.05)})`)}
-                    onMouseOut={e => (e.currentTarget.style.transform = `scale(${f.imgScale ?? 1})`)}
-                  />
-                  {/* Gradient overlay — dark at bottom for text contrast */}
-                  <div className={`absolute inset-0 bg-gradient-to-t ${f.accent} opacity-60 group-hover:opacity-70 transition-opacity duration-500`} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-
-                  {/* Glow top-right */}
-                  <div
-                    className="absolute -top-4 -right-4 w-24 h-24 rounded-full opacity-30 blur-xl group-hover:opacity-50 transition-opacity duration-500"
-                    style={{ backgroundColor: `rgb(${f.glow})` }}
-                  />
-
-                  {/* Emoji badge top-left */}
-                  <div
-                    className="absolute top-3 left-3 w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center text-base md:text-xl shadow-lg border border-white/15 backdrop-blur-sm"
-                    style={{ backgroundColor: `rgba(${f.glow},0.35)` }}
-                  >
-                    {f.emoji}
-                  </div>
-
-                  {/* Arrow icon top-right — appears on hover */}
-                  <div
-                    className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/20"
-                    style={{ backgroundColor: `rgba(${f.glow},0.5)` }}
-                  >
-                    <ArrowRight className="w-3.5 h-3.5 text-white" />
-                  </div>
-
-                  {/* Text — overlaid at bottom of image */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest font-sans text-white/55 mb-0.5">{f.subtitle}</p>
-                    <h3 className="font-serif text-sm md:text-lg font-black text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{f.title}</h3>
-                    <p className="text-[9px] md:text-[11px] font-sans text-white/50 leading-snug mt-1 hidden md:block">{f.desc}</p>
-                  </div>
-
-                  {/* Bottom shimmer edge on hover */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{ background: `linear-gradient(to right, transparent, rgb(${f.glow}), transparent)` }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <DevotionalDivider language={language} />
-
       {/* Testimonials */}
       <section className="py-20 px-4 bg-[#FFFDF8] dark:bg-background">
         <div className="container mx-auto max-w-5xl">
@@ -735,6 +594,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* राम divider — after Community + Testimonials */}
+      <DevotionalDivider language={language} />
 
       {/* CTA Banner */}
       <section className="py-20 px-4 bg-gradient-to-r from-brand-saffron to-brand-gold">

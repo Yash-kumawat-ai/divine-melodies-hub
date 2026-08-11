@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
+import { useDrawer } from "@/hooks/useDrawer";
 import KirtanAIChatCore, {
   type KirtanAIChatCoreHandle,
   type NaradVoicePhase,
@@ -41,7 +42,18 @@ export default function NaradFloatingWidget() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isBhajanModalOpen } = useBhajanModalOpen();
+  const { isOpen: isDrawerOpen } = useDrawer();
+  const [isMoreDrawerOpen, setIsMoreDrawerOpen] = useState(false);
   const open = uiState !== "closed";
+
+  useEffect(() => {
+    const handleMoreChange = (e: Event) => {
+      const customEvt = e as CustomEvent;
+      setIsMoreDrawerOpen(!!customEvt.detail?.open);
+    };
+    window.addEventListener('more-drawer-change', handleMoreChange);
+    return () => window.removeEventListener('more-drawer-change', handleMoreChange);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -150,6 +162,8 @@ export default function NaradFloatingWidget() {
   }, [closeAll, navigate, transcriptPreview]);
 
   if (
+    isDrawerOpen ||
+    isMoreDrawerOpen ||
     isBhajanModalOpen ||
     pathname === "/kirtan-ai" ||
     pathname.startsWith("/auth") ||

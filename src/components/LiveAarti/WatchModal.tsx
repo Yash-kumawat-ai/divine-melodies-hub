@@ -6,56 +6,9 @@ import type { Temple } from '../../types/liveAarti';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getNextAarti } from '@/hooks/useLiveAarti';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { resolveTempleBanner } from './templeBanners';
 
-// Import high-quality temple & deity banner images
-import shivWallpaper from '@/pages/images/shiv_wallpaper.webp';
-import krishnaMain from '@/pages/images/krishna main.webp';
-import meditationDesktop from '@/pages/images/meditation_desktop_wallpaper.webp';
-import deityHanuman from '@/assets/deities/hanuman.webp';
-
-// Import the 8 new custom temple images
-import kashiVishwanathImg from '@/pages/images/kashi vishwanath.webp';
-import ujjainMahakalImg from '@/pages/images/Ujjain Mahakaleshwar Jyotirlinga dd astro.jpg';
-import mayapurTvImg from '@/pages/images/radha_krishna_hd mayapur tv.webp';
-import salasarBalajiImg from '@/pages/images/salasar_balaji desktop.webp';
-import khatuShyamImg from '@/pages/images/shyam_mandir_desktop_hd.webp';
-import salangpurHanumanImg from '@/pages/images/Hanumanji_HD_WebP.webp';
-import somnathTempleImg from '@/pages/images/shiv_temple_hd.webp';
-import doordarshanNationalImg from '@/pages/images/shree_ram_ultra_hd.webp';
-
-export function resolveTempleBanner(templeId: string): string {
-  switch (templeId) {
-    case 'mayapur-tv':
-      return mayapurTvImg;
-    case 'somnath-temple':
-      return somnathTempleImg;
-    case 'kashi-vishwanath':
-      return kashiVishwanathImg;
-    case 'salasar-balaji':
-      return salasarBalajiImg;
-    case 'salangpur-hanumanji':
-      return salangpurHanumanImg;
-    case 'shyam-bhakti-rang':
-      return khatuShyamImg;
-    case 'dd-astro':
-      return ujjainMahakalImg;
-    case 'doordarshan-national':
-      return doordarshanNationalImg;
-    case 'radha-vallabh-vrindavan':
-      return krishnaMain;
-    default:
-      if (templeId.includes('kashi') || templeId.includes('mahakal') || templeId.includes('somnath')) {
-        return shivWallpaper;
-      }
-      if (templeId.includes('mayapur') || templeId.includes('radha') || templeId.includes('shyam')) {
-        return krishnaMain;
-      }
-      if (templeId.includes('balaji') || templeId.includes('hanuman')) {
-        return deityHanuman;
-      }
-      return meditationDesktop;
-  }
-}
+export { resolveTempleBanner };
 
 interface WatchModalProps {
   temple: Temple | null;
@@ -73,10 +26,11 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
   
   const scheduleRef = useRef<HTMLDivElement>(null);
 
-  // Force update countdowns every minute
+  // Open directly into the live player for LIVE streams (feels like YouTube).
   useEffect(() => {
     if (isOpen) {
-      setShowInAppPlayer(false);
+      const isLive = temple?.status === 'LIVE';
+      setShowInAppPlayer(Boolean(isLive));
       setForceShowPlayer(false);
       setHighlightSchedule(false);
       const timer = setInterval(() => {
@@ -84,7 +38,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
       }, 60000);
       return () => clearInterval(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, temple?.id, temple?.status]);
 
   if (!temple) return null;
 

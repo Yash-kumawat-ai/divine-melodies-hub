@@ -1,6 +1,5 @@
 import { memo, forwardRef } from 'react';
 import { X } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useDrawerTheme } from '@/hooks/useDrawerTheme';
 
 interface DrawerHeaderProps {
@@ -75,10 +74,7 @@ export const DrawerHeader = memo(
 
         {/* Logo + Brand */}
         <div className="flex items-center gap-3">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, type: 'spring', stiffness: 300 }}
+          <div
             className="flex h-11 w-11 items-center justify-center rounded-2xl"
             style={{
               background: 'linear-gradient(135deg, #C67A2D 0%, #E89A4A 100%)',
@@ -88,13 +84,9 @@ export const DrawerHeader = memo(
             <svg viewBox="0 0 24 24" width="22" height="22" fill="white" aria-hidden="true">
               <text x="50%" y="70%" textAnchor="middle" fontSize="18" fontFamily="serif">ॐ</text>
             </svg>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ x: -10, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.15, duration: 0.3 }}
-          >
+          <div>
             <h1
               className="text-lg font-bold leading-tight tracking-wide transition-colors duration-300"
               style={{
@@ -111,7 +103,7 @@ export const DrawerHeader = memo(
             >
               Where Devotion Meets Divine Melodies
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
     );

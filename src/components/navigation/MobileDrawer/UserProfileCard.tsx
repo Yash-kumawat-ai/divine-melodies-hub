@@ -1,5 +1,4 @@
 import { memo, forwardRef } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Flame, LogIn, Sparkles, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,16 +34,13 @@ export const UserProfileCard = memo(
     const cardStyle = {
       background: profileCardGradient,
       border: `1px solid ${border}`,
-      boxShadow: '0 4px 16px rgba(198,122,45,0.08)',
+      boxShadow: '0 4px 16px rgba(101,19,23,0.08)',
     };
 
     if (!user) {
       return (
-        <motion.div
+        <div
           ref={ref}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.3 }}
           className="mx-4 my-3 overflow-hidden rounded-2xl transition-colors duration-300"
           style={cardStyle}
         >
@@ -52,7 +48,7 @@ export const UserProfileCard = memo(
             <div className="mb-3 flex items-center gap-3">
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-full"
-                style={{ background: 'rgba(198,122,45,0.12)' }}
+                style={{ background: 'rgba(101,19,23,0.10)' }}
               >
                 <User size={22} style={{ color: accent }} />
               </div>
@@ -69,11 +65,7 @@ export const UserProfileCard = memo(
             <button
               type="button"
               onClick={() => { signInWithGoogle(); onClose(); }}
-              className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #C67A2D 0%, #E89A4A 100%)',
-                boxShadow: '0 4px 14px rgba(198,122,45,0.35)',
-              }}
+              className="btn-royal-primary btn-full mb-2 h-11 rounded-2xl"
             >
               <Sparkles size={16} />
               Continue with Google
@@ -82,26 +74,22 @@ export const UserProfileCard = memo(
             <button
               type="button"
               onClick={() => { navigate(ROUTES.AUTH_LOGIN); onClose(); }}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-semibold transition-all active:scale-[0.98]"
-              style={{ borderColor: border, color: primaryText, background: 'transparent' }}
+              className="btn-royal-secondary btn-full h-11 rounded-2xl"
             >
               <LogIn size={16} />
               Login
             </button>
           </div>
-        </motion.div>
+        </div>
       );
     }
 
     return (
-      <motion.button
+      <button
         ref={ref}
         type="button"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12, duration: 0.3 }}
         onClick={() => { navigate(ROUTES.PROFILE); onClose(); }}
-        className="mx-4 my-3 flex w-[calc(100%-2rem)] items-center gap-3 overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.98] duration-300"
+        className="mx-4 my-3 flex w-[calc(100%-2rem)] items-center gap-3 overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.98] duration-300 cursor-pointer"
         style={cardStyle}
       >
         {/* Avatar */}
@@ -109,14 +97,14 @@ export const UserProfileCard = memo(
           <Avatar className="h-12 w-12" style={{ border: `2px solid ${accent}` }}>
             <AvatarImage src={profile?.avatarUrl} alt={displayName} />
             <AvatarFallback
-              style={{ background: 'linear-gradient(135deg, #C67A2D, #E89A4A)', color: 'white', fontSize: '14px', fontWeight: 600 }}
+              style={{ background: 'linear-gradient(135deg, #651317, #8B1E24)', color: 'white', fontSize: '14px', fontWeight: 600 }}
             >
               {initials}
             </AvatarFallback>
           </Avatar>
           <div
             className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full"
-            style={{ background: accent, border: '1.5px solid rgba(198,122,45,0.2)' }}
+            style={{ background: accent, border: '1.5px solid rgba(101,19,23,0.2)' }}
           >
             <Flame size={10} color="white" />
           </div>
@@ -136,7 +124,7 @@ export const UserProfileCard = memo(
         </div>
 
         <ChevronRight size={18} style={{ color: secondaryText, flexShrink: 0 }} />
-      </motion.button>
+      </button>
     );
   })
 );

@@ -169,12 +169,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    const clearBrokenAuth = async (reason: string) => {
+      console.warn('Clearing broken auth session:', reason);
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        // ignore
+      }
+      try {
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith('sb-') && k.includes('auth'),
+        );
+        for (const k of keys) localStorage.removeItem(k);
+      } catch {
+        // ignore
+      }
+      if (mounted) {
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       if (error) {
-        console.warn("Session recovery failed, clearing stale auth data:", error.message);
-        // Wipe local storage to prevent future refresh token failures on reload
-        supabase.auth.signOut().catch(() => {});
+        const msg = error.message || '';
+        if (/refresh token/i.test(msg) || /session/i.test(msg)) {
+          void clearBrokenAuth(msg);
+          return;
+        }
+        console.warn('Session recovery failed, clearing stale auth data:', msg);
+        void clearBrokenAuth(msg);
+        return;
       }
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -182,6 +209,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setLoading(false);
       }
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/refresh token/i.test(msg)) void clearBrokenAuth(msg);
     });
 
     const {

@@ -37,6 +37,7 @@ export type Database = {
       shorts: AppTable
       shorts_interactions: AppTable
       whitelisted_channels: AppTable
+      live_aarti_status: AppTable
     }
     Views: {
       [_ in never]: never

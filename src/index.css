@@ -565,12 +565,17 @@
   .btn-secondary {
     @apply btn-base;
     background-color: hsl(var(--surface-raised));
+    background-image: none;
     color: hsl(var(--brand-primary));
     border-color: hsl(var(--brand-gold-border));
     box-shadow: var(--shadow-1);
   }
   .btn-secondary:hover:not(:disabled) {
-    background-color: hsl(var(--brand-primary) / 0.04);
+    background-color: hsl(var(--surface-raised));
+    background-image: linear-gradient(
+      hsl(var(--brand-primary) / 0.06),
+      hsl(var(--brand-primary) / 0.06)
+    );
     border-color: hsl(var(--brand-gold) / 0.50);
     box-shadow: var(--shadow-2);
     transform: translateY(-1px);
@@ -585,7 +590,11 @@
     border-color: hsl(var(--brand-gold-border));
   }
   .dark .btn-secondary:hover:not(:disabled) {
-    background-color: hsl(var(--brand-gold) / 0.08);
+    background-color: hsl(var(--surface-alt));
+    background-image: linear-gradient(
+      hsl(var(--brand-gold) / 0.10),
+      hsl(var(--brand-gold) / 0.10)
+    );
     border-color: hsl(var(--brand-gold) / 0.50);
   }
   .btn-secondary svg { color: hsl(var(--brand-primary)) !important; }

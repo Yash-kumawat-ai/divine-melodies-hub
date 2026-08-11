@@ -1,33 +1,18 @@
-import { memo, forwardRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DRAWER_ANIMATION } from '@/constants/drawerTokens';
+import { memo } from 'react';
 
 interface DrawerOverlayProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const DrawerOverlay = memo(
-  forwardRef<HTMLDivElement, DrawerOverlayProps>(function DrawerOverlay(
-    { isOpen, onClose }: DrawerOverlayProps,
-    ref
-  ) {
-    return (
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="drawer-overlay"
-            ref={ref}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: DRAWER_ANIMATION.overlayDuration, ease: 'easeOut' }}
-            className="fixed inset-0 z-[120] bg-black/45 backdrop-blur-[2px]"
-            onClick={onClose}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-    );
-  })
-);
+export const DrawerOverlay = memo(function DrawerOverlay({ isOpen, onClose }: DrawerOverlayProps) {
+  return (
+    <div
+      className={`fixed inset-0 z-[120] bg-black/45 backdrop-blur-[2px] transition-opacity duration-200 ease-out ${
+        isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+      }`}
+      onClick={onClose}
+      aria-hidden={!isOpen}
+    />
+  );
+});
