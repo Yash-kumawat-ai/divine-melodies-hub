@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, type ReactNode } from 'react';
 import type { DrawerContextValue, DrawerState, DrawerAction } from '@/types/drawer';
 
 const DrawerContext = createContext<DrawerContextValue | null>(null);
@@ -24,6 +24,12 @@ export function DrawerProvider({ children }: { children: ReactNode }) {
   const openDrawer = useCallback(() => dispatch({ type: 'OPEN' }), []);
   const closeDrawer = useCallback(() => dispatch({ type: 'CLOSE' }), []);
   const toggleDrawer = useCallback(() => dispatch({ type: 'TOGGLE' }), []);
+
+  useEffect(() => {
+    const handleClose = () => closeDrawer();
+    window.addEventListener('close-hamburger-drawer', handleClose);
+    return () => window.removeEventListener('close-hamburger-drawer', handleClose);
+  }, [closeDrawer]);
 
   const value = useMemo<DrawerContextValue>(
     () => ({ isOpen: state.isOpen, openDrawer, closeDrawer, toggleDrawer }),

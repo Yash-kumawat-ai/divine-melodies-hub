@@ -8,10 +8,16 @@ interface HamburgerButtonProps {
 export const HamburgerButton = memo(function HamburgerButton({ className = '' }: HamburgerButtonProps) {
   const { isOpen, toggleDrawer } = useDrawer();
 
+  const handleToggle = () => {
+    window.dispatchEvent(new Event('close-more-drawer'));
+    window.dispatchEvent(new Event('close-temple-pickers'));
+    toggleDrawer();
+  };
+
   return (
     <button
       type="button"
-      onClick={toggleDrawer}
+      onClick={handleToggle}
       className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C67A2D] ${className}`}
       style={{
         background: isOpen ? 'rgba(198,122,45,0.14)' : 'rgba(198,122,45,0.07)',

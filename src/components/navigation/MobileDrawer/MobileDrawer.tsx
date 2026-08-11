@@ -54,6 +54,9 @@ export const MobileDrawer = memo(function MobileDrawer() {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      if (drawerRef.current && drawerRef.current.contains(document.activeElement)) {
+        (document.activeElement as HTMLElement)?.blur();
+      }
     }
     return () => {
       document.body.style.overflow = '';
@@ -74,7 +77,12 @@ export const MobileDrawer = memo(function MobileDrawer() {
   );
 
   useEffect(() => {
-    if (!isOpen || !drawerRef.current) return;
+    if (!isOpen || !drawerRef.current) {
+      if (drawerRef.current && drawerRef.current.contains(document.activeElement)) {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+      return;
+    }
     const el = drawerRef.current;
     const focusable = el.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -96,8 +104,18 @@ export const MobileDrawer = memo(function MobileDrawer() {
     };
 
     document.addEventListener('keydown', trap);
-    first?.focus();
-    return () => document.removeEventListener('keydown', trap);
+    
+    const timer = setTimeout(() => {
+      first?.focus();
+    }, 50);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('keydown', trap);
+      if (el && el.contains(document.activeElement)) {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    };
   }, [isOpen]);
 
   return (
@@ -109,7 +127,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
         role="dialog"
         aria-modal={isOpen}
         aria-label="Main navigation menu"
-        aria-hidden={!isOpen}
+        {...(!isOpen ? { 'aria-hidden': true, inert: '' } : {})}
         className={`fixed inset-y-0 left-0 z-[130] flex flex-col overflow-hidden transition-transform duration-200 ease-out ${
           isOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
         }`}
@@ -128,7 +146,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
         <DrawerHeader onClose={closeDrawer} />
 
         <div
-          className="flex-1 overflow-y-auto overscroll-contain"
+          className="flex-1 overflow-y-auto overscroll-contain pb-28"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           <UserProfileCard onClose={closeDrawer} />

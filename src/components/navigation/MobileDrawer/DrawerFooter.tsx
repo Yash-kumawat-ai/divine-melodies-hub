@@ -1,7 +1,8 @@
 import { memo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useDrawerTheme } from '@/hooks/useDrawerTheme';
 import { ROUTES } from '@/config/routes';
 
@@ -16,6 +17,8 @@ export const DrawerFooter = memo(
   ) {
     const navigate = useNavigate();
     const { user, signOut } = useAuth();
+    const { language } = useLanguage();
+    const isHi = language === 'hi';
     const { footerBorder, secondaryText } = useDrawerTheme();
 
     const handleLogout = async () => {
@@ -34,17 +37,23 @@ export const DrawerFooter = memo(
           <button
             type="button"
             onClick={handleLogout}
-            className="btn-royal-secondary btn-full h-11 rounded-2xl text-[#B42318] dark:text-red-300 border-[#F2C7C0] dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950/30"
+            className="w-full h-11 flex items-center justify-center gap-2 rounded-2xl border border-[#F2C7C0] dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 text-[#B42318] dark:text-red-300 text-xs font-bold shadow-sm transition-colors active:scale-[0.98]"
           >
             <LogOut size={16} />
-            Sign Out
+            {isHi ? 'लॉग आउट' : 'Log Out'}
           </button>
         ) : (
-          <div className="text-center">
-            <p className="text-[11px] transition-colors duration-300" style={{ color: secondaryText }}>
-              🙏 Har Har Mahadev
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate('/auth/login');
+            }}
+            className="w-full h-11 flex items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 text-primary text-xs font-bold shadow-sm transition-colors active:scale-[0.98]"
+          >
+            <LogIn size={16} />
+            {isHi ? 'लॉग इन करें' : 'Log In'}
+          </button>
         )}
 
         <p
