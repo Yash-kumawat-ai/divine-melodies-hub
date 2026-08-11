@@ -9,7 +9,13 @@ import { LiveAartiIcon } from "@/components/LiveAartiIcon";
 import raghavamHero from "@/pages/images/raghavam-hero-high-quality.webp";
 import lordRamMobile from "@/pages/images/lord_ram_high_quality.webp";
 
-import { HeroImageCard, SearchCard, ActionButtons, RamMarquee } from "@/components/mobile/MobileHero";
+import {
+  HeroImageCard,
+  SearchCard,
+  ActionButtons,
+  RamMarquee,
+  RamVaniCard as MobileRamVaniCard,
+} from "@/components/mobile/MobileHero";
 
 interface HeroSectionProps {
   stats?: {
@@ -35,7 +41,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
         </div>
 
         <RamMarquee />
-        <HeroInsightCards />
+        <MobileRamVaniCard />
       </div>
 
       <div className="hidden md:flex flex-col w-full gap-3">
@@ -134,7 +140,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           </div>
         </div>
 
-        <HeroInsightCards className="mt-0" />
+        <HeroInsightCards />
       </div>
     </section>
   );

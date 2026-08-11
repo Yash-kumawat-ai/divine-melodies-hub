@@ -1,5 +1,4 @@
 import { memo, forwardRef } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Flame, LogIn, Sparkles, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,16 +34,13 @@ export const UserProfileCard = memo(
     const cardStyle = {
       background: profileCardGradient,
       border: `1px solid ${border}`,
-        boxShadow: '0 4px 16px rgba(101,19,23,0.08)',
+      boxShadow: '0 4px 16px rgba(101,19,23,0.08)',
     };
 
     if (!user) {
       return (
-        <motion.div
+        <div
           ref={ref}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.3 }}
           className="mx-4 my-3 overflow-hidden rounded-2xl transition-colors duration-300"
           style={cardStyle}
         >
@@ -84,19 +80,16 @@ export const UserProfileCard = memo(
               Login
             </button>
           </div>
-        </motion.div>
+        </div>
       );
     }
 
     return (
-      <motion.button
+      <button
         ref={ref}
         type="button"
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12, duration: 0.3 }}
         onClick={() => { navigate(ROUTES.PROFILE); onClose(); }}
-        className="mx-4 my-3 flex w-[calc(100%-2rem)] items-center gap-3 overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.98] duration-300"
+        className="mx-4 my-3 flex w-[calc(100%-2rem)] items-center gap-3 overflow-hidden rounded-2xl p-4 text-left transition-all active:scale-[0.98] duration-300 cursor-pointer"
         style={cardStyle}
       >
         {/* Avatar */}
@@ -131,7 +124,7 @@ export const UserProfileCard = memo(
         </div>
 
         <ChevronRight size={18} style={{ color: secondaryText, flexShrink: 0 }} />
-      </motion.button>
+      </button>
     );
   })
 );

@@ -1,5 +1,4 @@
 import { memo, forwardRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useDrawerTheme } from '@/hooks/useDrawerTheme';
 import { getDailyQuote } from '@/services/quote.service';
 
@@ -17,11 +16,8 @@ export const DivineThoughtCard = memo(
     const isHindi = quote.language === 'hi';
 
     return (
-      <motion.div
+      <div
         ref={ref}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.4 }}
         className="mx-4 overflow-hidden rounded-2xl transition-colors duration-300"
         style={{
           background: quoteCardGradient,
@@ -81,7 +77,7 @@ export const DivineThoughtCard = memo(
             🕉 Refreshes daily at midnight
           </p>
         </div>
-      </motion.div>
+      </div>
     );
   })
 );

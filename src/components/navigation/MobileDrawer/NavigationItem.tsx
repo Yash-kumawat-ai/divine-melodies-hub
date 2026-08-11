@@ -1,7 +1,6 @@
 import { memo, forwardRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useDrawerTheme } from '@/hooks/useDrawerTheme';
 import { NotificationBadge } from './NotificationBadge';
 import type { NavigationItem } from '@/types/navigation';
@@ -12,11 +11,6 @@ interface NavigationItemProps {
   onClose: () => void;
   badgeCount?: number;
 }
-
-const itemVariants = {
-  hidden: { opacity: 0, x: -12 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.22, ease: 'easeOut' } },
-};
 
 export const NavigationItemComponent = memo(
   forwardRef<HTMLDivElement, NavigationItemProps>(function NavigationItemComponent(
@@ -51,7 +45,7 @@ export const NavigationItemComponent = memo(
     const Icon = item.icon;
 
     return (
-      <motion.div ref={ref} variants={itemVariants} role="listitem" className="px-1">
+      <div ref={ref} role="listitem" className="px-1">
         <Link
           to={item.route}
           onClick={(e) => {
@@ -114,7 +108,7 @@ export const NavigationItemComponent = memo(
             }}
           />
         </Link>
-      </motion.div>
+      </div>
     );
   })
 );

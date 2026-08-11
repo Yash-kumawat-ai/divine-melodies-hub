@@ -46,15 +46,19 @@ export function FeatureConceptCard({
 
   return (
     <div className={cn('w-full h-full flex flex-col select-none', className)}>
-      <div className="relative flex-1 flex flex-col rounded-[20px] bg-[#FFFDF6] dark:bg-[#1E1710] border border-[#EAD7C3] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(95,72,38,0.04)] overflow-hidden isolate">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[120px] overflow-hidden z-0">
-          <div className="absolute right-[-20px] top-[36px] w-28 h-28 select-none opacity-[0.09] dark:opacity-[0.04]">
-            <img src={mandalaSvg} alt="" className="w-full h-full object-contain filter sepia saturate-[2.5] hue-rotate-[12deg] brightness-[0.93]" />
-          </div>
-          <div className="absolute left-[-20px] top-[36px] w-28 h-28 select-none opacity-[0.09] dark:opacity-[0.04]">
-            <img src={mandalaSvg} alt="" className="w-full h-full object-contain filter sepia saturate-[2.5] hue-rotate-[12deg] brightness-[0.93] rotate-90" />
-          </div>
-        </div>
+      <div className="relative flex-1 flex flex-col rounded-[20px] bg-[#FFFDF6] dark:bg-[#1E1710] border border-[#EAD7C3] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(95,72,38,0.04)] overflow-hidden">
+        <img
+          src={mandalaSvg}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute left-2 top-8 w-16 h-16 object-contain opacity-[0.12] dark:opacity-[0.06] z-0 filter sepia saturate-[2.5] hue-rotate-[12deg] brightness-[0.93]"
+        />
+        <img
+          src={mandalaSvg}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2 top-8 w-16 h-16 object-contain opacity-[0.12] dark:opacity-[0.06] z-0 rotate-90 filter sepia saturate-[2.5] hue-rotate-[12deg] brightness-[0.93]"
+        />
 
         <div className="relative z-10 flex flex-col flex-1 px-3 pt-2 pb-3">
           <div className="flex items-center justify-center gap-2 mb-2 px-1">

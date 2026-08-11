@@ -1,8 +1,6 @@
 import { memo, useCallback, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { useDrawer } from '@/hooks/useDrawer';
 import { useNavigation } from '@/hooks/useNavigation';
-import { useLanguage } from '@/hooks/useLanguage';
 import { useDrawerTheme } from '@/hooks/useDrawerTheme';
 import { DrawerOverlay } from './DrawerOverlay';
 import { DrawerHeader } from './DrawerHeader';
@@ -14,18 +12,6 @@ import { SettingsGroup } from './SettingsGroup';
 import { AboutGroup } from './AboutGroup';
 import { DivineThoughtCard } from './DivineThoughtCard';
 import { DrawerFooter } from './DrawerFooter';
-import { DRAWER_ANIMATION } from '@/constants/drawerTokens';
-
-const drawerVariants = {
-  hidden: {
-    x: '-100%',
-    transition: { duration: DRAWER_ANIMATION.duration, ease: DRAWER_ANIMATION.ease },
-  },
-  visible: {
-    x: 0,
-    transition: { duration: DRAWER_ANIMATION.duration, ease: DRAWER_ANIMATION.ease },
-  },
-};
 
 function SectionDivider() {
   const { divider } = useDrawerTheme();
@@ -118,17 +104,15 @@ export const MobileDrawer = memo(function MobileDrawer() {
     <>
       <DrawerOverlay isOpen={isOpen} onClose={closeDrawer} />
 
-      {/* Always mounted — avoids AnimatePresence PopChild `ref` warning */}
-      <motion.div
+      <div
         ref={drawerRef}
         role="dialog"
         aria-modal={isOpen}
         aria-label="Main navigation menu"
         aria-hidden={!isOpen}
-        variants={drawerVariants}
-        initial={false}
-        animate={isOpen ? 'visible' : 'hidden'}
-        className="fixed inset-y-0 left-0 z-[130] flex flex-col overflow-hidden transition-colors duration-300"
+        className={`fixed inset-y-0 left-0 z-[130] flex flex-col overflow-hidden transition-transform duration-200 ease-out ${
+          isOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+        }`}
         style={{
           width: '85%',
           maxWidth: '360px',
@@ -137,7 +121,6 @@ export const MobileDrawer = memo(function MobileDrawer() {
           background: drawerBg,
           boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
           willChange: 'transform',
-          pointerEvents: isOpen ? 'auto' : 'none',
         }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -152,7 +135,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
           <SectionDivider />
 
           <SectionLabel label="Explore" />
-          <NavigationGroup label="" delay={0.05}>
+          <NavigationGroup label="">
             {mainItems.map((item) => (
               <NavigationItemComponent
                 key={item.id}
@@ -166,7 +149,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
           <SectionDivider />
 
           <SectionLabel label="Personal" />
-          <NavigationGroup label="" delay={0.1}>
+          <NavigationGroup label="">
             {personalItems.map((item) => (
               <NavigationItemComponent
                 key={item.id}
@@ -196,7 +179,7 @@ export const MobileDrawer = memo(function MobileDrawer() {
 
           <DrawerFooter onClose={closeDrawer} />
         </div>
-      </motion.div>
+      </div>
 
       <style>{`
         @keyframes drawer-ripple {

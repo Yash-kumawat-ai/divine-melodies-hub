@@ -1,34 +1,18 @@
 import { memo, forwardRef } from 'react';
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 
 interface NavigationGroupProps {
   label: string;
   children: ReactNode;
-  delay?: number;
 }
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.04 },
-  },
-};
 
 export const NavigationGroup = memo(
   forwardRef<HTMLDivElement, NavigationGroupProps>(function NavigationGroup(
-    { label, children, delay = 0 }: NavigationGroupProps,
+    { label, children }: NavigationGroupProps,
     ref
   ) {
     return (
-      <motion.div
-        ref={ref}
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        transition={{ delay }}
-        className="mb-1"
-      >
+      <div ref={ref} className="mb-1">
         {label && (
           <p
             className="mb-1 px-4 text-[10px] font-bold uppercase tracking-[0.12em]"
@@ -40,7 +24,7 @@ export const NavigationGroup = memo(
         <div role="list" className="flex flex-col gap-1.5 px-2">
           {children}
         </div>
-      </motion.div>
+      </div>
     );
   })
 );
