@@ -84,7 +84,11 @@ async function fetchJson(path: string): Promise<unknown> {
   if (!response.ok) {
     throw new Error(`${path} returned HTTP ${response.status}`);
   }
-  return response.json();
+  const text = await response.text();
+  if (!text || text.trim().startsWith('<')) {
+    throw new Error(`${path} returned non-JSON response`);
+  }
+  return JSON.parse(text);
 }
 
 export default function PanchangHealthAlert() {

@@ -18,11 +18,23 @@ function normalizeMonth(year: number, month: number | string): string {
 }
 
 async function fetchJson<T>(path: string): Promise<T> {
-  const response = await fetch(path);
-  if (!response.ok) {
-    throw new Error(`${path} returned HTTP ${response.status}`);
+  try {
+    const response = await fetch(path);
+    if (!response.ok) {
+      throw new Error(`${path} returned HTTP ${response.status}`);
+    }
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json') && !contentType.includes('text/json')) {
+      throw new Error('Non-JSON content type');
+    }
+    const text = await response.text();
+    if (!text || text.trim().startsWith('<')) {
+      throw new Error('Received HTML response');
+    }
+    return JSON.parse(text) as T;
+  } catch (err) {
+    throw new Error(`Failed to load ${path}`);
   }
-  return response.json() as Promise<T>;
 }
 
 export function getCurrentFestivalMonth(): string {

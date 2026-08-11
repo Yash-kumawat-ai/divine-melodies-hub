@@ -177,27 +177,27 @@ export default function PanchangDetailsPage() {
         {/* 5 Main Info Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
-            { label: text.tithi, value: panchang?.tithi, icon: Moon, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-900/20' },
-            { label: text.vara, value: panchang?.vara, icon: Sun, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20', sub: '(मंगल देव)' },
-            { label: text.nakshatra, value: panchang?.nakshatra, icon: Star, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/20', sub: 'आज का नक्षत्र' },
-            { label: text.rahuKaal, value: panchang?.rahu_kaal, icon: TriangleAlert, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-900/20', sub: 'आज का राहु काल' },
-            { label: text.abhijit, value: panchang?.abhijit_muhurat || '11:48 AM - 12:35 PM', icon: Sparkles, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/20', sub: 'आज का अभिजित मुहूर्त' },
+            { label: text.tithi, value: panchang?.tithi, icon: Moon, color: 'text-brand-primary dark:text-brand-gold', bg: 'bg-brand-primary/10 dark:bg-brand-gold/15 border border-brand-gold-border/40' },
+            { label: text.vara, value: panchang?.vara, icon: Sun, color: 'text-brand-primary dark:text-brand-gold', bg: 'bg-brand-primary/10 dark:bg-brand-gold/15 border border-brand-gold-border/40', sub: '(मंगल देव)' },
+            { label: text.nakshatra, value: panchang?.nakshatra, icon: Star, color: 'text-brand-primary dark:text-brand-gold', bg: 'bg-brand-primary/10 dark:bg-brand-gold/15 border border-brand-gold-border/40', sub: 'आज का नक्षत्र' },
+            { label: text.rahuKaal, value: panchang?.rahu_kaal, icon: TriangleAlert, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-500/10 dark:bg-rose-950/20 border border-rose-500/30', sub: 'आज का राहु काल' },
+            { label: text.abhijit, value: panchang?.abhijit_muhurat || '11:48 AM - 12:35 PM', icon: Sparkles, color: 'text-brand-primary dark:text-brand-gold', bg: 'bg-brand-primary/10 dark:bg-brand-gold/15 border border-brand-gold-border/40', sub: 'आज का अभिजित मुहूर्त' },
           ].map((card, idx) => (
-            <div key={idx} className="bg-white dark:bg-zinc-900/50 rounded-2xl p-4 border border-brand-saffron/5 dark:border-white/5 shadow-sm text-center flex flex-col items-center justify-center transition-all hover:scale-[1.02]">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-brand-brown/40 dark:text-brand-cream/30 mb-2">{card.label}</p>
-              <h3 className={cn("text-lg font-bold mb-2", card.color)}>{card.value}</h3>
+            <div key={idx} className="bg-surface-raised/90 dark:bg-zinc-900/60 rounded-2xl p-4 border border-brand-gold-border/50 shadow-sm text-center flex flex-col items-center justify-center transition-all hover:scale-[1.02]">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">{card.label}</p>
+              <h3 className={cn("text-base sm:text-lg font-bold mb-2 truncate max-w-full", card.color)}>{card.value}</h3>
               <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-2", card.bg)}>
                 <card.icon className={cn("h-5 w-5", card.color)} />
               </div>
-              <p className="text-[10px] text-brand-brown/50 dark:text-brand-cream/40">{card.sub}</p>
+              <p className="text-[10px] text-muted-foreground font-semibold">{card.sub}</p>
             </div>
           ))}
         </div>
 
         {/* Note Bar */}
-        <div className="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/30 dark:border-amber-700/20 rounded-xl p-4 flex gap-3 items-start mb-8">
-          <Info className="h-5 w-5 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs md:text-sm text-amber-800/70 dark:text-amber-200/60 leading-relaxed">
+        <div className="bg-brand-primary/10 dark:bg-brand-primary/20 border border-brand-gold-border rounded-xl p-4 flex gap-3 items-start mb-8">
+          <Info className="h-5 w-5 text-brand-gold shrink-0 mt-0.5" />
+          <p className="text-xs md:text-sm text-brand-primary dark:text-brand-gold font-medium leading-relaxed">
             {text.specialNote}
           </p>
         </div>
@@ -205,47 +205,47 @@ export default function PanchangDetailsPage() {
         {/* Tables Section */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {/* Shubh Karya Table */}
-          <div className="bg-white dark:bg-zinc-900/40 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/20 overflow-hidden shadow-sm">
-            <div className="bg-emerald-50/50 dark:bg-emerald-900/20 px-6 py-4 border-b border-emerald-100 dark:border-emerald-900/20 flex items-center justify-between">
+          <div className="bg-surface-raised/90 dark:bg-zinc-900/40 rounded-[2rem] border border-brand-gold-border overflow-hidden shadow-sm">
+            <div className="bg-brand-primary/10 dark:bg-brand-gold/15 px-6 py-4 border-b border-brand-gold-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
-                <h2 className="text-xl font-bold text-emerald-800 dark:text-emerald-100">{text.shubhKarya}</h2>
+                <CheckCircle2 className="h-6 w-6 text-brand-gold" />
+                <h2 className="text-xl font-bold text-brand-primary dark:text-brand-gold">{text.shubhKarya}</h2>
               </div>
-              <Sparkles className="h-5 w-5 text-emerald-200 dark:text-emerald-800/40" />
+              <Sparkles className="h-5 w-5 text-brand-gold/60" />
             </div>
             
             <div className="p-0">
               <table className="w-full table-fixed text-left">
                 <thead>
-                  <tr className="bg-emerald-50/20 dark:bg-emerald-900/10 text-[10px] uppercase tracking-widest text-emerald-800/40 dark:text-emerald-100/30">
+                  <tr className="bg-brand-primary/5 dark:bg-brand-gold/10 text-[10px] uppercase tracking-widest text-muted-foreground">
                     <th className="w-[38%] px-3 py-3 font-bold sm:px-6">{text.karya}</th>
                     <th className="px-3 py-3 font-bold sm:px-6">{text.whyShubh}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-emerald-50 dark:divide-emerald-900/10">
+                <tbody className="divide-y divide-brand-gold-border/30">
                   {dynamicKarya?.shubhKarya.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-emerald-50/10 dark:hover:bg-emerald-900/5 transition-colors">
+                    <tr key={idx} className="hover:bg-brand-primary/5 transition-colors">
                       <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
                         <div className="flex items-start gap-2 sm:items-center sm:gap-3">
-                          <div className="w-7 h-7 shrink-0 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 sm:w-8 sm:h-8">
+                          <div className="w-7 h-7 shrink-0 rounded-lg bg-brand-primary/10 dark:bg-brand-gold/15 flex items-center justify-center text-brand-gold sm:w-8 sm:h-8">
                             <Sparkles className="h-4 w-4" />
                           </div>
-                          <span className="font-bold text-brand-brown dark:text-brand-cream text-sm md:text-base break-words">{item.name}</span>
+                          <span className="font-bold text-foreground text-sm md:text-base break-words">{item.name}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
-                        <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium break-words whitespace-normal">
+                          <td className="px-3 py-3 align-top sm:px-6 sm:py-4">
+                        <span className="inline-block max-w-full px-2.5 py-1 rounded-full bg-brand-primary/10 border border-brand-gold-border/40 text-brand-primary dark:text-brand-gold text-xs font-semibold break-words whitespace-normal">
                           {item.reason}
                         </span>
                       </td>
                     </tr>
                   ))}
                   {/* Special Abhijit Row */}
-                  <tr className="bg-emerald-50/30 dark:bg-emerald-900/10">
+                  <tr className="bg-brand-primary/5 dark:bg-brand-gold/10">
                     <td colSpan={2} className="px-3 py-4 sm:px-6">
-                      <div className="flex items-center gap-3 text-emerald-800 dark:text-emerald-200">
-                        <Sun className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
-                        <p className="text-xs font-bold leading-relaxed opacity-80">
+                      <div className="flex items-center gap-3 text-brand-primary dark:text-brand-gold">
+                        <Sun className="h-5 w-5 text-brand-gold" />
+                        <p className="text-xs font-bold leading-relaxed opacity-90">
                           अभिजित मुहूर्त ({panchang?.abhijit_muhurat || '11:48 AM - 12:35 PM'}) के दौरान किए गए कार्य विशेष रूप से फलदायी होते हैं।
                         </p>
                       </div>

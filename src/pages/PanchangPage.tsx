@@ -690,28 +690,28 @@ export default function PanchangPage() {
     <LoadingTempleCard />
   ) : (
     <section className="temple-panel p-4 sm:p-7">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-amber-500/10 pb-6 mb-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-brand-gold-border/50 pb-6 mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/40 shadow-2xs">
             <CalendarDays className="h-6 w-6" />
           </div>
           <div>
             <h2 className="font-display text-2xl font-bold text-foreground">
               {text.panchangDetails}
             </h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-amber-700/60 dark:text-amber-200/50">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-brand-primary/70 dark:text-brand-gold/80">
               Sacred Daily Insights
             </p>
           </div>
         </div>
-        <div className="px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-          <p className="text-sm font-bold text-amber-700 dark:text-amber-100/90">{formatDate(displayDate, lang)}</p>
+        <div className="px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-gold-border">
+          <p className="text-sm font-bold text-brand-primary dark:text-brand-gold">{formatDate(displayDate, lang)}</p>
         </div>
       </div>
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-amber-300/35 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-100 flex items-center gap-3">
-          <TriangleAlert className="h-5 w-5 text-amber-400 shrink-0" />
+        <div className="mb-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-900 dark:text-rose-100 flex items-center gap-3">
+          <TriangleAlert className="h-5 w-5 text-rose-500 shrink-0" />
           {error}
         </div>
       )}
@@ -719,12 +719,12 @@ export default function PanchangPage() {
       <div className="grid grid-cols-2 gap-x-2 gap-y-0 sm:gap-4">
         <div className="flex flex-col">
           {leftDetails.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="group flex items-center gap-2 py-3 border-b border-amber-500/10 last:border-0 sm:rounded-xl sm:border sm:bg-amber-500/[0.02] sm:p-3.5 sm:mb-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+            <div key={label} className="group flex items-center gap-3 py-3 border-b border-brand-gold-border/40 last:border-0 sm:rounded-xl sm:border sm:border-brand-gold-border/50 sm:bg-surface-raised/90 sm:p-3.5 sm:mb-2 shadow-2xs transition-all hover:border-brand-primary/30">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-200/70 sm:text-xs">{label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
                 <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
@@ -732,12 +732,12 @@ export default function PanchangPage() {
         </div>
         <div className="flex flex-col">
           {rightDetails.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="group flex items-center gap-2 py-3 border-b border-amber-500/10 last:border-0 sm:rounded-xl sm:border sm:bg-amber-500/[0.02] sm:p-3.5 sm:mb-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+            <div key={label} className="group flex items-center gap-3 py-3 border-b border-brand-gold-border/40 last:border-0 sm:rounded-xl sm:border sm:border-brand-gold-border/50 sm:bg-surface-raised/90 sm:p-3.5 sm:mb-2 shadow-2xs transition-all hover:border-brand-primary/30">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 dark:text-amber-200/70 sm:text-xs">{label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
                 <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
@@ -751,12 +751,12 @@ export default function PanchangPage() {
     <>
       <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
         {muhuratTiles.map((tile) => (
-          <div key={tile.id} className="temple-panel-soft group relative flex min-w-0 items-center justify-between overflow-hidden p-3 sm:p-5">
+          <div key={tile.id} className="temple-panel-soft group relative flex min-w-0 items-center justify-between overflow-hidden p-3.5 sm:p-5 border-brand-gold-border/60 bg-surface-raised/90 shadow-1 rounded-2xl transition-all hover:border-brand-primary/30">
             <div className="relative z-10 flex-1 min-w-0">
-              <p className="text-sm sm:text-lg font-bold uppercase tracking-[0.1em] text-amber-800 dark:text-amber-200/90">
+              <p className="text-sm sm:text-base font-bold uppercase tracking-[0.1em] text-brand-primary dark:text-brand-gold">
                 {localized(tile.title)}
               </p>
-              <p className="mt-1.5 text-xs sm:text-base font-semibold text-amber-700/80 dark:text-amber-100/80 whitespace-nowrap overflow-hidden text-ellipsis">
+              <p className="mt-1.5 text-xs sm:text-sm font-bold text-foreground whitespace-nowrap overflow-hidden text-ellipsis">
                 {tile.time}
               </p>
             </div>
@@ -771,15 +771,15 @@ export default function PanchangPage() {
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-amber-400/35 bg-amber-500/10 p-3 sm:p-5 overflow-hidden relative group">
+      <div className="mt-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 dark:bg-rose-950/20 p-3 sm:p-5 overflow-hidden relative group">
         <div className="flex items-center justify-between gap-3 sm:gap-4">
           <div className="relative z-10 flex-1">
-            <div className="flex items-center gap-2 text-amber-900 dark:text-amber-100">
-              <TriangleAlert className="h-4 w-4 text-amber-400" />
+            <div className="flex items-center gap-2 text-rose-900 dark:text-rose-100">
+              <TriangleAlert className="h-4 w-4 text-rose-500" />
               <p className="font-display text-base sm:text-xl font-bold">{text.rahuKaal}</p>
             </div>
-            <p className="mt-1.5 text-lg sm:text-2xl font-bold text-amber-900 dark:text-amber-100 whitespace-nowrap">{displayValue(panchang?.rahu_kaal)}</p>
-            <p className="mt-1 text-sm sm:text-sm text-amber-800/70 dark:text-amber-100/70">{text.rahuHint}</p>
+            <p className="mt-1.5 text-lg sm:text-2xl font-bold text-rose-900 dark:text-rose-100 whitespace-nowrap">{displayValue(panchang?.rahu_kaal)}</p>
+            <p className="mt-1 text-xs sm:text-sm text-rose-800/80 dark:text-rose-200/80">{text.rahuHint}</p>
           </div>
           <div className="shrink-0">
             <img 
@@ -795,8 +795,8 @@ export default function PanchangPage() {
 
   const muhuratSection = (
     <section className="temple-panel p-4 sm:p-5">
-      <div className="flex items-center gap-2">
-        <Clock className="h-5 w-5 text-amber-600 dark:text-amber-200" />
+      <div className="flex items-center gap-2 text-brand-primary dark:text-brand-gold">
+        <Clock className="h-5 w-5" />
         <h2 className="font-display text-2xl font-bold text-foreground">{text.muhurat}</h2>
       </div>
       {muhuratBody}
@@ -806,14 +806,14 @@ export default function PanchangPage() {
   const karyaSection = (
     <section className="temple-panel p-3 sm:p-8 dark:bg-zinc-900/60 dark:border-white/5 transition-colors duration-300">
       {dynamicKarya && (
-        <div className="mb-8 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 dark:bg-amber-900/10 dark:border-amber-700/20">
+        <div className="mb-8 p-4 rounded-2xl bg-brand-primary/10 border border-brand-gold-border dark:bg-brand-primary/20">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            <p className="text-lg font-bold text-amber-900 dark:text-amber-50">{dynamicKarya.todaySummary}</p>
+            <Sparkles className="h-5 w-5 text-brand-gold shrink-0" />
+            <p className="text-lg font-bold text-brand-primary dark:text-brand-gold">{dynamicKarya.todaySummary}</p>
           </div>
           {dynamicKarya.dominantReason && (
-            <p className="mt-2 text-sm text-amber-800/80 dark:text-amber-200/40">
-              मुख्य कारक: <span className="text-amber-600 dark:text-amber-300 font-bold">{dynamicKarya.dominantReason}</span>
+            <p className="mt-2 text-sm text-muted-foreground">
+              मुख्य कारक: <span className="text-brand-primary dark:text-brand-gold font-bold">{dynamicKarya.dominantReason}</span>
             </p>
           )}
         </div>
@@ -823,38 +823,38 @@ export default function PanchangPage() {
         <motion.div 
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-8 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center gap-3 dark:bg-rose-900/20 dark:border-rose-700/30"
+          className="mb-8 p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center gap-3 dark:bg-rose-950/30"
         >
           <TriangleAlert className="h-6 w-6 text-rose-500" />
-          <p className="text-lg font-bold text-rose-800 dark:text-rose-50">⚠️ अभी राहु काल है — शुभ कार्य वर्जित</p>
+          <p className="text-lg font-bold text-rose-800 dark:text-rose-200">⚠️ अभी राहु काल है — शुभ कार्य वर्जित</p>
         </motion.div>
       )}
 
       {dynamicKarya?.shubhKarya.some(k => k.reason.includes('अभिजित')) && (
-        <div className="mb-8 p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-3 dark:bg-emerald-900/20 dark:border-emerald-700/30">
-          <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-          <p className="text-lg font-bold text-emerald-900 dark:text-emerald-50">✨ अभिजित मुहूर्त — सभी कार्य शुभ</p>
+        <div className="mb-8 p-4 rounded-2xl bg-brand-primary/10 border border-brand-gold-border flex items-center gap-3 dark:bg-brand-gold/15">
+          <Sparkles className="h-6 w-6 text-brand-gold" />
+          <p className="text-lg font-bold text-brand-primary dark:text-brand-gold">✨ अभिजित मुहूर्त — सभी कार्य शुभ</p>
         </div>
       )}
 
       <div className="relative flex flex-row items-stretch gap-2 sm:gap-12">
         {/* Shubh Karya */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-3 sm:mb-5">
-            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-emerald-500/15 dark:bg-emerald-900/20">
-              <CheckCircle2 className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex items-center gap-2 mb-3 sm:mb-5">
+            <div className="flex h-7 w-7 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-brand-primary/10 border border-brand-gold-border/40 text-brand-primary dark:text-brand-gold">
+              <CheckCircle2 className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
-            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-emerald-700 dark:text-emerald-300 truncate">{text.shubhKarya}</p>
+            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-brand-primary dark:text-brand-gold truncate">{text.shubhKarya}</p>
           </div>
           <div className="space-y-3 sm:space-y-5">
             {(dynamicKarya?.shubhKarya.slice(0, 4) || panchangKaryaLists.shubh.slice(0, 4).map(i => ({ name: localized(i), reason: 'स्थिर', source: 'tithi', priority: 3 }))).map((item, idx) => (
               <div key={idx} className="flex flex-col gap-1">
-                <div className="flex items-center gap-2 text-[10px] sm:text-lg text-amber-900 dark:text-brand-cream/90">
-                  <CheckCircle2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-emerald-600 dark:text-emerald-500/40" />
+                <div className="flex items-center gap-2 text-[10px] sm:text-lg text-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-5 sm:w-5 shrink-0 text-brand-gold" />
                   <span className="truncate font-bold">{'name' in item ? item.name : localized(item as any)}</span>
                 </div>
                 {'reason' in item && (
-                  <span className="ml-5 sm:ml-7 text-[8px] sm:text-xs text-amber-700/60 dark:text-amber-200/20 font-medium">{item.reason}</span>
+                  <span className="ml-5 sm:ml-7 text-[8px] sm:text-xs text-muted-foreground font-medium">{item.reason}</span>
                 )}
               </div>
             ))}
@@ -863,29 +863,29 @@ export default function PanchangPage() {
 
         {/* Vertical Separator with Om */}
         <div className="flex flex-col items-center justify-center px-1 sm:px-6">
-          <div className="w-[1.5px] h-full bg-gradient-to-b from-transparent via-amber-500/40 to-transparent dark:via-white/10" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-5 bg-card dark:bg-[#0a0705] rounded-full border border-amber-500/20 dark:border-white/5 shadow-[0_0_35px_rgba(245,158,11,0.2)] dark:shadow-[0_0_35px_rgba(255,255,255,0.05)] z-10">
+          <div className="w-[1.5px] h-full bg-gradient-to-b from-transparent via-brand-gold-border to-transparent dark:via-white/10" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-2.5 sm:p-5 bg-card dark:bg-[#0a0705] rounded-full border border-brand-gold-border shadow-[0_0_35px_rgba(212,164,55,0.2)] z-10">
             <img src={omImage} alt="Om" className="h-10 w-10 sm:h-20 sm:w-20 object-contain" />
           </div>
         </div>
 
         {/* Ashubh Karya */}
         <div className="flex-1 min-w-0 text-right sm:text-left">
-          <div className="flex items-center justify-end sm:justify-start gap-1.5 mb-3 sm:mb-5">
+          <div className="flex items-center justify-end sm:justify-start gap-2 mb-3 sm:mb-5">
             <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-rose-700 dark:text-rose-300 truncate order-1 sm:order-2">{text.ashubhKarya}</p>
-            <div className="flex h-6 w-6 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-rose-500/15 dark:bg-rose-900/20 order-2 sm:order-1">
-              <XCircle className="h-4 w-4 sm:h-6 sm:w-6 text-rose-600 dark:text-rose-400" />
+            <div className="flex h-7 w-7 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 order-2 sm:order-1">
+              <XCircle className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
           </div>
           <div className="space-y-3 sm:space-y-5">
             {(dynamicKarya?.ashubhKarya.slice(0, 4) || panchangKaryaLists.ashubh.slice(0, 4).map(i => ({ name: localized(i), reason: 'स्थिर', source: 'tithi', priority: 3 }))).map((item, idx) => (
               <div key={idx} className="flex flex-col gap-1 items-end sm:items-start">
-                <div className="flex items-center justify-end sm:justify-start gap-2 text-[10px] sm:text-lg text-amber-900 dark:text-brand-cream/90">
+                <div className="flex items-center justify-end sm:justify-start gap-2 text-[10px] sm:text-lg text-foreground">
                   <span className="truncate font-bold order-1 sm:order-2">{'name' in item ? item.name : localized(item as any)}</span>
-                  <XCircle className="h-3 w-3 sm:h-5 sm:w-5 shrink-0 text-rose-600 dark:text-rose-500/40 order-2 sm:order-1" />
+                  <XCircle className="h-3.5 w-3.5 sm:h-5 sm:w-5 shrink-0 text-rose-600 dark:text-rose-400 order-2 sm:order-1" />
                 </div>
                 {'reason' in item && (
-                  <span className="mr-5 sm:mr-0 sm:ml-7 text-[8px] sm:text-xs text-amber-700/60 dark:text-amber-200/20 font-medium">{item.reason}</span>
+                  <span className="mr-5 sm:mr-0 sm:ml-7 text-[8px] sm:text-xs text-muted-foreground font-medium">{item.reason}</span>
                 )}
               </div>
             ))}
@@ -1016,10 +1016,10 @@ export default function PanchangPage() {
             </div>
 
             {/* Date Navigation Control Bar */}
-            <div className="w-full max-w-5xl rounded-2xl border border-brand-gold-border bg-surface-raised/80 p-3 sm:p-4 shadow-1 backdrop-blur-md">
+            <div className="w-full max-w-5xl rounded-2xl border border-brand-gold-border bg-surface-raised/90 p-3 sm:p-4 shadow-1 backdrop-blur-md">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-                {/* Left: Quick Date Presets using fixed Chip System */}
-                <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
+                {/* Left: Quick Date Presets */}
+                <div className="flex items-center justify-center md:justify-start gap-2 overflow-x-auto w-full md:w-auto py-1 scrollbar-none">
                   {[
                     { label: lang === 'hi' ? 'आज' : 'Today', date: today },
                     { label: lang === 'hi' ? 'कल (बीता)' : 'Yesterday', date: getShiftedDate(today, -1) },
@@ -1033,7 +1033,7 @@ export default function PanchangPage() {
                         type="button"
                         onClick={() => setSelectedDate(item.date)}
                         className={cn(
-                          'px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+                          'px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
                           isActive ? 'chip-selected' : 'chip-unselected'
                         )}
                       >
@@ -1044,28 +1044,34 @@ export default function PanchangPage() {
                   })}
                 </div>
 
-                {/* Right: Prev / Next / Date Picker */}
-                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-                  <div className="flex items-center gap-2">
+                {/* Right: Prev / Custom Date Pill Picker / Next */}
+                <div className="flex items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+                  <div className="flex items-center gap-1.5">
                     <Button
                       type="button"
                       variant="secondary"
                       size="icon"
                       onClick={() => setSelectedDate(getShiftedDate(selectedDate, -1))}
-                      className="btn-icon btn-secondary h-9 w-9 rounded-full"
+                      className="btn-icon btn-secondary h-9 w-9 rounded-full shadow-sm"
                       title={lang === 'hi' ? 'पिछला दिन' : 'Previous Day'}
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
 
-                    <div className="relative flex items-center">
-                      <CalendarDays className="pointer-events-none absolute left-3 h-4 w-4 text-brand-primary dark:text-brand-gold" />
+                    {/* Custom Styled Interactive Date Pill Picker */}
+                    <div className="relative flex items-center justify-center">
+                      <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-brand-gold-border bg-background/90 text-xs font-bold text-foreground shadow-sm hover:border-brand-primary/50 transition-colors">
+                        <CalendarDays className="h-4 w-4 text-brand-primary dark:text-brand-gold shrink-0" />
+                        <span className="truncate max-w-[130px] sm:max-w-none">{formatDate(selectedDate, lang)}</span>
+                        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      </div>
                       <input
                         type="date"
                         value={selectedDate}
                         max={today}
                         onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
-                        className="input-base h-9 rounded-full pl-9 pr-3 text-xs font-bold focus:border-brand-primary dark:focus:border-brand-gold"
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                        title={lang === 'hi' ? 'तारीख चुनें' : 'Select Date'}
                       />
                     </div>
 
@@ -1075,7 +1081,7 @@ export default function PanchangPage() {
                       size="icon"
                       disabled={selectedDate >= today}
                       onClick={() => setSelectedDate(getShiftedDate(selectedDate, 1))}
-                      className="btn-icon btn-secondary h-9 w-9 rounded-full disabled:opacity-40"
+                      className="btn-icon btn-secondary h-9 w-9 rounded-full shadow-sm disabled:opacity-40"
                       title={lang === 'hi' ? 'अगला दिन' : 'Next Day'}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -1088,57 +1094,64 @@ export default function PanchangPage() {
                       variant="secondary"
                       size="sm"
                       onClick={() => setSelectedDate(today)}
-                      className="btn-secondary btn-sm rounded-full flex items-center gap-1"
+                      className="btn-secondary btn-sm rounded-full flex items-center gap-1 text-xs font-bold px-3 py-1.5 shadow-sm"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
-                      {lang === 'hi' ? 'आज पर जाएं' : 'Back to Today'}
+                      {lang === 'hi' ? 'आज' : 'Today'}
                     </Button>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 w-full max-w-5xl min-[480px]:grid-cols-2 lg:grid-cols-3">
+            {/* 3 Top Cards Grid (Sacred Date, Vikram Samvat, Sunrise & Sunset) */}
+            <div className="grid grid-cols-1 gap-3.5 w-full max-w-5xl min-[480px]:grid-cols-2 lg:grid-cols-3">
               {/* Sacred Date Display Card */}
-              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center relative overflow-hidden border-brand-gold-border bg-surface-raised/90 shadow-1">
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-brand-primary via-brand-gold to-brand-primary" />
-                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2 flex items-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5" />
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center border-brand-gold-border bg-surface-raised/95 shadow-1 rounded-2xl transition-all hover:border-brand-primary/30">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2.5 flex items-center justify-center gap-1.5">
+                  <CalendarDays className="h-4 w-4" />
                   {text.dateLabel}
                 </p>
-                <div className="flex items-center gap-4 my-1">
-                  <span className="text-5xl font-display font-extrabold text-brand-primary dark:text-amber-100 tracking-tight">{dateParts.day}</span>
-                  <div className="text-left">
-                    <p className="text-lg font-bold text-foreground leading-none">{dateParts.month}</p>
-                    <p className="text-sm font-semibold text-muted-foreground mt-1">{dateParts.year}</p>
-                    <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-gold text-[11px] font-bold">
-                      {dateParts.weekday}
-                    </span>
+                <div className="flex items-center justify-center gap-3.5 my-1">
+                  <span className="text-5xl font-display font-extrabold text-brand-primary dark:text-amber-100 tracking-tight leading-none">{dateParts.day}</span>
+                  <div className="text-left flex flex-col justify-center">
+                    <p className="text-lg font-bold text-foreground leading-tight">{dateParts.month}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">{dateParts.year}</p>
                   </div>
+                </div>
+                <div className="mt-2.5">
+                  <span className="inline-block px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-gold-border text-brand-primary dark:text-brand-gold text-xs font-bold shadow-2xs">
+                    {dateParts.weekday}
+                  </span>
                 </div>
               </div>
 
               {/* Vikram Samvat Card */}
-              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center border-brand-gold-border bg-surface-raised/90 shadow-1">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2">{text.vikram}</p>
-                <p className="text-xl font-bold text-foreground">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
-                <div className="mt-3 flex items-center gap-2 px-3 py-1 rounded-full chip-selected text-xs font-bold">
-                   <span>{pakshaText}</span>
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center text-center border-brand-gold-border bg-surface-raised/95 shadow-1 rounded-2xl transition-all hover:border-brand-primary/30">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-brand-primary dark:text-brand-gold mb-2.5 flex items-center justify-center gap-1.5">
+                  <Sparkles className="h-4 w-4" />
+                  {text.vikram}
+                </p>
+                <p className="text-xl font-display font-bold text-foreground leading-snug">{localized(panchangMetaPlaceholders.vikramSamvat)}</p>
+                <div className="mt-3 flex items-center justify-center">
+                  <span className="px-3.5 py-1 rounded-full chip-selected text-xs font-bold shadow-2xs">
+                    {pakshaText}
+                  </span>
                 </div>
               </div>
 
               {/* Sunrise & Sunset Card */}
-              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center min-[480px]:col-span-2 lg:col-span-1 border-brand-gold-border bg-surface-raised/90 shadow-1">
-                <div className="grid grid-cols-2 gap-6 w-full">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <Sunrise className="h-6 w-6 text-brand-gold" />
+              <div className="temple-panel-soft p-5 flex flex-col items-center justify-center min-[480px]:col-span-2 lg:col-span-1 border-brand-gold-border bg-surface-raised/95 shadow-1 rounded-2xl transition-all hover:border-brand-primary/30">
+                <div className="grid grid-cols-2 gap-4 w-full items-center">
+                  <div className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/15">
+                    <Sunrise className="h-6 w-6 text-brand-gold shrink-0" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{text.sunrise}</p>
-                    <p className="text-base font-bold text-foreground">{displayValue(panchang?.sunrise)}</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground">{displayValue(panchang?.sunrise)}</p>
                   </div>
-                  <div className="flex flex-col items-center gap-1.5">
-                    <Sunset className="h-6 w-6 text-brand-primary dark:text-amber-300" />
+                  <div className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-brand-primary/5 dark:bg-amber-500/10 border border-brand-primary/15">
+                    <Sunset className="h-6 w-6 text-brand-primary dark:text-amber-300 shrink-0" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{text.sunset}</p>
-                    <p className="text-base font-bold text-foreground">{displayValue(panchang?.sunset)}</p>
+                    <p className="text-sm sm:text-base font-bold text-foreground">{displayValue(panchang?.sunset)}</p>
                   </div>
                 </div>
               </div>
