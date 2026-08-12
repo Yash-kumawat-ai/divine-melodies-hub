@@ -67,26 +67,26 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
   };
 
   return (
-    <Sheet modal={false} open={open} onOpenChange={onOpenChange}>
+    <Sheet modal={true} open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="mx-auto flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-[0_-24px_70px_hsl(20_30%_10%/0.25)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0d0b08]/95"
+        className="mx-auto flex max-h-[92vh] sm:max-h-[85vh] w-full max-w-lg flex-col overflow-y-auto overscroll-contain rounded-t-[2.25rem] border-[#E8D8C4] dark:border-amber-500/20 bg-[#FFFDF8] dark:bg-[#120D09] px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-24px_70px_rgba(101,19,23,0.2)] backdrop-blur-2xl text-stone-900 dark:text-stone-100 z-[120]"
       >
         <SheetHeader className="sr-only">
           <SheetTitle>{t('accountSettings')}</SheetTitle>
         </SheetHeader>
 
-        <div className="mb-4 flex items-start gap-3 pr-10">
-          <Avatar className="h-14 w-14 shrink-0 border border-primary/25 bg-background">
+        <div className="mb-5 flex items-center gap-3.5 pr-8 border-b border-[#E8D8C4]/60 dark:border-stone-800 pb-4">
+          <Avatar className="h-14 w-14 shrink-0 border-2 border-[#E8D8C4] dark:border-amber-500/30 bg-[#FAF0E4] shadow-xs">
             <AvatarImage src={profile?.avatar_url} alt={displayName} />
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarFallback className="font-extrabold text-[#651317] bg-[#FAF0E4]">{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-base font-semibold text-foreground">{displayName}</p>
-            <p className="truncate text-sm text-muted-foreground">{contactLine}</p>
-            <p className="mt-1 text-xs font-medium text-primary">
+            <p className="truncate text-base font-extrabold text-[#651317] dark:text-amber-100">{displayName}</p>
+            <p className="truncate text-xs text-stone-500 dark:text-stone-400 font-medium mt-0.5">{contactLine}</p>
+            <span className="inline-block mt-1.5 text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#FAF0E4] dark:bg-amber-500/10 text-[#651317] dark:text-amber-300 border border-[#E8D8C4] dark:border-amber-500/30">
               {user ? t('signedInDevotee') : t('guestDevotee')}
-            </p>
+            </span>
           </div>
         </div>
 
@@ -95,36 +95,36 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
             <SheetClose asChild>
               <Link
                 to="/account"
-                className="mb-4 flex min-h-[52px] items-center gap-3 rounded-2xl border border-primary/25 bg-gradient-to-r from-amber-50 via-orange-50/80 to-background px-4 py-3 shadow-sm dark:from-amber-950/40 dark:via-orange-950/20 dark:to-background"
+                className="mb-4 flex min-h-[52px] items-center gap-3 rounded-2xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 shadow-xs active:scale-[0.99] hover:border-[#651317]"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FAF0E4] dark:bg-stone-800 text-[#651317] dark:text-amber-300 font-bold">
                   <Pencil className="h-5 w-5" />
                 </span>
-                <span className="flex-1 text-sm font-semibold text-foreground">{t('editProfile')}</span>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <span className="flex-1 text-sm font-extrabold text-stone-900 dark:text-stone-100">{t('editProfile')}</span>
+                <ChevronRight className="h-5 w-5 text-stone-400" />
               </Link>
             </SheetClose>
 
-            <div className="mb-4 rounded-2xl border border-amber-300/30 bg-gradient-to-br from-amber-50 via-background to-orange-50 p-4 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
+            <div className="mb-4 rounded-2xl border border-[#E8D8C4] dark:border-amber-500/30 bg-gradient-to-br from-[#FAF0E4]/60 via-white to-[#FFFDF8] dark:from-stone-900 dark:to-stone-950 p-4 shadow-xs">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary">{t('currentPlan')}</p>
-                  <p className="mt-1 font-display text-lg font-bold text-foreground">{t('freePlan')}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t('sevaPlanBlurb')}</p>
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{t('currentPlan')}</p>
+                  <p className="mt-1 font-display text-lg font-black text-stone-900 dark:text-stone-100">{t('freePlan')}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-stone-600 dark:text-stone-400 font-medium">{t('sevaPlanBlurb')}</p>
                 </div>
                 <Sparkles className="h-6 w-6 shrink-0 text-amber-500" />
               </div>
               <SheetClose asChild>
                 <Link
                   to="/pricing"
-                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-sm font-semibold text-white shadow-md"
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#651317] hover:bg-[#8B1A1F] text-sm font-extrabold text-white shadow-md transition-all"
                 >
                   {t('viewPlans')}
                 </Link>
               </SheetClose>
             </div>
 
-            <nav className="flex flex-col gap-2 overflow-y-auto">
+            <nav className="flex flex-col gap-2 overflow-y-auto pb-4">
               <MenuRow to="/account/liked" icon={<Heart className="h-5 w-5" />} label={t('likedBhajans')} />
               <MenuRow to="/account/saved" icon={<Bookmark className="h-5 w-5" />} label={t('savedPosts')} />
               <MenuRow to="/notifications" icon={<Bell className="h-5 w-5" />} label={t('notifications')} />
@@ -133,9 +133,9 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
               <button
                 type="button"
                 onClick={handleLogout}
-                className="mt-1 flex min-h-[52px] items-center gap-3 rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-semibold text-destructive transition-colors active:scale-[0.99] hover:bg-destructive/10"
+                className="mt-2 flex min-h-[52px] items-center gap-3 rounded-2xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 px-4 py-3 text-sm font-bold text-rose-600 dark:text-rose-400 transition-colors active:scale-[0.99] hover:bg-rose-100/60"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 dark:bg-rose-900/40">
                   <LogOut className="h-5 w-5" />
                 </span>
                 <span className="flex-1 text-left">{t('logout')}</span>
@@ -143,10 +143,12 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
             </nav>
           </>
         ) : (
-          <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">{t('signInToLike')}</p>
+          <div className="flex flex-col gap-4 py-3">
+            <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-medium text-center leading-relaxed">
+              {t('signInToLike')}
+            </p>
             <SheetClose asChild>
-              <Button asChild className="min-h-12 w-full rounded-xl">
+              <Button asChild size="lg" className="w-full font-extrabold text-sm uppercase tracking-wider">
                 <Link to="/auth/login">
                   <LogIn className="mr-2 h-4 w-4" />
                   {t('login')}
@@ -154,7 +156,7 @@ export default function ProfileHubSheet({ open, onOpenChange }: ProfileHubSheetP
               </Button>
             </SheetClose>
             <SheetClose asChild>
-              <Button asChild variant="outline" className="min-h-12 w-full rounded-xl">
+              <Button asChild variant="outline" className="min-h-12 w-full rounded-2xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-bold text-sm hover:bg-[#FAF0E4]">
                 <Link to="/auth/signup">
                   <UserPlus className="mr-2 h-4 w-4" />
                   {t('signUp')}

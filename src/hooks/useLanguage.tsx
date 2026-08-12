@@ -330,7 +330,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     shareViaEmail: 'Share via Email',
     copyShareLink: 'Copy link',
     linkCopied: 'Link copied!',
-    kirtanAi: 'Kirtan AI',
+    kirtanAi: 'Narad AI',
     elderlyAssistant: 'Elderly Assistant',
     uploadBhajan: 'Upload',
     adminModeration: 'Moderation Queue',
@@ -574,7 +574,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     shareViaEmail: 'ईमेल के माध्यम से साझा करें',
     copyShareLink: 'लिंक कॉपी करें',
     linkCopied: 'लिंक कॉपी किया गया!',
-    kirtanAi: 'कीर्तन प्रवाह',
+    kirtanAi: 'नारद AI',
     elderlyAssistant: 'बुजुर्ग सहायक',
     uploadBhajan: 'अपलोड',
     adminModeration: 'संयोजन कतार',
@@ -797,7 +797,7 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<SupportedLanguage>(() => {
     const stored = localStorage.getItem('app_language') as SupportedLanguage | null;
-    return stored || 'en';
+    return stored || 'hi';
   });
 
   useEffect(() => {

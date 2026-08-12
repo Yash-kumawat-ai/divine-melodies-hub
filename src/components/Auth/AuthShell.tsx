@@ -67,35 +67,33 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
         ? shellContent.signupHi
         : shellContent[mode];
   return (
-    <div className="relative min-h-[100svh] overflow-hidden bg-[#FCF6E8] dark:bg-[#061323]">
-      {/* Desktop wallpaper — covers the entire desktop site */}
+    <div className="relative min-h-screen bg-[#FAF6EE] dark:bg-[#0C0907] text-stone-900 dark:text-stone-100 overflow-x-hidden">
+      {/* Background ambient wallpaper */}
       <img
         src={shivDesktop}
-        alt=""
-        className="absolute inset-0 hidden md:block h-full w-full object-cover z-0"
-        style={{ objectPosition: '45% center' }}
+        alt="Lord Shiva Sacred Wallpaper"
+        className="absolute inset-0 hidden md:block h-full w-full object-cover object-center z-0 opacity-20 filter brightness-90 contrast-105 pointer-events-none"
         fetchpriority="high"
         loading="eager"
       />
-      {/* Dark gradient overlay on the left to ensure high readability for login form */}
-      <div className="pointer-events-none absolute inset-0 hidden md:block bg-gradient-to-r from-black/85 via-black/40 to-transparent z-0" />
+      <div className="pointer-events-none absolute inset-0 hidden md:block bg-gradient-to-r from-[#FAF6EE] via-[#FAF6EE]/90 to-transparent dark:from-[#0C0907] dark:via-[#0C0907]/90 z-0" />
 
       {/* Language Selector */}
-      <div className="absolute right-4 top-4 z-30 sm:right-6 sm:top-6">
+      <div className="absolute right-4 top-4 z-30 sm:right-8 sm:top-6">
         <label className="sr-only" htmlFor="auth-language">
           {content.language}
         </label>
-        <div className="flex items-center gap-2 rounded-full border border-[#EAD7C3] dark:border-[#E6C27A]/30 bg-[#FFF5EA]/90 dark:bg-[#0A1830]/80 px-3 py-2 text-[#E06D14] dark:text-[#E6C27A] shadow-lg shadow-black/5 dark:shadow-black/30 backdrop-blur-xl">
+        <div className="flex items-center gap-2 rounded-full border border-[#E8D8C4] dark:border-amber-500/30 bg-[#FAF0E4]/90 dark:bg-stone-900/90 px-3.5 py-2 text-[#651317] dark:text-amber-300 shadow-md backdrop-blur-md">
           <Languages className="h-4 w-4" />
           <select
             id="auth-language"
             value={language}
             onChange={(event) => setLanguage(event.target.value as typeof language)}
-            className="bg-transparent text-xs font-semibold uppercase tracking-wide text-[#E06D14] dark:text-[#FFD98A] outline-none"
+            className="bg-transparent text-xs font-extrabold uppercase tracking-wide text-[#651317] dark:text-amber-300 outline-none"
             aria-label={content.language}
           >
             {languageOptions.map((option) => (
-              <option key={option.code} value={option.code} className="bg-white dark:bg-[#0A1830] text-[#3A2412] dark:text-white">
+              <option key={option.code} value={option.code} className="bg-white dark:bg-stone-900 text-stone-900 dark:text-white">
                 {option.label}
               </option>
             ))}
@@ -103,82 +101,87 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
         </div>
       </div>
 
-      {/* Main Content Layout Grid */}
-      <div className="relative z-10 flex min-h-[100svh] flex-col md:grid md:min-h-[100svh] md:grid-cols-2">
-        {/* Left Column: Login card container */}
-        <div className="relative order-2 mt-auto w-full px-4 pb-6 pt-0 md:order-1 md:mt-0 md:flex md:min-h-[100svh] md:items-center md:justify-center lg:bg-transparent md:px-10 md:py-10">
-          <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 bg-[radial-gradient(circle_at_25%_30%,rgba(230,194,122,0.07),transparent_50%)] md:block" />
+      {/* Mobile Top Header Banner Image */}
+      <div className="relative h-[22vh] sm:h-[26vh] w-full overflow-hidden md:hidden z-0">
+        <img
+          src={shivMobile}
+          alt="Deity Wallpaper"
+          className="w-full h-full object-cover object-top"
+          fetchpriority="high"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-[#FAF6EE] dark:to-[#0C0907]" />
+      </div>
 
-          <div className="relative w-full max-w-md">
-            <div className="relative -mt-10 overflow-hidden rounded-t-[1.75rem] rounded-b-2xl border border-[#EAD7C3] dark:border-[#E6C27A]/30 bg-[#FFFDFC]/90 dark:bg-[#0A1830]/80 p-6 shadow-[0_-16px_48px_rgba(95,72,38,0.06),0_24px_64px_-12px_rgba(95,72,38,0.08)] dark:shadow-[0_-16px_48px_rgba(0,0,0,0.45),0_24px_64px_-12px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-7 md:mt-0 md:rounded-2xl md:shadow-[0_24px_64px_-12px_rgba(95,72,38,0.08)] dark:shadow-[0_24px_64px_-12px_rgba(0,0,0,0.6)]">
-              {/* Temple arch accent */}
-              <div className="pointer-events-none absolute -top-px left-1/2 h-7 w-28 -translate-x-1/2 rounded-b-[1.75rem] border-b border-x border-[#EAD7C3] dark:border-[#E6C27A]/20 bg-[#FFFDFC]/95 dark:bg-[#0A1830]/90" />
+      {/* Main Container Layout */}
+      <div className="relative z-10 flex min-h-[calc(100vh-22vh)] md:min-h-screen flex-col justify-center px-4 pb-32 pt-2 md:py-12 md:px-8 max-w-6xl mx-auto">
+        <div className="w-full md:grid md:grid-cols-12 md:gap-8 lg:gap-12 md:items-center">
+          
+          {/* Left Column: Form Card */}
+          <div className="md:col-span-6 lg:col-span-6">
+            <div className="relative overflow-hidden rounded-[2.25rem] border border-[#E8D8C4] dark:border-amber-500/25 bg-[#FFFDF8]/95 dark:bg-[#140F0A]/95 p-6 sm:p-9 shadow-2xl backdrop-blur-2xl">
+              {/* Temple Arch Header Line */}
+              <div className="pointer-events-none absolute top-0 left-1/2 h-1.5 w-32 -translate-x-1/2 rounded-b-full bg-[#651317] dark:bg-amber-400 opacity-90" />
 
-              <OmSymbol className="mb-5" />
+              <OmSymbol className="mb-4 mt-1" />
               {children}
-              <div className="mt-6 border-t border-[#EAD7C3] dark:border-[#E6C27A]/15 pt-4 text-center text-xs text-[#543D2B]/85 dark:text-[#B5BFD0]">
+              
+              <div className="mt-5 border-t border-[#E8D8C4] dark:border-stone-800 pt-4 text-center text-xs text-stone-500 dark:text-stone-400 font-medium space-y-2">
                 <p>{content.guideline}</p>
-                <p className="mt-2">
-                  <Link className="font-semibold text-[#E06D14] dark:text-[#E6C27A] hover:text-[#E06D14]/80 dark:hover:text-[#FFD98A]" to="/">
-                    {content.home}
+                <p>
+                  <Link className="font-extrabold text-[#651317] dark:text-amber-400 hover:underline" to="/">
+                    ← {content.home}
                   </Link>
                 </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Column: Transparent placeholder letting wallpaper show through on desktop */}
-        <div className="relative order-1 h-[58svh] shrink-0 overflow-hidden md:order-2 md:sticky md:top-0 md:h-[100svh] md:min-h-[100svh] lg:bg-transparent">
-          {/* Mobile wallpaper — only visible on mobile at the top */}
-          <img
-            src={shivMobile}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center md:hidden"
-            fetchpriority="high"
-            loading="eager"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[#061323]/95 md:hidden" />
+          {/* Right Column: Desktop Sacred Showcase Banner */}
+          <div className="hidden md:flex md:col-span-6 lg:col-span-6 flex-col justify-between relative overflow-hidden rounded-[2.25rem] border border-[#E8D8C4]/80 dark:border-amber-500/20 bg-gradient-to-br from-[#3A0A0E] via-[#5C1317] to-[#200507] p-8 lg:p-10 text-white min-h-[560px] shadow-2xl">
+            <img
+              src={shivDesktop}
+              alt="Deity Artwork"
+              className="absolute inset-0 h-full w-full object-cover object-center opacity-30 filter contrast-110Mix-blend-overlay"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#200507]/95 via-transparent to-[#3A0A0E]/40" />
 
-          {/* Details & description layout on desktop overlay */}
-          <div className="relative z-10 flex h-full flex-col justify-between p-6 sm:p-8 md:justify-end md:p-12 md:pb-14">
-            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E6C27A]/30 bg-black/25 px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#E6C27A] backdrop-blur-md md:hidden">
-              <Sparkles className="h-3.5 w-3.5" />
-              {content.eyebrow}
-            </p>
+            <div className="relative z-10">
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-black/40 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-300 backdrop-blur-md shadow-xs">
+                <Sparkles className="h-3.5 w-3.5" />
+                {content.eyebrow}
+              </span>
+            </div>
 
-            {mode === 'signup' && (
-              <div className="hidden md:block">
-                <p className="inline-flex items-center gap-2 rounded-full border border-[#E6C27A]/30 bg-black/25 px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#E6C27A] backdrop-blur-md">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {content.eyebrow}
-                </p>
-                <div className="mt-6 max-w-md space-y-4">
-                  <h1 className="text-4xl font-semibold leading-tight text-white drop-shadow-lg sm:text-5xl">
-                    {content.heading}
-                  </h1>
-                  <p className="text-base text-[#B5BFD0] sm:text-lg">{content.body}</p>
-                  <div className="grid max-w-md grid-cols-2 gap-3 pt-2 text-xs uppercase tracking-[0.14em] text-[#B5BFD0] sm:text-sm">
-                    <span className="rounded-xl border border-[#E6C27A]/25 bg-black/20 px-3 py-2 text-center backdrop-blur-sm">
-                      Bhajan Uploads
-                    </span>
-                    <span className="rounded-xl border border-[#E6C27A]/25 bg-black/20 px-3 py-2 text-center backdrop-blur-sm">
-                      AI Support
-                    </span>
-                    <span className="rounded-xl border border-[#E6C27A]/25 bg-black/20 px-3 py-2 text-center backdrop-blur-sm">
-                      Secure Login
-                    </span>
-                    <span className="rounded-xl border border-[#E6C27A]/25 bg-black/20 px-3 py-2 text-center backdrop-blur-sm">
-                      Community Share
-                    </span>
-                  </div>
+            <div className="relative z-10 space-y-4 my-auto py-6">
+              <h1 className="text-3xl lg:text-4xl font-black font-display leading-tight text-amber-100 drop-shadow-md">
+                {content.heading}
+              </h1>
+              <p className="text-sm lg:text-base text-amber-200/80 font-medium leading-relaxed max-w-md">
+                {content.body}
+              </p>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-4 text-xs font-extrabold uppercase tracking-wider text-amber-200/90">
+                <div className="rounded-xl border border-amber-400/20 bg-black/30 px-3.5 py-2.5 text-center backdrop-blur-md">
+                  🎵 Bhajan Uploads
                 </div>
-                <p className="mt-8 text-xs font-medium uppercase tracking-[0.16em] text-[#B5BFD0]/80">
-                  Crafted for chanting, lyrics, and timeless devotion.
-                </p>
+                <div className="rounded-xl border border-amber-400/20 bg-black/30 px-3.5 py-2.5 text-center backdrop-blur-md">
+                  🤖 Kirtan AI Assistance
+                </div>
+                <div className="rounded-xl border border-amber-400/20 bg-black/30 px-3.5 py-2.5 text-center backdrop-blur-md">
+                  📿 Japa & Meditation
+                </div>
+                <div className="rounded-xl border border-amber-400/20 bg-black/30 px-3.5 py-2.5 text-center backdrop-blur-md">
+                  🚩 Satsang Community
+                </div>
               </div>
-            )}
+            </div>
+
+            <div className="relative z-10 border-t border-amber-400/20 pt-4 text-[11px] font-bold uppercase tracking-widest text-amber-300/70">
+              Divine Melodies Hub • Chanting, Lyrics & Timeless Devotion
+            </div>
           </div>
+
         </div>
       </div>
     </div>

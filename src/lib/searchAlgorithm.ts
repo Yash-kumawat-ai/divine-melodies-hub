@@ -209,7 +209,7 @@ export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
     if (allWordsMatch) return true;
   }
 
-  if (isLatinQuery(trimmed) && trimmed.length >= 4) {
+  if (queryWords.length === 1 && isLatinQuery(trimmed) && trimmed.length >= 4) {
     if (titleWords.some((tWord) => laxLatinWordMatch(trimmed, tWord) || fuzzyTitleWordMatch(trimmed, tWord))) {
       return true;
     }
@@ -496,6 +496,12 @@ function allowNaradFuzzyFallback(query: string): boolean {
 export function naradSearchBhajans(query: string, source: any[] = []): any[] {
   const trimmed = query.trim();
   if (!trimmed) return [];
+
+  // 1. Use smartSearchBhajans first for 100% search parity with main search engine
+  const primaryResults = smartSearchBhajans(trimmed, source);
+  if (primaryResults.length > 0) {
+    return primaryResults;
+  }
 
   const strictMatches = source.filter((bhajan) => bhajanStrictTitleMatch(bhajan, trimmed));
   let candidates = strictMatches;

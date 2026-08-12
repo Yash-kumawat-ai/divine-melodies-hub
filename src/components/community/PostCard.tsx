@@ -53,10 +53,19 @@ export function EventCountdown({ datetime }: { datetime: string }) {
 }
 
 
+const POST_TYPE_LABELS: Record<string, { hi: string; en: string }> = {
+  bhajan_share: { hi: "भजन साझा", en: "Bhajan Share" },
+  bhajan_request: { hi: "भजन अनुरोध", en: "Bhajan Request" },
+  question: { hi: "प्रश्न", en: "Question" },
+  event: { hi: "कार्यक्रम", en: "Event" },
+  thought: { hi: "विचार", en: "Thought" },
+};
+
 export interface PostCardProps {
   post: CommunityPost;
   user: any;
   isHi: boolean;
+  variant?: "card" | "feed";
   comments: PostComment[];
   isCommentsExpanded: boolean;
   onToggleComments: (postId: string) => void;
@@ -79,10 +88,15 @@ export function PostCard({
   post, user, isHi, comments, isCommentsExpanded, onToggleComments, onToggleReaction, onToggleRsvp, onVoteOption, onDeleteComment, onAddComment, onDeletePost, newCommentText, setNewCommentText, commentIsLyricsSubmit, setCommentIsLyricsSubmit,
   isLoadingComments = false,
   isPostSaved,
-  onToggleSavePost
+  onToggleSavePost,
+  variant = "card",
 }: PostCardProps) {
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const isFeed = variant === "feed";
+  const typeLabel = isHi
+    ? (POST_TYPE_LABELS[post.type]?.hi || post.type)
+    : (POST_TYPE_LABELS[post.type]?.en || post.type.replace("_", " "));
   
   // Format DateTime
   const formatTime = (isoString: string) => {
@@ -143,16 +157,20 @@ export function PostCard({
   };
 
   return (
-    <div className={`rounded-3xl p-6 transition-all duration-300 flex flex-col gap-5 text-left border hover:shadow-xl ${
-      isDark 
-        ? 'bg-[#130f0c] border-[#231b15] hover:border-orange-500/25 shadow-black/40' 
-        : 'bg-white border-orange-500/10 shadow-orange-950/5 hover:border-orange-500/20'
-    }`}>
+    <div className={
+      isFeed
+        ? `p-4 sm:p-5 flex flex-col gap-3.5 text-left border border-[#E8D8C4] dark:border-stone-800 rounded-2xl bg-[#FFFDF8] dark:bg-[#1A120B] shadow-xs transition-all hover:border-[#D6A86B]`
+        : `rounded-3xl p-6 transition-all duration-300 flex flex-col gap-5 text-left border hover:shadow-xl ${
+            isDark
+              ? "bg-[#130f0c] border-[#231b15] hover:border-orange-500/25 shadow-black/40"
+              : "bg-white border-orange-500/10 shadow-orange-950/5 hover:border-orange-500/20"
+          }`
+    }>
       <div>
         {/* Post Card Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 min-w-[44px] min-h-[44px] max-w-[44px] max-h-[44px] rounded-full p-[1.5px] bg-gradient-to-tr from-amber-500 to-orange-600 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className={`${isFeed ? "w-10 h-10 min-w-[40px] ring-1 ring-[#E8D8C4] dark:ring-stone-700" : "w-11 h-11 min-w-[44px] max-w-[44px] max-h-[44px] p-[1.5px] bg-gradient-to-tr from-amber-500 to-orange-600"} rounded-full shrink-0`}>
               <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center font-extrabold text-xs uppercase select-none ${
                 isDark ? 'bg-stone-900 text-orange-400' : 'bg-stone-100 text-orange-600'
               }`}>
@@ -163,14 +181,16 @@ export function PostCard({
                 )}
               </div>
             </div>
-            <div className="flex flex-col text-left">
-              <span className={`font-display font-extrabold text-base flex items-center gap-1.5 flex-wrap ${
+            <div className="flex flex-col text-left min-w-0">
+              <span className={`font-display font-bold ${isFeed ? "text-sm" : "text-base font-extrabold"} flex items-center gap-1.5 flex-wrap ${
                 isDark ? 'text-stone-100' : 'text-stone-850'
               }`}>
                 {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
-                <span className="text-xs select-none" title={authorBadge.label}>
-                  {authorBadge.icon}
-                </span>
+                {!isFeed && (
+                  <span className="text-xs select-none" title={authorBadge.label}>
+                    {authorBadge.icon}
+                  </span>
+                )}
                 {post.group_name && (
                   <span className={`text-xs font-semibold ${
                     isDark ? 'text-stone-500' : 'text-stone-450'
@@ -179,15 +199,22 @@ export function PostCard({
                   </span>
                 )}
               </span>
-              <p className={`text-xs font-semibold tracking-wide mt-0.5 ${
+              <p className={`${isFeed ? "text-[11px]" : "text-xs"} font-semibold tracking-wide mt-0.5 ${
                 isDark ? 'text-stone-400' : 'text-stone-500'
               }`}>
-                {formatTime(post.created_at)} • <span className={`${authorBadge.colorClass} font-semibold`}>{authorBadge.label}</span>
+                {formatTime(post.created_at)}
+                {!isFeed && (
+                  <> • <span className={`${authorBadge.colorClass} font-semibold`}>{authorBadge.label}</span></>
+                )}
+                {isFeed && (
+                  <> · <span className="text-stone-400">{typeLabel}</span></>
+                )}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            {!isFeed && (
             <Badge 
               variant="outline" 
               className={`text-xs uppercase font-extrabold px-3 py-1 rounded-full select-none ${
@@ -198,17 +225,9 @@ export function PostCard({
                 isDark ? "bg-stone-900 text-stone-400 border-stone-800" : "bg-stone-100 text-stone-600 border-stone-200"
               }`}
             >
-              {(() => {
-                const typesMap: Record<string, { hi: string, en: string }> = {
-                  'bhajan_share': { hi: 'भजन साझा', en: 'Bhajan Share' },
-                  'bhajan_request': { hi: 'भजन अनुरोध', en: 'Bhajan Request' },
-                  'question': { hi: 'जिज्ञासा/प्रश्न', en: 'Question/Poll' },
-                  'event': { hi: 'कार्यक्रम', en: 'Event' },
-                  'thought': { hi: 'विचार', en: 'Thought' }
-                };
-                return isHi ? (typesMap[post.type]?.hi || post.type) : (typesMap[post.type]?.en || post.type.replace('_', ' '));
-              })()}
+              {typeLabel}
             </Badge>
+            )}
             {user?.id === post.author_id && (
               <button 
                 onClick={() => onDeletePost(post.id)}
@@ -225,9 +244,9 @@ export function PostCard({
         </div>
 
         {/* Post content and media */}
-        <div className="mt-3.5 space-y-3.5 text-left w-full">
+        <div className={`${isFeed ? "mt-2 space-y-2" : "mt-3.5 space-y-3.5"} text-left w-full`}>
           {post.title && (
-            <h3 className={`font-display font-extrabold text-base sm:text-lg leading-tight ${
+            <h3 className={`font-display font-bold ${isFeed ? "text-sm" : "text-base sm:text-lg font-extrabold"} leading-tight ${
               isDark ? 'text-amber-50' : 'text-stone-850'
             }`}>
               {post.title}
@@ -235,7 +254,7 @@ export function PostCard({
           )}
 
           {post.content && (
-            <p className={`text-xs sm:text-[13px] whitespace-pre-wrap leading-relaxed ${
+            <p className={`${isFeed ? "text-sm" : "text-xs sm:text-[13px]"} whitespace-pre-wrap leading-relaxed ${
               isDark ? 'text-stone-300' : 'text-stone-600'
             }`}>
               {highlightSacredText(post.content)}
@@ -492,6 +511,62 @@ export function PostCard({
       </div>
       
       {/* Post action footer bar */}
+      {isFeed ? (
+        <div className="flex items-center justify-around pt-2 -mx-1">
+          <button
+            onClick={() => onToggleReaction(post.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all active:scale-95 group ${post.has_reacted ? "text-rose-500" : "text-stone-500 hover:text-rose-500"}`}
+            aria-label={isHi ? "प्रणाम" : "Bless this post"}
+          >
+            <Heart className={`w-[18px] h-[18px] ${post.has_reacted ? "fill-rose-500 text-rose-500" : ""}`} />
+            {post.reaction_count > 0 && (
+              <span className="text-xs font-semibold tabular-nums">{post.reaction_count}</span>
+            )}
+          </button>
+          <button
+            onClick={() => onToggleComments(post.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all active:scale-95 group ${isCommentsExpanded ? "text-orange-500" : "text-stone-500 hover:text-orange-500"}`}
+            aria-label={isHi ? "टिप्पणी" : "View comments"}
+            aria-expanded={isCommentsExpanded}
+          >
+            <MessageSquare className="w-[18px] h-[18px]" />
+            {post.comment_count > 0 && (
+              <span className="text-xs font-semibold tabular-nums">{post.comment_count}</span>
+            )}
+          </button>
+          <button
+            onClick={() => onToggleSavePost(post.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all active:scale-95 group ${isPostSaved ? "text-amber-500" : "text-stone-500 hover:text-amber-500"}`}
+            aria-label={isHi ? "सहेजें" : "Save post"}
+          >
+            <Bookmark className={`w-[18px] h-[18px] ${isPostSaved ? "fill-amber-500 text-amber-500" : ""}`} />
+          </button>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/community/posts/${post.id}`;
+              if (navigator.share) {
+                navigator.share({
+                  title: post.title || (isHi ? "भक्तिमय पोस्ट" : "Devotional Post"),
+                  text: post.content ? post.content.substring(0, 100) + "..." : (isHi ? "सत्संग पोस्ट देखें" : "Check out this post on Divine Melodies Hub"),
+                  url: link
+                }).catch((err) => {
+                  if (err.name !== "AbortError") {
+                    navigator.clipboard.writeText(link);
+                    toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
+                  }
+                });
+              } else {
+                navigator.clipboard.writeText(link);
+                toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-stone-500 hover:text-orange-500 transition-all active:scale-95 group"
+            aria-label={isHi ? "साझा करें" : "Share post"}
+          >
+            <ExternalLink className="w-[18px] h-[18px]" />
+          </button>
+        </div>
+      ) : (
       <div className={`flex items-center rounded-full px-5 py-2 w-fit gap-4 mt-3 shadow-inner border ${
         isDark ? 'bg-[#181310] border-[#281f19]' : 'bg-stone-50 border-stone-200'
       }`}>
@@ -567,10 +642,11 @@ export function PostCard({
           <span className={`text-[11px] font-bold transition-colors ${isDark ? 'text-stone-300 group-hover:text-stone-100' : 'text-stone-600 group-hover:text-stone-850'}`}>{isHi ? "साझा करें" : "Share"}</span>
         </button>
       </div>
+      )}
 
       {/* ─── COLLAPSED COMMENTS PANEL ───────────────────────────── */}
       {isCommentsExpanded && (
-        <div className={`mt-4 rounded-2xl p-4 border space-y-4 ${
+        <div className={`${isFeed ? "mt-2 rounded-xl p-3" : "mt-4 rounded-2xl p-4"} border space-y-4 ${
           isDark ? 'bg-[#120e0c] border-[#5c1d0c]/20' : 'bg-[#FAF6EE]/30 border-stone-200'
         }`}>
           <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-[#291e17]' : 'border-stone-200'}`}>

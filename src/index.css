@@ -32,6 +32,14 @@
 }
 
 @layer base {
+  ::selection {
+    background-color: rgba(101, 19, 23, 0.18);
+    color: #651317;
+  }
+  .dark ::selection {
+    background-color: rgba(212, 168, 83, 0.3);
+    color: #FFD98A;
+  }
 
   /* ── GLOBAL DESIGN TOKENS (Light Mode) ─────────────────────────────────── */
   :root {

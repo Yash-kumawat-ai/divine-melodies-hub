@@ -13,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { mobileFullscreenDialog } from "@/lib/dialogStyles";
 import { cn } from "@/lib/utils";
@@ -202,6 +203,8 @@ export default function AIAssistantModal({
           "max-w-2xl max-h-[90vh] sm:max-h-[90vh] p-0 overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-900 dark:to-slate-800",
         )}
       >
+        <DialogTitle className="sr-only">Kirtan AI Assistant</DialogTitle>
+        <DialogDescription className="sr-only">Your spiritual guide & bhajan companion</DialogDescription>
         {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
           <div>

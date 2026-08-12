@@ -238,7 +238,7 @@ export default function NaradFloatingWidget() {
 
       <div
         className={cn(
-          "pointer-events-none fixed z-[140] flex flex-col items-end",
+          "pointer-events-none fixed z-[35] flex flex-col items-end",
           "bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-6"
         )}
       >

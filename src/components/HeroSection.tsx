@@ -45,8 +45,8 @@ export function HeroSection({ stats }: HeroSectionProps) {
       </div>
 
       <div className="hidden md:flex flex-col w-full gap-3">
-        <div className="relative w-full overflow-hidden rounded-[28px] md:min-h-[520px] lg:min-h-[560px] flex flex-col justify-center p-10 lg:p-14 shadow-[0_16px_40px_rgba(0,0,0,0.10)] dark:shadow-[0_20px_48px_rgba(0,0,0,0.45)] border border-[#E8D8C4]/70 dark:border-zinc-800/60">
-          <div className="absolute inset-0 z-0 bg-[#2a1810]">
+        <div className="relative w-full overflow-hidden rounded-[28px] md:min-h-[440px] lg:min-h-[480px] flex flex-col justify-center p-8 lg:p-12 shadow-[0_16px_40px_rgba(0,0,0,0.10)] dark:shadow-[0_20px_48px_rgba(0,0,0,0.45)] border border-[#E8D8C4]/70 dark:border-zinc-800/60 bg-[#FFFDF8] dark:bg-[#120B05]">
+          <div className="absolute right-0 top-0 bottom-0 w-1/2 lg:w-[46%] h-full z-0 overflow-hidden pointer-events-none">
             <picture className="block w-full h-full">
               <source media="(min-width: 768px)" srcSet={raghavamHero} />
               <motion.img
@@ -55,11 +55,11 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 transition={{ duration: 8, ease: "easeOut" }}
                 src={lordRamMobile}
                 alt="Raghavam — Devotional Music Platform"
-                className="w-full h-full object-cover object-[72%_28%]"
+                className="w-full h-full object-cover object-center rounded-r-[28px]"
               />
             </picture>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFFDF8]/92 via-[#FFFDF8]/55 to-transparent dark:from-[#0a0705]/88 dark:via-[#0a0705]/45 dark:to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#FFFDF8]/35 via-transparent to-[#FFFDF8]/20 dark:from-[#0a0705]/40 dark:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FFFDF8] via-[#FFFDF8]/50 to-transparent dark:from-[#120B05] dark:via-[#120B05]/50 dark:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#FFFDF8]/35 via-transparent to-[#FFFDF8]/20 dark:from-[#120B05]/40 dark:to-transparent" />
           </div>
 
           <div className="relative z-10 flex flex-col items-start w-full max-w-xl text-left">

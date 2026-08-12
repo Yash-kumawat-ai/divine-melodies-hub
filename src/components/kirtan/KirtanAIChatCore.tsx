@@ -415,44 +415,31 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const term = query.trim();
     if (!term) return;
 
-    const searchPool = dedupeBhajans([...appBhajans, ...uploadedBhajans]);
-    const localMatches = isDeityBrowse
-      ? searchPool.filter((bhajan) => strictBhajanMatch(term, bhajan))
-      : naradSearchBhajans(term, searchPool);
-
-    const pushSearchResults = (combined: Bhajan[]) => {
-      pushBot({
-        text: combined.length
-          ? `Yeh results mile "${term}" ke liye. Card par click karke details popup open karein.`
-          : `कोई भजन नहीं मिला '${term}' के लिए। पूरा नाम Hindi ya English me likh kar phir try karein, ya add karein।`,
-        options: combined.length ? undefined : ["Yes, Add It", "No Thanks"],
-        appBhajans: combined.slice(0, 6),
-        searchQuery: term,
-        hasMoreResults: combined.length > 6,
-      });
-    };
-
-    if (localMatches.length > 0) {
-      pushSearchResults(localMatches);
-      return;
-    }
-
+    let apiBhajans: Bhajan[] = [];
     try {
       const uploadRows = await searchUserBhajans(term, 20);
-      const fromApi = uploadRows.map(convertUploadToBhajan);
-      if (fromApi.length) {
-        setUploadedBhajans((prev) => dedupeBhajans([...prev, ...fromApi]));
+      if (uploadRows && uploadRows.length > 0) {
+        apiBhajans = uploadRows.map(convertUploadToBhajan);
+        setUploadedBhajans((prev) => dedupeBhajans([...prev, ...apiBhajans]));
       }
-      const combined = naradSearchBhajans(term, dedupeBhajans([...searchPool, ...fromApi]));
-      pushSearchResults(combined);
     } catch (error) {
-      console.error("Kirtan AI search failed:", error);
-      pushBot({
-        text: `कोई भजन नहीं मिला '${term}' के लिए। क्या आप इसे add करना चाहते हैं?`,
-        options: ["Yes, Add It", "No Thanks"],
-        searchQuery: term,
-      });
+      console.error("Kirtan AI Supabase search failed:", error);
     }
+
+    const fullPool = dedupeBhajans([...appBhajans, ...uploadedBhajans, ...apiBhajans]);
+    const matches = isDeityBrowse
+      ? fullPool.filter((bhajan) => strictBhajanMatch(term, bhajan))
+      : naradSearchBhajans(term, fullPool);
+
+    pushBot({
+      text: matches.length
+        ? `Yeh results mile "${term}" ke liye. Card par click karke details popup open karein.`
+        : `कोई भजन नहीं मिला '${term}' के लिए। पूरा नाम Hindi ya English me likh kar phir try karein, ya add karein।`,
+      options: matches.length ? undefined : ["Yes, Add It", "No Thanks"],
+      appBhajans: matches.slice(0, 6),
+      searchQuery: term,
+      hasMoreResults: matches.length > 6,
+    });
   };
 
   const handleFindFlow = (value: string) => {
@@ -688,8 +675,8 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
           onVoicePhaseChange?.("thinking");
           handleAction(transcript);
         } else {
-          onVoicePhaseChange?.("error");
-          onVoiceError?.("no-speech");
+          onVoicePhaseChange?.("idle");
+          onVoiceError?.("");
         }
       },
     );

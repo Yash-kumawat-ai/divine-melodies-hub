@@ -1,5 +1,5 @@
 import { ArrowLeft, Music2 } from "lucide-react";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { useLanguage } from "@/hooks/useLanguage";
 import { mobileFullscreenDialog } from "@/lib/dialogStyles";
@@ -50,6 +50,9 @@ export default function YouTubePlayerHost() {
             <DialogTitle className="mt-0.5 font-serif text-sm font-bold leading-snug text-[#32251E] dark:text-[#FFFDF8] line-clamp-1 sm:text-base">
               {video?.title || "Bhajan Playback"}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {video?.title || "Bhajan video player modal"}
+            </DialogDescription>
           </div>
         </div>
 

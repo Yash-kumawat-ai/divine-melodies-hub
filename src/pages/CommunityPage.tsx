@@ -574,202 +574,354 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        {/* ─── WHAT DO YOU WANT TO DO? ───────────────────────────── */}
-        <div className="w-full rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] px-3.5 py-4 md:px-5 md:py-5 overflow-hidden">
-          <div className="flex items-center justify-center gap-3 mb-3.5">
-            <div className="h-px flex-1 max-w-[48px] bg-gradient-to-r from-transparent to-[#D8A35A]/70" />
-            <h2 className="font-display text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 text-center shrink-0">
-              {isHi ? "क्या करना चाहते हैं?" : "What would you like to do?"}
-            </h2>
-            <div className="h-px flex-1 max-w-[48px] bg-gradient-to-l from-transparent to-[#D8A35A]/70" />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
-            <button
-              type="button"
+        {/* ─── HORIZONTALLY SCROLLABLE (X DIRECTION) SMALL ACTION BOXES ─── */}
+        <div className="w-full space-y-3">
+          <div
+            className="flex gap-2.5 md:gap-3 overflow-x-auto pb-2 pt-1 snap-x scroll-smooth w-full select-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {/* Box 1: समूह बनायें */}
+            <div
               onClick={() => {
                 if (!user) {
                   toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
                   navigate("/auth/login?redirect=/community");
                 } else setCreateDialogOpen(true);
               }}
-              className="relative text-left bg-white dark:bg-[#120e0a] rounded-2xl border border-[#E8D8C4]/80 dark:border-zinc-700/60 p-3 pr-8 shadow-[0_4px_12px_rgba(74,14,18,0.04)] active:scale-[0.98] transition-all cursor-pointer min-h-[104px] flex flex-col gap-2 overflow-hidden"
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
             >
-              <div className="w-9 h-9 rounded-full bg-[#F8E8E8] dark:bg-[#2a1515] flex items-center justify-center shrink-0">
-                <Users className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Users className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-[13px] font-bold text-[#651317] dark:text-amber-100 leading-tight">{isHi ? "समूह बनाएं" : "Create Group"}</h3>
-                <p className="text-[10px] text-[#786252] dark:text-stone-400 font-semibold leading-snug mt-1 line-clamp-3 break-words pr-1">
-                  {isHi ? "अपना स्वयं का समूह बनाएं और भक्तों को जोड़ें।" : "Create your own group and invite devotees."}
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "समूह बनायें" : "Create Group"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "अपना समूह बनाएं" : "Create group"}
                 </p>
               </div>
-              <ArrowRight className="absolute bottom-3 right-3 w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
-            </button>
-            <button
-              type="button"
+            </div>
+
+            {/* Box 2: समूह खोजें */}
+            <div
               onClick={() => document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" })}
-              className="relative text-left bg-white dark:bg-[#120e0a] rounded-2xl border border-[#E8D8C4]/80 dark:border-zinc-700/60 p-3 pr-8 shadow-[0_4px_12px_rgba(74,14,18,0.04)] active:scale-[0.98] transition-all cursor-pointer min-h-[104px] flex flex-col gap-2 overflow-hidden"
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
             >
-              <div className="w-9 h-9 rounded-full bg-[#F8E8E8] dark:bg-[#2a1515] flex items-center justify-center shrink-0">
-                <Search className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Search className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="text-[13px] font-bold text-[#651317] dark:text-amber-100 leading-tight">{isHi ? "समूह खोजें" : "Find Group"}</h3>
-                <p className="text-[10px] text-[#786252] dark:text-stone-400 font-semibold leading-snug mt-1 line-clamp-3 break-words pr-1">
-                  {isHi ? "रुचि के अनुसार समूह खोजें और जुड़कर सहभागिता करें।" : "Find groups by interest and join to participate."}
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "समूह खोजें" : "Find Group"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "समूह खोजें और जुड़ें" : "Find & join"}
                 </p>
               </div>
-              <ArrowRight className="absolute bottom-3 right-3 w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
-            </button>
+            </div>
+
+            {/* Box 3: मेरे समूह */}
+            <div
+              onClick={() => {
+                if (!user) {
+                  toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
+                  navigate("/auth/login?redirect=/community");
+                } else {
+                  const el = document.getElementById("my-joined-groups-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  else {
+                    setSelectedTab("my");
+                    document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }
+              }}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0 relative">
+                <Users className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+                {user && myJoinedGroups.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#651317] text-white text-[8px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center border border-[#FFFDF8] dark:border-[#1A120B]">
+                    {myJoinedGroups.length}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "मेरे समूह" : "My Groups"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "मेरे समूह देखें" : "View my groups"}
+                </p>
+              </div>
+            </div>
+
+            {/* Box 4: नया पोस्ट */}
+            <div
+              onClick={() => navigate("/join-community?tab=feed")}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Plus className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.5]" />
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "नया पोस्ट" : "New Post"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "समूह में पोस्ट करें" : "Post in group"}
+                </p>
+              </div>
+            </div>
+
+            {/* Box 5: मित्र आमंत्रित करें */}
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.origin + "/community");
+                toast.success(isHi ? "समुदाय आमंत्रण लिंक कॉपी किया गया!" : "Community invite link copied!");
+              }}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Share2 className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "मित्र आमंत्रित करें" : "Invite Friends"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "मित्रों को आमंत्रित करें" : "Invite friends"}
+                </p>
+              </div>
+            </div>
+
+            {/* Box 6: भजन अपलोड करें */}
+            <div
+              onClick={() => navigate("/upload-bhajan")}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Music className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "भजन अपलोड करें" : "Upload Bhajans"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "भजन अपलोड व शेयर" : "Upload & share"}
+                </p>
+              </div>
+            </div>
+
+            {/* Box 7: नाम जप प्रारंभ करें */}
+            <div
+              onClick={() => navigate("/meditation")}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Flame className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "नाम जप प्रारंभ करें" : "Start Japa"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "साथ मिलकर नाम जप" : "Chant together"}
+                </p>
+              </div>
+            </div>
+
+            {/* Box 8: सत्संग आयोजित करें */}
+            <div
+              onClick={() => {
+                if (!user) {
+                  toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
+                  navigate("/auth/login?redirect=/community");
+                } else setCreateDialogOpen(true);
+              }}
+              className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
+            >
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
+                <Calendar className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                  {isHi ? "सत्संग आयोजित करें" : "Organize Satsang"}
+                </h3>
+                <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
+                  {isHi ? "सत्संग व कार्यक्रम" : "Devotional meetups"}
+                </p>
+              </div>
+            </div>
           </div>
-          <form onSubmit={handleJoinByCode} className="mt-3">
-            <div className="relative flex items-center w-full h-11 rounded-full bg-white dark:bg-[#120e0a] border border-[#E8D8C4] dark:border-zinc-700/80 pl-3.5 pr-1.5 gap-2">
+
+          {/* Quick Invite Code Form */}
+          <form onSubmit={handleJoinByCode} className="mt-1">
+            <div className="relative flex items-center w-full h-10.5 rounded-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 pl-4 pr-1 gap-2 shadow-xs">
               <Key className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
               <input
                 type="text"
                 placeholder={isHi ? "आमंत्रण कोड दर्ज करें..." : "Enter invite code..."}
                 value={inviteCodeInput}
                 onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[12px] font-bold text-[#651317] dark:text-amber-100 placeholder:text-[#651317]/50 uppercase tracking-wider"
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[12px] font-bold text-[#651317] dark:text-amber-100 placeholder:text-[#8C7A6B]/70 dark:placeholder:text-stone-500 uppercase tracking-wider"
               />
-              <button type="submit" disabled={joiningByCode} className="btn-royal-primary h-8 rounded-full !px-3 text-[11px] font-bold shrink-0 disabled:opacity-60">
+              <button type="submit" disabled={joiningByCode} className="h-8 rounded-full px-4 text-[11px] font-extrabold bg-[#651317] hover:bg-[#4f0f12] text-white shrink-0 active:scale-95 transition-all disabled:opacity-60">
                 {joiningByCode ? "..." : (isHi ? "जोड़ें" : "Join")}
               </button>
             </div>
           </form>
         </div>
 
-        {/* ─── QUICK ACTIONS CARDS GRID ───────────────────────────── */}
-        <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto md:overflow-visible pb-2 md:pb-0 snap-x w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {/* Card 1: Invite Friends */}
-          <div 
-            onClick={() => {
-              // Copy community invite link
-              navigator.clipboard.writeText(window.location.origin + "/community");
-              toast.success(isHi ? "समुदाय आमंत्रण लिंक कॉपी किया गया!" : "Community invite link copied!");
-            }}
-            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
-          >
-            <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-stone-850 text-orange-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
-              <Users className="w-5 h-5" />
-            </div>
-            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
-              {isHi ? "मित्र आमंत्रित करें" : "Invite Friends"}
-            </h3>
-            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
-              {isHi ? "मित्रों को समुदाय में आमंत्रित करें" : "Invite friends to the community"}
-            </p>
-          </div>
-
-          {/* Card 2: Upload Bhajan */}
-          <div 
-            onClick={() => navigate("/upload-bhajan")}
-            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
-          >
-            <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/20 text-rose-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
-              <Music className="w-5 h-5" />
-            </div>
-            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
-              {isHi ? "भजन अपलोड करें" : "Upload Bhajans"}
-            </h3>
-            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
-              {isHi ? "अपने भजन अपलोड करें और साझा करें" : "Upload your bhajans and share with all"}
-            </p>
-          </div>
-
-          {/* Card 3: Start Japa */}
-          <div 
-            onClick={() => navigate("/meditation")}
-            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
-          >
-            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
-              <Flame className="w-5 h-5 fill-emerald-500/10" />
-            </div>
-            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
-              {isHi ? "नाम जप प्रारंभ करें" : "Start Japa"}
-            </h3>
-            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
-              {isHi ? "नाम जप समूह बनाएं और साथ मिलकर जप करें" : "Create a name japa group and chant together"}
-            </p>
-          </div>
-
-          {/* Card 4: Satsang & Events */}
-          <div 
-            onClick={() => setCreateDialogOpen(true)}
-            className="w-[150px] md:w-auto shrink-0 snap-start bg-[#faf8f5] dark:bg-stone-900/50 border border-orange-500/10 hover:border-orange-500/20 rounded-2xl p-4 text-center cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
-          >
-            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-950/20 text-amber-600 flex items-center justify-center mx-auto mb-2.5 shrink-0">
-              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7h20L12 2z" />
-                <path d="M4 7v10h16V7H4z" />
-              </svg>
-            </div>
-            <h3 className="text-xs font-bold text-stone-900 dark:text-amber-100">
-              {isHi ? "सत्संग आयोजित करें" : "Organize Satsang"}
-            </h3>
-            <p className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 leading-normal font-semibold">
-              {isHi ? "ऑनलाइन या ऑफ़लाइन सत्संग आयोजित करें" : "Organize online or offline devotional meetups"}
-            </p>
-          </div>
-        </div>
-
         {/* राधा — after hero / actions / quick cards */}
         <DevotionalDivider word="राधा" />
 
-        {/* ─── MY JOINED GROUPS ───────────────────────────────────── */}
-        {user ? (
-          myJoinedGroups.length > 0 ? (
-            <div id="my-joined-groups-section" className="w-full text-left bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 dark:from-stone-900/90 dark:to-stone-900/90 border border-orange-500/20 rounded-3xl p-4 md:p-5 shadow-xs">
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <div className="w-8 h-8 rounded-full bg-orange-500/15 flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <h2 className="font-display text-base md:text-lg font-extrabold text-stone-900 dark:text-amber-50 flex items-center gap-2">
-                    <span>{isHi ? "मेरे जुड़े हुए समूह" : "My Joined Groups"}</span>
-                    <span className="bg-orange-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">{myJoinedGroups.length}</span>
-                  </h2>
-                  <p className="text-[10px] text-stone-500 font-bold">{isHi ? "आप जिन समूहों के सदस्य हैं" : "Groups you have joined"}</p>
-                </div>
+        {/* ─── MY JOINED GROUPS (REDESIGNED UI) ───────────────────── */}
+        <div id="my-joined-groups-section" className="w-full text-left bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[24px] p-4 md:p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-[#651317] dark:text-amber-300" />
               </div>
-              <div className="flex gap-4 overflow-x-auto pb-2 pt-1 snap-x scroll-smooth w-full" style={{ scrollbarWidth: "none" }}>
-                {myJoinedGroups.map((group) => (
-                  <div key={group.id} className="w-[260px] shrink-0 snap-start bg-white dark:bg-stone-900 border border-orange-500/15 rounded-3xl overflow-hidden shadow-xs">
-                    <div className="h-32 w-full relative overflow-hidden bg-stone-900">
-                      <img src={getGroupImage(group.image_url)} alt={group.name} loading="lazy" className="w-full h-full object-cover opacity-90" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                      <span className={`absolute top-2.5 right-2.5 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 ${group.is_public ? "bg-emerald-600/90" : "bg-amber-600/90"}`}>
-                        {group.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
-                        {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
-                      </span>
-                      <div className="absolute bottom-2.5 left-3 right-3 text-left">
-                        <h3 className="font-display text-xs font-black text-white truncate">{group.name}</h3>
-                        <p className="text-[9.5px] text-amber-200 font-medium truncate mt-0.5">{group.member_count || 0} {isHi ? "सदस्य" : "members"}</p>
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <button onClick={() => navigate(`/community/groups/${group.id}`)} className="w-full py-2 rounded-xl text-xs font-black bg-[#5c1d0c] hover:bg-[#4a170a] text-white flex items-center justify-center gap-1 active:scale-[0.98]">
-                        <span>{isHi ? "समूह में प्रवेश करें" : "Enter Group Hall"}</span>
-                        <ArrowRight className="w-3.5 h-3.5 text-orange-400" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div>
+                <h2 className="font-display text-base md:text-lg font-black text-[#651317] dark:text-amber-100 flex items-center gap-2">
+                  <span>{isHi ? "मेरे जुड़े हुए समूह" : "My Joined Groups"}</span>
+                  {user && (
+                    <span className="bg-[#651317] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
+                      {myJoinedGroups.length}
+                    </span>
+                  )}
+                </h2>
+                <p className="text-[11px] text-[#8C7A6B] dark:text-stone-400 font-semibold mt-0.5">
+                  {isHi ? "आप जिन समूहों के सदस्य हैं" : "Groups you have joined"}
+                </p>
               </div>
             </div>
-          ) : (
-            <div id="my-joined-groups-section" className="w-full bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-orange-500/15 rounded-3xl p-4 flex items-center justify-between gap-4">
-              <div>
-                <h3 className="font-display text-sm font-bold">{isHi ? "आप अभी किसी समूह के सदस्य नहीं हैं" : "You haven't joined any group yet"}</h3>
-                <p className="text-xs text-stone-500 font-semibold">{isHi ? "सार्वजनिक समूह खोजें या कोड दर्ज करें" : "Explore public groups or enter a code"}</p>
+
+            {user && (
+              <button
+                onClick={() => setCreateDialogOpen(true)}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white text-xs font-bold active:scale-95 transition-all shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{isHi ? "नया समूह" : "New Group"}</span>
+              </button>
+            )}
+          </div>
+
+          {!user ? (
+            /* State 1: User not logged in */
+            <div className="w-full bg-[#FAF6EE] dark:bg-[#120E0A] border border-dashed border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 flex items-center justify-center mx-auto">
+                <Lock className="w-6 h-6" />
               </div>
-              <button onClick={() => setCreateDialogOpen(true)} className="bg-[#5c1d0c] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shrink-0">
-                <Plus className="w-4 h-4" />
-                {isHi ? "नया समूह बनाएं" : "Create Group"}
+              <div>
+                <h3 className="font-display text-sm font-bold text-[#651317] dark:text-amber-100">
+                  {isHi ? "अपने जुड़े हुए समूह देखने के लिए लॉग इन करें" : "Log in to view your joined groups"}
+                </h3>
+                <p className="text-xs text-[#8C7A6B] dark:text-stone-400 font-medium mt-1">
+                  {isHi ? "सामूहिक नाम जप में भाग लें और भक्तों के साथ जुड़ें" : "Participate in group japa and connect with devotees"}
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/auth/login?redirect=/community")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-xs shadow-md active:scale-95 transition-all"
+              >
+                <Users className="w-4 h-4 text-white" />
+                <span>{isHi ? "लॉग इन करें" : "Log In"}</span>
               </button>
             </div>
-          )
-        ) : null}
+          ) : myJoinedGroups.length > 0 ? (
+            /* State 2: User has joined groups */
+            <div className="flex gap-4 overflow-x-auto pb-2 pt-1 snap-x scroll-smooth w-full" style={{ scrollbarWidth: "none" }}>
+              {myJoinedGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="w-[260px] md:w-[280px] shrink-0 snap-start bg-white dark:bg-[#120E0A] border border-[#E8D8C4] dark:border-stone-800/80 rounded-[20px] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="h-32 w-full relative overflow-hidden bg-stone-900">
+                    <img
+                      src={getGroupImage(group.image_url)}
+                      alt={group.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover opacity-90"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                    
+                    <span className={`absolute top-2.5 right-2.5 text-[9.5px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 shadow-xs ${
+                      group.is_public ? "bg-emerald-600/90" : "bg-amber-600/90"
+                    }`}>
+                      {group.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                      {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
+                    </span>
+
+                    <div className="absolute bottom-2.5 left-3 right-3 text-left">
+                      <h3 className="font-display text-xs md:text-sm font-black text-white truncate leading-tight">
+                        {group.name}
+                      </h3>
+                      <p className="text-[10px] text-amber-200 font-semibold truncate mt-0.5 flex items-center gap-1">
+                        <Users className="w-3 h-3 text-amber-300" />
+                        <span>{group.member_count || 0} {isHi ? "सदस्य" : "members"}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 space-y-2.5 text-left">
+                    {group.invite_code && (
+                      <div className="flex items-center justify-between bg-[#FAF6EE] dark:bg-stone-900/80 px-2.5 py-1.5 rounded-xl text-[10.5px] font-bold text-[#7c2d12] dark:text-amber-200 border border-[#E8D8C4]/60">
+                        <span className="font-mono tracking-wider">CODE: {group.invite_code}</span>
+                        <button
+                          type="button"
+                          onClick={() => shareOnWhatsApp(group.invite_code, group.name)}
+                          className="text-[#651317] dark:text-amber-400 hover:scale-110 transition-transform p-0.5"
+                          title={isHi ? "व्हाट्सएप शेयर" : "Share on WhatsApp"}
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => navigate(`/community/groups/${group.id}`)}
+                      className="w-full py-2.5 rounded-xl text-xs font-extrabold bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-xs cursor-pointer"
+                    >
+                      <span>{isHi ? "समूह में प्रवेश करें" : "Enter Group Hall"}</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* State 3: User logged in, but 0 joined groups */
+            <div className="w-full bg-[#FAF6EE] dark:bg-[#120E0A] border border-dashed border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-5 text-center flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-left space-y-1">
+                <h3 className="font-display text-sm font-extrabold text-[#651317] dark:text-amber-100">
+                  {isHi ? "आप अभी किसी समूह के सदस्य नहीं हैं" : "You haven't joined any group yet"}
+                </h3>
+                <p className="text-xs text-[#8C7A6B] dark:text-stone-400 font-medium">
+                  {isHi ? "नीचे दिए गए समूहों में शामिल हों या अपना समूह बनाएं" : "Join from active groups below or create your own"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" })}
+                  className="bg-white dark:bg-stone-800 text-[#651317] dark:text-amber-100 border border-[#E8D8C4] font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  {isHi ? "समूह खोजें" : "Explore Groups"}
+                </button>
+                <button
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {isHi ? "नया समूह बनाएं" : "Create Group"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* ─── STATISTICS PANEL ─────────────────────────────────── */}
         <div className="w-full bg-[#fefaf0]/95 dark:bg-stone-900/95 border border-orange-500/10 rounded-2xl p-4 flex flex-row justify-around shadow-sm divide-x divide-orange-500/10">
