@@ -85,24 +85,6 @@ export function useLiveAarti() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
 
-<<<<<<< HEAD
-  // Helper to fetch live verification from Supabase Edge Function.
-  // Works on any static host (Hostinger, Netlify, Cloudflare Pages, etc.)
-  // because it does NOT rely on the Vite dev-server middleware.
-  const SUPABASE_EDGE_URL = 'https://khnqyhzlrxwmolyevaqo.supabase.co/functions/v1/live-aarti-check';
-  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-
-  const fetchLiveStatus = async (templeId: string): Promise<VerificationState> => {
-    try {
-      const res = await fetch(`${SUPABASE_EDGE_URL}?templeId=${templeId}`, {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-      });
-      if (!res.ok) throw new Error(`Edge function returned ${res.status}`);
-      return await res.json();
-=======
   // Hostinger is static — call Supabase Edge Function (DB-cached YouTube checks).
   const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '');
   const SUPABASE_ANON_KEY =
@@ -146,7 +128,6 @@ export function useLiveAarti() {
           };
         }
       }
->>>>>>> featur
     } catch (err) {
       console.warn('DB live status read failed, continuing to Edge Function', err);
     }

@@ -8,6 +8,7 @@ import {
   Flower2, 
   ChevronLeft, 
   ChevronRight,
+  ChevronDown,
   Plus, 
   Info, 
   Activity, 
@@ -31,7 +32,9 @@ import {
   Bell,
   Music,
   Calendar,
-  Settings
+  Settings,
+  HelpCircle,
+  Key
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDrawer } from "@/hooks/useDrawer";
@@ -72,6 +75,7 @@ import hanumanHighQualityImg from "@/assets/deities/hanuman_high_quality.webp";
 import shyamBackgroundImg from "./images/shyam_background_hd.webp";
 import flowersImg from "./images/abhijit muhrat.webp";
 import mandalaSvg from "./images/mandala.svg";
+import DevotionalDivider from "@/components/DevotionalDivider";
 import communityFeaturesImg from "./images/community_features.png";
 
 const DEITY_IMAGES = [
@@ -101,8 +105,13 @@ export default function CommunityPage() {
   // State variables
   const [groups, setGroups] = useState<NaamSanghGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreGroups, setHasMoreGroups] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState("all");
+  const [visibleGroupCount, setVisibleGroupCount] = useState(6);
+  const GROUPS_PAGE_SIZE = 12;
+  const VISIBLE_PAGE_SIZE = 6;
   const [globalStats, setGlobalStats] = useState({
     devotees: 0,
     totalJaps: 0,
@@ -143,60 +152,79 @@ export default function CommunityPage() {
 
 
 
-  // Load groups and global stats
-  const loadData = async () => {
+  // Load groups fast, then stats in parallel
+  const loadData = async (opts?: { silent?: boolean }) => {
+    const silent = opts?.silent ?? false;
     try {
-      setLoading(true);
-      const fetched = await fetchGroups(user?.id);
+      if (!silent) setLoading(true);
+      const fetched = await fetchGroups(user?.id, { limit: GROUPS_PAGE_SIZE, offset: 0 });
       setGroups(fetched);
+      setHasMoreGroups(fetched.length >= GROUPS_PAGE_SIZE);
+      setVisibleGroupCount(VISIBLE_PAGE_SIZE);
+      setLoading(false);
 
-      // Compute stats
-      const totalGroups = fetched.length;
-      
-      // Fetch total profiles count for devotees metric
-      const { count: profileCount } = await supabase
-        .from("user_profiles")
-        .select("id", { count: "exact", head: true });
+      const [
+        { count: profileCount },
+        { data: japTotals },
+        { count: groupsCount },
+        { count: bhajansCount },
+        { count: eventsCount },
+      ] = await Promise.all([
+        supabase.from("user_profiles").select("id", { count: "exact", head: true }),
+        supabase.from("user_jap_totals").select("total_chants"),
+        supabase.from("groups").select("id", { count: "exact", head: true }),
+        supabase.from("user_uploads").select("id", { count: "exact", head: true }),
+        supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("type", "event"),
+      ]);
 
-      // Fetch sum of chants from user_jap_totals
-      const { data: japTotals } = await supabase
-        .from("user_jap_totals")
-        .select("total_chants");
       const realTotalJaps = (japTotals ?? []).reduce((sum, row) => sum + (Number(row.total_chants) || 0), 0);
-
-      // Fetch total groups count
-      const { count: groupsCount } = await supabase
-        .from("groups")
-        .select("id", { count: "exact", head: true });
-
-      // Fetch total uploaded bhajans
-      const { count: bhajansCount } = await supabase
-        .from("user_uploads")
-        .select("id", { count: "exact", head: true });
-
-      // Fetch total events count
-      const { count: eventsCount } = await supabase
-        .from("community_posts")
-        .select("id", { count: "exact", head: true })
-        .eq("type", "event");
-
       setGlobalStats({
         devotees: profileCount ?? 0,
         totalJaps: realTotalJaps,
-        groupCount: groupsCount ?? totalGroups ?? 0,
+        groupCount: groupsCount ?? fetched.length ?? 0,
         bhajansCount: bhajansCount ?? 0,
         eventsCount: eventsCount ?? 0,
       });
     } catch (err) {
       console.error("Error loading community data:", err);
-    } finally {
       setLoading(false);
     }
   };
 
+  const loadMoreGroups = async () => {
+    if (loadingMore) return;
+    if (visibleGroupCount < groups.length) {
+      setVisibleGroupCount((n) => Math.min(n + VISIBLE_PAGE_SIZE, groups.length));
+      return;
+    }
+    if (!hasMoreGroups) return;
+    try {
+      setLoadingMore(true);
+      const next = await fetchGroups(user?.id, { limit: GROUPS_PAGE_SIZE, offset: groups.length });
+      if (next.length === 0) setHasMoreGroups(false);
+      else {
+        setGroups((prev) => {
+          const seen = new Set(prev.map((g) => g.id));
+          return [...prev, ...next.filter((g) => !seen.has(g.id))];
+        });
+        setVisibleGroupCount((n) => n + VISIBLE_PAGE_SIZE);
+        setHasMoreGroups(next.length >= GROUPS_PAGE_SIZE);
+      }
+    } catch (err) {
+      console.error("Error loading more groups:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
-    loadData();
+    loadData({ silent: groups.length > 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  useEffect(() => {
+    setVisibleGroupCount(VISIBLE_PAGE_SIZE);
+  }, [selectedTab, searchQuery]);
 
   // Trigger invite code generation when group name changes
   useEffect(() => {
@@ -423,139 +451,192 @@ export default function CommunityPage() {
     );
   });
 
+  const visibleFilteredGroups = filteredGroups.slice(0, visibleGroupCount);
+  const canShowMoreFiltered =
+    visibleGroupCount < filteredGroups.length || (selectedTab === "all" && !searchQuery && hasMoreGroups);
+  const myJoinedGroups = groups.filter((g) => g.is_member);
+
   return (
-    <div className="min-h-screen bg-[#fdfbf7] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 transition-colors pb-16">
+    <div
+      className="community-page min-h-screen bg-[#fdfbf7] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 transition-colors pb-16"
+      data-lang={language}
+    >
       <SEO 
         title={isHi ? "समूह - राघवन" : "Community - Raghavam"}
         description={isHi ? "अपना समूह बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।" : "Create your community, chant together with family and friends and grow spiritually."}
       />
 
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
-      <header className="md:hidden sticky top-0 z-30 bg-[#fdfbf7]/90 dark:bg-[#0c0a08]/90 backdrop-blur-md border-b border-amber-500/10 px-4 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {/* Mobile Back button */}
+      <header className="sticky top-0 z-30 bg-[#fdfbf7]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-amber-500/10 px-3 py-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate("/");
-              }
+              if (window.history.length > 1) navigate(-1);
+              else navigate("/");
             }}
-            className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-50/40 dark:bg-stone-900/40 hover:bg-amber-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-amber-600 dark:text-amber-400 active:scale-95 transition-all shrink-0"
+            className="w-9 h-9 rounded-full border border-amber-500/20 bg-amber-50/40 dark:bg-stone-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 active:scale-95 transition-all shrink-0"
             aria-label={isHi ? "वापस" : "Back"}
-            title={isHi ? "वापस" : "Back"}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          
-          <span className="font-display text-lg font-extrabold tracking-tight text-amber-900 dark:text-amber-100">
+          <span className="font-display text-base md:text-lg font-extrabold tracking-tight text-amber-900 dark:text-amber-100 leading-none">
             {isHi ? "समुदाय" : "Community"}
           </span>
         </div>
-
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => navigate("/notifications")}
-            className="relative text-stone-600 dark:text-stone-300 hover:text-orange-500 active:scale-95 transition-all p-1.5"
+            className="w-8 h-8 rounded-full border border-[#E8D8C4] bg-[#FFFDF8] dark:bg-stone-900/40 text-[#651317] flex items-center justify-center relative shrink-0"
             title={isHi ? "सूचनाएं" : "Notifications"}
           >
-            <Bell className="w-4.5 h-4.5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-stone-900" />
+            <Bell className="w-4 h-4" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />
           </button>
-
-          {/* My Groups button */}
           <button
             onClick={() => {
               if (!user) {
                 toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
                 navigate("/auth/login?redirect=/community");
               } else {
-                setSelectedTab("my");
-                const el = document.getElementById("groups-filter-tabs");
-                if (el) {
-                  el.scrollIntoView({ behavior: "smooth" });
+                const el = document.getElementById("my-joined-groups-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+                else {
+                  setSelectedTab("my");
+                  document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" });
                 }
               }
             }}
-            className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white font-bold px-2.5 py-1.5 rounded-xl text-[10px] active:scale-95 transition-all shadow-sm shrink-0 border border-orange-500/5 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 h-8 bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-3 rounded-full text-[11px] md:text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
           >
-            <Users className="w-3 h-3 text-orange-400" />
-            {isHi ? "मेरे समूह" : "My Groups"}
+            <Users className="w-3.5 h-3.5 text-white shrink-0" />
+            <span className="leading-none">{isHi ? "मेरे समूह" : "My Groups"}</span>
           </button>
-
-          {/* Create Group button */}
           <button
             onClick={() => {
               if (!user) {
                 toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
                 navigate("/auth/login?redirect=/community");
-              } else {
-                setCreateDialogOpen(true);
-              }
+              } else setCreateDialogOpen(true);
             }}
-            className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white font-bold px-2.5 py-1.5 rounded-xl text-[10px] active:scale-95 transition-all shadow-sm shrink-0 border border-orange-500/5 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+            aria-label={isHi ? "समूह बनाएं" : "Create Group"}
           >
-            <Plus className="w-3.5 h-3.5" />
-            {isHi ? "समूह बनाएं" : "Create Group"}
+            <Plus className="w-4 h-4 text-white" />
           </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 mt-6 space-y-6">
-         {/* ─── PREMIUM DEVOTIONAL HERO BANNER ────────────────────── */}
-        <div 
-          className="relative w-full rounded-[2rem] overflow-hidden shadow-lg border border-orange-500/15 p-2 md:p-10 flex flex-col justify-center text-center bg-no-repeat bg-cover bg-center aspect-[16/9] md:aspect-auto min-h-0 md:min-h-[480px]"
-          style={{ backgroundImage: `url(${shyamBackgroundImg})` }}
+      <div className="max-w-7xl mx-auto px-4 mt-4 md:mt-6 space-y-4 md:space-y-6">
+        {/* ─── FULL LANDSCAPE HERO (centered) ─────────────────────── */}
+        <div
+          className="relative w-full h-[240px] md:h-[320px] rounded-[24px] overflow-hidden bg-[#161008] border border-[#F3E2C8]/10 select-none"
+          style={{ boxShadow: "0 12px 35px rgba(0,0,0,0.10)" }}
         >
-          {/* Golden Lotus & Heading Section with Glassmorphism */}
-          <div className="relative z-10 space-y-1.5 md:space-y-4 mt-0 md:mt-6 bg-transparent md:bg-white/10 md:dark:bg-black/15 md:backdrop-blur-md md:border md:border-white/15 md:dark:border-white/5 rounded-3xl p-1 md:p-7 w-full max-w-[280px] md:max-w-2xl text-center mx-auto shadow-none md:shadow-md overflow-hidden">
-            {/* Spinning Mandala Watermark */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06] dark:opacity-[0.04] flex items-center justify-center -z-10">
-              <img src={mandalaSvg} className="w-[120px] h-[120px] md:w-[320px] md:h-[320px] animate-[spin_120s_linear_infinite]" alt="mandala" />
-            </div>
-
-            {/* Lotus Flower Image at the top */}
-            <div className="flex justify-center">
-              <img 
-                src={flowersImg} 
-                className="w-10 h-10 md:w-16 md:h-16 object-contain filter drop-shadow-[0_4px_8px_rgba(217,119,6,0.2)]" 
-                alt="Lotus Flower" 
-              />
-            </div>
-
-            <p className="text-[10px] md:text-sm font-bold text-[#5c1d0c] tracking-widest uppercase flex items-center justify-center gap-1.5">
-              <span>—</span> {isHi ? "आइए जुड़ें" : "Come Join"} <span>—</span>
-            </p>
-            
-            <h1 className="font-display text-sm md:text-4xl font-black text-[#5c1d0c] dark:text-amber-100 leading-tight">
-              {isHi ? "भक्ति के इस पावन परिवार से" : "In This Holy Family of Devotion"}
+          <img
+            src={shyamBackgroundImg}
+            alt={isHi ? "समुदाय" : "Community"}
+            className="absolute inset-0 w-full h-full object-cover object-[center_20%] z-0 pointer-events-none select-none opacity-100 saturate-[1.08] contrast-[1.05]"
+          />
+          <div
+            className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 45%, rgba(0,0,0,0.55) 78%, rgba(0,0,0,0.72) 100%)" }}
+          />
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-end text-center px-5 pb-4 md:pb-6">
+            <h1 className="font-display font-bold md:font-extrabold text-[#FFFDF8] leading-[1.25] text-[16px] md:text-[28px] select-text max-w-[280px] md:max-w-md drop-shadow-[0_1px_2px_rgba(0,0,0,0.6),0_2px_10px_rgba(0,0,0,0.45)]">
+              {isHi ? (
+                <>
+                  भक्ति के इस पावन
+                  <br />
+                  परिवार से जुड़ें
+                </>
+              ) : (
+                <>
+                  Join Our Holy
+                  <br />
+                  Devotional Family
+                </>
+              )}
             </h1>
-            
-            <div className="text-[#7c2d12] dark:text-amber-200 font-semibold space-y-0.5 md:space-y-1.5 max-w-lg mx-auto leading-normal md:leading-relaxed">
-              <p className="text-[9px] md:text-base">
-                {isHi 
-                  ? "यहाँ मिलती है भक्ति, संगत और सेवा की भावना।" 
-                  : "Here you find devotion, company, and the spirit of service."}
-              </p>
-              <p className="text-[8px] md:text-sm text-[#7c2d12] dark:text-amber-200 font-medium">
-                {isHi 
-                  ? "आइए, साथ मिलकर भजन गाएँ, नाम जपें और भक्ति का आनंद बांटें।" 
-                  : "Come, sing bhajans together, chant holy names, and share the joy of devotion."}
-              </p>
-            </div>
+            <div className="w-10 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/70 to-transparent my-2" />
+            <p className="text-[#FFFDF8]/90 text-[10px] md:text-sm font-bold leading-snug max-w-[260px] md:max-w-sm mb-2.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]">
+              {isHi
+                ? "साथ मिलकर भजन गाएँ, नाम जपें और एक-दूसरे को प्रार्थना करें।"
+                : "Sing bhajans together, chant the Name, and pray for one another."}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate("/join-community?tab=feed")}
+              className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-[#FFFDF8]/95 hover:bg-white text-[#651317] font-bold text-[12px] md:text-sm shadow-md active:scale-95 transition-all border border-amber-200/40"
+            >
+              <Search className="w-3.5 h-3.5" />
+              {isHi ? "समुदाय देखें" : "Explore Community"}
+            </button>
+          </div>
+        </div>
 
-            {/* Button */}
-            <div className="flex justify-center pt-1 md:pt-2">
-              <button
-                onClick={() => navigate("/join-community")}
-                className="inline-flex items-center gap-1 bg-[#5c1d0c] hover:bg-[#4a170a] text-white md:text-[#fef3c7] font-bold px-4 py-1.5 md:px-7 md:py-2.5 rounded-full text-[10px] md:text-sm border border-orange-500/10 md:border-[#d97706]/40 active:scale-95 transition-all shadow-md cursor-pointer"
-              >
-                <Users className="w-3 h-3 md:w-4 md:h-4 text-orange-400" />
-                {isHi ? "समुदाय से जुड़ें" : "Join Community"}
+        {/* ─── WHAT DO YOU WANT TO DO? ───────────────────────────── */}
+        <div className="w-full rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] px-3.5 py-4 md:px-5 md:py-5 overflow-hidden">
+          <div className="flex items-center justify-center gap-3 mb-3.5">
+            <div className="h-px flex-1 max-w-[48px] bg-gradient-to-r from-transparent to-[#D8A35A]/70" />
+            <h2 className="font-display text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 text-center shrink-0">
+              {isHi ? "क्या करना चाहते हैं?" : "What would you like to do?"}
+            </h2>
+            <div className="h-px flex-1 max-w-[48px] bg-gradient-to-l from-transparent to-[#D8A35A]/70" />
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
+                  navigate("/auth/login?redirect=/community");
+                } else setCreateDialogOpen(true);
+              }}
+              className="relative text-left bg-white dark:bg-[#120e0a] rounded-2xl border border-[#E8D8C4]/80 dark:border-zinc-700/60 p-3 pr-8 shadow-[0_4px_12px_rgba(74,14,18,0.04)] active:scale-[0.98] transition-all cursor-pointer min-h-[104px] flex flex-col gap-2 overflow-hidden"
+            >
+              <div className="w-9 h-9 rounded-full bg-[#F8E8E8] dark:bg-[#2a1515] flex items-center justify-center shrink-0">
+                <Users className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[13px] font-bold text-[#651317] dark:text-amber-100 leading-tight">{isHi ? "समूह बनाएं" : "Create Group"}</h3>
+                <p className="text-[10px] text-[#786252] dark:text-stone-400 font-semibold leading-snug mt-1 line-clamp-3 break-words pr-1">
+                  {isHi ? "अपना स्वयं का समूह बनाएं और भक्तों को जोड़ें।" : "Create your own group and invite devotees."}
+                </p>
+              </div>
+              <ArrowRight className="absolute bottom-3 right-3 w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" })}
+              className="relative text-left bg-white dark:bg-[#120e0a] rounded-2xl border border-[#E8D8C4]/80 dark:border-zinc-700/60 p-3 pr-8 shadow-[0_4px_12px_rgba(74,14,18,0.04)] active:scale-[0.98] transition-all cursor-pointer min-h-[104px] flex flex-col gap-2 overflow-hidden"
+            >
+              <div className="w-9 h-9 rounded-full bg-[#F8E8E8] dark:bg-[#2a1515] flex items-center justify-center shrink-0">
+                <Search className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[13px] font-bold text-[#651317] dark:text-amber-100 leading-tight">{isHi ? "समूह खोजें" : "Find Group"}</h3>
+                <p className="text-[10px] text-[#786252] dark:text-stone-400 font-semibold leading-snug mt-1 line-clamp-3 break-words pr-1">
+                  {isHi ? "रुचि के अनुसार समूह खोजें और जुड़कर सहभागिता करें।" : "Find groups by interest and join to participate."}
+                </p>
+              </div>
+              <ArrowRight className="absolute bottom-3 right-3 w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
+            </button>
+          </div>
+          <form onSubmit={handleJoinByCode} className="mt-3">
+            <div className="relative flex items-center w-full h-11 rounded-full bg-white dark:bg-[#120e0a] border border-[#E8D8C4] dark:border-zinc-700/80 pl-3.5 pr-1.5 gap-2">
+              <Key className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
+              <input
+                type="text"
+                placeholder={isHi ? "आमंत्रण कोड दर्ज करें..." : "Enter invite code..."}
+                value={inviteCodeInput}
+                onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[12px] font-bold text-[#651317] dark:text-amber-100 placeholder:text-[#651317]/50 uppercase tracking-wider"
+              />
+              <button type="submit" disabled={joiningByCode} className="btn-royal-primary h-8 rounded-full !px-3 text-[11px] font-bold shrink-0 disabled:opacity-60">
+                {joiningByCode ? "..." : (isHi ? "जोड़ें" : "Join")}
               </button>
             </div>
-          </div>
+          </form>
         </div>
 
         {/* ─── QUICK ACTIONS CARDS GRID ───────────────────────────── */}
@@ -632,6 +713,64 @@ export default function CommunityPage() {
           </div>
         </div>
 
+        {/* राधा — after hero / actions / quick cards */}
+        <DevotionalDivider word="राधा" />
+
+        {/* ─── MY JOINED GROUPS ───────────────────────────────────── */}
+        {user ? (
+          myJoinedGroups.length > 0 ? (
+            <div id="my-joined-groups-section" className="w-full text-left bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 dark:from-stone-900/90 dark:to-stone-900/90 border border-orange-500/20 rounded-3xl p-4 md:p-5 shadow-xs">
+              <div className="flex items-center gap-2.5 mb-3.5">
+                <div className="w-8 h-8 rounded-full bg-orange-500/15 flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4 text-orange-600" />
+                </div>
+                <div>
+                  <h2 className="font-display text-base md:text-lg font-extrabold text-stone-900 dark:text-amber-50 flex items-center gap-2">
+                    <span>{isHi ? "मेरे जुड़े हुए समूह" : "My Joined Groups"}</span>
+                    <span className="bg-orange-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">{myJoinedGroups.length}</span>
+                  </h2>
+                  <p className="text-[10px] text-stone-500 font-bold">{isHi ? "आप जिन समूहों के सदस्य हैं" : "Groups you have joined"}</p>
+                </div>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 pt-1 snap-x scroll-smooth w-full" style={{ scrollbarWidth: "none" }}>
+                {myJoinedGroups.map((group) => (
+                  <div key={group.id} className="w-[260px] shrink-0 snap-start bg-white dark:bg-stone-900 border border-orange-500/15 rounded-3xl overflow-hidden shadow-xs">
+                    <div className="h-32 w-full relative overflow-hidden bg-stone-900">
+                      <img src={getGroupImage(group.image_url)} alt={group.name} loading="lazy" className="w-full h-full object-cover opacity-90" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                      <span className={`absolute top-2.5 right-2.5 text-[9px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 ${group.is_public ? "bg-emerald-600/90" : "bg-amber-600/90"}`}>
+                        {group.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                        {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
+                      </span>
+                      <div className="absolute bottom-2.5 left-3 right-3 text-left">
+                        <h3 className="font-display text-xs font-black text-white truncate">{group.name}</h3>
+                        <p className="text-[9.5px] text-amber-200 font-medium truncate mt-0.5">{group.member_count || 0} {isHi ? "सदस्य" : "members"}</p>
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <button onClick={() => navigate(`/community/groups/${group.id}`)} className="w-full py-2 rounded-xl text-xs font-black bg-[#5c1d0c] hover:bg-[#4a170a] text-white flex items-center justify-center gap-1 active:scale-[0.98]">
+                        <span>{isHi ? "समूह में प्रवेश करें" : "Enter Group Hall"}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-orange-400" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div id="my-joined-groups-section" className="w-full bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-orange-500/15 rounded-3xl p-4 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-display text-sm font-bold">{isHi ? "आप अभी किसी समूह के सदस्य नहीं हैं" : "You haven't joined any group yet"}</h3>
+                <p className="text-xs text-stone-500 font-semibold">{isHi ? "सार्वजनिक समूह खोजें या कोड दर्ज करें" : "Explore public groups or enter a code"}</p>
+              </div>
+              <button onClick={() => setCreateDialogOpen(true)} className="bg-[#5c1d0c] text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 shrink-0">
+                <Plus className="w-4 h-4" />
+                {isHi ? "नया समूह बनाएं" : "Create Group"}
+              </button>
+            </div>
+          )
+        ) : null}
+
         {/* ─── STATISTICS PANEL ─────────────────────────────────── */}
         <div className="w-full bg-[#fefaf0]/95 dark:bg-stone-900/95 border border-orange-500/10 rounded-2xl p-4 flex flex-row justify-around shadow-sm divide-x divide-orange-500/10">
           {/* Stat 1 */}
@@ -691,75 +830,6 @@ export default function CommunityPage() {
             <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
               {isHi ? "सत्संग एवं आयोजन" : "Satsang & Events"}
             </span>
-          </div>
-        </div>
-
-        {/* ─── POPULAR TOPICS SECTION ───────────────────────────── */}
-        <div className="w-full text-left mt-6">
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-base">🔥</span>
-              <h2 className="font-display text-base md:text-lg font-bold text-stone-900 dark:text-amber-50">
-                {isHi ? "आज के लोकप्रिय विषय" : "Popular Topics Today"}
-              </h2>
-            </div>
-            <button
-              onClick={() => navigate("/join-community")}
-              className="text-xs font-extrabold text-orange-650 dark:text-orange-400 hover:underline flex items-center gap-0.5"
-            >
-              {isHi ? "सभी देखें" : "View All"} <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div 
-            className="flex gap-4 overflow-x-auto pb-3 snap-x scroll-smooth w-full"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {[
-              {
-                title: isHi ? "राम नवमी" : "Ram Navami",
-                devotees: "12.5K",
-                image: ramaImg,
-              },
-              {
-                title: isHi ? "हनुमान चालीसा" : "Hanuman Chalisa",
-                devotees: "8.2K",
-                image: hanumanHighQualityImg,
-              },
-              {
-                title: isHi ? "खाटू श्याम भजन" : "Khatu Shyam Bhajan",
-                devotees: "6.7K",
-                image: shyamBackgroundImg,
-              },
-              {
-                title: isHi ? "सावन विशेष" : "Sawan Special",
-                devotees: "5.1K",
-                image: shivaImg,
-              },
-            ].map((topic, i) => (
-              <div 
-                key={i}
-                className="w-[140px] shrink-0 snap-start rounded-2xl overflow-hidden aspect-[3/4] relative shadow-xs border border-orange-500/5 cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all"
-                onClick={() => navigate(`/search?q=${encodeURIComponent(topic.title)}`)}
-              >
-                <img src={topic.image} className="w-full h-full object-cover filter brightness-[0.92]" alt={topic.title} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                
-                {/* Trending icon top right */}
-                <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-black/40 backdrop-blur-xs flex items-center justify-center text-orange-400">
-                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="20" x2="18" y2="10" />
-                    <line x1="12" y1="20" x2="12" y2="4" />
-                    <line x1="6" y1="20" x2="6" y2="14" />
-                  </svg>
-                </div>
-
-                <div className="absolute bottom-3 left-3 right-3 text-left">
-                  <h3 className="text-xs font-black text-white leading-tight line-clamp-1">{topic.title}</h3>
-                  <p className="text-[9px] text-orange-300 font-bold mt-0.5">{topic.devotees} {isHi ? "भक्त" : "devotees"}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -846,10 +916,13 @@ export default function CommunityPage() {
           </div>
         </div>
 
+        {/* राधा — after my groups / stats / search */}
+        <DevotionalDivider word="राधा" />
+
         {/* ─── ACTIVE GROUPS SECTION ────────────────────────────── */}
         <div className="w-full text-left">
           <div className="flex items-center justify-between mb-3.5">
-            <h2 className="font-display text-lg font-bold text-stone-900 dark:text-amber-50">
+            <h2 className="font-display text-lg font-extrabold text-stone-900 dark:text-amber-50">
               {isHi ? "सक्रिय नाम संघ" : "Active Naam Sangh"}
             </h2>
             <button
@@ -864,15 +937,25 @@ export default function CommunityPage() {
             className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x scroll-smooth w-full"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {filteredGroups.length === 0 && !loading ? (
+            {loading && groups.length === 0 ? (
+              [...Array(3)].map((_, i) => (
+                <div key={"skel-"+i} className="w-[250px] shrink-0 rounded-3xl overflow-hidden border border-orange-500/10 bg-white dark:bg-stone-900 animate-pulse">
+                  <div className="h-36 w-full bg-stone-200 dark:bg-stone-800" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 w-3/4 rounded bg-stone-200 dark:bg-stone-800" />
+                    <div className="h-9 w-full rounded-xl bg-stone-200 dark:bg-stone-800" />
+                  </div>
+                </div>
+              ))
+            ) : filteredGroups.length === 0 ? (
               <div className="w-full py-12 text-center text-stone-500 dark:text-stone-400 bg-white dark:bg-stone-900/30 rounded-2xl border border-dashed border-orange-500/15">
                 <span className="text-2xl mb-1.5 block">📿</span>
-                <p className="font-semibold text-xs">
+                <p className="font-bold text-xs">
                   {isHi ? "कोई सक्रिय समूह नहीं मिला।" : "No active groups found."}
                 </p>
               </div>
             ) : (
-              filteredGroups.map((group) => {
+              visibleFilteredGroups.map((group) => {
                 const isActiveBadge = (group.member_count || 0) >= 5 || (group.total_chants || 0) > 0;
                 
                 const formatGroupChants = (chants: number) => {
@@ -942,7 +1025,7 @@ export default function CommunityPage() {
                         <h3 className="font-display text-sm font-black text-stone-900 dark:text-amber-100 leading-snug line-clamp-1 text-left">
                           {group.name}
                         </h3>
-                        <p className="text-[10px] text-stone-500 dark:text-stone-400 font-semibold mt-1 text-left">
+                        <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold mt-1 text-left">
                           {group.member_count || 0} {isHi ? "सदस्य" : "members"} • {isHi ? "2 मिनट पहले सक्रिय" : "active 2m ago"}
                         </p>
 
@@ -978,12 +1061,27 @@ export default function CommunityPage() {
               })
             )}
           </div>
+
+          {canShowMoreFiltered && (
+            <div className="flex justify-center mt-2">
+              <button
+                type="button"
+                onClick={() => void loadMoreGroups()}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-full border border-[#E8D8C4] bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-100 text-xs font-bold hover:bg-white active:scale-95 transition-all disabled:opacity-60"
+              >
+                {loadingMore
+                  ? (isHi ? "लोड हो रहा है..." : "Loading...")
+                  : (isHi ? "और समूह देखें" : "Load more groups")}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ─── QUOTE BLOCK ───────────────────────────────────────── */}
         <div className="relative w-full rounded-2xl bg-[#FAF6EE] dark:bg-stone-900/30 border border-orange-500/15 p-5 max-w-xl mx-auto text-center shadow-xxs">
           <span className="absolute top-2 left-3 font-serif text-3xl text-orange-500/20 leading-none select-none">❝</span>
-          <p className="text-xs md:text-sm font-semibold text-[#7c2d12] dark:text-amber-250 italic px-4 py-1 leading-relaxed">
+          <p className="text-xs md:text-sm font-bold text-[#7c2d12] dark:text-amber-250 italic px-4 py-1 leading-relaxed">
             {isHi 
               ? "भक्ति भाव से की गई साधना ही जीवन का सच्चा उद्देश्य प्रदान करती है।" 
               : "Devotional practice done with a pure heart provides the true purpose of life."}
@@ -994,8 +1092,11 @@ export default function CommunityPage() {
           <span className="absolute bottom-1 right-3 font-serif text-3xl text-orange-500/20 leading-none select-none">❞</span>
         </div>
 
+        {/* राधा — cadence close after active groups + quote */}
+        <DevotionalDivider word="राधा" />
+
         {/* Info Note Footer */}
-        <div className="w-full mt-4 flex items-center gap-2.5 justify-center p-3 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-800 dark:text-amber-400 font-semibold max-w-md mx-auto text-left">
+        <div className="w-full mt-4 flex items-center gap-2.5 justify-center p-3 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-800 dark:text-amber-400 font-bold max-w-md mx-auto text-left">
           <Info className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <span>
             {isHi
@@ -1396,7 +1497,7 @@ export default function CommunityPage() {
                   {isHi ? "आमंत्रण लिंक" : "Invite Link"}
                 </p>
                 <div className="flex items-center justify-center gap-2">
-                  <span className="font-display text-2xl font-extrabold text-orange-500 tracking-widest">
+                  <span className="font-display text-2xl font-semibold text-orange-500 tracking-widest">
                     {createdGroupData.inviteCode}
                   </span>
                   <button
@@ -1532,7 +1633,7 @@ export default function CommunityPage() {
                     </div>
 
                     <div className="text-right">
-                      <p className="text-xs font-extrabold text-amber-600 dark:text-amber-400 tabular-nums leading-none">
+                      <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 tabular-nums leading-none">
                         {member.total_chants.toLocaleString()}
                       </p>
                       <p className="text-[9px] text-stone-500 dark:text-stone-400 font-semibold mt-0.5">

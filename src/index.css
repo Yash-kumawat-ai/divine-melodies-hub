@@ -1417,3 +1417,9 @@ height: 15rem!important;
   }
 }
 
+/* Community (Samuday) page — decorative Hindi body only; headings keep font-display (Noto Sans) */
+.community-page[data-lang="hi"] .hindi-text {
+  font-family: var(--font-hindi);
+  letter-spacing: 0.01em;
+}
+

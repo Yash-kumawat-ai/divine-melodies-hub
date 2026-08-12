@@ -74,7 +74,7 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
         alt=""
         className="absolute inset-0 hidden md:block h-full w-full object-cover z-0"
         style={{ objectPosition: '45% center' }}
-        fetchPriority="high"
+        fetchpriority="high"
         loading="eager"
       />
       {/* Dark gradient overlay on the left to ensure high readability for login form */}
@@ -135,7 +135,7 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
             src={shivMobile}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-center md:hidden"
-            fetchPriority="high"
+            fetchpriority="high"
             loading="eager"
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[#061323]/95 md:hidden" />

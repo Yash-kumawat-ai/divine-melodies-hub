@@ -118,12 +118,24 @@ function getLocalGroups(currentUserId?: string): NaamSanghGroup[] {
 }
 
 /** Fetch all groups */
-export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGroup[]> {
+export async function fetchGroups(
+  currentUserId?: string,
+  opts?: { limit?: number; offset?: number }
+): Promise<NaamSanghGroup[]> {
   try {
-    const { data: groups, error: groupsError } = await supabase
+    const limit = opts?.limit;
+    const offset = opts?.offset ?? 0;
+
+    let query = supabase
       .from("groups")
       .select("*")
       .order("created_at", { ascending: false });
+
+    if (typeof limit === "number" && limit > 0) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    const { data: groups, error: groupsError } = await query;
 
     if (groupsError) throw groupsError;
 
@@ -164,7 +176,12 @@ export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGrou
     });
   } catch (err) {
     console.warn("Supabase fetchGroups failed, falling back to LocalStorage:", err);
-    return getLocalGroups(currentUserId);
+    const local = getLocalGroups(currentUserId);
+    if (typeof opts?.limit === "number" && opts.limit > 0) {
+      const offset = opts.offset ?? 0;
+      return local.slice(offset, offset + opts.limit);
+    }
+    return local;
   }
 }
 

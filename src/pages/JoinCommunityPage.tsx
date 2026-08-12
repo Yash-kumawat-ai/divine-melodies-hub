@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight,
@@ -111,6 +111,7 @@ function EventCountdown({ datetime }: { datetime: string }) {
 export default function JoinCommunityPage() {
   const navigate = useNavigate();
   const { slug, postId } = useParams<{ slug?: string; postId?: string }>();
+  const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
   const { language } = useLanguage();
   const isHi = language === "hi";
@@ -128,7 +129,17 @@ export default function JoinCommunityPage() {
   };
 
   // Navigation tabs
-  const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'events'>('groups');
+  const [activeTab, setActiveTab] = useState<'feed' | 'groups' | 'events'>(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    return tab === "feed" || tab === "groups" || tab === "events" ? tab : "groups";
+  });
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "feed" || tab === "groups" || tab === "events") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Core Data
   const [posts, setPosts] = useState<CommunityPost[]>([]);

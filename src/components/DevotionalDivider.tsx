@@ -3,9 +3,11 @@ import { useLanguage } from '@/hooks/useLanguage';
 interface DevotionalDividerProps {
   language?: string;
   className?: string;
+  /** Chant word shown in the marquee (default: राम) */
+  word?: string;
 }
 
-export function DevotionalDivider({ language: _language, className = "" }: DevotionalDividerProps) {
+export function DevotionalDivider({ language: _language, className = "", word = "राम" }: DevotionalDividerProps) {
   void _language;
 
   return (
@@ -29,7 +31,7 @@ export function DevotionalDivider({ language: _language, className = "" }: Devot
           {Array.from({ length: 60 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4 shrink-0">
               <span className="text-[#651317] dark:text-[#E8B15C] font-semibold tracking-wide text-sm md:text-[17px] font-serif">
-                राम
+                {word}
               </span>
               <span className="text-[#D8A35A]/60 dark:text-[#D8A35A]/60 text-[10px] font-serif">✦</span>
             </div>
@@ -38,7 +40,7 @@ export function DevotionalDivider({ language: _language, className = "" }: Devot
           {Array.from({ length: 60 }).map((_, i) => (
             <div key={`dup-${i}`} className="flex items-center gap-4 shrink-0" aria-hidden="true">
               <span className="text-[#651317] dark:text-[#E8B15C] font-semibold tracking-wide text-sm md:text-[17px] font-serif">
-                राम
+                {word}
               </span>
               <span className="text-[#D8A35A]/60 dark:text-[#D8A35A]/60 text-[10px] font-serif">✦</span>
             </div>
