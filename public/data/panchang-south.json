@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-12",
+  "date": "2026-08-13",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Amavasya",
-  "tithi_number": 15,
-  "nakshatra": "Pushyami - 4",
-  "yoga": "Vyatapata",
-  "karana": "Chatushpada",
-  "paksha": "Shukla",
+  "tithi": "Padyami",
+  "tithi_number": 0,
+  "nakshatra": "Aslesha - 4",
+  "yoga": "Variyan",
+  "karana": "Kimstughna",
+  "paksha": "Krishna",
   "sunrise": "06:10 AM",
   "sunset": "06:38 PM",
-  "rahu_kaal": "10:50 AM - 12:24 PM",
+  "rahu_kaal": "12:24 PM - 01:58 PM",
   "brahma_muhurat": "04:34 AM - 05:22 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-08-12T05:36:27+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-08-13T05:35:44+05:30"
 }
