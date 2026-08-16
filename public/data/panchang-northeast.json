@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-15",
+  "date": "2026-08-17",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Tadiya",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 1",
-  "yoga": "Siva",
-  "karana": "Taitula",
+  "nakshatra": "Chitta - 1",
+  "yoga": "Subha",
+  "karana": "Balava",
   "paksha": "Krishna",
   "sunrise": "05:17 AM",
-  "sunset": "06:04 PM",
-  "rahu_kaal": "08:29 AM - 10:05 AM",
+  "sunset": "06:03 PM",
+  "rahu_kaal": "06:53 AM - 08:28 AM",
   "brahma_muhurat": "03:41 AM - 04:29 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-15T05:16:35+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-08-17T05:12:54+05:30"
 }

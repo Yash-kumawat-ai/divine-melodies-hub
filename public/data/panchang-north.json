@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-15",
+  "date": "2026-08-17",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Tadiya",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 1",
-  "yoga": "Siva",
-  "karana": "Taitula",
+  "nakshatra": "Chitta - 1",
+  "yoga": "Subha",
+  "karana": "Balava",
   "paksha": "Krishna",
-  "sunrise": "05:54 AM",
-  "sunset": "06:56 PM",
-  "rahu_kaal": "09:10 AM - 10:47 AM",
-  "brahma_muhurat": "04:18 AM - 05:06 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-15T05:16:35+05:30"
+  "sunrise": "05:55 AM",
+  "sunset": "06:54 PM",
+  "rahu_kaal": "07:32 AM - 09:10 AM",
+  "brahma_muhurat": "04:19 AM - 05:07 AM",
+  "vara": "Somvaar",
+  "updated_at": "2026-08-17T05:12:54+05:30"
 }

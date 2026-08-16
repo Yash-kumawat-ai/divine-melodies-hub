@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-15",
+  "date": "2026-08-17",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Tadiya",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 1",
-  "yoga": "Siva",
-  "karana": "Taitula",
+  "nakshatra": "Chitta - 1",
+  "yoga": "Subha",
+  "karana": "Balava",
   "paksha": "Krishna",
   "sunrise": "06:23 AM",
-  "sunset": "07:02 PM",
-  "rahu_kaal": "09:33 AM - 11:08 AM",
+  "sunset": "07:01 PM",
+  "rahu_kaal": "07:58 AM - 09:32 AM",
   "brahma_muhurat": "04:47 AM - 05:35 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-15T05:16:35+05:30"
+  "vara": "Somvaar",
+  "updated_at": "2026-08-17T05:12:54+05:30"
 }

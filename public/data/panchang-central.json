@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-15",
+  "date": "2026-08-17",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Tadiya",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 1",
-  "yoga": "Siva",
-  "karana": "Taitula",
+  "nakshatra": "Chitta - 1",
+  "yoga": "Subha",
+  "karana": "Balava",
   "paksha": "Krishna",
-  "sunrise": "05:55 AM",
-  "sunset": "06:40 PM",
-  "rahu_kaal": "09:06 AM - 10:42 AM",
-  "brahma_muhurat": "04:19 AM - 05:07 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-08-15T05:16:35+05:30"
+  "sunrise": "05:56 AM",
+  "sunset": "06:38 PM",
+  "rahu_kaal": "07:31 AM - 09:06 AM",
+  "brahma_muhurat": "04:20 AM - 05:08 AM",
+  "vara": "Somvaar",
+  "updated_at": "2026-08-17T05:12:54+05:30"
 }
