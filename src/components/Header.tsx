@@ -70,6 +70,24 @@ const MeditationIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const NaradNavIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M4 20L18 6" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="16" cy="8" r="1.8" />
+    <path d="M6 15L15 6" strokeWidth="1" opacity="0.75" />
+    <path d="M19 3v4m-2-2h4" strokeWidth="1.5" />
+  </svg>
+);
+
 export default function Header() {
   const { isBhajanModalOpen } = useBhajanModalOpen();
   const [profileHubOpen, setProfileHubOpen] = useState(false);
@@ -87,6 +105,14 @@ export default function Header() {
     const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
     return cn(
       "inline-flex items-center gap-1.5 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium",
+      active 
+        ? "text-[#651317] dark:text-amber-400 border-[#651317] dark:border-amber-400 font-extrabold rounded-none" 
+        : "text-foreground/80 hover:text-[#651317] dark:hover:text-amber-400 hover:bg-[#651317]/5 border-transparent rounded-md"
+    );
+  };
+  const getDropdownTriggerClass = (active: boolean) => {
+    return cn(
+      "inline-flex items-center gap-1 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium focus:outline-none cursor-pointer",
       active 
         ? "text-[#651317] dark:text-amber-400 border-[#651317] dark:border-amber-400 font-extrabold rounded-none" 
         : "text-foreground/80 hover:text-[#651317] dark:hover:text-amber-400 hover:bg-[#651317]/5 border-transparent rounded-md"
@@ -302,34 +328,23 @@ export default function Header() {
             {language === 'hi' ? 'समूह' : 'Community'}
           </Link>
 
-          {/* Narad AI pill — placed to the left of More button */}
-          <Link
-            to="/kirtan-ai"
-            className={cn(
-              "inline-flex items-center justify-center gap-1.5 rounded-full h-8 px-3.5 font-bold text-xs transition-all shrink-0 shadow-xs focus:outline-none",
-              location.pathname === '/kirtan-ai'
-                ? "bg-[#651317] text-white dark:bg-amber-500 dark:text-stone-950 ring-2 ring-[#651317]/20"
-                : "bg-[#651317] text-white hover:bg-[#7D181D] dark:bg-amber-500 dark:text-stone-950 dark:hover:bg-amber-400"
-            )}
-          >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="leading-none">{t('kirtanAi')}</span>
+          {/* Narad AI link — styled matching standard nav items */}
+          <Link to="/kirtan-ai" className={getLinkClass('/kirtan-ai')}>
+            <NaradNavIcon className="w-3.5 h-3.5" />
+            {t('kirtanAi')}
           </Link>
 
-          {/* More ▼ dropdown — placed to the right of Narad AI */}
+          {/* More ▼ dropdown — styled matching standard nav items */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={cn(
-                  "inline-flex items-center justify-center gap-1 px-3.5 h-8 rounded-full text-xs font-bold transition-all border border-[#E8D8C4] dark:border-stone-800 focus:outline-none",
-                  (location.pathname === '/pricing' || location.pathname === '/about' || location.pathname === '/wallpaper' || location.pathname === '/shorts' || location.pathname === '/recent-bhajans' || location.pathname === '/upload-bhajan')
-                    ? "bg-[#651317] text-white border-[#651317] dark:bg-amber-500 dark:text-stone-950 dark:border-amber-500 shadow-xs"
-                    : "bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#3A2418] dark:text-stone-200 hover:bg-[#FAF0E4] dark:hover:bg-amber-500/20 hover:text-[#651317] dark:hover:text-amber-300"
+                className={getDropdownTriggerClass(
+                  ['/pricing', '/about', '/wallpaper', '/shorts', '/recent-bhajans', '/upload-bhajan'].some(path => location.pathname.startsWith(path))
                 )}
               >
-                <span className="leading-none">{language === 'hi' ? 'और' : 'More'}</span>
-                <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-75" strokeWidth={2.25} />
+                <span>{language === 'hi' ? 'और' : 'More'}</span>
+                <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-75" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">
@@ -412,15 +427,16 @@ export default function Header() {
           {/* Notification bell */}
           {user && <UserNotificationBell userId={user.id} />}
 
-          {/* Language dropdown (Desktop Custom Dropdown) */}
+          {/* Language dropdown (Desktop Custom Dropdown with Border) */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-background/50 text-[13px] font-semibold text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 px-3.5 focus:outline-none shrink-0"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 transition-all text-[13.5px] font-bold text-stone-800 dark:text-stone-200 hover:text-[#651317] dark:hover:text-amber-300 bg-white/80 dark:bg-stone-900/80 hover:bg-[#FAF0E4] dark:hover:bg-amber-950/30 border border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-400/40 rounded-full shadow-2xs focus:outline-none cursor-pointer shrink-0"
               >
+                <Languages className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400 shrink-0" />
                 <span>{languageOptions.find(option => option.code === language)?.label || 'Language'}</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">

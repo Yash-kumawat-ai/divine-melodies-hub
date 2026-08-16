@@ -7,7 +7,6 @@ import { HeroInsightCards } from "@/components/HeroInsightCards";
 import { LiveAartiIcon } from "@/components/LiveAartiIcon";
 
 import raghavamHero from "@/pages/images/raghavam-hero-high-quality.webp";
-import lordRamMobile from "@/pages/images/lord_ram_high_quality.webp";
 
 import {
   HeroImageCard,
@@ -44,7 +43,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <MobileRamVaniCard />
       </div>
 
-      <div className="hidden md:flex flex-col w-full gap-3">
+      <div className="hidden md:flex flex-col w-full gap-6 md:gap-7 lg:gap-8">
         <div className="relative w-full overflow-hidden rounded-[28px] md:min-h-[440px] lg:min-h-[480px] flex flex-col justify-center p-8 lg:p-12 shadow-[0_16px_40px_rgba(0,0,0,0.10)] dark:shadow-[0_20px_48px_rgba(0,0,0,0.45)] border border-[#E8D8C4]/70 dark:border-zinc-800/60 bg-[#FFFDF8] dark:bg-[#120B05]">
           <div className="absolute right-0 top-0 bottom-0 w-1/2 lg:w-[46%] h-full z-0 overflow-hidden pointer-events-none">
             <picture className="block w-full h-full">
@@ -53,7 +52,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 initial={{ scale: 1.03 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 8, ease: "easeOut" }}
-                src={lordRamMobile}
+                src={raghavamHero}
                 alt="Raghavam — Devotional Music Platform"
                 className="w-full h-full object-cover object-center rounded-r-[28px]"
               />

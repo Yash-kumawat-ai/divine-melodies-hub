@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import lordRamMobile from '@/pages/images/lord_ram_high_quality.webp';
+import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import { useLanguage } from '@/hooks/useLanguage';
 
 export function HeroImageCard() {
@@ -15,7 +15,7 @@ export function HeroImageCard() {
     >
       {/* Deity Image covering the entire container as background */}
       <img
-        src={lordRamMobile}
+        src={raghavamHero}
         alt="Lord Ram Darbar"
         loading="lazy"
         className="absolute inset-0 w-full h-full object-cover object-[73%_center] z-0 pointer-events-none select-none brightness-[1.08] contrast-[1.03] saturate-[1.06]"

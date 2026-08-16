@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 import basuriSvg from "@/pages/images/svg/basuri.svg";
-import mandirOrgSvg from "@/pages/images/svg/mandirorg.svg";
+import templeSvg from "@/pages/images/svg/temple.svg";
 import shivayyWhiteFlowerSvg from "@/pages/images/svg/shivayy white flower.svg";
 import ramYellowFlowerSvg from "@/pages/images/svg/ram yellow flower.svg";
 import radhePinkFlowerSvg from "@/pages/images/svg/radhe pink flower.svg";
@@ -20,7 +20,7 @@ export interface DeityItem {
 }
 
 export const DEFAULT_DEITIES_LIST: DeityItem[] = [
-  { id: null,          name: "सभी",    nameEn: "All",    isIcon: false, image: mandirOrgSvg },
+  { id: null,          name: "सभी",    nameEn: "All",    isIcon: false, image: templeSvg },
   { id: "Shiva",        name: "शिव",    nameEn: "Shiva",  isIcon: false, image: shivayyWhiteFlowerSvg },
   { id: "Rama",         name: "राम",    nameEn: "Ram",    isIcon: false, image: ramYellowFlowerSvg },
   { id: "Krishna",      name: "कृष्ण",  nameEn: "Krishna",isIcon: false, image: basuriSvg },

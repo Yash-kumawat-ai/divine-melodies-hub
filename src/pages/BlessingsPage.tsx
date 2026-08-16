@@ -69,7 +69,7 @@ import devotionalHeaderBg from "./images/devotional_background_high_quality(1).w
 import omSvg from "./images/om.svg";
 
 // ─── CUSTOM DEITY SVGS ─────────────────────────────────────────────
-import mandirOrgSvg from "./images/svg/mandirorg.svg";
+import templeSvg from "./images/svg/temple.svg";
 import shivayyWhiteFlowerSvg from "./images/svg/shivayy white flower.svg";
 import ramYellowFlowerSvg from "./images/svg/ram yellow flower.svg";
 import radhePinkFlowerSvg from "./images/svg/radhe pink flower.svg";

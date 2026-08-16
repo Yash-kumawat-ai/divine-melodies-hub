@@ -8,23 +8,24 @@ import { Input } from '@/components/ui/input';
 import { ArrowRight, Mail, Lock, User, Loader2, Phone, Eye, EyeOff } from 'lucide-react';
 import { signupSchema, type SignupInput } from '@/schemas';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useRateLimitTimer } from '@/hooks/useRateLimitTimer';
 
 const signupCopy = {
   en: {
-    title: 'Create Account',
-    subtitle: 'Build your profile and share your devotion with everyone.',
+    title: 'Begin Your Sadhana Journey',
+    subtitle: 'Where every name carries devotion, and every bhajan brings peace.',
     fullName: 'Full Name *',
-    fullNamePlaceholder: 'Your Full Name',
+    fullNamePlaceholder: 'Your Name',
     email: 'Email *',
     phone: 'Phone (Optional)',
     password: 'Password *',
     confirmPassword: 'Confirm Password *',
-    submit: 'Create Sacred Account',
+    submit: 'Sign Up',
     blocked: 'Blocked',
-    divider: 'Or seek with',
+    divider: 'Or continue with',
     google: 'Sign up with Google',
-    alreadyAccount: 'Already have an account?',
-    login: 'Login',
+    alreadyAccount: 'Already part of Raghavam?',
+    login: 'Enter Sacred Realm →',
     successTitle: 'Account Created!',
     successBody: (name: string) => `Welcome, ${name}! Please check your email to verify your account, then login.`,
     successHint: 'Check spam/junk folder if no email arrives.',
@@ -37,20 +38,20 @@ const signupCopy = {
     googleFailed: 'Google signup failed',
   },
   hi: {
-    title: 'खाता बनाएं',
-    subtitle: 'अपनी प्रोफाइल बनाएं और अपनी भक्ति सबके साथ साझा करें।',
+    title: 'अपनी साधना यात्रा आरंभ करें',
+    subtitle: 'जहाँ हर नाम में भक्ति है, हर भजन में शांति है।',
     fullName: 'पूरा नाम *',
-    fullNamePlaceholder: 'आपका पूरा नाम',
+    fullNamePlaceholder: 'आपका शुभ नाम',
     email: 'ईमेल *',
     phone: 'फोन (वैकल्पिक)',
     password: 'पासवर्ड *',
     confirmPassword: 'पासवर्ड पुष्टि करें *',
-    submit: 'पवित्र खाता बनाएं',
+    submit: 'साइन अप',
     blocked: 'रुका हुआ',
     divider: 'या इससे जारी रखें',
     google: 'Google से साइन अप करें',
-    alreadyAccount: 'पहले से खाता है?',
-    login: 'लॉग इन',
+    alreadyAccount: 'पहले से राघवम् से जुड़े हैं?',
+    login: 'पावन प्रवेश करें →',
     successTitle: 'खाता बन गया!',
     successBody: (name: string) => `स्वागत है, ${name}! कृपया अपना खाता सत्यापित करने के लिए ईमेल देखें, फिर लॉगिन करें।`,
     successHint: 'अगर ईमेल न मिले तो स्पैम/जंक फ़ोल्डर देखें।',
@@ -88,59 +89,69 @@ function GoogleLogo() {
 }
 
 export default function SignupForm() {
-  const SIGNUP_COOLDOWN_KEY = 'signupCooldownUntil';
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [registeredName, setRegisteredName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [retryAfter, setRetryAfter] = useState<number | null>(null);
-  const [secondsRemaining, setSecondsRemaining] = useState(0);
+  
   const { signUp, signInWithGoogle } = useAuth();
   const { language } = useLanguage();
   const copy = language === 'hi' ? signupCopy.hi : signupCopy.en;
   const navigate = useNavigate();
-  
+
+  const { isRateLimited, secondsRemaining, setRateLimit } = useRateLimitTimer();
+
   const { register, handleSubmit, formState: { errors } } = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
   });
 
-  const [registeredName, setRegisteredName] = useState('');
+  const onSubmit = async (data: SignupInput) => {
+    if (isRateLimited) return;
 
-  useEffect(() => {
-    const storedValue = window.localStorage.getItem(SIGNUP_COOLDOWN_KEY);
-    if (!storedValue) return;
+    setError('');
+    setLoading(true);
 
-    const parsed = Number(storedValue);
-    if (!Number.isNaN(parsed) && parsed > Date.now()) {
-      setRetryAfter(parsed);
-    } else {
-      window.localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
-    }
-  }, []);
+    const result = await signUp(data.email, data.password, data.name, data.phone);
 
-  useEffect(() => {
-    if (!retryAfter) return;
-
-    const tick = () => {
-      const remaining = Math.max(0, Math.ceil((retryAfter - Date.now()) / 1000));
-      setSecondsRemaining(remaining);
-
-      if (remaining <= 0) {
-        setRetryAfter(null);
-        window.localStorage.removeItem(SIGNUP_COOLDOWN_KEY);
+    if (result.error) {
+      const parsed = toFriendlySignupError((result.error as any)?.message || copy.signupFailed);
+      
+      if (parsed.isRateLimit) {
+        setRateLimit(parsed.retryAfterSeconds);
+      } else {
+        setError(parsed.message);
       }
-    };
+      setLoading(false);
+      return;
+    }
 
-    tick();
-    const intervalId = window.setInterval(tick, 1000);
-    return () => window.clearInterval(intervalId);
-  }, [retryAfter]);
+    setRegisteredName(data.name);
+    setSuccess(true);
+    setLoading(false);
+  };
 
-  const isRateLimited = retryAfter !== null && Date.now() < retryAfter;
-
-  const toFriendlySignupError = (message: string): { message: string; isRateLimit: boolean } => {
+  const toFriendlySignupError = (message: string) => {
     const normalized = message.toLowerCase();
+
+    const rateLimitMatch = normalized.match(/after (\d+)\s*seconds/);
+    if (rateLimitMatch) {
+      const seconds = parseInt(rateLimitMatch[1], 10);
+      return {
+        isRateLimit: true,
+        retryAfterSeconds: seconds,
+        message: copy.rateLimit(seconds),
+      };
+    }
+
+    if (normalized.includes('rate limit') || normalized.includes('too many requests')) {
+      return {
+        isRateLimit: true,
+        retryAfterSeconds: 60,
+        message: copy.rateLimit(60),
+      };
+    }
 
     if (
       normalized.includes('error sending confirmation email') ||
@@ -148,55 +159,13 @@ export default function SignupForm() {
       normalized.includes('smtp') ||
       normalized.includes('email provider')
     ) {
-      return {
-        message: copy.emailConfigError,
-        isRateLimit: false,
-      };
+      return { isRateLimit: false, retryAfterSeconds: 0, message: copy.emailConfigError };
+    }
+    if (normalized.includes('already registered') || normalized.includes('user already exists')) {
+      return { isRateLimit: false, retryAfterSeconds: 0, message: copy.alreadyRegistered };
     }
 
-    if (normalized.includes('rate limit') || normalized.includes('too many requests') || normalized.includes('email rate limit exceeded')) {
-      const cooldownMs = 180_000;
-      const cooldownUntil = Date.now() + cooldownMs;
-      setRetryAfter(cooldownUntil);
-      window.localStorage.setItem(SIGNUP_COOLDOWN_KEY, String(cooldownUntil));
-      return { message: '', isRateLimit: true };
-    }
-
-    if (normalized.includes('user already registered')) {
-      return { message: copy.alreadyRegistered, isRateLimit: false };
-    }
-
-    return { message, isRateLimit: false };
-  };
-
-  const onSubmit = async (data: SignupInput) => {
-    if (isRateLimited) return;
-    
-    setError('');
-    setRegisteredName(data.name);
-
-    const storedCooldown = window.localStorage.getItem(SIGNUP_COOLDOWN_KEY);
-    if (storedCooldown) {
-      const cooldownUntil = Number(storedCooldown);
-      if (!Number.isNaN(cooldownUntil) && cooldownUntil > Date.now()) {
-        const waitSeconds = Math.ceil((cooldownUntil - Date.now()) / 1000);
-        setError(copy.rateLimit(waitSeconds));
-        return;
-      }
-    }
-
-    setLoading(true);
-    const { error } = await signUp(data.email, data.password, data.name, data.phone);
-    
-    if (error) {
-      const parsed = toFriendlySignupError((error as any)?.message || copy.signupFailed);
-      if (!parsed.isRateLimit) {
-        setError(parsed.message);
-      }
-    } else {
-      setSuccess(true);
-    }
-    setLoading(false);
+    return { isRateLimit: false, retryAfterSeconds: 0, message };
   };
 
   const handleGoogleSignup = async () => {
@@ -206,13 +175,17 @@ export default function SignupForm() {
       const { error } = await signInWithGoogle('/upload-bhajan');
       if (error) {
         const parsed = toFriendlySignupError((error as any)?.message || copy.googleFailed);
-        if (!parsed.isRateLimit) {
+        if (parsed.isRateLimit) {
+          setRateLimit(parsed.retryAfterSeconds);
+        } else {
           setError(parsed.message);
         }
       }
     } catch (err: any) {
       const parsed = toFriendlySignupError(err.message || copy.googleFailed);
-      if (!parsed.isRateLimit) {
+      if (parsed.isRateLimit) {
+        setRateLimit(parsed.retryAfterSeconds);
+      } else {
         setError(parsed.message);
       }
     } finally {
@@ -223,19 +196,19 @@ export default function SignupForm() {
   if (success) {
     return (
       <div className="w-full py-6 text-center space-y-4">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-3xl">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-500/40 text-emerald-600 dark:text-emerald-400 text-2xl">
           ✓
         </div>
-        <h2 className="font-display font-black text-2xl text-[#651317] dark:text-amber-100">{copy.successTitle}</h2>
-        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-medium leading-relaxed">
+        <h2 className="font-serif font-black text-2xl text-[#5C1615] dark:text-amber-100">{copy.successTitle}</h2>
+        <p className="text-xs sm:text-sm text-[#7A6455] dark:text-amber-200/80 font-medium leading-relaxed">
           {copy.successBody(registeredName)}
         </p>
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-[#7A6455]/70 dark:text-amber-200/50">
           {copy.successHint}
         </p>
         <Link 
           to="/auth/login" 
-          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#651317] via-[#8B1A1F] to-[#5c1d0c] px-6 py-3 text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider shadow-md hover:from-[#8B1A1F] hover:to-[#651317] transition-all"
+          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#6B1D16] hover:bg-[#541611] text-white px-6 py-2.5 text-xs sm:text-sm font-extrabold text-white uppercase tracking-wider shadow-md transition-all border border-[#5C1615]/20"
         >
           <ArrowRight className="w-4 h-4" />
           {copy.goToLogin}
@@ -245,10 +218,10 @@ export default function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4 w-full">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 sm:space-y-3.5 md:space-y-2.5 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="font-display font-black text-2xl sm:text-3xl text-[#651317] dark:text-amber-100">{copy.title}</h2>
-        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-medium">{copy.subtitle}</p>
+        <h2 className="font-serif font-black text-xl sm:text-2xl md:text-xl text-[#5C1615] dark:text-amber-100 tracking-tight drop-shadow-xs">{copy.title}</h2>
+        <p className="text-xs sm:text-sm md:text-xs text-[#7A6455] dark:text-stone-300 font-medium leading-relaxed max-w-xs md:max-w-md mx-auto">{copy.subtitle}</p>
       </div>
       
       {error && (
@@ -263,16 +236,16 @@ export default function SignupForm() {
         </div>
       )}
 
-      <div className="space-y-1 text-left">
-        <label htmlFor="name" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.fullName}</label>
+      <div className="space-y-0.5 text-left">
+        <label htmlFor="name" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.fullName}</label>
         <div className="relative">
-          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="name"
             type="text"
             {...register('name')}
             placeholder={copy.fullNamePlaceholder}
-            className="h-11 sm:h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
         </div>
         {errors.name && (
@@ -280,16 +253,16 @@ export default function SignupForm() {
         )}
       </div>
 
-      <div className="space-y-1 text-left">
-        <label htmlFor="email" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.email}</label>
+      <div className="space-y-0.5 text-left">
+        <label htmlFor="email" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.email}</label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="email"
             type="email"
             {...register('email')}
-            placeholder="your@email.com"
-            className="h-11 sm:h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            placeholder="namaste@raghavam.com"
+            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
         </div>
         {errors.email && (
@@ -297,16 +270,16 @@ export default function SignupForm() {
         )}
       </div>
 
-      <div className="space-y-1 text-left">
-        <label htmlFor="phone" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.phone}</label>
+      <div className="space-y-0.5 text-left">
+        <label htmlFor="phone" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.phone}</label>
         <div className="relative">
-          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="phone"
             type="tel"
             {...register('phone')}
             placeholder="+91 98765 43210"
-            className="h-11 sm:h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
         </div>
         {errors.phone && (
@@ -314,21 +287,21 @@ export default function SignupForm() {
         )}
       </div>
 
-      <div className="space-y-1 text-left">
-        <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.password}</label>
+      <div className="space-y-0.5 text-left">
+        <label htmlFor="password" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.password}</label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             {...register('password')}
             placeholder="••••••••"
-            className="h-11 sm:h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 pr-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
             title={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -339,21 +312,21 @@ export default function SignupForm() {
         )}
       </div>
 
-      <div className="space-y-1 text-left">
-        <label htmlFor="confirmPassword" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.confirmPassword}</label>
+      <div className="space-y-0.5 text-left">
+        <label htmlFor="confirmPassword" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.confirmPassword}</label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             {...register('confirmPassword')}
             placeholder="••••••••"
-            className="h-11 sm:h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 pr-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
             title={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -368,7 +341,7 @@ export default function SignupForm() {
         type="submit" 
         size="lg"
         disabled={loading || isRateLimited} 
-        className="w-full font-extrabold uppercase tracking-wider text-xs sm:text-sm"
+        className="mt-2.5 md:mt-3.5 h-11 sm:h-12 md:h-10.5 w-full rounded-2xl md:rounded-xl bg-[#6B1D16] hover:bg-[#541611] dark:bg-[#7A1C20] dark:hover:bg-[#651317] text-white font-extrabold tracking-wide text-sm sm:text-base shadow-[0_8px_20px_rgba(107,29,22,0.22)] hover:shadow-[0_12px_24px_rgba(107,29,22,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-[0.99]"
       >
         {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin text-white" /> : null}
         {isRateLimited ? `${copy.blocked} ${secondsRemaining}s` : copy.submit}
@@ -376,10 +349,10 @@ export default function SignupForm() {
 
       <div className="relative py-0.5">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[#E8D8C4] dark:border-stone-800" />
+          <span className="w-full border-t border-[#EADBCC] dark:border-stone-800" />
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-extrabold">
-          <span className="bg-[#FFFDF8] dark:bg-[#140F0A] px-3 text-stone-400">{copy.divider}</span>
+        <div className="relative flex justify-center text-xs font-medium">
+          <span className="bg-[#FFFDF9] dark:bg-[#140F0A] px-3 text-[#7A6455] dark:text-stone-400">{copy.divider}</span>
         </div>
       </div>
 
@@ -388,15 +361,15 @@ export default function SignupForm() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="h-11 sm:h-12 w-full rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF0E4] font-extrabold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2.5"
+        className="h-11 sm:h-12 md:h-10.5 w-full rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF4EB] font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer"
       >
         <GoogleLogo />
         <span>{copy.google}</span>
       </Button>
 
-      <p className="text-center text-xs sm:text-sm text-stone-600 dark:text-stone-400 font-medium pt-0.5">
+      <p className="text-center text-xs sm:text-sm text-[#7A6455] dark:text-stone-400 font-medium pt-0.5">
         {copy.alreadyAccount}{' '}
-        <Link to="/auth/login" className="font-extrabold text-[#651317] dark:text-amber-400 hover:underline">
+        <Link to="/auth/login" className="font-extrabold text-[#6B1D16] dark:text-amber-400 hover:underline">
           {copy.login}
         </Link>
       </p>

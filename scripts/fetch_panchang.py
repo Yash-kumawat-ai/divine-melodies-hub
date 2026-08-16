@@ -6,7 +6,10 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-# Force UTF-8 encoding for standard output on Windows to avoid UnicodeEncodeError from third-party libraries (e.g. vedastro)
+import os
+
+# Force UTF-8 encoding for standard output to avoid UnicodeEncodeError from third-party libraries (e.g. vedastro)
+os.environ["PYTHONIOENCODING"] = "utf-8"
 if sys.platform.startswith("win"):
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -302,56 +305,65 @@ def write_health(now, failed_zones):
 
 def main():
     from datetime import timedelta
-    Calculate.SetAPIKey("FreeAPIUser")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     now = datetime.now(IST)
     today_dt = now
 
-    # We want a 3-day history window: today, 1 day ago, 2 days ago, 3 days ago
-    days_to_check = [today_dt - timedelta(days=d) for d in range(4)]
-    
-    cleanup_old_files(max_age_days=7)
-
     failed_zones = []
 
-    for target_dt in days_to_check:
-        target_date_str = target_dt.strftime("%Y-%m-%d")
-        pending_zones = zones_needing_update_for_date(target_date_str)
-        if not pending_zones:
-            print(f"SKIP Panchang for {target_date_str} already cached ({len(ZONES)} zones).")
-            continue
+    try:
+        Calculate.SetAPIKey("FreeAPIUser")
+        # We want a 3-day history window: today, 1 day ago, 2 days ago, 3 days ago
+        days_to_check = [today_dt - timedelta(days=d) for d in range(4)]
+        
+        cleanup_old_files(max_age_days=7)
 
-        print(
-            f"RUN Panchang fetch for {target_date_str}: "
-            f"{len(pending_zones)} zone(s) missing ({', '.join(zone['city'] for zone in pending_zones)})"
-        )
-
-        for index, zone in enumerate(pending_zones, start=1):
-            try:
-                data = fetch_zone_with_retries(zone, target_dt)
-                # Write to date-stamped file
-                date_path = DATA_DIR / f"panchang-{zone['name']}-{target_date_str}.json"
-                date_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-                # If it's today, also update the default panchang-{zone}.json file
-                if target_date_str == today_dt.strftime("%Y-%m-%d"):
-                    default_path = DATA_DIR / f"panchang-{zone['name']}.json"
-                    default_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-                print(f"OK {zone['city']} ({target_date_str}) done ({index}/{len(pending_zones)})")
-            except Exception as error:
-                error_message = str(error)
-                failed_zones.append(
-                    {
-                        "zone": zone["name"],
-                        "city": zone["city"],
-                        "date": target_date_str,
-                        "error": error_message,
-                    }
-                )
-                print(f"FAILED {zone['city']} ({target_date_str}) failed: {error_message}")
+        for target_dt in days_to_check:
+            target_date_str = target_dt.strftime("%Y-%m-%d")
+            pending_zones = zones_needing_update_for_date(target_date_str)
+            if not pending_zones:
+                print(f"SKIP Panchang for {target_date_str} already cached ({len(ZONES)} zones).")
                 continue
+
+            print(
+                f"RUN Panchang fetch for {target_date_str}: "
+                f"{len(pending_zones)} zone(s) missing ({', '.join(zone['city'] for zone in pending_zones)})"
+            )
+
+            for index, zone in enumerate(pending_zones, start=1):
+                try:
+                    data = fetch_zone_with_retries(zone, target_dt)
+                    # Write to date-stamped file
+                    date_path = DATA_DIR / f"panchang-{zone['name']}-{target_date_str}.json"
+                    date_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+                    # If it's today, also update the default panchang-{zone}.json file
+                    if target_date_str == today_dt.strftime("%Y-%m-%d"):
+                        default_path = DATA_DIR / f"panchang-{zone['name']}.json"
+                        default_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+                    print(f"OK {zone['city']} ({target_date_str}) done ({index}/{len(pending_zones)})")
+                except Exception as error:
+                    error_message = str(error)
+                    failed_zones.append(
+                        {
+                            "zone": zone["name"],
+                            "city": zone["city"],
+                            "date": target_date_str,
+                            "error": error_message,
+                        }
+                    )
+                    print(f"FAILED {zone['city']} ({target_date_str}) failed: {error_message}")
+                    continue
+    except Exception as top_err:
+        print(f"Panchang runner top-level exception: {top_err}")
+        failed_zones.append({
+            "zone": "global",
+            "city": "ALL",
+            "date": now.strftime("%Y-%m-%d"),
+            "error": str(top_err),
+        })
 
     success_count = write_health(now, failed_zones)
     print(f"Panchang update finished for {today_dt.strftime('%Y-%m-%d')} - {success_count}/{len(ZONES)} zones for today OK.")

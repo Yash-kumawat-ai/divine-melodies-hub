@@ -20,7 +20,7 @@ import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
 import mandalaSvg from '@/pages/images/mandala.svg';
-import mandirOrgSvg from '@/pages/images/svg/mandirorg.svg';
+import templeSvg from '@/pages/images/svg/temple.svg';
 import manjiraSvg from '@/pages/images/svg/manjira.svg';
 
 const PinkLotusSvg = ({ className = "w-5 h-5", fill = "#ec4899" }: { className?: string; fill?: string }) => (
@@ -361,7 +361,7 @@ export default function Home() {
               { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', gradient: 'from-[#FF8A2A] to-[#E65A0D]', icon: <FlameIcon /> },
               { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', gradient: 'from-[#8B5CF6] to-[#6D28D9]', icon: <CalendarIcon /> },
               { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', gradient: 'from-[#18A768] to-[#0C8D59]', icon: <LotusIcon /> },
-              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon />, isImageCard: true, imageSrc: mandirOrgSvg, isContain: true, showTitle: true },
+              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon />, isImageCard: true, imageSrc: templeSvg, isContain: true, showTitle: true },
               { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', gradient: 'from-[#EC4899] to-[#DB2777]', icon: <SparklesIcon />, isImageCard: true, imageSrc: '/images/narad-ai.webp' },
               { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', gradient: 'from-[#06B6D4] to-[#0891B2]', icon: <SkyBlueImageIcon /> },
               { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', gradient: 'from-[#F59E0B] to-[#D97706]', icon: <PaletteIcon /> },

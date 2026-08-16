@@ -11,15 +11,15 @@ import { useLanguage } from '@/hooks/useLanguage';
 
 const loginCopy = {
   en: {
-    title: 'Welcome Back',
-    subtitle: 'Continue your spiritual journey',
+    title: 'Welcome to the Feet of the Divine',
+    subtitle: 'Where every name carries devotion, and every bhajan brings peace.',
     email: 'Email Address',
     password: 'Password',
-    submit: 'Login to Account',
+    submit: 'Log In',
     or: 'OR',
     google: 'Continue with Google',
-    noAccount: "Don't have an account?",
-    signUp: 'Create Account',
+    noAccount: 'First time joining Raghavam?',
+    signUp: 'Begin your Sadhana →',
     resend: 'Resend verification email',
     verificationSent: 'Verification email sent. Please check your inbox and spam folder.',
     verificationFailed: 'Verification email could not be sent. Please use Google login for now, or configure Supabase SMTP and try again.',
@@ -30,15 +30,15 @@ const loginCopy = {
     loginFailed: 'Login failed',
   },
   hi: {
-    title: 'पुनः स्वागत है',
-    subtitle: 'अपनी भक्ति यात्रा जारी रखें',
+    title: 'प्रभु के चरणों में आपका स्वागत है',
+    subtitle: 'जहाँ हर नाम में भक्ति है, हर भजन में शांति है।',
     email: 'ईमेल पता',
     password: 'पासवर्ड',
-    submit: 'खाते में लॉगिन करें',
+    submit: 'लॉग इन',
     or: 'अथवा',
     google: 'Google से जारी रखें',
-    noAccount: 'खाता नहीं है?',
-    signUp: 'नया खाता बनाएं',
+    noAccount: 'राघवम् से पहली बार जुड़े हैं?',
+    signUp: 'अपनी साधना शुरू करें →',
     resend: 'वेरिफिकेशन ईमेल पुनः भेजें',
     verificationSent: 'वेरिफिकेशन ईमेल भेज दिया गया है। कृपया अपना इनबॉक्स और स्पैम फोल्डर देखें।',
     verificationFailed: 'वेरिफिकेशन ईमेल भेजा नहीं जा सका। अभी Google लॉगिन का उपयोग करें।',
@@ -163,10 +163,10 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5 w-full">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4 md:space-y-3.5 w-full">
       <div className="space-y-1 text-center">
-        <h2 className="font-display font-black text-2xl sm:text-3xl text-[#651317] dark:text-amber-100">{copy.title}</h2>
-        <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-medium">{copy.subtitle}</p>
+        <h2 className="font-serif font-black text-xl sm:text-2xl md:text-2xl text-[#5C1615] dark:text-amber-100 tracking-tight drop-shadow-xs">{copy.title}</h2>
+        <p className="text-xs sm:text-sm text-[#7A6455] dark:text-stone-300 font-medium leading-relaxed max-w-xs md:max-w-md mx-auto">{copy.subtitle}</p>
       </div>
       
       {error && (
@@ -177,7 +177,7 @@ export default function LoginForm() {
               type="button"
               onClick={handleResendConfirmation}
               disabled={loading}
-              className="mt-2 block text-xs font-bold text-[#651317] dark:text-amber-400 hover:underline"
+              className="mt-2 block text-xs font-bold text-[#6B1D16] dark:text-amber-400 hover:underline"
             >
               {copy.resend}
             </button>
@@ -191,16 +191,16 @@ export default function LoginForm() {
         </div>
       )}
 
-      <div className="space-y-1.5 text-left">
-        <label htmlFor="email" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.email}</label>
+      <div className="space-y-1 text-left">
+        <label htmlFor="email" className="text-xs font-bold text-[#5C1615] dark:text-amber-300 block">{copy.email}</label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 pointer-events-none" />
+          <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 pointer-events-none" />
           <Input
             id="email"
             type="email"
             {...register('email')}
-            placeholder="namaste@example.com"
-            className="h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            placeholder="namaste@raghavam.com"
+            className="h-11 sm:h-12 md:h-11 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
         </div>
         {errors.email && (
@@ -208,21 +208,21 @@ export default function LoginForm() {
         )}
       </div>
 
-      <div className="space-y-1.5 text-left">
-        <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-[#651317] dark:text-amber-300">{copy.password}</label>
+      <div className="space-y-1 text-left">
+        <label htmlFor="password" className="text-xs font-bold text-[#5C1615] dark:text-amber-300 block">{copy.password}</label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#651317]/60 dark:text-amber-400/60 pointer-events-none" />
+          <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 pointer-events-none" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             {...register('password')}
             placeholder="••••••••"
-            className="h-12 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/80 pl-10 pr-10 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400 focus:border-[#651317] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#651317]/20 shadow-2xs"
+            className="h-11 sm:h-12 md:h-11 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
             title={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -237,18 +237,18 @@ export default function LoginForm() {
         type="submit"
         disabled={loading}
         size="lg"
-        className="w-full font-extrabold uppercase tracking-wider text-xs sm:text-sm"
+        className="mt-2.5 md:mt-3.5 h-11 sm:h-12 md:h-11 w-full rounded-2xl md:rounded-xl bg-[#6B1D16] hover:bg-[#541611] dark:bg-[#7A1C20] dark:hover:bg-[#651317] text-white font-extrabold tracking-wide text-sm sm:text-base shadow-[0_8px_20px_rgba(107,29,22,0.22)] hover:shadow-[0_12px_24px_rgba(107,29,22,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-[0.99]"
       >
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" /> : null}
         {copy.submit}
       </Button>
 
-      <div className="relative py-1">
+      <div className="relative py-0.5">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[#E8D8C4] dark:border-stone-800" />
+          <span className="w-full border-t border-[#EADBCC] dark:border-stone-800" />
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-extrabold">
-          <span className="bg-[#FFFDF8] dark:bg-[#140F0A] px-3 text-stone-400">{copy.or}</span>
+        <div className="relative flex justify-center text-xs font-medium">
+          <span className="bg-[#FFFDF9] dark:bg-[#140F0A] px-3 text-[#7A6455] dark:text-stone-400">{copy.or}</span>
         </div>
       </div>
 
@@ -257,15 +257,15 @@ export default function LoginForm() {
         variant="outline"
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="h-12 w-full rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF0E4] dark:hover:bg-stone-800 font-extrabold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-2.5"
+        className="h-11 sm:h-12 md:h-11 w-full rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF4EB] dark:hover:bg-stone-800 font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer"
       >
         <GoogleLogo />
         <span>{copy.google}</span>
       </Button>
 
-      <p className="text-center text-xs sm:text-sm text-stone-600 dark:text-stone-400 font-medium pt-1">
+      <p className="text-center text-xs sm:text-sm text-[#7A6455] dark:text-stone-400 font-medium pt-0.5">
         {copy.noAccount}{' '}
-        <Link to="/auth/signup" className="font-extrabold text-[#651317] dark:text-amber-400 hover:underline">
+        <Link to="/auth/signup" className="font-extrabold text-[#6B1D16] dark:text-amber-400 hover:underline">
           {copy.signUp}
         </Link>
       </p>

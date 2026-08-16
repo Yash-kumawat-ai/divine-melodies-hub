@@ -38,6 +38,8 @@ jobs:
           pip install -r scripts/requirements.txt
 
       - name: Run Panchang fetch
+        env:
+          PYTHONIOENCODING: 'utf-8'
         run: |
           set -o pipefail
           python scripts/fetch_panchang.py 2>&1 | tee panchang-fetch.log
@@ -83,8 +85,7 @@ jobs:
           git config user.email "panchang-bot@yourwebsite.com"
           git config user.name "Panchang Bot"
           git add public/data/panchang-*.json public/data/panchang-health.json
-          git diff --staged --quiet || git commit -m "Panchang update $(date +'%Y-%m-%d')"
-          git push
+          git diff --staged --quiet || (git commit -m "Panchang update $(date +'%Y-%m-%d')" && git pull --rebase origin main && git push)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
