@@ -8,8 +8,8 @@ import { LiveAartiIcon } from "@/components/LiveAartiIcon";
 
 import raghavamHero from "@/pages/images/raghavam-hero-high-quality.webp";
 
+import { PromotionalCarousel } from "@/components/PromotionalCarousel";
 import {
-  HeroImageCard,
   SearchCard,
   ActionButtons,
   RamMarquee,
@@ -32,7 +32,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
   return (
     <section className="hero-section w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-3.5 pb-1 md:py-8 bg-[#FFFDF8] dark:bg-background md:bg-background">
       <div className="md:hidden flex flex-col w-full text-left">
-        <HeroImageCard />
+        <PromotionalCarousel />
 
         <div className="w-full mt-3.5 p-3.5 rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] flex flex-col gap-3">
           <SearchCard />

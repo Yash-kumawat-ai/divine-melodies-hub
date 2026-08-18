@@ -20,8 +20,17 @@ import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
 import mandalaSvg from '@/pages/images/mandala.svg';
-import templeSvg from '@/pages/images/svg/temple.svg';
+import templeOptimized from '@/pages/images/temple-optimized.webp';
 import manjiraSvg from '@/pages/images/svg/manjira.svg';
+import communityWebp from '@/pages/images/features webp/community.webp';
+import darshanWebp from '@/pages/images/features webp/darshan.webp';
+import japWebp from '@/pages/images/features webp/jap.webp';
+import liveArtiWebp from '@/pages/images/features webp/live arti.webp';
+import meditationWebp from '@/pages/images/features webp/meditation (2).webp';
+import panchangWebp from '@/pages/images/features webp/panchang.webp';
+import posterWebp from '@/pages/images/features webp/poster.webp';
+import shortsWebp from '@/pages/images/features webp/shorts.webp';
+import wallpapersWebp from '@/pages/images/features webp/wallpapers.webp';
 
 const PinkLotusSvg = ({ className = "w-5 h-5", fill = "#ec4899" }: { className?: string; fill?: string }) => (
   <svg className={className} viewBox="0 0 1006.6461 574.1317" fill={fill} xmlns="http://www.w3.org/2000/svg">
@@ -336,6 +345,11 @@ export default function Home() {
 
       <HeroSection stats={stats} />
 
+      {/* Top Promotional Feature Banner Carousel (Desktop) */}
+      <div className="hidden md:block">
+        <PromotionalCarousel />
+      </div>
+
       {/* ── ALL FEATURES — Premium Devotional 12-Feature Grid ── */}
       <section className="bg-[#FFFDF8] dark:bg-background py-10 md:py-16 px-4 md:px-6">
         <div className="container mx-auto max-w-5xl">
@@ -357,18 +371,18 @@ export default function Home() {
           {/* Grid Layout: 4 columns on all device sizes (mobile, tablet, desktop) */}
           <div className="grid grid-cols-3 min-[420px]:grid-cols-4 gap-2.5 min-[420px]:gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
             {([
-              { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', gradient: 'from-[#FF9737] to-[#F46A1D]', icon: <HeadphonesIcon />, isImageCard: true, imageSrc: manjiraSvg, isContain: true, showTitle: true },
-              { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', gradient: 'from-[#FF8A2A] to-[#E65A0D]', icon: <FlameIcon /> },
-              { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', gradient: 'from-[#8B5CF6] to-[#6D28D9]', icon: <CalendarIcon /> },
-              { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', gradient: 'from-[#18A768] to-[#0C8D59]', icon: <LotusIcon /> },
-              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', gradient: 'from-[#3B82F6] to-[#2563EB]', icon: <TempleIcon />, isImageCard: true, imageSrc: templeSvg, isContain: true, showTitle: true },
-              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', gradient: 'from-[#EC4899] to-[#DB2777]', icon: <SparklesIcon />, isImageCard: true, imageSrc: '/images/narad-ai.webp' },
-              { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', gradient: 'from-[#06B6D4] to-[#0891B2]', icon: <SkyBlueImageIcon /> },
-              { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', gradient: 'from-[#F59E0B] to-[#D97706]', icon: <PaletteIcon /> },
-              { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', gradient: 'from-[#8B5CF6] to-[#7C3AED]', icon: <ActivityIcon /> },
-              { title: isHi ? 'समुदाय' : 'Community', path: '/community', gradient: 'from-[#14B8A6] to-[#0F766E]', icon: <UsersIcon /> },
-              { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', gradient: 'from-[#EF4444] to-[#DC2626]', icon: <VideoIcon /> },
-              { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', gradient: 'from-[#6B7280] to-[#4B5563]', icon: <EyeIcon /> },
+              { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', imageSrc: manjiraSvg },
+              { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', imageSrc: liveArtiWebp },
+              { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', imageSrc: panchangWebp },
+              { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', imageSrc: meditationWebp },
+              { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', imageSrc: templeOptimized },
+              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', imageSrc: '/images/narad-ai.webp' },
+              { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', imageSrc: wallpapersWebp },
+              { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', imageSrc: posterWebp },
+              { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', imageSrc: japWebp },
+              { title: isHi ? 'समुदाय' : 'Community', path: '/community', imageSrc: communityWebp },
+              { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', imageSrc: shortsWebp },
+              { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', imageSrc: darshanWebp },
             ]).slice(0, featurePage * FEATURE_PAGE_SIZE).map((item, i) => (
               <motion.button
                 key={item.title}
@@ -376,76 +390,33 @@ export default function Home() {
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '200px' }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 transition={{ 
                   scale: { duration: 0.15, ease: [0.22, 1, 0.36, 1] },
                   default: { delay: i * 0.01, duration: 0.18 }
                 }}
-                className={`flex flex-col items-center justify-center ${
-                  item.isImageCard ? 'p-0' : 'p-2 min-[420px]:p-2.5 md:p-3'
-                } rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[100px] min-[420px]:h-[110px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60`}
+                className="flex flex-col items-center justify-between p-2 pt-2.5 pb-2 md:p-3 md:pt-3.5 md:pb-3 rounded-[16px] min-[420px]:rounded-[18px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/60 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.08)] dark:hover:border-[#D4A437]/45 hover:-translate-y-1 md:hover:-translate-y-1.5 transition-all w-full md:w-[190px] h-[105px] min-[420px]:h-[115px] md:h-[185px] cursor-pointer group text-center select-none relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E6C46A]/60"
                 style={{
                   transitionDuration: '150ms',
                   transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
               >
-                {item.isImageCard ? (
-                  <div className={`relative w-full h-full flex flex-col items-center justify-center overflow-hidden rounded-[15px] min-[420px]:rounded-[17px] md:rounded-[23px] bg-[#FFFDF8] dark:bg-[#1A120B] ${
-                    item.isContain ? (item.showTitle ? 'p-2 pt-1.5 pb-6 md:p-3 md:pt-2 md:pb-7' : 'p-2 md:p-3') : 'p-0'
-                  }`}>
-                    <img
-                      src={item.imageSrc}
-                      alt={item.title}
-                      className={`w-full h-full ${item.isContain ? 'object-contain' : 'object-cover'} object-center group-hover:scale-105 transition-transform duration-200`}
-                    />
-                    {item.showTitle && (
-                      <span className="absolute bottom-1 md:bottom-2 text-[13px] md:text-[15px] font-bold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
-                        {item.title}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    {/* Dedicated Icon Wrapper: Centering parent for Mandala and Gradient Circle */}
-                    <div className="relative flex items-center justify-center w-16 h-16 md:w-[72px] md:h-[72px] shrink-0 z-10">
-                      {/* Mandala SVG (Absolute inside wrapper, centered behind icon, 72px width on all, 15% opacity) */}
-                      <img 
-                        src={mandalaSvg} 
-                        alt="" 
-                        className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0 transition-transform group-hover:rotate-3 group-hover:scale-105"
-                        style={{
-                          opacity: 0.15,
-                          filter: 'invert(79%) sepia(35%) saturate(543%) hue-rotate(352%) brightness(91%) contrast(85%)',
-                          transitionDuration: '150ms',
-                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                        }}
-                      />
+                {/* Upper Illustration Image Wrapper */}
+                <div className="relative w-full h-[60px] min-[420px]:h-[68px] md:h-[115px] flex items-center justify-center overflow-hidden shrink-0">
+                  <img
+                    src={item.imageSrc}
+                    alt={item.title}
+                    loading="lazy"
+                    className="max-w-full max-h-full object-contain object-center group-hover:scale-105 transition-transform duration-200 pointer-events-none select-none filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.06)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
+                  />
+                </div>
 
-                      {/* Gradient Icon Circle (Relative z-10 inside wrapper, 40px width, centered) */}
-                      <div 
-                        className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${item.gradient} transition-all group-hover:scale-[1.08] shadow-[0_6px_14px_rgba(0,0,0,0.08)] group-hover:shadow-[0_10px_20px_rgba(0,0,0,0.18)]`}
-                        style={{
-                          transitionDuration: '150ms',
-                          transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                        }}
-                      >
-                        {item.icon}
-                      </div>
-                    </div>
-
-                    {/* Title */}
-                    <div className="flex flex-col items-center justify-center z-10 mt-2">
-                      <span className="text-[16px] font-semibold text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
-                        {item.title}
-                      </span>
-                    </div>
-
-                    {/* Small Circular Arrow Button */}
-                    <div className="hidden md:flex absolute bottom-4 right-4 w-6 h-6 rounded-full border border-[#D2A55A]/30 dark:border-[#D4A437]/40 items-center justify-center text-xs text-amber-600 dark:text-[#D4A437] group-hover:bg-[#651317] dark:group-hover:bg-[#D4A437] group-hover:text-white dark:group-hover:text-[#1A120B] transition-all duration-150 ease-out transform -translate-x-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 shrink-0 z-10">
-                      →
-                    </div>
-                  </>
-                )}
+                {/* Card Title - Uniform size and typography across all 12 cards */}
+                <div className="w-full flex items-center justify-center shrink-0 mt-1 z-10">
+                  <span className="text-[13px] min-[420px]:text-[14px] md:text-[16px] font-bold font-serif text-[#3A2418] dark:text-[#FFFDF8] leading-tight text-center truncate group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors">
+                    {item.title}
+                  </span>
+                </div>
               </motion.button>
             ))}
           </div>
@@ -466,9 +437,6 @@ export default function Home() {
 
       {/* राम divider — after Features */}
       <DevotionalDivider language={language} />
-
-      {/* Promotional Banner Carousel */}
-      <PromotionalCarousel />
 
       {/* ── Hanuman Bhakt Community Banner Poster ── */}
       <section className="px-4 py-6 md:py-10 bg-[#FFFDF8] dark:bg-background">

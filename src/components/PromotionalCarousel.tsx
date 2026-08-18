@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 // Import poster assets
+import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import bhajanSangrahBanner from '@/pages/images/bhajan_sangrah_high_quality(1).webp';
 import devWallpaperBanner from '@/pages/images/dev_wallpaper_high_quality.webp';
 import liveWallpaperBanner from '@/pages/images/live_wallpaper_high_quality.webp';
@@ -14,18 +16,28 @@ import bhaktiSamudayBanner from '@/pages/images/bhakti_samuday_high_quality.webp
 
 // Banners Data Array
 const BANNERS = [
+  { 
+    id: 0, 
+    title: "श्रीराम के चरणों में आपका स्वागत है", 
+    image: raghavamHero, 
+    href: "/all-bhajans",
+    isHeroCard: true 
+  },
   { id: 1, title: "Bhajan Sangrah", image: bhajanSangrahBanner, href: "/all-bhajans" },
   { id: 2, title: "Divine Wallpapers", image: devWallpaperBanner, href: "/wallpaper" },
   { id: 3, title: "Live Wallpapers", image: liveWallpaperBanner, href: "/wallpaper" },
   { id: 4, title: "Poster Maker", image: posterBanner, href: "/poster-maker" },
   { id: 5, title: "God Darshan", image: darshanBanner, href: "/wallpaper" },
   { id: 6, title: "Panchang", image: panchangBanner, href: "/panchang" },
-  { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/community" },
+  { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/meditation?practice=mantra_jap_home" },
   { id: 8, title: "Bhakti Samuday", image: bhaktiSamudayBanner, href: "/community" },
 ];
 
 export function PromotionalCarousel() {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isHi = language === 'hi';
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -36,13 +48,13 @@ export function PromotionalCarousel() {
   const isPointerDown = useRef(false);
   const numBanners = BANNERS.length;
 
-  // Auto-slide interval (8 seconds)
+  // Auto-slide interval (3.5 seconds fast automatic scrolling)
   useEffect(() => {
     if (isHovering || isDragging) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % numBanners);
-    }, 8000);
+    }, 3500);
 
     return () => clearInterval(interval);
   }, [isHovering, isDragging, numBanners]);
@@ -100,7 +112,7 @@ export function PromotionalCarousel() {
 
   return (
     <div 
-      className="w-full select-none relative overflow-hidden pt-4 pb-6 md:pt-6 md:pb-8 bg-transparent mb-4 md:mb-6"
+      className="w-full select-none relative overflow-hidden pt-1 pb-3 md:pt-3 md:pb-5 bg-transparent mb-2 md:mb-4"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => {
         setIsHovering(false);
@@ -111,32 +123,32 @@ export function PromotionalCarousel() {
       <link rel="prefetch" href={BANNERS[(currentIndex + 1) % numBanners].image} />
       <link rel="prefetch" href={BANNERS[(currentIndex - 1 + numBanners) % numBanners].image} />
 
-      {/* Styled slide container heights based on 16:9 aspect ratio */}
+      {/* Styled slide container heights tuned to match hero image height */}
       <style dangerouslySetInnerHTML={{__html: `
         .carousel-track-container {
-          --slide-width: 320px;
-          --slide-gap: 16px;
-          height: 180px; /* height corresponding to 16:9 ratio of 320px */
+          --slide-width: 340px;
+          --slide-gap: 14px;
+          height: 195px; /* height corresponding to hero card */
         }
         @media (min-width: 640px) {
           .carousel-track-container {
-            --slide-width: 400px;
-            --slide-gap: 20px;
-            height: 225px; /* 400 * 9 / 16 */
+            --slide-width: 440px;
+            --slide-gap: 18px;
+            height: 245px;
           }
         }
         @media (min-width: 768px) {
           .carousel-track-container {
-            --slide-width: 520px;
-            --slide-gap: 24px;
-            height: 292.5px; /* 520 * 9 / 16 */
+            --slide-width: 580px;
+            --slide-gap: 22px;
+            height: 315px;
           }
         }
         @media (min-width: 1024px) {
           .carousel-track-container {
-            --slide-width: 600px;
-            --slide-gap: 28px;
-            height: 337.5px; /* 600 * 9 / 16 */
+            --slide-width: 660px;
+            --slide-gap: 26px;
+            height: 355px;
           }
         }
       `}} />
@@ -169,7 +181,7 @@ export function PromotionalCarousel() {
               key={banner.id}
               onClick={(e) => handleBannerClick(banner.href, e)}
               className={cn(
-                "absolute top-0 left-1/2 rounded-[24px] overflow-hidden bg-stone-900/30 border border-black/5 dark:border-white/10 aspect-[16/9] w-[var(--slide-width)] h-full transition-all duration-700 shadow-sm",
+                "absolute top-0 left-1/2 rounded-[24px] overflow-hidden bg-stone-900/30 border border-black/5 dark:border-white/10 w-[var(--slide-width)] h-full transition-all duration-700 shadow-sm",
                 isActive 
                   ? "scale-100 opacity-100 z-10 border-amber-500/30" 
                   : "scale-95 opacity-85 z-0"
@@ -181,13 +193,52 @@ export function PromotionalCarousel() {
                 transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
-              <img 
-                src={banner.image} 
-                alt={banner.title}
-                loading="eager"
-                className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.01]"
-                draggable={false}
-              />
+              {banner.isHeroCard ? (
+                <div 
+                  className="relative w-full h-full rounded-[24px] overflow-hidden bg-[#161008] border border-[#F3E2C8]/10 select-none cursor-pointer"
+                  style={{ boxShadow: '0 12px 35px rgba(0,0,0,0.10)' }}
+                >
+                  <img
+                    src={raghavamHero}
+                    alt="Lord Ram Darbar"
+                    loading="eager"
+                    className="absolute inset-0 w-full h-full object-cover object-[73%_center] z-0 pointer-events-none select-none brightness-[1.08] contrast-[1.03] saturate-[1.06]"
+                  />
+                  <div 
+                    className="absolute inset-0 z-10 pointer-events-none"
+                    style={{
+                      background: `
+                        linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0) 100%),
+                        linear-gradient(90deg, rgba(22,16,8,0.82) 0%, rgba(22,16,8,0.60) 22%, rgba(22,16,8,0.28) 45%, rgba(22,16,8,0.08) 65%, transparent 82%)
+                      `
+                    }}
+                  />
+                  <div 
+                    className="absolute left-[16px] top-1/2 -translate-y-1/2 z-20 max-w-[52%] flex flex-col justify-center text-left bg-gradient-to-br from-black/55 to-black/35 border border-[#F3E2C8]/15 rounded-[18px] p-3 md:p-4"
+                    style={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)' }}
+                  >
+                    <h2 
+                      className="font-serif font-black text-amber-50 leading-[1.25] select-text text-[15px] sm:text-[18px] md:text-[22px]"
+                    >
+                      {isHi ? "श्रीराम के चरणों में" : "At the Feet"}
+                    </h2>
+                    <div className="w-10 h-[1.5px] bg-gradient-to-r from-amber-400 to-transparent my-1" />
+                    <p 
+                      className="font-sans font-bold text-amber-300 tracking-wide select-text uppercase text-[10px] sm:text-[11px] md:text-[13px]"
+                    >
+                      {isHi ? "आपका स्वागत है" : "of Shri Rama"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <img 
+                  src={banner.image} 
+                  alt={banner.title}
+                  loading="eager"
+                  className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.01]"
+                  draggable={false}
+                />
+              )}
             </div>
           );
         })}
