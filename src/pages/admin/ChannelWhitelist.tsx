@@ -52,6 +52,8 @@ export default function ChannelWhitelist() {
   const [notes, setNotes] = useState('');
   const [category, setCategory] = useState<'bhajan' | 'pravachan' | 'darshan' | 'katha'>('bhajan');
 
+  const [shortsCountMap, setShortsCountMap] = useState<Record<string, number>>({});
+
   const loadChannels = useCallback(async () => {
     setLoading(true);
     try {
@@ -62,6 +64,19 @@ export default function ChannelWhitelist() {
 
       if (error) throw error;
       setChannels(data || []);
+
+      // Load shorts count per channel
+      const { data: shortsData } = await supabase
+        .from('shorts')
+        .select('channel_uid');
+
+      const countMap: Record<string, number> = {};
+      shortsData?.forEach((s: any) => {
+        if (s.channel_uid) {
+          countMap[s.channel_uid] = (countMap[s.channel_uid] || 0) + 1;
+        }
+      });
+      setShortsCountMap(countMap);
     } catch (err) {
       console.error('Error loading channels:', err);
       toast.error('Failed to load whitelisted channels');
@@ -410,6 +425,7 @@ export default function ChannelWhitelist() {
                         <th className="px-6 py-3">Channel Name</th>
                         <th className="px-6 py-3 text-center">Status</th>
                         <th className="px-6 py-3 text-center">Category</th>
+                        <th className="px-6 py-3 text-center">Shorts Count</th>
                         <th className="px-6 py-3">Notes</th>
                         <th className="px-6 py-3 text-right">Actions</th>
                       </tr>
@@ -435,6 +451,11 @@ export default function ChannelWhitelist() {
                           <td className="px-6 py-4 text-center capitalize">
                             <Badge className="bg-[#FAF2E8] text-[#7A2D28] dark:bg-amber-950/50 dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-900/40 font-bold uppercase tracking-wider text-[10px]">
                               {chan.category || 'bhajan'}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold text-[10px] px-2.5 py-0.5">
+                              🎬 {shortsCountMap[chan.id] || 0} Shorts
                             </Badge>
                           </td>
                           <td className="px-6 py-4 italic text-[#7A6B60] dark:text-[#D4C5B9] truncate max-w-[140px]">
