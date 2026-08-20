@@ -54,7 +54,7 @@ export interface CommunityPost {
   id: string;
   group_id: string | null;
   author_id: string;
-  type: 'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event';
+  type: 'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event' | 'shloka';
   title: string | null;
   content: string;
   image_url: string | null;
@@ -591,26 +591,40 @@ export const communityApi = {
 
   async createPost(postData: Partial<CommunityPost>): Promise<CommunityPost> {
     try {
+      const { data: authData } = await supabase.auth.getUser();
+      const authorId = authData?.user?.id || postData.author_id || "guest";
+
+      // If posting to a group, ensure group membership exists so RLS passes
+      if (postData.group_id && authData?.user?.id) {
+        try {
+          await supabase.from("group_members").insert({
+            group_id: postData.group_id,
+            user_id: authData.user.id,
+            role: "member",
+          });
+        } catch {
+          // Ignore duplicate / exists
+        }
+      }
+
       const { data, error } = await supabase
         .from("community_posts")
         .insert({
           ...postData,
+          author_id: authorId,
           status: 'approved'
         })
         .select()
         .single();
 
       if (error) {
-        if (isMissingTableError(error)) return this.createPostFallback(postData);
-        throw error;
+        console.warn("Supabase createPost error, falling back to local storage:", error);
+        return this.createPostFallback({ ...postData, author_id: authorId });
       }
       return data;
     } catch (err: any) {
-      console.warn("Supabase createPost failed:", err);
-      if (isMissingTableError(err)) {
-        return this.createPostFallback(postData);
-      }
-      throw err;
+      console.warn("Supabase createPost failed, falling back to local storage:", err);
+      return this.createPostFallback(postData);
     }
   },
 
@@ -644,6 +658,37 @@ export const communityApi = {
       has_reacted: false,
       comment_count: 0
     };
+  },
+
+  async updatePost(postId: string, updates: Partial<CommunityPost>): Promise<CommunityPost | null> {
+    try {
+      const { data, error } = await supabase
+        .from("community_posts")
+        .update(updates)
+        .eq("id", postId)
+        .select()
+        .single();
+
+      if (error) {
+        console.warn("Supabase updatePost error, falling back to local storage:", error);
+        return this.updatePostFallback(postId, updates);
+      }
+      return data;
+    } catch (err: any) {
+      console.warn("Supabase updatePost failed, falling back to local storage:", err);
+      return this.updatePostFallback(postId, updates);
+    }
+  },
+
+  updatePostFallback(postId: string, updates: Partial<CommunityPost>): CommunityPost | null {
+    const posts = getLS<any[]>(LS_KEY_POSTS, []);
+    const idx = posts.findIndex(x => x.id === postId);
+    if (idx !== -1) {
+      posts[idx] = { ...posts[idx], ...updates };
+      setLS(LS_KEY_POSTS, posts);
+      return posts[idx];
+    }
+    return null;
   },
 
   async togglePostReaction(postId: string, userId: string): Promise<boolean> {

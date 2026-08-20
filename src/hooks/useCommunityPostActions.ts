@@ -142,14 +142,14 @@ export function useCommunityPostActions({
   };
 
   // ── Toggle Reaction 🙏 ────────────────────────────────────────────────────
-  const handleToggleReaction = async (postId: string) => {
+  const handleToggleReaction = (postId: string) => {
     if (!user) {
       toast.error(isHi ? "प्रतिक्रिया देने के लिए कृपया लॉग इन करें" : "Please log in to react");
       return;
     }
-    // Optimistic update — immediately reflect the change in the UI
-    setPosts(prev =>
-      prev.map(p => {
+    // Instant optimistic update
+    setPosts((prev) =>
+      prev.map((p) => {
         if (p.id !== postId) return p;
         return {
           ...p,
@@ -158,16 +158,14 @@ export function useCommunityPostActions({
         };
       })
     );
-    try {
-      await communityApi.togglePostReaction(postId, user.id);
-    } catch {
-      // Revert optimistic update on failure in background
-      loadPosts(true);
-    }
+    // Background sync
+    communityApi.togglePostReaction(postId, user.id).catch((err) => {
+      console.error("Reaction toggle error:", err);
+    });
   };
 
   // ── RSVP Handler ──────────────────────────────────────────────────────────
-  const handleToggleRsvp = async (
+  const handleToggleRsvp = (
     postId: string,
     currentRsvp: "interested" | "going" | null,
     clickedRsvp: "interested" | "going"
@@ -176,33 +174,86 @@ export function useCommunityPostActions({
       toast.error(isHi ? "RSVP करने के लिए कृपया लॉग इन करें" : "Please log in to RSVP");
       return;
     }
-    try {
-      if (currentRsvp === clickedRsvp) {
-        await communityApi.deleteEventRsvp(postId, user.id);
-        toast.success(isHi ? "RSVP हटा दिया गया" : "RSVP removed");
-      } else {
-        await communityApi.rsvpToEvent(postId, user.id, clickedRsvp);
-        toast.success(isHi ? "RSVP अपडेट किया गया" : "RSVP updated");
-      }
-      loadPosts(true);
-    } catch {
-      toast.error(isHi ? "RSVP अपडेट करने में असमर्थ" : "Failed to update RSVP");
+    const newRsvp = currentRsvp === clickedRsvp ? null : clickedRsvp;
+
+    // Instant optimistic update in local state
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+        const currentCounts = {
+          interested: p.rsvps_count?.interested || 0,
+          going: p.rsvps_count?.going || 0,
+        };
+        if (currentRsvp === "interested") currentCounts.interested = Math.max(0, currentCounts.interested - 1);
+        if (currentRsvp === "going") currentCounts.going = Math.max(0, currentCounts.going - 1);
+        if (newRsvp === "interested") currentCounts.interested += 1;
+        if (newRsvp === "going") currentCounts.going += 1;
+
+        return {
+          ...p,
+          rsvp_status: newRsvp,
+          rsvps_count: currentCounts,
+        };
+      })
+    );
+
+    // Instant feedback toast
+    if (newRsvp) {
+      toast.success(
+        isHi
+          ? newRsvp === "interested"
+            ? "रुचि दर्ज की गई"
+            : "शामिल होना दर्ज किया गया"
+          : `RSVP: ${newRsvp === "interested" ? "Interested" : "Going"}`
+      );
+    } else {
+      toast.success(isHi ? "RSVP हटा दिया गया" : "RSVP removed");
     }
+
+    // Background network call
+    (async () => {
+      try {
+        if (currentRsvp === clickedRsvp) {
+          await communityApi.deleteEventRsvp(postId, user.id);
+        } else {
+          await communityApi.rsvpToEvent(postId, user.id, clickedRsvp);
+        }
+      } catch (err) {
+        console.error("RSVP error:", err);
+      }
+    })();
   };
 
   // ── Poll Vote Handler ─────────────────────────────────────────────────────
-  const handleVoteOption = async (postId: string, optionIndex: number) => {
+  const handleVoteOption = (postId: string, optionIndex: number) => {
     if (!user) {
       toast.error(isHi ? "मतदान करने के लिए कृपया लॉग इन करें" : "Please log in to vote");
       return;
     }
-    try {
-      await communityApi.voteOnQuestionOption(postId, user.id, optionIndex);
-      toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
-      loadPosts(true);
-    } catch {
-      toast.error(isHi ? "मतदान दर्ज करने में असमर्थ" : "Failed to register vote");
-    }
+
+    // Instant optimistic state update
+    setPosts((prev) =>
+      prev.map((p) => {
+        if (p.id !== postId) return p;
+        const numOptions = p.question_options?.length || 1;
+        const percentages = (p.question_options || []).map((_, idx) =>
+          idx === optionIndex ? 100 : 0
+        );
+
+        return {
+          ...p,
+          user_voted_option: optionIndex,
+          vote_percentages: percentages,
+        };
+      })
+    );
+
+    toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
+
+    // Background network sync
+    communityApi.voteOnQuestionOption(postId, user.id, optionIndex).catch((err) => {
+      console.error("Vote error:", err);
+    });
   };
 
   return {

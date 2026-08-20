@@ -40,6 +40,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDrawer } from "@/hooks/useDrawer";
 import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
@@ -466,63 +467,65 @@ export default function CommunityPage() {
         description={isHi ? "अपना समूह बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।" : "Create your community, chant together with family and friends and grow spiritually."}
       />
 
-      {/* ─── HEADER BAR ────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-[#fdfbf7]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-amber-500/10 px-3 py-2.5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => {
-              if (window.history.length > 1) navigate(-1);
-              else navigate("/");
-            }}
-            className="w-9 h-9 rounded-full border border-amber-500/20 bg-amber-50/40 dark:bg-stone-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 active:scale-95 transition-all shrink-0"
-            aria-label={isHi ? "वापस" : "Back"}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="font-display text-base md:text-lg font-extrabold tracking-tight text-amber-900 dark:text-amber-100 leading-none">
-            {isHi ? "समुदाय" : "Community"}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            onClick={() => navigate("/notifications")}
-            className="w-8 h-8 rounded-full border border-[#E8D8C4] bg-[#FFFDF8] dark:bg-stone-900/40 text-[#651317] flex items-center justify-center relative shrink-0"
-            title={isHi ? "सूचनाएं" : "Notifications"}
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />
-          </button>
-          <button
-            onClick={() => {
-              if (!user) {
-                toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
-                navigate("/auth/login?redirect=/community");
-              } else {
-                const el = document.getElementById("my-joined-groups-section");
-                if (el) el.scrollIntoView({ behavior: "smooth" });
-                else {
-                  setSelectedTab("my");
-                  document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" });
+      {/* ─── HEADER BAR (Aligned with Website Fixed Nav Bar) ─────── */}
+      <header className="sticky top-0 z-40 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => {
+                if (window.history.length > 1) navigate(-1);
+                else navigate("/");
+              }}
+              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0"
+              aria-label={isHi ? "वापस" : "Back"}
+            >
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+            <span className="font-display text-lg sm:text-xl font-extrabold tracking-tight text-foreground leading-none">
+              {isHi ? "समुदाय" : "Community"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => navigate("/notifications")}
+              className="relative w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0"
+              title={isHi ? "सूचनाएं" : "Notifications"}
+            >
+              <Bell className="w-4.5 h-4.5 text-foreground" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-stone-900" />
+            </button>
+            <button
+              onClick={() => {
+                if (!user) {
+                  toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
+                  navigate("/auth/login?redirect=/community");
+                } else {
+                  const el = document.getElementById("my-joined-groups-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  else {
+                    setSelectedTab("my");
+                    document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" });
+                  }
                 }
-              }
-            }}
-            className="inline-flex items-center justify-center gap-1.5 h-8 bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-3 rounded-full text-[11px] md:text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
-          >
-            <Users className="w-3.5 h-3.5 text-white shrink-0" />
-            <span className="leading-none">{isHi ? "मेरे समूह" : "My Groups"}</span>
-          </button>
-          <button
-            onClick={() => {
-              if (!user) {
-                toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
-                navigate("/auth/login?redirect=/community");
-              } else setCreateDialogOpen(true);
-            }}
-            className="w-8 h-8 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
-            aria-label={isHi ? "समूह बनाएं" : "Create Group"}
-          >
-            <Plus className="w-4 h-4 text-white" />
-          </button>
+              }}
+              className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-4 rounded-full text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
+            >
+              <Users className="w-4 h-4 text-white shrink-0" />
+              <span className="leading-none">{isHi ? "मेरे समूह" : "My Groups"}</span>
+            </button>
+            <button
+              onClick={() => {
+                if (!user) {
+                  toast.info(isHi ? "कृपया समूह बनाने के लिए लॉग इन करें" : "Please log in to create a group");
+                  navigate("/auth/login?redirect=/community");
+                } else setCreateDialogOpen(true);
+              }}
+              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+              aria-label={isHi ? "समूह बनाएं" : "Create Group"}
+            >
+              <Plus className="w-4.5 h-4.5 text-white" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -638,17 +641,12 @@ export default function CommunityPage() {
               }}
               className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
             >
-              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0 relative">
+              <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
                 <Users className="w-5 h-5 md:w-5.5 md:h-5.5 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
-                {user && myJoinedGroups.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#651317] text-white text-[8px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center border border-[#FFFDF8] dark:border-[#1A120B]">
-                    {myJoinedGroups.length}
-                  </span>
-                )}
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-[11px] md:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
-                  {isHi ? "मेरे समूह" : "My Groups"}
+                  {isHi ? "मेरे समूह" : "My Groups"} {user && myJoinedGroups.length > 0 && <span className="text-[#651317] dark:text-amber-300 font-extrabold">({myJoinedGroups.length})</span>}
                 </h3>
                 <p className="text-[9px] md:text-[10px] font-medium text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-1 line-clamp-2">
                   {isHi ? "मेरे समूह देखें" : "View my groups"}
@@ -755,19 +753,26 @@ export default function CommunityPage() {
             </div>
           </div>
 
-          {/* Quick Invite Code Form */}
-          <form onSubmit={handleJoinByCode} className="mt-1">
-            <div className="relative flex items-center w-full h-10.5 rounded-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 pl-4 pr-1 gap-2 shadow-xs">
-              <Key className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
+          {/* Quick Invite Code Form (Standardized SearchBar Component) */}
+          <form onSubmit={handleJoinByCode} className="w-full min-w-0 mt-2">
+            <div className="relative flex items-center w-full h-12 sm:h-12.5 bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-full shadow-[0_4px_20px_rgba(80,45,20,0.04)] pl-3.5 sm:pl-4 pr-1.5 sm:pr-2 gap-2 sm:gap-2.5 focus-within:border-[#6A2C2A] dark:focus-within:border-[#E8B15C] focus-within:ring-2 focus-within:ring-[#6A2C2A]/10 transition-all duration-200">
+              <div className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full bg-[#651317]/8 dark:bg-amber-400/10 flex items-center justify-center shrink-0">
+                <Key className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6A2C2A] dark:text-[#E8B15C] shrink-0" />
+              </div>
               <input
                 type="text"
-                placeholder={isHi ? "आमंत्रण कोड दर्ज करें..." : "Enter invite code..."}
+                placeholder={isHi ? "आमंत्रण कोड दर्ज करें..." : "ENTER INVITE CODE..."}
                 value={inviteCodeInput}
                 onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[12px] font-bold text-[#651317] dark:text-amber-100 placeholder:text-[#8C7A6B]/70 dark:placeholder:text-stone-500 uppercase tracking-wider"
+                className="flex-1 min-w-0 w-full bg-transparent border-0 outline-none text-xs sm:text-sm font-bold text-[#32251E] dark:text-foreground placeholder:text-[#7A6B60]/70 uppercase tracking-wider py-1.5"
               />
-              <button type="submit" disabled={joiningByCode} className="h-8 rounded-full px-4 text-[11px] font-extrabold bg-[#651317] hover:bg-[#4f0f12] text-white shrink-0 active:scale-95 transition-all disabled:opacity-60">
-                {joiningByCode ? "..." : (isHi ? "जोड़ें" : "Join")}
+              <button
+                type="submit"
+                disabled={joiningByCode}
+                className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 sm:px-4.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none opacity-100"
+              >
+                <span>{joiningByCode ? "..." : (isHi ? "जुड़ें" : "Join")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </form>
@@ -784,11 +789,11 @@ export default function CommunityPage() {
                 <Users className="w-5 h-5 text-[#651317] dark:text-amber-300" />
               </div>
               <div>
-                <h2 className="font-display text-base md:text-lg font-black text-[#651317] dark:text-amber-100 flex items-center gap-2">
+                <h2 className="font-display text-base md:text-lg font-black text-[#651317] dark:text-amber-100 flex items-center gap-1.5">
                   <span>{isHi ? "मेरे जुड़े हुए समूह" : "My Joined Groups"}</span>
-                  {user && (
-                    <span className="bg-[#651317] text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
-                      {myJoinedGroups.length}
+                  {user && myJoinedGroups.length > 0 && (
+                    <span className="text-[#651317] dark:text-amber-300 font-extrabold text-base md:text-lg font-sans">
+                      ({myJoinedGroups.length})
                     </span>
                   )}
                 </h2>
@@ -799,13 +804,24 @@ export default function CommunityPage() {
             </div>
 
             {user && (
-              <button
-                onClick={() => setCreateDialogOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white text-xs font-bold active:scale-95 transition-all shadow-xs"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{isHi ? "नया समूह" : "New Group"}</span>
-              </button>
+              <>
+                {/* Mobile: icon-only pill button */}
+                <button
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+                  title={isHi ? "नया समूह बनाएं" : "Create New Group"}
+                >
+                  <Plus className="w-4 h-4 text-white" />
+                </button>
+                {/* Desktop: full label button */}
+                <button
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="hidden sm:inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
+                >
+                  <Plus className="w-4 h-4 text-white" />
+                  <span>{isHi ? "नया समूह" : "New Group"}</span>
+                </button>
+              </>
             )}
           </div>
 
@@ -823,67 +839,89 @@ export default function CommunityPage() {
                   {isHi ? "सामूहिक नाम जप में भाग लें और भक्तों के साथ जुड़ें" : "Participate in group japa and connect with devotees"}
                 </p>
               </div>
-              <button
+              <Button
                 onClick={() => navigate("/auth/login?redirect=/community")}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-xs shadow-md active:scale-95 transition-all"
+                className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs"
               >
-                <Users className="w-4 h-4 text-white" />
-                <span>{isHi ? "लॉग इन करें" : "Log In"}</span>
-              </button>
+                {isHi ? "लॉग इन करें" : "Log In to Participate"}
+              </Button>
             </div>
           ) : myJoinedGroups.length > 0 ? (
-            /* State 2: User has joined groups */
-            <div className="flex gap-4 overflow-x-auto pb-2 pt-1 snap-x scroll-smooth w-full" style={{ scrollbarWidth: "none" }}>
+            /* State 2: User logged in, >=1 joined group */
+            <div className="flex gap-3.5 overflow-x-auto pb-2 pt-0.5 -mx-1 px-1 scrollbar-none [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
               {myJoinedGroups.map((group) => (
                 <div
                   key={group.id}
-                  className="w-[260px] md:w-[280px] shrink-0 snap-start bg-white dark:bg-[#120E0A] border border-[#E8D8C4] dark:border-stone-800/80 rounded-[20px] overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="w-[240px] shrink-0 snap-start bg-white dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-800 rounded-3xl overflow-hidden shadow-xs flex flex-col justify-between hover:shadow-md transition-all"
                 >
-                  <div className="h-32 w-full relative overflow-hidden bg-stone-900">
+                  {/* Header banner image — same h-36 as all-groups cards */}
+                  <div className="h-36 w-full relative overflow-hidden bg-[#FAF6EE] dark:bg-stone-950">
                     <img
                       src={getGroupImage(group.image_url)}
                       alt={group.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover opacity-90"
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-                    
-                    <span className={`absolute top-2.5 right-2.5 text-[9.5px] font-extrabold px-2 py-0.5 rounded-full text-white flex items-center gap-1 shadow-xs ${
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/15" />
+
+                    {/* Public/Private badge — top right */}
+                    <span className={`absolute top-2.5 right-2.5 text-[9px] font-bold px-2 py-0.5 rounded-full text-white flex items-center gap-1 shadow-xs ${
                       group.is_public ? "bg-emerald-600/90" : "bg-amber-600/90"
                     }`}>
                       {group.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
                       {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
                     </span>
 
-                    <div className="absolute bottom-2.5 left-3 right-3 text-left">
-                      <h3 className="font-display text-xs md:text-sm font-black text-white truncate leading-tight">
-                        {group.name}
-                      </h3>
-                      <p className="text-[10px] text-amber-200 font-semibold truncate mt-0.5 flex items-center gap-1">
-                        <Users className="w-3 h-3 text-amber-300" />
-                        <span>{group.member_count || 0} {isHi ? "सदस्य" : "members"}</span>
+                    {/* Avatar stack — bottom left */}
+                    <div className="absolute bottom-2.5 left-2.5 flex -space-x-1.5 z-10">
+                      {[...Array(Math.min(3, group.member_count || 1))].map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="w-6 h-6 rounded-full bg-[#FAF0E4] border border-white dark:border-stone-900 flex items-center justify-center font-bold text-[8px] text-[#651317] shadow-xs"
+                        >
+                          {String.fromCharCode(65 + idx)}
+                        </div>
+                      ))}
+                      {(group.member_count || 0) > 3 && (
+                        <div className="w-6 h-6 rounded-full bg-[#FAF0E4] dark:bg-stone-800 border border-white dark:border-stone-900 flex items-center justify-center font-bold text-[8px] text-[#651317] dark:text-amber-400 shadow-xs">
+                          +{(group.member_count || 0) - 3}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Member count — bottom right */}
+                    <div className="absolute bottom-2.5 right-2.5 left-12 text-right">
+                      <p className="text-[10px] text-amber-200 font-semibold truncate flex items-center justify-end gap-1">
+                        <Users className="w-3 h-3 text-amber-300 shrink-0" />
+                        {group.member_count || 0} {isHi ? "सदस्य" : "members"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 space-y-2.5 text-left">
-                    {group.invite_code && (
-                      <div className="flex items-center justify-between bg-[#FAF6EE] dark:bg-stone-900/80 px-2.5 py-1.5 rounded-xl text-[10.5px] font-bold text-[#7c2d12] dark:text-amber-200 border border-[#E8D8C4]/60">
-                        <span className="font-mono tracking-wider">CODE: {group.invite_code}</span>
-                        <button
-                          type="button"
-                          onClick={() => shareOnWhatsApp(group.invite_code, group.name)}
-                          className="text-[#651317] dark:text-amber-400 hover:scale-110 transition-transform p-0.5"
-                          title={isHi ? "व्हाट्सएप शेयर" : "Share on WhatsApp"}
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    )}
+                  {/* Content section */}
+                  <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
+                    <div>
+                      <h3 className="font-display text-sm font-bold text-[#651317] dark:text-amber-100 leading-snug line-clamp-1 text-left">
+                        {group.name}
+                      </h3>
+                      {group.invite_code && (
+                        <div className="flex items-center justify-between bg-[#FAF6EE] dark:bg-stone-800/80 px-2.5 py-1 rounded-lg mt-1.5 text-[10px] font-semibold text-[#7c2d12] dark:text-amber-300 border border-[#E8D8C4]/60">
+                          <span className="font-mono tracking-wider">CODE: {group.invite_code}</span>
+                          <button
+                            type="button"
+                            onClick={() => shareOnWhatsApp(group.invite_code, group.name)}
+                            className="text-[#651317] dark:text-amber-400 hover:scale-110 transition-transform p-0.5"
+                            title={isHi ? "व्हाट्सएप शेयर" : "Share on WhatsApp"}
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
+                    {/* Enter Group Hall — standard page button style */}
                     <button
                       onClick={() => navigate(`/community/groups/${group.id}`)}
-                      className="w-full py-2.5 rounded-xl text-xs font-extrabold bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-xs cursor-pointer"
+                      className="w-full h-9 sm:h-9.5 rounded-full text-xs sm:text-sm font-bold bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all shadow-xs cursor-pointer leading-none"
                     >
                       <span>{isHi ? "समूह में प्रवेश करें" : "Enter Group Hall"}</span>
                       <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
@@ -906,165 +944,148 @@ export default function CommunityPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => document.getElementById("groups-filter-tabs")?.scrollIntoView({ behavior: "smooth" })}
-                  className="bg-white dark:bg-stone-800 text-[#651317] dark:text-amber-100 border border-[#E8D8C4] font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 rounded-full bg-white dark:bg-stone-800 text-[#651317] dark:text-amber-100 border border-[#E8D8C4] font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
                 >
                   <Search className="w-3.5 h-3.5" />
                   {isHi ? "समूह खोजें" : "Explore Groups"}
                 </button>
                 <button
                   onClick={() => setCreateDialogOpen(true)}
-                  className="bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-xs"
+                  className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  {isHi ? "नया समूह बनाएं" : "Create Group"}
+                  <Plus className="w-4 h-4 text-white" />
+                  <span>{isHi ? "नया समूह बनाएं" : "Create Group"}</span>
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* ─── STATISTICS PANEL ─────────────────────────────────── */}
-        <div className="w-full bg-[#fefaf0]/95 dark:bg-stone-900/95 border border-orange-500/10 rounded-2xl p-4 flex flex-row justify-around shadow-sm divide-x divide-orange-500/10">
-          {/* Stat 1 */}
-          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
-            <div className="flex items-center gap-1.5 justify-center mb-0.5">
-              <Users className="w-4.5 h-4.5 text-orange-600 shrink-0" />
-              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+        {/* ─── STATISTICS PANEL (Balanced, Clean 1-Row Layout) ─── */}
+        <div className="w-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl py-2.5 px-2 sm:px-4 shadow-xs">
+          <div className="grid grid-cols-4 divide-x divide-[#E8D8C4]/60 dark:divide-stone-800/80">
+            {/* Stat 1: Devotees */}
+            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
                 {globalStats.devotees >= 1000 ? `${(globalStats.devotees / 1000).toFixed(1)}K+` : globalStats.devotees}
               </span>
+              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+                {isHi ? "भक्त" : "Devotees"}
+              </span>
             </div>
-            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
-              {isHi ? "भक्त जुड़ चुके हैं" : "Devotees Joined"}
-            </span>
-          </div>
 
-          {/* Stat 2 */}
-          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
-            <div className="flex items-center gap-1.5 justify-center mb-0.5">
-              <Flame className="w-4.5 h-4.5 text-orange-650 fill-orange-500/15 shrink-0" />
-              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+            {/* Stat 2: Name Chants */}
+            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
                 {globalStats.totalJaps >= 10000000 
                   ? `${(globalStats.totalJaps / 10000000).toFixed(1)}Cr+`
                   : globalStats.totalJaps >= 100000 
                   ? `${(globalStats.totalJaps / 100000).toFixed(1)}L+`
                   : globalStats.totalJaps.toLocaleString()}
               </span>
+              <span className="text-[9px] sm:text-[11px] font-bold text-[#8C7A6B] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+                {isHi ? "नाम जप" : "Naam Jap"}
+              </span>
             </div>
-            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
-              {isHi ? "नाम जप" : "Name Chanting"}
-            </span>
-          </div>
 
-          {/* Stat 3 */}
-          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
-            <div className="flex items-center gap-1.5 justify-center mb-0.5">
-              <Music className="w-4.5 h-4.5 text-orange-650 shrink-0" />
-              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
+            {/* Stat 3: Bhajans Shared */}
+            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+                <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
                 {globalStats.bhajansCount}
               </span>
-            </div>
-            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
-              {isHi ? "भजन साझा हुए" : "Bhajans Shared"}
-            </span>
-          </div>
-
-          {/* Stat 4 */}
-          <div className="flex flex-col items-center justify-center px-1 text-center flex-1">
-            <div className="flex items-center gap-1.5 justify-center mb-0.5">
-              <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 text-orange-650 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7h20L12 2z" />
-                <path d="M4 7v10h16V7H4z" />
-              </svg>
-              <span className="text-xs md:text-sm font-black text-stone-950 dark:text-stone-50 leading-none">
-                {globalStats.eventsCount}
+              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+                {isHi ? "भजन" : "Bhajans"}
               </span>
             </div>
-            <span className="text-[8.5px] md:text-[10px] text-stone-500 dark:text-stone-400 font-bold leading-none mt-0.5">
-              {isHi ? "सत्संग एवं आयोजन" : "Satsang & Events"}
-            </span>
+
+            {/* Stat 4: Satsang & Events */}
+            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
+                {globalStats.eventsCount}
+              </span>
+              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+                {isHi ? "सत्संग" : "Satsang"}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* ─── SEARCH INPUT BAR & FILTER TABS ────────────────────── */}
-        <div id="groups-filter-tabs" className="w-full space-y-4">
-          <div className="relative flex items-center rounded-2xl bg-white dark:bg-stone-900 border border-[#5c1d0c]/10 shadow-xs p-1 pl-3.5 pr-1 focus-within:border-[#5c1d0c] focus-within:ring-2 focus-within:ring-[#5c1d0c]/10 transition-all">
-            <Search className="w-5 h-5 text-stone-400 dark:text-stone-500 mr-2 shrink-0 select-none" />
+        <div id="groups-filter-tabs" className="w-full space-y-3">
+          {/* Search Bar (Matching Standardized SearchBar Component) */}
+          <div className="relative flex items-center w-full h-12 sm:h-12.5 bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-full shadow-[0_4px_20px_rgba(80,45,20,0.04)] pl-3.5 sm:pl-4 pr-1.5 sm:pr-2 gap-2 sm:gap-2.5 focus-within:border-[#6A2C2A] dark:focus-within:border-[#E8B15C] focus-within:ring-2 focus-within:ring-[#6A2C2A]/10 transition-all duration-200">
+            <div className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full bg-[#651317]/8 dark:bg-amber-400/10 flex items-center justify-center shrink-0">
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6A2C2A] dark:text-[#E8B15C] shrink-0 select-none pointer-events-none" />
+            </div>
             <input
               type="text"
               placeholder={isHi ? "नाम या समूह खोजें..." : "Search name or group..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent border-none py-1.5 text-sm focus:outline-none text-stone-900 dark:text-stone-100"
+              className="flex-1 min-w-0 w-full bg-transparent border-0 outline-none text-xs sm:text-sm font-medium text-[#32251E] dark:text-foreground placeholder:text-[#7A6B60]/70 py-1.5"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-stone-400 hover:text-stone-600 dark:hover:text-white p-1 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 shrink-0 transition-colors"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
             <button
-              onClick={() => {}}
-              className="w-8 h-8 rounded-xl bg-[#5c1d0c] hover:bg-[#4a170a] flex items-center justify-center text-white active:scale-95 transition-all shrink-0"
+              type="button"
+              className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 sm:px-4.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none"
             >
-              <Search className="w-4 h-4 text-white" />
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{isHi ? "खोजें" : "Search"}</span>
             </button>
           </div>
 
           {/* Filter tabs row scrollable */}
-          <div className="w-full flex items-center gap-2 overflow-x-auto pb-1 mt-4 scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <button
-              onClick={() => setSelectedTab("all")}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
-                selectedTab === "all"
-                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
-                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
-              }`}
-            >
-              {isHi ? "सभी समूह" : "All Groups"}
-            </button>
-
-            <button
-              onClick={() => {
-                if (!user) {
-                  toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
-                  navigate("/auth/login?redirect=/community");
-                } else {
-                  setSelectedTab("my");
-                }
-              }}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
-                selectedTab === "my"
-                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
-                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
-              }`}
-            >
-              {isHi ? "मेरे समूह" : "My Groups"}
-            </button>
-
-            <button
-              onClick={() => setSelectedTab("trending")}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
-                selectedTab === "trending"
-                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
-                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
-              }`}
-            >
-              {isHi ? "ट्रेंडिंग" : "Trending"}
-            </button>
-
-            <button
-              onClick={() => setSelectedTab("japa")}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
-                selectedTab === "japa"
-                  ? "bg-[#5c1d0c] border-[#5c1d0c] text-white shadow-xs"
-                  : "bg-[#faf8f5] dark:bg-stone-900 border-[#5c1d0c]/10 text-stone-600 dark:text-stone-400 hover:border-[#5c1d0c]/20"
-              }`}
-            >
-              {isHi ? "नाम जप समूह" : "Naam Jap Groups"}
-            </button>
-
-            <button
-              className="w-9 h-9 rounded-full bg-[#faf8f5] dark:bg-stone-900 border border-[#5c1d0c]/10 flex items-center justify-center text-stone-600 dark:text-stone-400 shrink-0 hover:border-[#5c1d0c]/20"
-              aria-label="Filter"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-            </button>
+          <div className="w-full flex items-center gap-2 overflow-x-auto pb-1 mt-3 scroll-smooth" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {[
+              { id: "all", labelHi: "सभी समूह", labelEn: "All Groups" },
+              { id: "my", labelHi: "मेरे समूह", labelEn: "My Groups", authOnly: true },
+              { id: "trending", labelHi: "ट्रेंडिंग", labelEn: "Trending" },
+              { id: "japa", labelHi: "नाम जप समूह", labelEn: "Naam Jap Groups" },
+            ].map((tab) => {
+              const isActive = selectedTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    if (tab.authOnly && !user) {
+                      toast.info(isHi ? "कृपया अपने समूह देखने के लिए लॉग इन करें" : "Please log in to view your groups");
+                      navigate("/auth/login?redirect=/community");
+                    } else {
+                      setSelectedTab(tab.id);
+                    }
+                  }}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-4 sm:px-4.5 rounded-full font-bold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap leading-none border",
+                    isActive
+                      ? "bg-[#651317] hover:bg-[#4f0f12] text-white border-[#651317]"
+                      : "bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-stone-300 hover:border-[#651317]/50"
+                  )}
+                >
+                  {isHi ? tab.labelHi : tab.labelEn}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -1199,7 +1220,7 @@ export default function CommunityPage() {
                             handleGroupMembership(group);
                           }
                         }}
-                        className="w-full mt-2 py-2 rounded-xl text-sm font-black transition-all flex items-center justify-center gap-1 cursor-pointer bg-[#5c1d0c] hover:bg-[#4a170a] text-white shadow-xs active:scale-[0.98]"
+                        className="w-full h-9 sm:h-9.5 rounded-full text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer bg-[#651317] hover:bg-[#4f0f12] text-white shadow-xs active:scale-[0.98] leading-none"
                       >
                         {group.is_member ? (
                           <span>{isHi ? "समूह देखें" : "View Group"}</span>
@@ -1220,7 +1241,7 @@ export default function CommunityPage() {
                 type="button"
                 onClick={() => void loadMoreGroups()}
                 disabled={loadingMore}
-                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-full border border-[#E8D8C4] bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-100 text-xs font-bold hover:bg-white active:scale-95 transition-all disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-1.5 h-9 sm:h-9.5 px-5 rounded-full border border-[#E8D8C4] bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-100 text-xs sm:text-sm font-bold hover:bg-white active:scale-95 transition-all shadow-xs disabled:opacity-60 leading-none"
               >
                 {loadingMore
                   ? (isHi ? "लोड हो रहा है..." : "Loading...")

@@ -56,6 +56,11 @@ function validateUploadFile(file: File) {
 }
 
 function canTryUnsignedFallback(status: number, serverMessage: string): boolean {
+  // In production, never fall back to unsigned uploads — require the secure Edge Function path
+  const isLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  if (!isLocalhost) return false;
+
   if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) return false;
   if (status === 429) return false;
   if (status === 400 && serverMessage.toLowerCase().includes('unsupported file type')) return false;

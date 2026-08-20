@@ -25,9 +25,22 @@ serve(async (req: Request) => {
   }
 
   try {
+    // --- Cron/Admin authentication ---
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const authHeader = req.headers.get("Authorization");
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized. Provide valid CRON_SECRET in Authorization header." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY") || "AIzaSyDmxJ9q6IeVP6Yhr-grsYaSQSXbIZTtQHc";
+    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
+    if (!youtubeApiKey) {
+      throw new Error("Missing YOUTUBE_API_KEY environment variable. Set it via: supabase secrets set YOUTUBE_API_KEY=<key>");
+    }
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("Missing Supabase URL or Service Role Key environmental variable");
@@ -177,10 +190,20 @@ serve(async (req: Request) => {
         }
 
         const existingSet = new Set(existingShorts?.map(s => s.video_id) || []);
+        
+        // Refresh updated_at timestamp for existing shorts to satisfy YouTube's 30-day freshness policy
+        if (existingSet.size > 0) {
+          const existingArray = Array.from(existingSet);
+          await supabase
+            .from("shorts")
+            .update({ updated_at: new Date().toISOString() })
+            .in("video_id", existingArray);
+        }
+
         const newVideoIds = allFeedVideoIds.filter(vid => !existingSet.has(vid));
 
         if (newVideoIds.length === 0) {
-          continue; // All videos in feed already exist
+          continue; // All videos in feed already exist & updated_at timestamp has been refreshed
         }
 
         // Batch call YouTube Data API to fetch durations for new videos (up to 50 at a time)

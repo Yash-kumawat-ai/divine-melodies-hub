@@ -204,9 +204,37 @@ export default function ShortsFeed() {
     loadShorts(cat);
   };
 
+  const isProgrammaticScrolling = useRef(false);
+  const scrollLockTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Instant restart to Short #1 (no fast upward scroll visual)
+  const jumpToStart = useCallback(() => {
+    isProgrammaticScrolling.current = true;
+    setActiveIndex(0);
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: 0,
+        behavior: 'instant' as ScrollBehavior,
+      });
+    }
+    setTimeout(() => {
+      isProgrammaticScrolling.current = false;
+    }, 100);
+  }, []);
+
   const scrollToIndex = useCallback((targetIdx: number) => {
-    const idx = Math.max(0, Math.min(targetIdx, displayShorts.length));
+    const maxLen = displayShorts.length;
+
+    // Seamless loop: scrolling down past end slide loops back to Short 1
+    if (targetIdx > maxLen) {
+      jumpToStart();
+      return;
+    }
+
+    const idx = Math.max(0, Math.min(targetIdx, maxLen));
+    isProgrammaticScrolling.current = true;
     setActiveIndex(idx);
+
     if (containerRef.current) {
       const h = containerRef.current.clientHeight || window.innerHeight;
       containerRef.current.scrollTo({
@@ -214,11 +242,16 @@ export default function ShortsFeed() {
         behavior: 'smooth',
       });
     }
-  }, [displayShorts.length]);
+
+    if (scrollLockTimeoutRef.current) clearTimeout(scrollLockTimeoutRef.current);
+    scrollLockTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrolling.current = false;
+    }, 420);
+  }, [displayShorts.length, jumpToStart]);
 
   // Strict 1-short scroll lock for wheel/trackpad gestures
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (isWheelScrolling.current) return;
+    if (isWheelScrolling.current || isProgrammaticScrolling.current) return;
     if (Math.abs(e.deltaY) < 15) return;
 
     isWheelScrolling.current = true;
@@ -227,9 +260,7 @@ export default function ShortsFeed() {
     }, 380);
 
     if (e.deltaY > 0) {
-      if (activeIndex < displayShorts.length) {
-        scrollToIndex(activeIndex + 1);
-      }
+      scrollToIndex(activeIndex + 1);
     } else if (e.deltaY < 0) {
       if (activeIndex > 0) {
         scrollToIndex(activeIndex - 1);
@@ -237,8 +268,9 @@ export default function ShortsFeed() {
     }
   };
 
-  // Scroll handler to snap active index
+  // Scroll handler to snap active index (locked during programmatic scroll to prevent double jumps)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (isProgrammaticScrolling.current) return;
     const container = e.currentTarget;
     const h = container.clientHeight || 1;
     const index = Math.round(container.scrollTop / h);
@@ -356,8 +388,10 @@ export default function ShortsFeed() {
       navigate('/shorts');
     } else if (selectedCategory !== 'all') {
       handleCategoryChange('all');
-    } else {
+    } else if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
       navigate(-1);
+    } else {
+      navigate('/');
     }
   };
 
@@ -533,7 +567,7 @@ export default function ShortsFeed() {
 
               <div className="flex flex-col sm:flex-row gap-3.5 w-full max-w-xs z-10">
                 <Button
-                  onClick={() => scrollToIndex(0)}
+                  onClick={jumpToStart}
                   className="w-full rounded-2xl bg-gradient-to-r from-[#7A2D28] via-[#8C342F] to-[#5A1F1A] hover:brightness-110 text-white font-bold text-xs h-12 shadow-[0_4px_15px_rgba(122,45,40,0.5)] border border-[#D4A44A]/40"
                 >
                   🔄 {language === 'hi' ? 'फिर से देखें' : 'Re-watch from Start'}

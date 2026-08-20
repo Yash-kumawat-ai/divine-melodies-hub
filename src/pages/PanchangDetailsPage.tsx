@@ -184,7 +184,7 @@ export default function PanchangDetailsPage() {
             { label: text.abhijit, value: panchang?.abhijit_muhurat || '11:48 AM - 12:35 PM', icon: Sparkles, color: 'text-brand-primary dark:text-brand-gold', bg: 'bg-brand-primary/10 dark:bg-brand-gold/15 border border-brand-gold-border/40', sub: 'आज का अभिजित मुहूर्त' },
           ].map((card, idx) => (
             <div key={idx} className="bg-surface-raised/90 dark:bg-zinc-900/60 rounded-2xl p-4 border border-brand-gold-border/50 shadow-sm text-center flex flex-col items-center justify-center transition-all hover:scale-[1.02]">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">{card.label}</p>
+              <p className="text-[11px] font-bold tracking-wide text-muted-foreground mb-2">{card.label}</p>
               <h3 className={cn("text-base sm:text-lg font-bold mb-2 truncate max-w-full", card.color)}>{card.value}</h3>
               <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-2", card.bg)}>
                 <card.icon className={cn("h-5 w-5", card.color)} />
@@ -217,7 +217,7 @@ export default function PanchangDetailsPage() {
             <div className="p-0">
               <table className="w-full table-fixed text-left">
                 <thead>
-                  <tr className="bg-brand-primary/5 dark:bg-brand-gold/10 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  <tr className="bg-brand-primary/5 dark:bg-brand-gold/10 text-xs font-bold tracking-wide text-muted-foreground">
                     <th className="w-[38%] px-3 py-3 font-bold sm:px-6">{text.karya}</th>
                     <th className="px-3 py-3 font-bold sm:px-6">{text.whyShubh}</th>
                   </tr>
@@ -269,7 +269,7 @@ export default function PanchangDetailsPage() {
             <div className="p-0">
               <table className="w-full table-fixed text-left">
                 <thead>
-                  <tr className="bg-rose-50/20 dark:bg-rose-900/10 text-[10px] uppercase tracking-widest text-rose-800/40 dark:text-rose-100/30">
+                  <tr className="bg-rose-50/20 dark:bg-rose-900/10 text-xs font-bold tracking-wide text-rose-800/70 dark:text-rose-200/70">
                     <th className="w-[38%] px-3 py-3 font-bold sm:px-6">{text.karya}</th>
                     <th className="px-3 py-3 font-bold sm:px-6">{text.whyAshubh}</th>
                   </tr>

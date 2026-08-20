@@ -79,6 +79,51 @@ const resolveCover = (deity: string) => {
   return DefaultCover;
 };
 
+const TAB_HERO_CONFIG = {
+  groups: {
+    badgeHi: "नाम संकीर्तन समूह",
+    badgeEn: "Naam Sangh Groups",
+    badgeIcon: mandirSvg,
+    titleHi: "भक्ति एवं नाम संकीर्तन समूह",
+    titleEn: "Devotional Naam Sangh",
+    descHi: "अपने प्रिय इष्टदेव के समूह से जुड़ें, सामूहिक नाम जाप यज्ञ में भाग लें और भक्तों के साथ भक्तिमय संवाद बनाएं।",
+    descEn: "Join sacred devotee circles, chant together in collective Naam Jap, and connect with devotees worldwide.",
+    tags: [
+      { svg: mandirSvg, labelHi: "पवित्र मंडली", labelEn: "Sacred Circles" },
+      { svg: malaSvg, labelHi: "सामूहिक नाम जाप", labelEn: "Group Naam Jap" },
+      { svg: leaderboardSvg, labelHi: "जप यज्ञ रैंकिंग", labelEn: "Jap Leaderboard" },
+    ],
+  },
+  feed: {
+    badgeHi: "डिजिटल सत्संग मंच",
+    badgeEn: "Digital Satsang Feed",
+    badgeIcon: prayingSvg,
+    titleHi: "सत्संग एवं भक्तिमय विचार",
+    titleEn: "Satsang & Reflections",
+    descHi: "दैनिक भक्ति विचार, सुंदर भजन, श्लोक व आध्यात्मिक प्रश्न साझा करें और संपूर्ण भक्त समुदाय से आशीर्वाद पाएं।",
+    descEn: "Share daily devotional thoughts, sacred bhajans, spiritual questions, and connect in satsang.",
+    tags: [
+      { svg: prayingSvg, labelHi: "दैनिक विचार", labelEn: "Daily Thoughts" },
+      { svg: manjiraSvg, labelHi: "भजन व संकीर्तन", labelEn: "Bhajans & Kirtans" },
+      { svg: malaSvg, labelHi: "भक्तिमय संवाद", labelEn: "Spiritual Satsang" },
+    ],
+  },
+  events: {
+    badgeHi: "सत्संग एवं धार्मिक उत्सव",
+    badgeEn: "Spiritual Events & Festivals",
+    badgeIcon: mandirSvg,
+    titleHi: "आगामी सत्संग व धार्मिक कार्यक्रम",
+    titleEn: "Upcoming Sacred Gatherings",
+    descHi: "आगामी ऑनलाइन व स्थानीय सत्संग, भजन संध्या, एकादशी व धार्मिक आयोजनों में भाग लें और अपनी रुचि दर्ज करें।",
+    descEn: "Explore live online kirtans, temple satsangs, bhajan sandhyas, and festival celebrations.",
+    tags: [
+      { svg: mandirSvg, labelHi: "सत्संग व जागरण", labelEn: "Satsang & Jagran" },
+      { svg: manjiraSvg, labelHi: "भजन संध्या", labelEn: "Bhajan Sandhya" },
+      { svg: prayingSvg, labelHi: "स्थान व लाइव लिंक", labelEn: "Venue & Live Links" },
+    ],
+  },
+};
+
 function EventCountdown({ datetime }: { datetime: string }) {
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; mins: number } | null>(null);
 
@@ -201,11 +246,14 @@ export default function JoinCommunityPage() {
   }, [groupSearch]);
 
   // Load Initial Data
-  const loadPosts = async () => {
-    setLoadingPosts(true);
-    const data = await communityApi.fetchPosts(user?.id);
-    setPosts(data);
-    setLoadingPosts(false);
+  const loadPosts = async (silent = false) => {
+    if (!silent) setLoadingPosts(true);
+    try {
+      const data = await communityApi.fetchPosts(user?.id);
+      setPosts(data);
+    } finally {
+      if (!silent) setLoadingPosts(false);
+    }
   };
 
   const loadGroups = async () => {
@@ -263,6 +311,8 @@ export default function JoinCommunityPage() {
     setEventLinkedBhajan,
     publishingPost,
     handleImageChange,
+    handleCroppedImageReady,
+    handleRemoveImage,
     handleCreatePost,
   } = useCreatePost({ user, isHi, selectedGroup, loadPosts });
 
@@ -340,9 +390,9 @@ export default function JoinCommunityPage() {
       }
 
       await completeSession({
-        userId: user.id,
         mantraId: matchingMantra.id,
-        sankalp: customSankalp || undefined,
+        mantraLabel: matchingMantra.name_hindi || matchingMantra.name_english || "Mantra",
+        sankalp: customSankalp || "Group Naam Jap",
         targetCount: chantsToLog,
         actualCount: chantsToLog,
         durationSeconds: Math.round(chantsToLog * 0.8),
@@ -554,9 +604,28 @@ export default function JoinCommunityPage() {
     }
     if (selectedGroup) {
       list = list.filter(p => p.group_id === selectedGroup.id);
+    } else {
+      // Global feed: Only show posts that belong to the general community (not a specific group)
+      list = list.filter(p => !p.group_id);
     }
     if (feedFilter !== "All") {
-      list = list.filter(p => p.type === feedFilter.toLowerCase().replace(" ", "_"));
+      if (feedFilter === "Shloka") {
+        list = list.filter(p =>
+          p.type === "shloka" ||
+          p.content?.startsWith("[SHLOKA]") ||
+          p.content?.includes("📖 भावार्थ") ||
+          p.content?.includes("📖 अर्थ")
+        );
+      } else if (feedFilter === "Thought") {
+        list = list.filter(p =>
+          p.type === "thought" &&
+          !p.content?.startsWith("[SHLOKA]") &&
+          !p.content?.includes("📖 भावार्थ") &&
+          !p.content?.includes("📖 अर्थ")
+        );
+      } else {
+        list = list.filter(p => p.type === feedFilter.toLowerCase().replace(" ", "_"));
+      }
     }
     if (postSearchQuery.trim()) {
       const q = postSearchQuery.toLowerCase().trim();
@@ -585,8 +654,11 @@ export default function JoinCommunityPage() {
 
   // Events filtered view
   const eventsList = useMemo(() => {
-    return posts.filter(p => p.type === 'event');
-  }, [posts]);
+    if (selectedGroup) {
+      return posts.filter(p => p.group_id === selectedGroup.id && p.type === 'event');
+    }
+    return posts.filter(p => !p.group_id && p.type === 'event');
+  }, [posts, selectedGroup]);
 
   // Status Colors for Request badge
   const getStatusBadgeColor = (status: string) => {
@@ -766,70 +838,73 @@ export default function JoinCommunityPage() {
             {/* ─── 2. MIDDLE COLUMN (MAIN CONTENT) ────────────────────── */}
             <div className="col-span-12 lg:col-span-9 space-y-6">
               
-              {/* Top Hero Banner — Consistent Across All 3 Tabs */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-amber-500/40 p-8 md:p-12 flex flex-col items-center justify-center text-center select-none min-h-[225px] group transition-all">
-                {/* Background image: devotional_background(3).webp with high opacity */}
-                <img 
-                  src={devotionalBg3} 
-                  alt="Digital Satsang Banner" 
-                  className="absolute inset-0 w-full h-full object-cover object-center scale-100 group-hover:scale-105 transition-transform duration-700 opacity-95"
-                />
-                
-                {/* Rotating Gold Mandala Watermark SVG */}
-                <div className="absolute -right-12 -bottom-12 w-64 h-64 pointer-events-none opacity-20 animate-[spin_120s_linear_infinite]">
-                  <img src={mandalaGold} alt="" className="w-full h-full object-contain" />
-                </div>
-                
-                {/* Subtle gradient overlay for full image clarity & text legibility */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/70 backdrop-blur-[0.5px]" />
-                
-                {/* Ambient Radial Glow */}
-                <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+              {/* Top Hero Banner — Dynamic Tab-Aware Devotional Header */}
+              {(() => {
+                const currentHero = TAB_HERO_CONFIG[activeTab] || TAB_HERO_CONFIG.groups;
+                return (
+                  <div className="relative rounded-3xl overflow-hidden shadow-md border border-[#E8D8C4] dark:border-stone-800 bg-[#FAF2E8] dark:bg-[#1E1710] p-6 sm:p-8 md:p-10 flex flex-col items-center justify-center text-center select-none min-h-[210px] sm:min-h-[235px] group transition-all">
+                    {/* Background image: devotional_background(3).webp with full 100% clarity (no fade/opacity) */}
+                    <img 
+                      src={devotionalBg3} 
+                      alt="Digital Satsang Banner" 
+                      className="absolute inset-0 w-full h-full object-cover object-center"
+                    />
+                    
+                    {/* Clean warm overlay matching website palette */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#FFFDF8]/75 via-[#FAF0E4]/45 to-[#FFFDF8]/85 dark:from-[#1A120B]/80 dark:via-[#1A120B]/55 dark:to-[#1A120B]/90" />
 
-                <div className="relative z-10 space-y-3.5 max-w-2xl mx-auto flex flex-col items-center text-center">
-                  <span className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-[0.25em] text-amber-200 bg-black/45 backdrop-blur-md border border-amber-400/40 px-4 py-1 rounded-full shadow-lg flex items-center gap-2">
-                    <img src={malaSvg} alt="Mala" className="w-3.5 h-3.5 opacity-95 filter drop-shadow" />
-                    <span>{isHi ? "डिजिटल सत्संग मंच" : "Digital Satsang Platform"}</span>
-                  </span>
-                  
-                  <h1 className="font-display font-black text-3xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-b from-amber-50 via-amber-100 to-amber-300 drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] tracking-tight">
-                    {isHi ? "डिजिटल सत्संग" : "Digital Satsang"}
-                  </h1>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.25 }}
+                        className="relative z-10 space-y-2.5 max-w-2xl mx-auto flex flex-col items-center text-center"
+                      >
+                        {/* Top Pill Badge */}
+                        <span className="text-[10.5px] md:text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300 bg-[#FAF0E4]/90 dark:bg-[#2B1F14]/90 backdrop-blur-xs border border-[#E8D8C4] dark:border-stone-700 px-3.5 py-1 rounded-full shadow-2xs flex items-center gap-1.5">
+                          <img src={currentHero.badgeIcon} alt="" className="w-3.5 h-3.5" />
+                          <span>{isHi ? currentHero.badgeHi : currentHero.badgeEn}</span>
+                        </span>
+                        
+                        {/* Main Heading in Website's Signature Temple Maroon */}
+                        <h1 className="font-serif font-black text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-[#651317] dark:text-[#FFFDF8] tracking-tight drop-shadow-xs">
+                          {isHi ? currentHero.titleHi : currentHero.titleEn}
+                        </h1>
 
-                  <div className="flex items-center justify-center gap-3 py-0.5 w-full">
-                    <span className="w-16 md:w-24 h-px bg-gradient-to-r from-transparent via-amber-300/80 to-amber-300" />
-                    <span className="text-amber-300 text-base md:text-lg font-extrabold filter drop-shadow-[0_2px_8px_rgba(245,158,11,0.8)]">✦ ॐ ✦</span>
-                    <span className="w-16 md:w-24 h-px bg-gradient-to-l from-transparent via-amber-300/80 to-amber-300" />
+                        {/* Sacred Divider */}
+                        <div className="flex items-center justify-center gap-2.5 my-0.5 w-full">
+                          <span className="w-12 sm:w-20 h-px bg-gradient-to-r from-transparent to-[#651317]/40 dark:to-amber-400/50" />
+                          <span className="text-[#651317] dark:text-amber-400 text-xs sm:text-sm font-extrabold">✦ ॐ ✦</span>
+                          <span className="w-12 sm:w-20 h-px bg-gradient-to-l from-transparent to-[#651317]/40 dark:to-amber-400/50" />
+                        </div>
+
+                        {/* Description Text in Website's Warm Brown */}
+                        <p className="text-xs sm:text-sm md:text-base text-[#5C3026] dark:text-[#D4C5B9] font-medium leading-relaxed max-w-xl">
+                          {isHi ? currentHero.descHi : currentHero.descEn}
+                        </p>
+
+                        {/* Feature Badges in Fixed Palette */}
+                        <div className="flex flex-wrap items-center justify-center gap-2 md:gap-2.5 pt-1">
+                          {currentHero.tags.map((tag, idx) => (
+                            <div 
+                              key={idx} 
+                              className="bg-[#FFFDF8]/90 dark:bg-[#16110B]/90 backdrop-blur-xs border border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-200 px-3 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold flex items-center gap-1.5 shadow-2xs"
+                            >
+                              <img src={tag.svg} alt="" className="w-4 h-4" />
+                              <span>{isHi ? tag.labelHi : tag.labelEn}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
-
-                  <p className="text-xs md:text-base text-amber-100/95 font-bold tracking-wide leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] max-w-lg">
-                    {isHi 
-                      ? "भजन साझा करें • भक्तों से जुड़ें • भक्ति को आगे बढ़ाएं" 
-                      : "Share Bhajans • Connect with Devotees • Advance Devotion"}
-                  </p>
-
-                  {/* Feature Badges with Sacred SVGs */}
-                  <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 pt-2">
-                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
-                      <img src={mandirSvg} alt="Mandir" className="w-4 h-4 opacity-95 filter drop-shadow" />
-                      <span>{isHi ? "भक्ति समूह" : "Devotional Groups"}</span>
-                    </div>
-
-                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
-                      <img src={malaSvg} alt="Naam Jap" className="w-4 h-4 opacity-95 filter drop-shadow" />
-                      <span>{isHi ? "सामूहिक नाम जाप" : "Group Naam Jap"}</span>
-                    </div>
-
-                    <div className="bg-black/40 backdrop-blur-sm border border-amber-500/35 px-3.5 py-1.5 rounded-xl text-[10.5px] md:text-xs font-bold text-amber-100 flex items-center gap-1.5 shadow-sm">
-                      <img src={manjiraSvg} alt="Kirtans" className="w-4 h-4 opacity-95 filter drop-shadow" />
-                      <span>{isHi ? "भजन व संकीर्तन" : "Bhajans & Kirtans"}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* ─── TAB SWITCHER ─────────────────────────────────── */}
-              <div className="flex gap-1 overflow-x-auto scrollbar-none border-b border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#1A120B] rounded-2xl p-1.5 shadow-xs">
+              <div className="flex gap-1 overflow-x-auto scrollbar-none border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#1A120B] rounded-2xl p-1.5 shadow-xs">
                 {[
                   { id: 'groups', label: isHi ? 'समूह' : 'Groups', icon: Users },
                   { id: 'feed', label: isHi ? 'फीड' : 'Feed', icon: MessageSquare },
@@ -841,10 +916,10 @@ export default function JoinCommunityPage() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-xs md:text-sm font-extrabold transition-all rounded-xl whitespace-nowrap ${
+                      className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-xs md:text-sm font-extrabold transition-all rounded-xl whitespace-nowrap cursor-pointer ${
                         isActive
                           ? 'bg-[#651317] text-white shadow-xs'
-                          : 'text-stone-600 dark:text-stone-400 hover:text-[#651317] hover:bg-orange-500/5'
+                          : 'text-[#651317] dark:text-amber-200 hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -886,13 +961,14 @@ export default function JoinCommunityPage() {
                   </div>
 
                   {/* Feed Filter Pill Badges */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+                  <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
                     {[
                       { id: "All", labelEn: "All Feed", labelHiShort: "सभी" },
                       { id: "Bhajan Share", labelEn: "Bhajans", labelHiShort: "भजन" },
                       { id: "Bhajan Request", labelEn: "Requests", labelHiShort: "अनुरोध" },
                       { id: "Question", labelEn: "Questions", labelHiShort: "प्रश्न" },
                       { id: "Thought", labelEn: "Thoughts", labelHiShort: "विचार" },
+                      { id: "Shloka", labelEn: "Shlokas", labelHiShort: "श्लोक" },
                       { id: "Event", labelEn: "Events", labelHiShort: "कार्यक्रम" },
                     ].map(({ id, labelEn, labelHiShort }) => {
                       const isSelected = feedFilter === id;
@@ -955,11 +1031,14 @@ export default function JoinCommunityPage() {
                           isPostSaved={isSaved(post.id)}
                           onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
-                            if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+                            try {
                               await communityApi.softRemovePost(id);
                               loadPosts();
+                            } catch (err) {
+                              console.error("Delete post error:", err);
                             }
                           }}
+                          onPostUpdated={loadPosts}
                         />
                       ))}
                     </div>
@@ -1132,14 +1211,7 @@ export default function JoinCommunityPage() {
                           </p>
                         </div>
 
-                        {/* FLOATING ACTION BUTTON */}
-                        <button
-                          onClick={() => setCreateGroupOpen(true)}
-                          className="fab-royal-diya z-40 lg:hidden fixed bottom-24 right-6"
-                          title={isHi ? "नया समूह" : "Create Group"}
-                        >
-                          <Plus className="w-6 h-6" />
-                        </button>
+
 
                         {/* 2. EXPLORE / DISCOVER COMMUNITIES SECTION */}
                         <div className="space-y-5 text-left pt-2">
@@ -1372,11 +1444,14 @@ export default function JoinCommunityPage() {
                           isPostSaved={isSaved(post.id)}
                           onToggleSavePost={handleToggleSavePost}
                           onDeletePost={async (id) => {
-                            if (confirm(isHi ? "क्या आप इस कार्यक्रम पोस्ट को हटाना चाहते हैं?" : "Delete this event post?")) {
+                            try {
                               await communityApi.softRemovePost(id);
                               loadPosts();
+                            } catch (err) {
+                              console.error("Delete post error:", err);
                             }
                           }}
+                          onPostUpdated={loadPosts}
                         />
                       ))}
                     </div>
@@ -1484,10 +1559,15 @@ export default function JoinCommunityPage() {
                               
                               <div className="flex items-center justify-end pt-1 mt-1.5 border-t border-stone-100 dark:border-stone-900/60">
                                 <button
-                                  onClick={() => onToggleRsvp(evt.id)}
-                                  className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-[11px] font-extrabold py-1 px-3 rounded-lg active:scale-95 transition-all shadow-sm"
+                                  type="button"
+                                  onClick={() => handleToggleRsvp(evt.id, evt.rsvp_status || null, 'interested')}
+                                  className={`text-[11px] font-extrabold py-1 px-3 rounded-lg active:scale-95 transition-all shadow-xs cursor-pointer ${
+                                    evt.rsvp_status
+                                      ? "bg-amber-100 text-[#651317] dark:bg-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-800"
+                                      : "bg-[#651317] hover:bg-[#4f0f12] text-white"
+                                  }`}
                                 >
-                                  {isHi ? "रुचि दिखाएं" : "Join"}
+                                  {evt.rsvp_status ? (isHi ? "✓ रुचि दर्ज" : "✓ Joined") : (isHi ? "रुचि दिखाएं" : "Join")}
                                 </button>
                               </div>
                             </div>
@@ -1521,13 +1601,8 @@ export default function JoinCommunityPage() {
             
           </div>
 
-          {/* ─── Om FAB Floating Action Button ─── */}
-          <button
-            onClick={() => setCreatePostOpen(true)}
-            className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 hover:shadow-orange-500/20 transition-all z-40 border border-amber-400/20"
-          >
-            <span className="text-2xl font-bold select-none drop-shadow-md">ॐ</span>
-          </button>
+
+
         </div>
       )}
 
@@ -1733,6 +1808,8 @@ export default function JoinCommunityPage() {
         myBhajans={myBhajans}
         publishingPost={publishingPost}
         handleImageChange={handleImageChange}
+        onCroppedImageReady={handleCroppedImageReady}
+        onRemoveImage={handleRemoveImage}
         onSubmit={handleCreatePost}
       />
 

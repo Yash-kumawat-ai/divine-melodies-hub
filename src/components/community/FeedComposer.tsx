@@ -1,59 +1,87 @@
-import { Music, HelpCircle, Leaf, Calendar } from "lucide-react";
+/**
+ * FeedComposer.tsx
+ *
+ * Feed Post Composer bar matching GroupHall styling:
+ * Avatar + "Share your thoughts..." pill input, with Media, Emoji, Voice, and Post button.
+ */
 
-type PostTypeId = "bhajan_share" | "bhajan_request" | "thought" | "event";
+import React from "react";
+import { Image as ImageIcon, Smile, Mic } from "lucide-react";
+
+type PostTypeId = "bhajan_share" | "bhajan_request" | "question" | "thought" | "event" | "shloka";
 
 interface FeedComposerProps {
   isHi: boolean;
-  user: { photoURL?: string | null; displayName?: string | null } | null;
+  user: any;
   onOpenCompose: (type?: PostTypeId) => void;
 }
 
-const POST_ACTIONS: {
-  id: PostTypeId;
-  icon: typeof Music;
-  labelEn: string;
-  labelHi: string;
-}[] = [
-  { id: "bhajan_share", icon: Music, labelEn: "Bhajan", labelHi: "भजन" },
-  { id: "bhajan_request", icon: HelpCircle, labelEn: "Request", labelHi: "अनुरोध" },
-  { id: "thought", icon: Leaf, labelEn: "Thought", labelHi: "विचार" },
-  { id: "event", icon: Calendar, labelEn: "Event", labelHi: "कार्यक्रम" },
-];
-
 export function FeedComposer({ isHi, user, onOpenCompose }: FeedComposerProps) {
-  const initials = user?.displayName?.slice(0, 2).toUpperCase() || "DV";
+  const displayName = user?.user_metadata?.display_name || user?.email || "D";
+  const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
-    <div className="rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#1A120B] p-3.5 shadow-xs space-y-3">
-      <button
-        type="button"
-        onClick={() => onOpenCompose()}
-        className="flex items-center gap-3 w-full text-left group"
-      >
-        <div className="w-10 h-10 rounded-full ring-2 ring-[#E8D8C4] dark:ring-stone-700 bg-[#FAF0E4] dark:bg-stone-800 flex items-center justify-center text-[#651317] dark:text-amber-300 font-extrabold text-sm shrink-0 overflow-hidden shadow-xs">
-          {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+    <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3 sm:p-3.5 space-y-2.5 shadow-xs">
+      {/* Top Input Row */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#E8D8C4] dark:border-stone-700 shrink-0 flex items-center justify-center shadow-2xs">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="avatar"
+              className="w-full h-full object-cover"
+            />
           ) : (
-            initials
+            <span className="font-bold text-xs text-[#651317] dark:text-amber-300 uppercase">
+              {displayName[0]?.toUpperCase() || "D"}
+            </span>
           )}
         </div>
-        <span className="flex-1 text-left text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-medium py-2.5 px-4 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 group-hover:bg-[#FAF6EE] dark:group-hover:bg-stone-800 transition-colors shadow-2xs">
-          {isHi ? "यहाँ विचार, भजन या प्रश्न साझा करें..." : "Share thoughts, bhajans, or ask a question..."}
-        </span>
-      </button>
+        <button
+          type="button"
+          onClick={() => onOpenCompose("thought")}
+          className="flex-1 text-left text-[#8C7A6B] dark:text-stone-400 text-xs sm:text-sm font-medium py-2 px-3.5 rounded-xl bg-[#FAF6EE] dark:bg-stone-900 border border-[#E8D8C4]/60 hover:border-[#651317]/30 transition-all cursor-pointer"
+        >
+          😊 {isHi ? "विचार साझा करें..." : "Share your thoughts..."}
+        </button>
+      </div>
 
-      <div className="flex items-center justify-between gap-1 pt-2 border-t border-[#E8D8C4]/60 dark:border-stone-800/80">
-        {POST_ACTIONS.map(({ id, icon: Icon, labelEn, labelHi }) => (
+      {/* Bottom Action Bar */}
+      <div className="flex items-center justify-between border-t border-[#E8D8C4]/50 dark:border-stone-800 pt-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
-            key={id}
             type="button"
-            onClick={() => onOpenCompose(id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-stone-700 dark:text-stone-300 hover:text-[#651317] dark:hover:text-amber-300 hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-all text-xs font-extrabold border border-transparent hover:border-[#E8D8C4]"
+            onClick={() => onOpenCompose("thought")}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
           >
-            <Icon className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
-            <span className="truncate">{isHi ? labelHi : labelEn}</span>
+            <ImageIcon className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
+            <span>{isHi ? "चित्र" : "Media"}</span>
           </button>
-        ))}
+          <button
+            type="button"
+            onClick={() => onOpenCompose("thought")}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
+          >
+            <Smile className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
+            <span>{isHi ? "इमोजी" : "Emoji"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onOpenCompose("thought")}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
+          >
+            <Mic className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
+            <span>{isHi ? "आवाज" : "Voice"}</span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onOpenCompose("thought")}
+          className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+        >
+          {isHi ? "पोस्ट करें" : "Post"}
+        </button>
       </div>
     </div>
   );

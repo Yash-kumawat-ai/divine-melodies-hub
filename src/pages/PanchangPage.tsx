@@ -617,6 +617,7 @@ export default function PanchangPage() {
     { label: lang === 'hi' ? 'पक्ष' : 'Paksha', value: pakshaText, icon: Moon },
     { label: lang === 'hi' ? 'अयन' : 'Ayan', value: localized(panchangMetaPlaceholders.ayan), icon: Compass },
     { label: lang === 'hi' ? 'मास' : 'Maas', value: localized(panchangMetaPlaceholders.maas), icon: CalendarDays },
+    { label: lang === 'hi' ? 'संवत' : 'Samvat', value: localized(panchangMetaPlaceholders.vikramSamvat), icon: Sparkles },
   ];
 
   const muhuratTiles = panchangMuhuratTiles.map((tile) => {
@@ -716,29 +717,29 @@ export default function PanchangPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-x-2 gap-y-0 sm:gap-4">
-        <div className="flex flex-col">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <div className="flex flex-col gap-2 sm:gap-2.5">
           {leftDetails.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="group flex items-center gap-3 py-3 border-b border-brand-gold-border/40 last:border-0 sm:rounded-xl sm:border sm:border-brand-gold-border/50 sm:bg-surface-raised/90 sm:p-3.5 sm:mb-2 shadow-2xs transition-all hover:border-brand-primary/30">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
+            <div key={label} className="group flex items-center gap-2 sm:gap-3 rounded-2xl border border-brand-gold-border/50 bg-surface-raised/90 p-2.5 sm:p-3.5 shadow-2xs transition-all hover:border-brand-primary/30">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
-                <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+                <span className="text-xs sm:text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
           ))}
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2 sm:gap-2.5">
           {rightDetails.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="group flex items-center gap-3 py-3 border-b border-brand-gold-border/40 last:border-0 sm:rounded-xl sm:border sm:border-brand-gold-border/50 sm:bg-surface-raised/90 sm:p-3.5 sm:mb-2 shadow-2xs transition-all hover:border-brand-primary/30">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
+            <div key={label} className="group flex items-center gap-2 sm:gap-3 rounded-2xl border border-brand-gold-border/50 bg-surface-raised/90 p-2.5 sm:p-3.5 shadow-2xs transition-all hover:border-brand-primary/30">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-primary/10 dark:bg-brand-gold/15 text-brand-primary dark:text-brand-gold border border-brand-gold-border/30">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="flex flex-1 flex-col min-w-0 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground sm:text-xs">{label}</span>
-                <span className="text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
+                <span className="text-xs sm:text-sm font-bold text-foreground tracking-wide truncate sm:ml-2">{value}</span>
               </div>
             </div>
           ))}
@@ -753,7 +754,7 @@ export default function PanchangPage() {
         {muhuratTiles.map((tile) => (
           <div key={tile.id} className="temple-panel-soft group relative flex min-w-0 items-center justify-between overflow-hidden p-3.5 sm:p-5 border-brand-gold-border/60 bg-surface-raised/90 shadow-1 rounded-2xl transition-all hover:border-brand-primary/30">
             <div className="relative z-10 flex-1 min-w-0">
-              <p className="text-sm sm:text-base font-bold uppercase tracking-[0.1em] text-brand-primary dark:text-brand-gold">
+              <p className="text-sm sm:text-base font-bold tracking-wide text-brand-primary dark:text-brand-gold">
                 {localized(tile.title)}
               </p>
               <p className="mt-1.5 text-xs sm:text-sm font-bold text-foreground whitespace-nowrap overflow-hidden text-ellipsis">
@@ -844,7 +845,7 @@ export default function PanchangPage() {
             <div className="flex h-7 w-7 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-brand-primary/10 border border-brand-gold-border/40 text-brand-primary dark:text-brand-gold">
               <CheckCircle2 className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
-            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-brand-primary dark:text-brand-gold truncate">{text.shubhKarya}</p>
+            <p className="text-[10px] sm:text-xl font-bold tracking-wide text-brand-primary dark:text-brand-gold truncate">{text.shubhKarya}</p>
           </div>
           <div className="space-y-3 sm:space-y-5">
             {(dynamicKarya?.shubhKarya.slice(0, 4) || panchangKaryaLists.shubh.slice(0, 4).map(i => ({ name: localized(i), reason: 'स्थिर', source: 'tithi', priority: 3 }))).map((item, idx) => (
@@ -872,7 +873,7 @@ export default function PanchangPage() {
         {/* Ashubh Karya */}
         <div className="flex-1 min-w-0 text-right sm:text-left">
           <div className="flex items-center justify-end sm:justify-start gap-2 mb-3 sm:mb-5">
-            <p className="text-[10px] sm:text-xl font-bold uppercase tracking-[0.15em] text-rose-700 dark:text-rose-300 truncate order-1 sm:order-2">{text.ashubhKarya}</p>
+            <p className="text-[10px] sm:text-xl font-bold tracking-wide text-rose-700 dark:text-rose-300 truncate order-1 sm:order-2">{text.ashubhKarya}</p>
             <div className="flex h-7 w-7 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 order-2 sm:order-1">
               <XCircle className="h-4 w-4 sm:h-6 sm:w-6" />
             </div>
@@ -897,7 +898,7 @@ export default function PanchangPage() {
       <div className="mt-8 flex justify-center">
         <Link
           to="/panchang/details"
-          className="btn-primary btn-lg rounded-full px-8 text-sm font-bold uppercase tracking-[0.15em]"
+          className="btn-primary btn-lg rounded-full px-8 text-sm font-bold tracking-wide"
         >
           <span>{text.seeMore}</span>
           <ArrowRight className="h-4 w-4" />

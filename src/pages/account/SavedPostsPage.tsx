@@ -162,37 +162,74 @@ export default function SavedPostsPage() {
     }
   };
 
-  const handleToggleRsvp = async (postId: string, currentRsvp: 'interested' | 'going' | null, clickedRsvp: 'interested' | 'going') => {
+  const handleToggleRsvp = (postId: string, currentRsvp: 'interested' | 'going' | null, clickedRsvp: 'interested' | 'going') => {
     if (!user) {
       toast.error(isHi ? "RSVP करने के लिए कृपया लॉग इन करें" : "Please log in to RSVP");
       return;
     }
-    try {
-      if (currentRsvp === clickedRsvp) {
-        await communityApi.deleteEventRsvp(postId, user.id);
-        toast.success(isHi ? "RSVP हटा दिया गया" : "RSVP removed");
-      } else {
-        await communityApi.createEventRsvp(postId, user.id, clickedRsvp);
-        toast.success(isHi ? "RSVP अपडेट किया गया" : "RSVP updated");
-      }
-      loadPosts();
-    } catch {
-      toast.error(isHi ? "RSVP अपडेट करने में असमर्थ" : "Failed to update RSVP");
+    const newRsvp = currentRsvp === clickedRsvp ? null : clickedRsvp;
+
+    // Instant optimistic update
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const currentCounts = {
+        interested: p.rsvps_count?.interested || 0,
+        going: p.rsvps_count?.going || 0,
+      };
+      if (currentRsvp === 'interested') currentCounts.interested = Math.max(0, currentCounts.interested - 1);
+      if (currentRsvp === 'going') currentCounts.going = Math.max(0, currentCounts.going - 1);
+      if (newRsvp === 'interested') currentCounts.interested += 1;
+      if (newRsvp === 'going') currentCounts.going += 1;
+
+      return {
+        ...p,
+        rsvp_status: newRsvp,
+        rsvps_count: currentCounts,
+      };
+    }));
+
+    if (newRsvp) {
+      toast.success(isHi ? (newRsvp === 'interested' ? "रुचि दर्ज की गई" : "शामिल होना दर्ज किया गया") : `RSVP: ${newRsvp === 'interested' ? 'Interested' : 'Going'}`);
+    } else {
+      toast.success(isHi ? "RSVP हटा दिया गया" : "RSVP removed");
     }
+
+    (async () => {
+      try {
+        if (currentRsvp === clickedRsvp) {
+          await communityApi.deleteEventRsvp(postId, user.id);
+        } else {
+          await communityApi.createEventRsvp(postId, user.id, clickedRsvp);
+        }
+      } catch (err) {
+        console.error("RSVP error:", err);
+      }
+    })();
   };
 
-  const handleVoteOption = async (postId: string, optionIndex: number) => {
+  const handleVoteOption = (postId: string, optionIndex: number) => {
     if (!user) {
       toast.error(isHi ? "मतदान करने के लिए कृपया लॉग इन करें" : "Please log in to vote");
       return;
     }
-    try {
-      await communityApi.castPollVote(postId, optionIndex, user.id);
-      toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
-      loadPosts();
-    } catch {
-      toast.error(isHi ? "मतदान दर्ज करने में असमर्थ" : "Failed to register vote");
-    }
+
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const percentages = (p.question_options || []).map((_, idx) =>
+        idx === optionIndex ? 100 : 0
+      );
+      return {
+        ...p,
+        user_voted_option: optionIndex,
+        vote_percentages: percentages,
+      };
+    }));
+
+    toast.success(isHi ? "आपका मत दर्ज किया गया" : "Vote recorded");
+
+    communityApi.castPollVote(postId, optionIndex, user.id).catch(err => {
+      console.error("Vote error:", err);
+    });
   };
 
   const handleDeleteComment = async (postId: string, commentId: string) => {
@@ -363,11 +400,14 @@ export default function SavedPostsPage() {
                       isPostSaved={true}
                       onToggleSavePost={handleToggleSavePost}
                       onDeletePost={async (id) => {
-                        if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+                        try {
                           await communityApi.softRemovePost(id);
                           loadPosts();
+                        } catch (err) {
+                          console.error("Delete post error:", err);
                         }
                       }}
+                      onPostUpdated={loadPosts}
                     />
                   ))}
                 </div>

@@ -12,7 +12,10 @@ export const config = {
 export default async function handler(request: Request): Promise<Response> {
   const auth = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret && auth !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return new Response(JSON.stringify({ error: 'Server misconfigured: CRON_SECRET not set' }), { status: 500 });
+  }
+  if (auth !== `Bearer ${cronSecret}`) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
