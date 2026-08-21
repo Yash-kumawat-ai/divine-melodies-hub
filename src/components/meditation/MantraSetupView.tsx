@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -89,6 +90,14 @@ export default function MantraSetupView({
 
   const { user } = useAuth();
 
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = origOverflow;
+    };
+  }, []);
+
   React.useEffect(() => {
     if (initialGroupId) setSelectedGroupId(initialGroupId);
   }, [initialGroupId]);
@@ -157,17 +166,17 @@ export default function MantraSetupView({
     );
 
   const sheetPanel =
-    "fixed bottom-0 left-0 right-0 max-w-lg mx-auto border-t rounded-t-[28px] p-6 pb-12 max-h-[85vh] overflow-y-auto z-[125] bg-[#FFFDF8] border-[#E8D8C4] text-[#3A2418] shadow-2xl dark:bg-[#140b07] dark:border-stone-700 dark:text-amber-50";
+    "fixed bottom-0 left-0 right-0 max-w-lg mx-auto border-t rounded-t-[28px] p-6 pb-12 max-h-[85vh] overflow-y-auto z-[350] bg-[#FFFDF8] border-[#E8D8C4] text-[#3A2418] shadow-2xl dark:bg-[#140b07] dark:border-stone-700 dark:text-amber-50";
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onBack}
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm -z-10"
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm -z-10"
       />
 
       {/* Pop-up Modal Container */}
@@ -589,6 +598,7 @@ export default function MantraSetupView({
           </>
         )}
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body
   );
 }
