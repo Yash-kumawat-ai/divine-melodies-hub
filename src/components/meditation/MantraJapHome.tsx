@@ -450,7 +450,18 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
         {showSetup ? (
           <MantraSetupView
             mantra={selectedMantraForDetail}
+            initialGroupId={searchParams.get("groupId")}
             onBack={() => {
+              const returnUrl = searchParams.get("returnUrl");
+              if (returnUrl) {
+                navigate(returnUrl);
+                return;
+              }
+              const gId = searchParams.get("groupId");
+              if (gId) {
+                navigate(-1);
+                return;
+              }
               setShowSetup(false);
               setSearchParams({
                 practice: "mantra_jap_home",
@@ -458,13 +469,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               });
             }}
             onStartJapa={(opts) => {
+              const gId = opts.groupId || searchParams.get("groupId");
+              const retUrl = searchParams.get("returnUrl");
               setSearchParams({
                 practice: "mantra_japa_counter",
                 mantraId: selectedMantraForDetail.id,
                 targetCount: String(opts.targetCount),
                 practiceMode: opts.practiceMode,
                 sankalp: opts.sankalpText,
-                groupId: opts.groupId ? String(opts.groupId) : "",
+                ...(gId ? { groupId: String(gId) } : {}),
+                ...(retUrl ? { returnUrl: retUrl } : {}),
               });
             }}
           />
@@ -474,6 +488,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             image={resolveMantraImage(selectedMantraForDetail)}
             stats={mantraTotalsMap[selectedMantraForDetail.id]}
             onBack={() => {
+              const returnUrl = searchParams.get("returnUrl");
+              if (returnUrl) {
+                navigate(returnUrl);
+                return;
+              }
+              const gId = searchParams.get("groupId");
+              if (gId) {
+                navigate(-1);
+                return;
+              }
               setSelectedMantraForDetail(null);
               setShowSetup(false);
               setSearchParams({
@@ -481,10 +505,14 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               });
             }}
             onStartJapa={() => {
+              const gId = searchParams.get("groupId");
+              const retUrl = searchParams.get("returnUrl");
               setSearchParams({
                 practice: "mantra_jap_home",
                 mantraId: selectedMantraForDetail.id,
                 showSetup: "true",
+                ...(gId ? { groupId: gId } : {}),
+                ...(retUrl ? { returnUrl: retUrl } : {}),
               });
             }}
           />

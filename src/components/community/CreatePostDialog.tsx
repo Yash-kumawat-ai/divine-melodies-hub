@@ -10,8 +10,8 @@
  * - NEW Shloka: Mantra text, Translation/Meaning, Source/Scripture, Deity
  */
 
-import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, Tag, Calendar as CalendarIcon, Clock, Sparkles, ChevronDown } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Eye, EyeOff, Tag, Calendar as CalendarIcon, Clock, MapPin, Wifi, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,15 +21,49 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format, parse, isValid, addDays } from "date-fns";
+import { format, addDays } from "date-fns";
 import { ImageAdjuster } from "@/components/community/ImageAdjuster";
 import { cn } from "@/lib/utils";
+
+/** Parse "HH:mm" (24h) into 12-hour parts */
+function parseEventTimeParts(time24: string): { hour12: number; minute: number; period: "AM" | "PM" } {
+  const [hStr = "17", mStr = "00"] = (time24 || "17:00").split(":");
+  let h = Math.min(23, Math.max(0, parseInt(hStr, 10) || 0));
+  const minute = Math.min(59, Math.max(0, parseInt(mStr, 10) || 0));
+  const period: "AM" | "PM" = h >= 12 ? "PM" : "AM";
+  let hour12 = h % 12;
+  if (hour12 === 0) hour12 = 12;
+  return { hour12, minute, period };
+}
+
+/** Build "HH:mm" (24h) from 12-hour parts */
+function toEventTime24(hour12: number, minute: number, period: "AM" | "PM"): string {
+  let h = hour12 % 12;
+  if (period === "PM") h += 12;
+  return `${String(h).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function isOtherChip(label: string) {
+  return /Other|अन्य/i.test(label || "");
+}
+
+function resolveChipValue(selected: string, otherName: string) {
+  if (!selected) return "";
+  if (isOtherChip(selected) && otherName.trim()) {
+    return otherName.trim();
+  }
+  return selected;
+}
+
+type CustomField = { id: string; label: string; value: string };
+
+function makeCustomField(): CustomField {
+  return {
+    id: `cf-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    label: "",
+    value: "",
+  };
+}
 
 export interface CreatePostDialogProps {
   open: boolean;
@@ -59,7 +93,7 @@ export interface CreatePostDialogProps {
   handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onCroppedImageReady?: (file: File, previewUrl: string) => void;
   onRemoveImage?: () => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent, overrides?: { content?: string; location?: string }) => void;
 }
 
 const POST_TYPES = [
@@ -78,6 +112,7 @@ const MOOD_TAGS = [
   { emoji: "🙏", en: "Seeking", hi: "जिज्ञासु" },
   { emoji: "😊", en: "Joyful", hi: "आनंदित" },
   { emoji: "🕉️", en: "Peaceful", hi: "शांत" },
+  { emoji: "💫", en: "Other", hi: "अन्य" },
 ];
 
 const TOPIC_TAGS = [
@@ -86,6 +121,7 @@ const TOPIC_TAGS = [
   { emoji: "💭", en: "Reflection", hi: "चिंतन" },
   { emoji: "🙏", en: "Prayer", hi: "प्रार्थना" },
   { emoji: "🪷", en: "Life Lesson", hi: "जीवन सीख" },
+  { emoji: "✨", en: "Other", hi: "अन्य" },
 ];
 
 const DEITY_TAGS = [
@@ -112,12 +148,14 @@ const URGENCY_TAGS = [
   { emoji: "🔔", en: "Asap", hi: "शीघ्र" },
   { emoji: "📅", en: "Later", hi: "फुर्सत में" },
   { emoji: "🎉", en: "For Event", hi: "कार्यक्रम हेतु" },
+  { emoji: "✨", en: "Other", hi: "अन्य" },
 ];
 
 const REWARD_TAGS = [
   { emoji: "📝", en: "Just Need Lyrics", hi: "केवल बोल (Lyrics) चाहिए" },
   { emoji: "🎤", en: "Need Full Audio", hi: "पूरा ऑडियो चाहिए" },
   { emoji: "🏅", en: "Will Credit Singer", hi: "गायक का आभार व्यक्त करेंगे" },
+  { emoji: "✨", en: "Other", hi: "अन्य" },
 ];
 
 const EVENT_TYPE_TAGS = [
@@ -149,33 +187,81 @@ function Field({
   );
 }
 
+function OtherNameInput({
+  show,
+  value,
+  onChange,
+  placeholder,
+  className,
+}: {
+  show: boolean;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  className: string;
+}) {
+  if (!show) return null;
+  return (
+    <Input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(className, "mt-1.5 h-8 text-xs")}
+    />
+  );
+}
+
 // ── Reusable Deity Selector ──
 function DeitySelector({
   selected,
   onSelect,
+  otherName,
+  onOtherNameChange,
   chipCls,
+  inputCls,
   isHi,
 }: {
   selected: string;
   onSelect: (v: string) => void;
+  otherName: string;
+  onOtherNameChange: (v: string) => void;
   chipCls: (active: boolean) => string;
+  inputCls: string;
   isHi: boolean;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {DEITY_TAGS.map((d) => {
-        const label = `${d.emoji} ${isHi ? d.hi : d.en}`;
-        return (
-          <button
-            key={d.en}
-            type="button"
-            onClick={() => onSelect(selected === label ? "" : label)}
-            className={chipCls(selected === label)}
-          >
-            {label}
-          </button>
-        );
-      })}
+    <div className="space-y-0">
+      <div className="flex flex-wrap gap-1.5">
+        {DEITY_TAGS.map((d) => {
+          const label = `${d.emoji} ${isHi ? d.hi : d.en}`;
+          return (
+            <button
+              key={d.en}
+              type="button"
+              onClick={() => {
+                if (selected === label) {
+                  onSelect("");
+                  onOtherNameChange("");
+                } else {
+                  onSelect(label);
+                  if (!isOtherChip(label)) onOtherNameChange("");
+                }
+              }}
+              className={chipCls(selected === label)}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <OtherNameInput
+        show={isOtherChip(selected)}
+        value={otherName}
+        onChange={onOtherNameChange}
+        placeholder={isHi ? "अन्य देवता का नाम लिखें…" : "Write other deity name…"}
+        className={inputCls}
+      />
     </div>
   );
 }
@@ -222,11 +308,18 @@ export function CreatePostDialog({
   const [selectedReward, setSelectedReward] = useState("");
   const [askAnonymously, setAskAnonymously] = useState(false);
   const [selectedEventType, setSelectedEventType] = useState("");
-  const [isOnlineEvent, setIsOnlineEvent] = useState(false);
+  const [isOnlineEvent, setIsOnlineEvent] = useState(false); // Offline by default
   const [entryFee, setEntryFee] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [shlokaTranslation, setShlokaTranslation] = useState("");
-  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
+  const [otherDeityName, setOtherDeityName] = useState("");
+  const [otherTopicName, setOtherTopicName] = useState("");
+  const [otherMoodName, setOtherMoodName] = useState("");
+  const [otherCategoryName, setOtherCategoryName] = useState("");
+  const [otherUrgencyName, setOtherUrgencyName] = useState("");
+  const [otherRewardName, setOtherRewardName] = useState("");
+  const [otherEventTypeName, setOtherEventTypeName] = useState("");
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   // Reset local state when modal closes
   useEffect(() => {
@@ -242,30 +335,42 @@ export function CreatePostDialog({
       setSelectedReward("");
       setAskAnonymously(false);
       setSelectedEventType("");
-      setIsOnlineEvent(false);
+      setIsOnlineEvent(false); // Offline default
       setEntryFee("");
       setContactInfo("");
       setShlokaTranslation("");
-      setDatePopoverOpen(false);
+      setOtherDeityName("");
+      setOtherTopicName("");
+      setOtherMoodName("");
+      setOtherCategoryName("");
+      setOtherUrgencyName("");
+      setOtherRewardName("");
+      setOtherEventTypeName("");
+      setCustomFields([]);
     }
   }, [open]);
 
+  // Clear custom extras when switching post type (keep form focused)
+  useEffect(() => {
+    setCustomFields([]);
+  }, [postType]);
+
+  // Default event time when switching to event type
+  useEffect(() => {
+    if (open && postType === "event" && !eventTime) {
+      setEventTime("17:00");
+    }
+  }, [open, postType, eventTime, setEventTime]);
+
   const fl = (en: string, hi: string) => (isHi ? hi : en);
 
-  const selectedDateObj = eventDate ? (() => {
-    try {
-      const parsed = parse(eventDate, "yyyy-MM-dd", new Date());
-      return isValid(parsed) ? parsed : undefined;
-    } catch {
-      return undefined;
-    }
-  })() : undefined;
+  const timeParts = useMemo(() => parseEventTimeParts(eventTime || "17:00"), [eventTime]);
 
-  const formattedDateDisplay = selectedDateObj
-    ? (isHi
-        ? selectedDateObj.toLocaleDateString("hi-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
-        : format(selectedDateObj, "EEE, MMM d, yyyy"))
-    : (isHi ? "तारीख चुनें" : "Select date");
+  const setTimeFromParts = (hour12: number, minute: number, period: "AM" | "PM") => {
+    setEventTime(toEventTime24(hour12, minute, period));
+  };
+
+  const todayStr = format(new Date(), "yyyy-MM-dd");
 
   const chipCls = (active: boolean) =>
     cn(
@@ -278,9 +383,37 @@ export function CreatePostDialog({
   const inputCls = "h-9 text-sm border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 rounded-xl focus:border-[#651317] focus-visible:ring-0";
   const textareaCls = "w-full min-w-0 text-sm rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 p-3 focus:border-[#651317] focus:outline-none placeholder:text-stone-400 resize-none dark:text-stone-100 leading-relaxed";
 
+  const updateCustomField = (id: string, key: "label" | "value", val: string) => {
+    setCustomFields((prev) => prev.map((f) => (f.id === id ? { ...f, [key]: val } : f)));
+  };
+
+  const removeCustomField = (id: string) => {
+    setCustomFields((prev) => prev.filter((f) => f.id !== id));
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     let finalContent = postContent.trim();
+    let finalLocation = postLocation;
+
+    const deityVal = resolveChipValue(selectedDeity, otherDeityName);
+    const topicVal = resolveChipValue(selectedTopic, otherTopicName);
+    const moodVal = resolveChipValue(selectedMood, otherMoodName);
+    const categoryVal = resolveChipValue(selectedCategory, otherCategoryName);
+    const urgencyVal = resolveChipValue(selectedUrgency, otherUrgencyName);
+    const rewardVal = resolveChipValue(selectedReward, otherRewardName);
+    const eventTypeVal = resolveChipValue(selectedEventType, otherEventTypeName);
+
+    const meta: string[] = [];
+    if (topicVal) meta.push(isHi ? `📌 विषय: ${topicVal}` : `📌 Topic: ${topicVal}`);
+    if (moodVal) meta.push(isHi ? `💭 भाव: ${moodVal}` : `💭 Mood: ${moodVal}`);
+    if (deityVal) meta.push(isHi ? `🙏 देवता: ${deityVal}` : `🙏 Deity: ${deityVal}`);
+    if (categoryVal) meta.push(isHi ? `🏷 श्रेणी: ${categoryVal}` : `🏷 Category: ${categoryVal}`);
+    if (urgencyVal) meta.push(isHi ? `⏰ आवश्यकता: ${urgencyVal}` : `⏰ Urgency: ${urgencyVal}`);
+    if (rewardVal) meta.push(isHi ? `🎁 आवश्यकता प्रकार: ${rewardVal}` : `🎁 Need: ${rewardVal}`);
+    if (scriptureRef.trim()) meta.push(isHi ? `📖 संदर्भ: ${scriptureRef.trim()}` : `📖 Scripture: ${scriptureRef.trim()}`);
+    if (raagTaal.trim()) meta.push(isHi ? `🎵 राग/ताल: ${raagTaal.trim()}` : `🎵 Raag/Taal: ${raagTaal.trim()}`);
+    if (askAnonymously) meta.push(isHi ? "🕵️ गुमनाम प्रश्न" : "🕵️ Asked anonymously");
 
     if (postType === "shloka") {
       if (!finalContent.startsWith("[SHLOKA]")) {
@@ -289,15 +422,35 @@ export function CreatePostDialog({
       if (shlokaTranslation.trim() && !finalContent.includes("📖 भावार्थ") && !finalContent.includes("📖 अर्थ")) {
         finalContent = `${finalContent}\n\n📖 भावार्थ / Meaning:\n${shlokaTranslation.trim()}`;
       }
-      setPostContent(finalContent);
     } else if (postType === "bhajan_share" && singerName.trim()) {
-      if (!postContent.includes("🎤 गायक") && !postContent.includes("Singer:")) {
+      if (!finalContent.includes("🎤 गायक") && !finalContent.includes("Singer:")) {
         finalContent = `${finalContent}\n\n🎤 गायक / Singer: ${singerName.trim()}`;
-        setPostContent(finalContent);
+      }
+    } else if (postType === "event") {
+      const extras: string[] = [];
+      if (eventTypeVal) extras.push(`🏷 ${eventTypeVal}`);
+      extras.push(isOnlineEvent ? (isHi ? "🌐 ऑनलाइन कार्यक्रम" : "🌐 Online Event") : (isHi ? "📍 ऑफ़लाइन कार्यक्रम" : "📍 Offline Event"));
+      if (entryFee.trim()) extras.push(isHi ? `🙏 दक्षिणा: ${entryFee.trim()}` : `🙏 Dakshina: ${entryFee.trim()}`);
+      if (contactInfo.trim()) extras.push(isHi ? `📞 संपर्क: ${contactInfo.trim()}` : `📞 Contact: ${contactInfo.trim()}`);
+      if (extras.length) {
+        finalContent = `${finalContent}\n\n${extras.join("\n")}`;
+      }
+      if (isOnlineEvent && finalLocation.trim() && !/online|zoom|meet|youtube|virtual/i.test(finalLocation)) {
+        finalLocation = `Online · ${finalLocation.trim()}`;
       }
     }
 
-    onSubmit(e);
+    if (meta.length) {
+      finalContent = `${finalContent}\n\n${meta.join("\n")}`;
+    }
+
+    const filledCustom = customFields.filter((f) => f.label.trim() && f.value.trim());
+    if (filledCustom.length) {
+      const lines = filledCustom.map((f) => `• ${f.label.trim()}: ${f.value.trim()}`);
+      finalContent = `${finalContent}\n\n${isHi ? "➕ अतिरिक्त जानकारी" : "➕ Extra details"}\n${lines.join("\n")}`;
+    }
+
+    onSubmit(e, { content: finalContent, location: finalLocation });
   };
 
   return (
@@ -369,45 +522,87 @@ export function CreatePostDialog({
 
                 {/* Topic Tags */}
                 <Field label={fl("Topic (optional)", "विषय चुनें (वैकल्पिक)")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {TOPIC_TAGS.map((tag) => {
-                      const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
-                      return (
-                        <button
-                          key={tag.en}
-                          type="button"
-                          onClick={() => setSelectedTopic(selectedTopic === label ? "" : label)}
-                          className={chipCls(selectedTopic === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {TOPIC_TAGS.map((tag) => {
+                        const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
+                        return (
+                          <button
+                            key={tag.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedTopic === label) {
+                                setSelectedTopic("");
+                                setOtherTopicName("");
+                              } else {
+                                setSelectedTopic(label);
+                                if (!isOtherChip(label)) setOtherTopicName("");
+                              }
+                            }}
+                            className={chipCls(selectedTopic === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedTopic)}
+                      value={otherTopicName}
+                      onChange={setOtherTopicName}
+                      placeholder={fl("Write other topic…", "अन्य विषय लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
                 {/* Mood Tags */}
                 <Field label={fl("Mood / Feeling (optional)", "भाव चुनें (वैकल्पिक)")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {MOOD_TAGS.map((tag) => {
-                      const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
-                      return (
-                        <button
-                          key={tag.en}
-                          type="button"
-                          onClick={() => setSelectedMood(selectedMood === label ? "" : label)}
-                          className={chipCls(selectedMood === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {MOOD_TAGS.map((tag) => {
+                        const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
+                        return (
+                          <button
+                            key={tag.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedMood === label) {
+                                setSelectedMood("");
+                                setOtherMoodName("");
+                              } else {
+                                setSelectedMood(label);
+                                if (!isOtherChip(label)) setOtherMoodName("");
+                              }
+                            }}
+                            className={chipCls(selectedMood === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedMood)}
+                      value={otherMoodName}
+                      onChange={setOtherMoodName}
+                      placeholder={fl("Write other mood…", "अन्य भाव लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
                 {/* Deity Tag */}
                 <Field label={fl("Related Deity (optional)", "संबंधित देवता (वैकल्पिक)")}>
-                  <DeitySelector selected={selectedDeity} onSelect={setSelectedDeity} chipCls={chipCls} isHi={isHi} />
+                  <DeitySelector
+                    selected={selectedDeity}
+                    onSelect={setSelectedDeity}
+                    otherName={otherDeityName}
+                    onOtherNameChange={setOtherDeityName}
+                    chipCls={chipCls}
+                    inputCls={inputCls}
+                    isHi={isHi}
+                  />
                 </Field>
 
                 {/* Scripture Reference */}
@@ -470,7 +665,15 @@ export function CreatePostDialog({
 
                 {/* Deity Tag */}
                 <Field label={fl("Related Deity (optional)", "संबंधित देवता (वैकल्पिक)")}>
-                  <DeitySelector selected={selectedDeity} onSelect={setSelectedDeity} chipCls={chipCls} isHi={isHi} />
+                  <DeitySelector
+                    selected={selectedDeity}
+                    onSelect={setSelectedDeity}
+                    otherName={otherDeityName}
+                    onOtherNameChange={setOtherDeityName}
+                    chipCls={chipCls}
+                    inputCls={inputCls}
+                    isHi={isHi}
+                  />
                 </Field>
 
                 {/* Raag / Taal */}
@@ -538,43 +741,85 @@ export function CreatePostDialog({
 
                 {/* Deity Tag */}
                 <Field label={fl("Related Deity (optional)", "संबंधित देवता (वैकल्पिक)")}>
-                  <DeitySelector selected={selectedDeity} onSelect={setSelectedDeity} chipCls={chipCls} isHi={isHi} />
+                  <DeitySelector
+                    selected={selectedDeity}
+                    onSelect={setSelectedDeity}
+                    otherName={otherDeityName}
+                    onOtherNameChange={setOtherDeityName}
+                    chipCls={chipCls}
+                    inputCls={inputCls}
+                    isHi={isHi}
+                  />
                 </Field>
 
                 <Field label={fl("How soon do you need it?", "कितनी जल्दी चाहिए?")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {URGENCY_TAGS.map((tag) => {
-                      const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
-                      return (
-                        <button
-                          key={tag.en}
-                          type="button"
-                          onClick={() => setSelectedUrgency(selectedUrgency === label ? "" : label)}
-                          className={chipCls(selectedUrgency === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {URGENCY_TAGS.map((tag) => {
+                        const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
+                        return (
+                          <button
+                            key={tag.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedUrgency === label) {
+                                setSelectedUrgency("");
+                                setOtherUrgencyName("");
+                              } else {
+                                setSelectedUrgency(label);
+                                if (!isOtherChip(label)) setOtherUrgencyName("");
+                              }
+                            }}
+                            className={chipCls(selectedUrgency === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedUrgency)}
+                      value={otherUrgencyName}
+                      onChange={setOtherUrgencyName}
+                      placeholder={fl("Write custom timing…", "अपना समय लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
                 {/* Need Badge */}
                 <Field label={fl("What do you need?", "आपको क्या चाहिए?")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {REWARD_TAGS.map((tag) => {
-                      const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
-                      return (
-                        <button
-                          key={tag.en}
-                          type="button"
-                          onClick={() => setSelectedReward(selectedReward === label ? "" : label)}
-                          className={chipCls(selectedReward === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {REWARD_TAGS.map((tag) => {
+                        const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
+                        return (
+                          <button
+                            key={tag.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedReward === label) {
+                                setSelectedReward("");
+                                setOtherRewardName("");
+                              } else {
+                                setSelectedReward(label);
+                                if (!isOtherChip(label)) setOtherRewardName("");
+                              }
+                            }}
+                            className={chipCls(selectedReward === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedReward)}
+                      value={otherRewardName}
+                      onChange={setOtherRewardName}
+                      placeholder={fl("Write what you need…", "आपको क्या चाहिए लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
@@ -621,26 +866,51 @@ export function CreatePostDialog({
                 </Field>
 
                 <Field label={fl("Category", "श्रेणी")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {Q_CATEGORIES.map((cat) => {
-                      const label = `${cat.emoji} ${isHi ? cat.hi : cat.en}`;
-                      return (
-                        <button
-                          key={cat.en}
-                          type="button"
-                          onClick={() => setSelectedCategory(selectedCategory === label ? "" : label)}
-                          className={chipCls(selectedCategory === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {Q_CATEGORIES.map((cat) => {
+                        const label = `${cat.emoji} ${isHi ? cat.hi : cat.en}`;
+                        return (
+                          <button
+                            key={cat.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedCategory === label) {
+                                setSelectedCategory("");
+                                setOtherCategoryName("");
+                              } else {
+                                setSelectedCategory(label);
+                                if (!isOtherChip(label)) setOtherCategoryName("");
+                              }
+                            }}
+                            className={chipCls(selectedCategory === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedCategory)}
+                      value={otherCategoryName}
+                      onChange={setOtherCategoryName}
+                      placeholder={fl("Write other category…", "अन्य श्रेणी लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
                 {/* Deity Context */}
                 <Field label={fl("Related Deity (optional)", "संबंधित देवता (वैकल्पिक)")}>
-                  <DeitySelector selected={selectedDeity} onSelect={setSelectedDeity} chipCls={chipCls} isHi={isHi} />
+                  <DeitySelector
+                    selected={selectedDeity}
+                    onSelect={setSelectedDeity}
+                    otherName={otherDeityName}
+                    onOtherNameChange={setOtherDeityName}
+                    chipCls={chipCls}
+                    inputCls={inputCls}
+                    isHi={isHi}
+                  />
                 </Field>
 
                 {/* Scripture Reference */}
@@ -750,20 +1020,37 @@ export function CreatePostDialog({
 
                 {/* Event Type chips */}
                 <Field label={fl("Event Type", "कार्यक्रम का प्रकार")}>
-                  <div className="flex flex-wrap gap-1.5">
-                    {EVENT_TYPE_TAGS.map((tag) => {
-                      const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
-                      return (
-                        <button
-                          key={tag.en}
-                          type="button"
-                          onClick={() => setSelectedEventType(selectedEventType === label ? "" : label)}
-                          className={chipCls(selectedEventType === label)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                  <div className="space-y-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {EVENT_TYPE_TAGS.map((tag) => {
+                        const label = `${tag.emoji} ${isHi ? tag.hi : tag.en}`;
+                        return (
+                          <button
+                            key={tag.en}
+                            type="button"
+                            onClick={() => {
+                              if (selectedEventType === label) {
+                                setSelectedEventType("");
+                                setOtherEventTypeName("");
+                              } else {
+                                setSelectedEventType(label);
+                                if (!isOtherChip(label)) setOtherEventTypeName("");
+                              }
+                            }}
+                            className={chipCls(selectedEventType === label)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <OtherNameInput
+                      show={isOtherChip(selectedEventType)}
+                      value={otherEventTypeName}
+                      onChange={setOtherEventTypeName}
+                      placeholder={fl("Write other event type…", "अन्य कार्यक्रम प्रकार लिखें…")}
+                      className={inputCls}
+                    />
                   </div>
                 </Field>
 
@@ -781,56 +1068,35 @@ export function CreatePostDialog({
                   />
                 </Field>
 
-                {/* ── Enhanced Date and Time Section ── */}
+                {/* ── Date, Time & Mode ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Interactive Date Picker with Popover Calendar */}
+                  {/* Native date picker — works reliably inside Dialog */}
                   <Field label={fl("Event Date", "कार्यक्रम की तारीख")} required>
                     <div className="space-y-2">
-                      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            className={cn(
-                              "w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-left text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-stone-900 cursor-pointer",
-                              eventDate
-                                ? "border-[#651317]/50 text-[#651317] dark:text-amber-200 dark:border-amber-700/50 shadow-2xs"
-                                : "border-[#E8D8C4] dark:border-stone-700 text-stone-500 hover:border-[#651317]/40"
-                            )}
-                          >
-                            <span className="flex items-center gap-2 truncate">
-                              <CalendarIcon className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
-                              <span className="truncate">{formattedDateDisplay}</span>
-                            </span>
-                            <ChevronDown className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 rounded-2xl shadow-xl z-50" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={selectedDateObj}
-                            onSelect={(date) => {
-                              if (date) {
-                                setEventDate(format(date, "yyyy-MM-dd"));
-                                setDatePopoverOpen(false);
-                              }
-                            }}
-                            initialFocus
-                            className="p-3"
-                          />
-                        </PopoverContent>
-                      </Popover>
-
-                      {/* Quick date chips */}
+                      <div className="relative">
+                        <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#651317] dark:text-amber-400 pointer-events-none z-[1]" />
+                        <Input
+                          type="date"
+                          value={eventDate}
+                          min={todayStr}
+                          onChange={(e) => setEventDate(e.target.value)}
+                          required
+                          className={cn(inputCls, "pl-9 h-11 font-semibold cursor-pointer")}
+                        />
+                      </div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {[
                           { label: fl("Today", "आज"), dateStr: format(new Date(), "yyyy-MM-dd") },
                           { label: fl("Tomorrow", "कल"), dateStr: format(addDays(new Date(), 1), "yyyy-MM-dd") },
                           { label: fl("In 2 Days", "2 दिन बाद"), dateStr: format(addDays(new Date(), 2), "yyyy-MM-dd") },
-                          { label: fl("This Sunday", "रविवार"), dateStr: (() => {
-                            const now = new Date();
-                            const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
-                            return format(addDays(now, daysUntilSunday), "yyyy-MM-dd");
-                          })() }
+                          {
+                            label: fl("This Sunday", "रविवार"),
+                            dateStr: (() => {
+                              const now = new Date();
+                              const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+                              return format(addDays(now, daysUntilSunday), "yyyy-MM-dd");
+                            })(),
+                          },
                         ].map((preset) => (
                           <button
                             key={preset.label}
@@ -850,30 +1116,70 @@ export function CreatePostDialog({
                     </div>
                   </Field>
 
-                  {/* Enhanced Time Selector with Presets */}
+                  {/* Manual time: Hour · Minute · AM/PM */}
                   <Field label={fl("Event Time", "कार्यक्रम का समय")} required>
                     <div className="space-y-2">
-                      <div className="relative flex items-center">
-                        <div className="absolute left-3 pointer-events-none text-[#651317] dark:text-amber-400">
-                          <Clock className="w-4 h-4" />
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1 min-w-0">
+                          <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#651317] dark:text-amber-400 pointer-events-none" />
+                          <select
+                            value={timeParts.hour12}
+                            onChange={(e) =>
+                              setTimeFromParts(parseInt(e.target.value, 10), timeParts.minute, timeParts.period)
+                            }
+                            required
+                            aria-label={fl("Hour", "घंटा")}
+                            className={cn(inputCls, "w-full h-11 pl-8 pr-2 font-bold appearance-none cursor-pointer")}
+                          >
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                              <option key={h} value={h}>
+                                {String(h).padStart(2, "0")}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                        <Input
-                          type="time"
-                          value={eventTime}
-                          onChange={(e) => setEventTime(e.target.value)}
+                        <span className="text-sm font-black text-[#651317] dark:text-amber-300">:</span>
+                        <select
+                          value={timeParts.minute}
+                          onChange={(e) =>
+                            setTimeFromParts(timeParts.hour12, parseInt(e.target.value, 10), timeParts.period)
+                          }
                           required
-                          className={cn(inputCls, "pl-9 font-bold text-xs sm:text-sm")}
-                        />
+                          aria-label={fl("Minute", "मिनट")}
+                          className={cn(inputCls, "flex-1 min-w-0 h-11 px-2 font-bold appearance-none cursor-pointer")}
+                        >
+                          {Array.from({ length: 60 }, (_, i) => i).map((m) => (
+                            <option key={m} value={m}>
+                              {String(m).padStart(2, "0")}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="flex shrink-0 rounded-xl border border-[#E8D8C4] dark:border-stone-700 overflow-hidden h-11">
+                          {(["AM", "PM"] as const).map((p) => (
+                            <button
+                              key={p}
+                              type="button"
+                              onClick={() => setTimeFromParts(timeParts.hour12, timeParts.minute, p)}
+                              className={cn(
+                                "px-2.5 text-[11px] font-extrabold transition-all",
+                                timeParts.period === p
+                                  ? "bg-[#651317] text-white"
+                                  : "bg-white dark:bg-stone-900 text-[#651317] dark:text-amber-300 hover:bg-[#FAF0E4]"
+                              )}
+                            >
+                              {p}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
-                      {/* Quick Devotional Time Slot Chips */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {[
-                          { label: fl("🌅 06:00 AM", "🌅 06:00 AM (आरती)"), time: "06:00" },
-                          { label: fl("☀️ 09:00 AM", "☀️ 09:00 AM (सत्संग)"), time: "09:00" },
-                          { label: fl("🪔 05:00 PM", "🪔 05:00 PM (संध्या)"), time: "17:00" },
-                          { label: fl("📿 07:00 PM", "📿 07:00 PM (कीर्तन)"), time: "19:00" },
-                          { label: fl("🌙 08:30 PM", "🌙 08:30 PM (शयन)"), time: "20:30" },
+                          { label: fl("06:00 AM", "06:00 AM"), time: "06:00" },
+                          { label: fl("09:00 AM", "09:00 AM"), time: "09:00" },
+                          { label: fl("05:00 PM", "05:00 PM"), time: "17:00" },
+                          { label: fl("07:00 PM", "07:00 PM"), time: "19:00" },
+                          { label: fl("08:30 PM", "08:30 PM"), time: "20:30" },
                         ].map((slot) => (
                           <button
                             key={slot.time}
@@ -894,26 +1200,39 @@ export function CreatePostDialog({
                   </Field>
                 </div>
 
-                {/* Online/Offline toggle */}
-                <div className="flex items-center justify-between bg-[#FAF6EE] dark:bg-stone-900/60 rounded-xl border border-[#E8D8C4]/80 dark:border-stone-800 px-3 py-2.5">
-                  <span className="text-xs font-bold text-[#651317] dark:text-amber-200">
-                    {fl("Online Event (Zoom / Meet / YouTube)", "ऑनलाइन कार्यक्रम (ज़ूम / मीट / यूट्यूब)")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsOnlineEvent(!isOnlineEvent)}
-                    className={cn(
-                      "w-10 h-5.5 rounded-full transition-all relative cursor-pointer",
-                      isOnlineEvent ? "bg-[#651317]" : "bg-stone-300 dark:bg-stone-600"
-                    )}
-                  >
-                    <span
+                {/* Offline / Online — Offline selected by default */}
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold text-[#651317] dark:text-amber-200">
+                    {fl("Program Mode", "कार्यक्रम का प्रकार")} *
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsOnlineEvent(false)}
                       className={cn(
-                        "absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-xs transition-all",
-                        isOnlineEvent ? "left-[calc(100%-20px)]" : "left-0.5"
+                        "flex items-center justify-center gap-2 h-11 rounded-xl border text-xs font-bold transition-all",
+                        !isOnlineEvent
+                          ? "bg-[#651317] text-white border-[#651317] shadow-xs"
+                          : "bg-white dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
                       )}
-                    />
-                  </button>
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      {fl("Offline", "ऑफ़लाइन")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsOnlineEvent(true)}
+                      className={cn(
+                        "flex items-center justify-center gap-2 h-11 rounded-xl border text-xs font-bold transition-all",
+                        isOnlineEvent
+                          ? "bg-[#651317] text-white border-[#651317] shadow-xs"
+                          : "bg-white dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
+                      )}
+                    >
+                      <Wifi className="w-3.5 h-3.5" />
+                      {fl("Online", "ऑनलाइन")}
+                    </button>
+                  </div>
                 </div>
 
                 <Field label={fl(isOnlineEvent ? "Meeting Link" : "Location / Venue", isOnlineEvent ? "मीटिंग लिंक" : "स्थान / मंदिर")} required>
@@ -1011,7 +1330,15 @@ export function CreatePostDialog({
 
                 {/* Deity Tag */}
                 <Field label={fl("Related Deity (optional)", "संबंधित देवता (वैकल्पिक)")}>
-                  <DeitySelector selected={selectedDeity} onSelect={setSelectedDeity} chipCls={chipCls} isHi={isHi} />
+                  <DeitySelector
+                    selected={selectedDeity}
+                    onSelect={setSelectedDeity}
+                    otherName={otherDeityName}
+                    onOtherNameChange={setOtherDeityName}
+                    chipCls={chipCls}
+                    inputCls={inputCls}
+                    isHi={isHi}
+                  />
                 </Field>
 
                 <ImageAdjuster
@@ -1024,6 +1351,65 @@ export function CreatePostDialog({
                 />
               </>
             )}
+
+            {/* ── Add more custom details (all post types) ── */}
+            <div className="rounded-2xl border border-dashed border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE]/50 dark:bg-stone-900/40 p-3 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-left min-w-0">
+                  <p className="text-xs font-bold text-[#651317] dark:text-amber-200">
+                    {fl("Add more details", "और जानकारी जोड़ें")}
+                  </p>
+                  <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 leading-snug">
+                    {fl(
+                      "Add any extra field helpful for devotees (e.g. Temple name, WhatsApp group, dress code).",
+                      "भक्तों के लिए कोई अतिरिक्त जानकारी जोड़ें (जैसे मंदिर का नाम, व्हाट्सऐप ग्रुप)।"
+                    )}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCustomFields((prev) => [...prev, makeCustomField()])}
+                  className="shrink-0 inline-flex items-center gap-1 h-8 px-2.5 rounded-full bg-[#651317] text-white text-[11px] font-bold active:scale-95 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {fl("Add more", "जोड़ें")}
+                </button>
+              </div>
+
+              {customFields.length > 0 && (
+                <div className="space-y-2">
+                  {customFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-[1fr_1fr_auto] gap-1.5 items-start bg-white dark:bg-stone-900/70 border border-[#E8D8C4]/80 dark:border-stone-700 rounded-xl p-2"
+                    >
+                      <Input
+                        type="text"
+                        value={field.label}
+                        onChange={(e) => updateCustomField(field.id, "label", e.target.value)}
+                        placeholder={fl(`Info type ${index + 1}`, `जानकारी प्रकार ${index + 1}`)}
+                        className={cn(inputCls, "h-8 text-xs")}
+                      />
+                      <Input
+                        type="text"
+                        value={field.value}
+                        onChange={(e) => updateCustomField(field.id, "value", e.target.value)}
+                        placeholder={fl("Details…", "विवरण…")}
+                        className={cn(inputCls, "h-8 text-xs")}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCustomField(field.id)}
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        aria-label={fl("Remove", "हटाएँ")}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* ── Actions ── */}
             <div className="flex gap-2.5 pt-2">

@@ -58,12 +58,14 @@ type MantraSetupViewProps = {
     practiceMode: "mala" | "tap" | "voice" | "guided";
     groupId?: string | null;
   }) => void;
+  initialGroupId?: string | null;
 };
 
 export default function MantraSetupView({
   mantra,
   onBack,
   onStartJapa,
+  initialGroupId,
 }: MantraSetupViewProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
@@ -79,17 +81,20 @@ export default function MantraSetupView({
   const [isGoalSheetOpen, setIsGoalSheetOpen] = useState(false);
   const [isGroupSheetOpen, setIsGroupSheetOpen] = useState(false);
   const [userGroups, setUserGroups] = useState<any[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(() => initialGroupId || null);
 
   const { user } = useAuth();
 
   React.useEffect(() => {
-    if (user?.id) {
-      fetchGroups(user.id).then((groups) => {
-        const joined = groups.filter((g) => g.is_member);
-        setUserGroups(joined);
-      });
+    if (initialGroupId) {
+      setSelectedGroupId(initialGroupId);
     }
+  }, [initialGroupId]);
+
+  React.useEffect(() => {
+    fetchGroups(user?.id).then((groups) => {
+      setUserGroups(groups || []);
+    });
   }, [user?.id]);
 
   // ─── OPTIONS CONFIGURATION ──────────────────────────────────────

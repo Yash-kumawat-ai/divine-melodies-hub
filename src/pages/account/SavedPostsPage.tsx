@@ -143,21 +143,34 @@ export default function SavedPostsPage() {
       toast.error(isHi ? "प्रतिक्रिया देने के लिए कृपया लॉग इन करें" : "Please log in to react");
       return;
     }
-    // Optimistic Update
-    setPosts(prev => prev.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          has_reacted: !p.has_reacted,
-          reaction_count: p.reaction_count + (p.has_reacted ? -1 : 1)
-        };
-      }
-      return p;
-    }));
+
+    let wasReacted = false;
+    setPosts(prev => {
+      const current = prev.find(p => p.id === postId);
+      wasReacted = !!current?.has_reacted;
+      return prev.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            has_reacted: !p.has_reacted,
+            reaction_count: Math.max(0, p.reaction_count + (p.has_reacted ? -1 : 1)),
+          };
+        }
+        return p;
+      });
+    });
 
     try {
-      await communityApi.togglePostReaction(postId, user.id);
+      await communityApi.togglePostReaction(postId, user.id, wasReacted);
     } catch {
+      setPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p;
+        return {
+          ...p,
+          has_reacted: wasReacted,
+          reaction_count: Math.max(0, p.reaction_count + (wasReacted ? 1 : -1)),
+        };
+      }));
       loadPosts();
     }
   };

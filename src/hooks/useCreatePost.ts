@@ -48,7 +48,10 @@ export function useCreatePost({
   };
 
   // Post Creator submit handler
-  const handleCreatePost = async (e: React.FormEvent) => {
+  const handleCreatePost = async (
+    e: React.FormEvent,
+    overrides?: { content?: string; location?: string }
+  ) => {
     e.preventDefault();
     if (!user) {
       toast.error(isHi ? "पोस्ट प्रकाशित करने के लिए कृपया लॉग इन करें" : "Please log in to publish posts");
@@ -58,8 +61,14 @@ export function useCreatePost({
       toast.error(isHi ? "शीर्षक आवश्यक है" : "Title is required");
       return;
     }
-    if (!postContent.trim()) {
+    const contentToSave = (overrides?.content ?? postContent).trim();
+    const locationToSave = (overrides?.location ?? postLocation).trim();
+    if (!contentToSave) {
       toast.error(isHi ? "विवरण सामग्री आवश्यक है" : "Content description is required");
+      return;
+    }
+    if (postType === 'event' && (!eventDate || !eventTime)) {
+      toast.error(isHi ? "कृपया तारीख और समय चुनें" : "Please select event date and time");
       return;
     }
 
@@ -79,7 +88,7 @@ export function useCreatePost({
         eventDt = new Date(`${eventDate}T${eventTime || '00:00'}`).toISOString();
       }
 
-      let finalContent = postContent.trim();
+      let finalContent = contentToSave;
       if (postType === 'shloka' && !finalContent.startsWith('[SHLOKA]')) {
         finalContent = `[SHLOKA]\n${finalContent}`;
       }
@@ -94,7 +103,7 @@ export function useCreatePost({
         youtube_url: postYoutubeUrl.trim() || null,
         question_options: options,
         event_datetime: eventDt,
-        event_location: postLocation.trim() || null,
+        event_location: locationToSave || null,
         linked_bhajan_id: eventLinkedBhajan,
       });
 

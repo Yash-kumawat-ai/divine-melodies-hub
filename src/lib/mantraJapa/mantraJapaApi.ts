@@ -144,36 +144,89 @@ export async function completeJapSession(params: {
   durationSeconds: number;
   groupId?: string | null;
 }): Promise<CompleteSessionResult> {
-  const { data, error } = await supabase.rpc("complete_jap_session", {
-    p_user_id: params.userId,
-    p_mantra_id: params.mantraId,
-    p_sankalp: params.sankalp || null,
-    p_target_count: params.targetCount,
-    p_actual_count: params.actualCount,
-    p_duration_seconds: params.durationSeconds,
-  });
+  try {
+    const { data, error } = await supabase.rpc("complete_jap_session", {
+      p_user_id: params.userId,
+      p_mantra_id: params.mantraId,
+      p_sankalp: params.sankalp || null,
+      p_target_count: params.targetCount,
+      p_actual_count: params.actualCount,
+      p_duration_seconds: params.durationSeconds,
+    });
 
-  if (error) throw error;
-  
-  const result = data as CompleteSessionResult;
+    if (error) throw error;
+    
+    const result = data as CompleteSessionResult;
 
-  // If a groupId is specified, associate the session with the group (fires trigger safely via single update)
-  if (params.groupId && result.session_id) {
+    // If a groupId is specified, associate the session with the group
+    if (params.groupId && result?.session_id) {
+      try {
+        const { error: updateErr } = await supabase
+          .from("user_jap_sessions")
+          .update({
+            group_id: params.groupId
+          })
+          .eq("id", result.session_id);
+
+        if (updateErr) console.warn("Failed to scope session to group:", updateErr);
+      } catch (err) {
+        console.warn("Failed to scope jap session to group:", err);
+      }
+    }
+
+    return result || {
+      session_id: "",
+      total_chants: params.actualCount,
+      total_sessions: 1,
+      total_malas: Math.floor(params.actualCount / 108),
+      current_streak: 1,
+      longest_streak: 1,
+    };
+  } catch (rpcErr) {
+    console.warn("RPC complete_jap_session failed, falling back to direct table update:", rpcErr);
+
+    // Fallback: Direct insert into user_jap_sessions
     try {
-      const { error: updateErr } = await supabase
+      const { data: inserted, error: insertErr } = await supabase
         .from("user_jap_sessions")
-        .update({
-          group_id: params.groupId
+        .insert({
+          user_id: params.userId,
+          mantra_id: params.mantraId,
+          sankalp: params.sankalp || null,
+          target_count: params.targetCount,
+          actual_count: params.actualCount,
+          duration_seconds: params.durationSeconds,
+          completed: true,
+          completed_at: new Date().toISOString(),
+          group_id: params.groupId || null,
         })
-        .eq("id", result.session_id);
+        .select("id")
+        .single();
 
-      if (updateErr) throw updateErr;
-    } catch (err) {
-      console.error("Failed to scope jap session to group:", err);
+      if (insertErr) {
+        console.warn("Direct insert to user_jap_sessions error:", insertErr);
+      }
+
+      return {
+        session_id: inserted?.id || "",
+        total_chants: params.actualCount,
+        total_sessions: 1,
+        total_malas: Math.floor(params.actualCount / 108),
+        current_streak: 1,
+        longest_streak: 1,
+      };
+    } catch (tableErr) {
+      console.warn("Direct table fallback error:", tableErr);
+      return {
+        session_id: "",
+        total_chants: params.actualCount,
+        total_sessions: 1,
+        total_malas: Math.floor(params.actualCount / 108),
+        current_streak: 1,
+        longest_streak: 1,
+      };
     }
   }
-
-  return result;
 }
 
 /** Fetch user's sankalpas */

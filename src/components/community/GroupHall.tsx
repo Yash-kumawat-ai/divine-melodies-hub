@@ -116,6 +116,7 @@ export interface GroupHallProps {
   setCreatePostOpen: (open: boolean) => void;
   setPostType: (type: 'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event' | 'shloka') => void;
   setLogChantsOpen: (open: boolean) => void;
+  onStartJapa?: () => void;
 }
 
 export function GroupHall({
@@ -161,6 +162,7 @@ export function GroupHall({
   setCreatePostOpen,
   setPostType,
   setLogChantsOpen,
+  onStartJapa,
 }: GroupHallProps) {
   const navigate = useNavigate();
 
@@ -601,8 +603,14 @@ export function GroupHall({
                 id: 'naam_jap', 
                 icon: Flame, 
                 title: isHi ? 'नाम जाप' : 'Start Japa', 
-                desc: isHi ? 'जप दर्ज करें' : 'Log Japa',
-                action: () => setLogChantsOpen(true)
+                desc: isHi ? 'साधना प्रारंभ करें' : 'Start Sadhana',
+                action: () => {
+                  if (onStartJapa) {
+                    onStartJapa();
+                  } else {
+                    navigate(`/meditation?practice=mantra_jap_home&showSetup=true&groupId=${group.id}`);
+                  }
+                }
               },
               { 
                 id: 'requests', 

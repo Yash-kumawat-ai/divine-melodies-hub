@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { communityApi, type CommunityPost, type PostComment } from "@/lib/community/communityApi";
 
@@ -57,6 +57,7 @@ export function useCommunityPostActions({
   const [newCommentText, setNewCommentText] = useState("");
   const [commentIsLyricsSubmit, setCommentIsLyricsSubmit] = useState(false);
   const [loadingCommentsPostIds, setLoadingCommentsPostIds] = useState<Record<string, boolean>>({});
+  const reactionInFlightRef = useRef<Set<string>>(new Set());
 
   // ── Toggle Comments ───────────────────────────────────────────────────────
   const handleToggleComments = async (postId: string) => {
@@ -147,21 +148,43 @@ export function useCommunityPostActions({
       toast.error(isHi ? "प्रतिक्रिया देने के लिए कृपया लॉग इन करें" : "Please log in to react");
       return;
     }
-    // Instant optimistic update
-    setPosts((prev) =>
-      prev.map((p) => {
+    if (reactionInFlightRef.current.has(postId)) return;
+
+    let wasReacted = false;
+    setPosts((prev) => {
+      const current = prev.find((p) => p.id === postId);
+      wasReacted = !!current?.has_reacted;
+      return prev.map((p) => {
         if (p.id !== postId) return p;
         return {
           ...p,
           has_reacted: !p.has_reacted,
-          reaction_count: p.reaction_count + (p.has_reacted ? -1 : 1),
+          reaction_count: Math.max(0, p.reaction_count + (p.has_reacted ? -1 : 1)),
         };
-      })
-    );
-    // Background sync
-    communityApi.togglePostReaction(postId, user.id).catch((err) => {
-      console.error("Reaction toggle error:", err);
+      });
     });
+
+    reactionInFlightRef.current.add(postId);
+    communityApi
+      .togglePostReaction(postId, user.id, wasReacted)
+      .catch((err) => {
+        console.error("Reaction toggle error:", err);
+        // Revert optimistic update
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id !== postId) return p;
+            return {
+              ...p,
+              has_reacted: wasReacted,
+              reaction_count: Math.max(0, p.reaction_count + (wasReacted ? 1 : -1)),
+            };
+          })
+        );
+        toast.error(isHi ? "प्रतिक्रिया सहेजने में विफल" : "Failed to save reaction");
+      })
+      .finally(() => {
+        reactionInFlightRef.current.delete(postId);
+      });
   };
 
   // ── RSVP Handler ──────────────────────────────────────────────────────────

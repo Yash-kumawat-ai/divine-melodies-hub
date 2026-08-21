@@ -373,10 +373,23 @@ export default function JoinCommunityPage() {
     }
   }, [slug, groups]);
 
+  // Start group japa sadhana -> navigates to full setup & meditation counter
+  const handleStartGroupJapa = (grp?: Group | null) => {
+    const targetGroup = grp || selectedGroup;
+    if (!targetGroup) return;
+    const groupDeity = targetGroup.deity?.toLowerCase();
+    // Find matching mantra in database
+    const matchingMantra = mantras.find(m => m.deity?.toLowerCase() === groupDeity) || mantras[0];
+    const mantraId = matchingMantra ? matchingMantra.id : "om_namah_shivaya";
+    const currentPath = window.location.pathname + window.location.search;
+    navigate(`/meditation?practice=mantra_jap_home&mantraId=${mantraId}&showSetup=true&groupId=${targetGroup.id}&returnUrl=${encodeURIComponent(currentPath)}`);
+  };
+
   // Log group chants handler (calls useMantraJapa mutation)
   const handleLogGroupChants = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedGroup || !user) {
+    if (!selectedGroup) return;
+    if (!user) {
       toast.error(isHi ? "नाम जप जोड़ने के लिए कृपया लॉगिन करें।" : "Please log in to log group chants.");
       return;
     }
@@ -1660,6 +1673,7 @@ export default function JoinCommunityPage() {
           setCreatePostOpen={setCreatePostOpen}
           setPostType={setPostType}
           setLogChantsOpen={setLogChantsOpen}
+          onStartJapa={() => handleStartGroupJapa(selectedGroup)}
         />
       )}
       
@@ -1668,32 +1682,59 @@ export default function JoinCommunityPage() {
         <DialogContent className="max-w-md bg-[#FAF6EE] dark:bg-[#0f0d0a] border-amber-500/20 text-stone-950 dark:text-stone-50 rounded-3xl p-6 shadow-2xl">
           <DialogHeader className="font-sans">
             <DialogTitle className="font-display font-extrabold text-lg text-orange-950 dark:text-amber-100 text-center flex items-center justify-center gap-1.5">
-              📿 {isHi ? "नाम जप समर्पण" : "Log Chants to Yajna"}
+              📿 {isHi ? "नाम जप साधना व समर्पण" : "Naam Japa Sadhana"}
             </DialogTitle>
             <DialogDescription className="text-center text-xs text-stone-500 mt-1">
               {isHi 
-                ? `${selectedGroup?.name} के सामूहिक जप यज्ञ में अपना जप समर्पण करें`
-                : `Contribute your chanting rounds to ${selectedGroup?.name}'s collective target`}
+                ? `${selectedGroup?.name} के सामूहिक जप यज्ञ में साधना करें अथवा जप समर्पण करें`
+                : `Chant live or contribute completed rounds to ${selectedGroup?.name}`}
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleLogGroupChants} className="space-y-5 mt-4 font-sans">
+          {/* Primary Action: Go to Interactive Japa Sadhana Counter */}
+          <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 flex flex-col items-center text-center space-y-2">
+            <span className="text-xs font-bold text-orange-950 dark:text-amber-200">
+              {isHi ? "🎯 लाइव डिजिटल माला / काउंटर से जप करें" : "🎯 Practice live with Digital Mala & Counter"}
+            </span>
+            <p className="text-[11px] text-stone-600 dark:text-stone-300">
+              {isHi 
+                ? "माला संख्या, संकल्प व मोड चुनकर लाइव साधना आरंभ करें" 
+                : "Select Mala target, Sankalp & practice mode with full audio-visual counter"}
+            </p>
+            <Button
+              type="button"
+              onClick={() => {
+                setLogChantsOpen(false);
+                handleStartGroupJapa(selectedGroup);
+              }}
+              className="w-full bg-[#651317] hover:bg-[#4f0f12] text-white font-extrabold rounded-xl py-2.5 shadow-md active:scale-98 transition-all flex items-center justify-center gap-2 text-xs"
+            >
+              <span>📿</span>
+              <span>{isHi ? "जप साधना प्रारंभ करें (Start Sadhana)" : "Start Interactive Japa"}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-amber-500/20"></div>
+            <span className="flex-shrink mx-3 text-[10px] uppercase font-bold text-stone-400">
+              {isHi ? "या पहले से किए गए जप दर्ज करें" : "OR LOG OFFLINE CHANTS"}
+            </span>
+            <div className="flex-grow border-t border-amber-500/20"></div>
+          </div>
+
+          <form onSubmit={handleLogGroupChants} className="space-y-4 font-sans">
             
             {/* Display group's deity mantra details */}
             {(() => {
               const groupDeity = selectedGroup?.deity?.toLowerCase();
               const matchingMantra = mantras?.find(m => m.deity?.toLowerCase() === groupDeity) || mantras?.[0];
               return (
-                <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 text-center">
+                <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-3 text-center">
                   <span className="text-[10px] uppercase font-black tracking-wider text-amber-600 block">{isHi ? "समर्पित मंत्र" : "Target Mantra"}</span>
-                  <span className="text-base font-extrabold text-orange-950 dark:text-amber-100 block mt-1">
+                  <span className="text-sm font-extrabold text-orange-950 dark:text-amber-100 block mt-0.5">
                     {isHi ? matchingMantra?.name_hindi : matchingMantra?.name_english}
                   </span>
-                  {matchingMantra?.full_text_hindi && (
-                    <p className="text-xs text-stone-500 dark:text-stone-400 italic mt-1.5 leading-relaxed font-hindi">
-                      "{matchingMantra.full_text_hindi}"
-                    </p>
-                  )}
                 </div>
               );
             })()}
