@@ -172,10 +172,10 @@ export default function CommunityPage() {
         { count: eventsCount },
       ] = await Promise.all([
         supabase.from("user_profiles").select("id", { count: "exact", head: true }),
-        supabase.from("user_jap_totals").select("total_chants"),
-        supabase.from("groups").select("id", { count: "exact", head: true }),
+        (supabase.from as any)("user_jap_totals").select("total_chants"),
+        (supabase.from as any)("groups").select("id", { count: "exact", head: true }),
         supabase.from("user_uploads").select("id", { count: "exact", head: true }),
-        supabase.from("community_posts").select("id", { count: "exact", head: true }).eq("type", "event"),
+        (supabase.from as any)("community_posts").select("id", { count: "exact", head: true }).eq("type", "event"),
       ]);
 
       const realTotalJaps = (japTotals ?? []).reduce((sum, row) => sum + (Number(row.total_chants) || 0), 0);
@@ -476,22 +476,22 @@ export default function CommunityPage() {
                 if (window.history.length > 1) navigate(-1);
                 else navigate("/");
               }}
-              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0"
+              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
               aria-label={isHi ? "वापस" : "Back"}
             >
-              <ChevronLeft className="w-5 h-5 text-foreground" />
+              <ChevronLeft className="w-5 h-5 text-[#651317] dark:text-amber-200" />
             </button>
-            <span className="font-display text-lg sm:text-xl font-extrabold tracking-tight text-foreground leading-none">
+            <span className="font-display text-lg sm:text-xl font-extrabold tracking-tight text-[#651317] dark:text-amber-100 leading-none">
               {isHi ? "समुदाय" : "Community"}
             </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigate("/notifications")}
-              className="relative w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0"
+              className="relative w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
               title={isHi ? "सूचनाएं" : "Notifications"}
             >
-              <Bell className="w-4.5 h-4.5 text-foreground" />
+              <Bell className="w-4.5 h-4.5 text-[#651317] dark:text-amber-200" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-stone-900" />
             </button>
             <button
@@ -962,60 +962,60 @@ export default function CommunityPage() {
         </div>
 
         {/* ─── STATISTICS PANEL (Balanced, Clean 1-Row Layout) ─── */}
-        <div className="w-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl py-2.5 px-2 sm:px-4 shadow-xs">
+        <div className="w-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl py-3 px-2 sm:px-4 md:py-3.5 md:px-6 shadow-xs">
           <div className="grid grid-cols-4 divide-x divide-[#E8D8C4]/60 dark:divide-stone-800/80">
             {/* Stat 1: Devotees */}
-            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+            <div className="flex flex-col items-center justify-center py-1 px-1 sm:px-2 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1.5 shadow-2xs shrink-0">
                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
+              <span className="text-xs sm:text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 leading-tight tabular-nums block truncate max-w-full text-center">
                 {globalStats.devotees >= 1000 ? `${(globalStats.devotees / 1000).toFixed(1)}K+` : globalStats.devotees}
               </span>
-              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+              <span className="text-[10px] sm:text-xs font-semibold text-[#8C7A6B] dark:text-stone-400 mt-1 whitespace-nowrap truncate w-full text-center block leading-tight">
                 {isHi ? "भक्त" : "Devotees"}
               </span>
             </div>
 
             {/* Stat 2: Name Chants */}
-            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+            <div className="flex flex-col items-center justify-center py-1 px-1 sm:px-2 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1.5 shadow-2xs shrink-0">
                 <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
+              <span className="text-xs sm:text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 leading-tight tabular-nums block truncate max-w-full text-center">
                 {globalStats.totalJaps >= 10000000 
                   ? `${(globalStats.totalJaps / 10000000).toFixed(1)}Cr+`
                   : globalStats.totalJaps >= 100000 
                   ? `${(globalStats.totalJaps / 100000).toFixed(1)}L+`
                   : globalStats.totalJaps.toLocaleString()}
               </span>
-              <span className="text-[9px] sm:text-[11px] font-bold text-[#8C7A6B] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+              <span className="text-[10px] sm:text-xs font-semibold text-[#8C7A6B] dark:text-stone-400 mt-1 whitespace-nowrap truncate w-full text-center block leading-tight">
                 {isHi ? "नाम जप" : "Naam Jap"}
               </span>
             </div>
 
             {/* Stat 3: Bhajans Shared */}
-            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+            <div className="flex flex-col items-center justify-center py-1 px-1 sm:px-2 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1.5 shadow-2xs shrink-0">
                 <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
+              <span className="text-xs sm:text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 leading-tight tabular-nums block truncate max-w-full text-center">
                 {globalStats.bhajansCount}
               </span>
-              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+              <span className="text-[10px] sm:text-xs font-semibold text-[#8C7A6B] dark:text-stone-400 mt-1 whitespace-nowrap truncate w-full text-center block leading-tight">
                 {isHi ? "भजन" : "Bhajans"}
               </span>
             </div>
 
             {/* Stat 4: Satsang & Events */}
-            <div className="flex flex-col items-center justify-center py-0.5 px-1 text-center min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1 shadow-2xs shrink-0">
+            <div className="flex flex-col items-center justify-center py-1 px-1 sm:px-2 text-center min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mb-1.5 shadow-2xs shrink-0">
                 <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[1.8]" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight">
+              <span className="text-xs sm:text-sm md:text-base font-bold text-[#651317] dark:text-amber-100 leading-tight tabular-nums block truncate max-w-full text-center">
                 {globalStats.eventsCount}
               </span>
-              <span className="text-[10px] sm:text-xs font-medium text-[#7A6858] dark:text-stone-400 mt-0.5 whitespace-nowrap truncate w-full text-center block">
+              <span className="text-[10px] sm:text-xs font-semibold text-[#8C7A6B] dark:text-stone-400 mt-1 whitespace-nowrap truncate w-full text-center block leading-tight">
                 {isHi ? "सत्संग" : "Satsang"}
               </span>
             </div>

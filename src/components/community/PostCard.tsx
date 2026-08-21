@@ -14,7 +14,7 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Heart, MessageSquare, Bookmark, Share2, ExternalLink, Trash2, Pencil, Play, ChevronRight, Calendar, MapPin, Send, Loader2, X, ZoomIn
+  Heart, MessageSquare, Bookmark, Share2, ExternalLink, Trash2, Pencil, Play, ChevronRight, Calendar, MapPin, Send, Loader2, X, ZoomIn, Clock, Video, Sparkles, CheckCircle2
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "sonner";
@@ -34,6 +34,7 @@ import lakshmiImg from "@/assets/deities/lakshmi.webp";
 import ramaImg from "@/assets/deities/rama.webp";
 import saiBabaImg from "@/assets/deities/sai-baba.webp";
 import shivaImg from "@/assets/deities/shiva.webp";
+import thumbsUpSvg from "@/pages/images/svg/thumbs-up-svgrepo-com.svg";
 
 // Small countdown helper component
 export function EventCountdown({ datetime }: { datetime: string }) {
@@ -224,17 +225,17 @@ export function PostCard({
               )}
             </div>
 
-            {/* Name & Details (Clean truncation & non-overlapping badges) */}
+            {/* Name & Details (Full name & non-overlapping badges) */}
             <div className="flex flex-col justify-center gap-0.5 min-w-0 flex-1 text-left">
-              <div className="flex items-center gap-1.5 min-w-0 leading-snug">
-                <span className="font-display font-bold text-xs sm:text-sm text-[#32251E] dark:text-stone-100 truncate block">
+              <div className="flex items-center gap-1.5 flex-wrap min-w-0 leading-snug">
+                <span className="font-display font-extrabold text-xs sm:text-sm text-[#32251E] dark:text-stone-100 block">
                   {post.author?.display_name || (isHi ? "अनाम भक्त" : "Anonymous Devotee")}
                 </span>
                 <span className="text-xs shrink-0 select-none" title={authorBadge.label}>
                   {authorBadge.icon}
                 </span>
                 {post.group_name && (
-                  <span className="text-[11px] font-semibold text-[#8C7A6B] dark:text-stone-400 truncate shrink-0">
+                  <span className="text-[11px] font-semibold text-[#8C7A6B] dark:text-stone-400 shrink-0">
                     {isHi ? "में" : "in"}{" "}
                     <span className="text-[#651317] dark:text-amber-300 font-bold">
                       #{post.group_name}
@@ -290,9 +291,9 @@ export function PostCard({
         </div>
 
         {/* ── 2. Post Title & Devotional Content ── */}
-        <div className="space-y-2.5 pt-0.5">
+        <div className="space-y-1.5 pt-0.5">
           {post.title && (
-            <h3 className="font-display font-bold text-sm sm:text-base text-[#32251E] dark:text-amber-100 leading-snug">
+            <h3 className="font-display font-black text-base sm:text-lg text-[#2C1810] dark:text-amber-100 leading-snug tracking-tight">
               {post.title}
             </h3>
           )}
@@ -525,65 +526,197 @@ export function PostCard({
             </div>
           )}
 
-          {/* Event details card */}
-          {post.type === 'event' && (
-            <div className="border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 space-y-2.5 bg-[#FAF6EE]/50 dark:bg-stone-900/40">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-bold gap-2 border-b border-[#E8D8C4]/60 dark:border-stone-800 pb-2">
-                <span className="flex items-center gap-1.5 text-[#651317] dark:text-amber-300">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {post.event_datetime 
-                    ? new Date(post.event_datetime).toLocaleString(isHi ? 'hi-IN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }) 
-                    : (isHi ? "तारीख/समय निर्धारित नहीं" : "Date/Time not set")}
-                </span>
-                <span className="flex items-center gap-1.5 text-[#8C7A6B] dark:text-stone-400">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {post.event_location || (isHi ? "वर्चुअल ज़ूम" : "Virtual Zoom")}
-                </span>
-              </div>
+          {/* ─── SACRED EVENT DETAILS CARD ─── */}
+          {post.type === 'event' && (() => {
+            const eventDateObj = post.event_datetime ? new Date(post.event_datetime) : null;
+            const isValidDate = eventDateObj && !isNaN(eventDateObj.getTime());
+            
+            const monthNamesEn = ["AUG", "SEP", "OCT", "NOV", "DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL"];
+            const monthNamesFullHi = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"];
+            const monthNamesFullEn = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            const daysNamesFullHi = ["रविवार", "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार"];
+            const daysNamesFullEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-              {post.linked_bhajan_id && (
-                <div className="p-2.5 rounded-xl border border-[#E8D8C4] dark:border-stone-800 flex items-center justify-between gap-3 bg-white dark:bg-stone-900">
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase tracking-wider font-bold text-[#651317] dark:text-amber-300 block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
-                    <span className="text-xs font-bold truncate block text-[#32251E] dark:text-stone-200">{isHi ? "भजन संदर्भ" : "Bhajan Reference"}</span>
-                  </div>
-                  <Link 
-                    to={"/bhajan/" + post.linked_bhajan_id}
-                    className="bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-0.5 hover:scale-98 transition-all shrink-0"
-                  >
-                    {isHi ? "बोल" : "Lyrics"} <ChevronRight className="w-3 h-3" />
-                  </Link>
+            const monthBadge = isValidDate
+              ? (isHi ? monthNamesFullHi[eventDateObj.getMonth()] : monthNamesEn[eventDateObj.getMonth()])
+              : (isHi ? "तारीख" : "DATE");
+            const dayNum = isValidDate ? eventDateObj.getDate() : "--";
+            
+            const fullDateStr = isValidDate
+              ? (isHi
+                  ? `${daysNamesFullHi[eventDateObj.getDay()]}, ${eventDateObj.getDate()} ${monthNamesFullHi[eventDateObj.getMonth()]} ${eventDateObj.getFullYear()}`
+                  : `${daysNamesFullEn[eventDateObj.getDay()]}, ${eventDateObj.getDate()} ${monthNamesFullEn[eventDateObj.getMonth()]} ${eventDateObj.getFullYear()}`)
+              : (isHi ? "तारीख निर्धारित नहीं" : "Date not set");
+            
+            const timeDisplay = (() => {
+              if (!isValidDate) return "";
+              const h24 = eventDateObj.getHours();
+              const m = eventDateObj.getMinutes();
+              const ampm = h24 >= 12 ? "PM" : "AM";
+              const h12 = h24 % 12 || 12;
+              const mStr = m < 10 ? '0' + m : m;
+              let periodHi = "";
+              if (h24 >= 4 && h24 < 12) periodHi = "सुबह";
+              else if (h24 >= 12 && h24 < 16) periodHi = "दोपहर";
+              else if (h24 >= 16 && h24 < 20) periodHi = "शाम";
+              else periodHi = "रात";
+              return isHi ? `${periodHi} ${h12}:${mStr} ${ampm}` : `${h12}:${mStr} ${ampm}`;
+            })();
+
+            const locationStr = post.event_location || "";
+            const isOnline = ["online", "zoom", "youtube", "virtual", "google meet", "वर्चुअल", "गूगल मीट"].some((kw) =>
+              locationStr.toLowerCase().includes(kw)
+            );
+
+            return (
+              <div className="rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-gradient-to-br from-[#FFFDF8] via-[#FAF5EC] to-[#F5ECE0] dark:from-[#1E1712] dark:via-[#1A130D] dark:to-[#140E0A] p-4 space-y-3 shadow-xs text-left">
+                {/* Event Header Banner */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 border border-[#E8D8C4] dark:border-stone-700 text-xs font-extrabold tracking-wide shadow-2xs">
+                    {/* Sacred Satsang Diya & Flame SVG */}
+                    <svg className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C10.5 4.5 9 7 9 9.5c0 1.66 1.34 3 3 3s3-1.34 3-3C15 7 13.5 4.5 12 2z" />
+                      <path d="M4 14c0 3.87 3.58 7 8 7s8-3.13 8-7c0-.5-.45-1-1-1H5c-.55 0-1 .5-1 1z" />
+                    </svg>
+                    <span>{isHi ? "पावन सत्संग आयोजन" : "Sacred Satsang Event"}</span>
+                  </span>
+
+                  {post.event_datetime && (
+                    <EventCountdown datetime={post.event_datetime} />
+                  )}
                 </div>
-              )}
 
-              <div className="flex gap-2 select-none">
-                {[
-                  { status: 'interested', label: isHi ? 'रुचि है' : 'Interested' },
-                  { status: 'going', label: isHi ? 'शामिल होऊंगा' : 'Going' }
-                ].map(opt => {
-                  const isActive = post.rsvp_status === opt.status;
-                  const count = opt.status === 'interested' 
-                     ? post.rsvps_count?.interested || 0
-                     : post.rsvps_count?.going || 0;
+                {/* Date & Location Main Block */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Date & Time Block */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-stone-900 border border-[#E8D8C4]/70 dark:border-stone-800 shadow-2xs">
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-xl bg-gradient-to-br from-[#651317] to-[#450C0E] text-white flex flex-col items-center justify-center shrink-0 shadow-xs border border-amber-500/20 px-1 text-center">
+                      <span className="text-[11px] sm:text-xs font-black uppercase text-amber-200 tracking-wider leading-none truncate max-w-full">
+                        {monthBadge}
+                      </span>
+                      <span className="text-lg sm:text-xl font-black text-white leading-none mt-1">
+                        {dayNum}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-bold text-[#32251E] dark:text-stone-100 truncate leading-tight">
+                        {fullDateStr}
+                      </p>
+                      {timeDisplay && (
+                        <p className="text-[11px] sm:text-xs font-semibold text-[#8C7A6B] dark:text-amber-300/90 flex items-center gap-1 mt-1 truncate">
+                          <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                          <span>{timeDisplay}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                  return (
-                    <button
-                      key={opt.status}
-                      onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status as any)}
-                      className={`flex-1 flex items-center justify-center gap-1.5 border px-3 py-1.5 rounded-full text-xs font-bold active:scale-95 transition-all shadow-xs ${
-                        isActive 
-                          ? "bg-[#651317] border-[#651317] text-white" 
-                          : "bg-white dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
-                      }`}
+                  {/* Location / Venue Block */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-stone-900 border border-[#E8D8C4]/70 dark:border-stone-800 shadow-2xs">
+                    <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-xl bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 border border-[#E8D8C4]/80 dark:border-stone-700 flex items-center justify-center shrink-0 shadow-2xs">
+                      {isOnline ? (
+                        <Video className="w-5 h-5 text-[#651317] dark:text-amber-300" />
+                      ) : (
+                        <MapPin className="w-5 h-5 text-[#651317] dark:text-amber-300" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#8C7A6B] dark:text-stone-400 block leading-tight">
+                        {isOnline ? (isHi ? "ऑनलाइन माध्यम" : "Online Mode") : (isHi ? "स्थान / मंदिर" : "Venue / Location")}
+                      </span>
+                      <p className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-200 truncate leading-tight mt-1">
+                        {locationStr || (isHi ? "मंदिर या स्थल" : "Venue details")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optional Entry / Dakshina & Contact */}
+                {(post.entry_fee || post.contact_info) && (
+                  <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                    {post.entry_fee && (
+                      <span className="text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#7c2d12] dark:text-amber-300 border border-[#E8D8C4]/60">
+                        {isHi ? "प्रवेश / दक्षिणा" : "Entry"}: {post.entry_fee}
+                      </span>
+                    )}
+                    {post.contact_info && (
+                      <span className="text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#7c2d12] dark:text-amber-300 border border-[#E8D8C4]/60 truncate max-w-full">
+                        {isHi ? "संपर्क" : "Contact"}: {post.contact_info}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Linked Bhajan reference (if attached from old posts) */}
+                {post.linked_bhajan_id && (
+                  <div className="p-2.5 rounded-xl border border-[#E8D8C4] dark:border-stone-800 flex items-center justify-between gap-3 bg-white dark:bg-stone-900">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[9px] uppercase tracking-wider font-bold text-[#651317] dark:text-amber-300 block">{isHi ? "संबद्ध भजन" : "Linked Bhajan"}</span>
+                      <span className="text-xs font-bold truncate block text-[#32251E] dark:text-stone-200">{isHi ? "भजन संदर्भ" : "Bhajan Reference"}</span>
+                    </div>
+                    <Link 
+                      to={"/bhajan/" + post.linked_bhajan_id}
+                      className="bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-0.5 hover:scale-98 transition-all shrink-0"
                     >
-                      <span>{opt.status === 'interested' ? '🙏' : '✅'}</span>
-                      <span>{opt.label} ({count})</span>
-                    </button>
-                  );
-                })}
+                      {isHi ? "बोल" : "Lyrics"} <ChevronRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                )}
+
+                {/* RSVP Action Buttons with refined SVGs */}
+                <div className="grid grid-cols-2 gap-2.5 select-none pt-1">
+                  {/* Interested Button */}
+                  {(() => {
+                    const isInterested = post.rsvp_status === 'interested';
+                    const count = post.rsvps_count?.interested || 0;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, 'interested')}
+                        className={`w-full flex items-center justify-center gap-2 h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
+                          isInterested 
+                            ? "bg-[#651317] hover:bg-[#4f0f12] text-white border border-[#651317]" 
+                            : "bg-white dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
+                        }`}
+                      >
+                        {/* Thumbs Up SVG Icon */}
+                        <img 
+                          src={thumbsUpSvg} 
+                          alt="Interested" 
+                          className={cn(
+                            "w-4 h-4 shrink-0 transition-transform object-contain",
+                            isInterested ? "scale-110 drop-shadow-xs" : "opacity-95"
+                          )} 
+                        />
+                        <span>{isHi ? "रुचि है" : "Interested"} ({count})</span>
+                      </button>
+                    );
+                  })()}
+
+                  {/* Going Button */}
+                  {(() => {
+                    const isGoing = post.rsvp_status === 'going';
+                    const count = post.rsvps_count?.going || 0;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, 'going')}
+                        className={`w-full flex items-center justify-center gap-2 h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
+                          isGoing 
+                            ? "bg-[#651317] hover:bg-[#4f0f12] text-white border border-[#651317]" 
+                            : "bg-white dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
+                        }`}
+                      >
+                        <CheckCircle2 className={cn("w-4 h-4 shrink-0", isGoing ? "text-emerald-300" : "text-[#651317] dark:text-amber-300")} />
+                        <span>{isHi ? "शामिल होऊंगा" : "Going"} ({count})</span>
+                      </button>
+                    );
+                  })()}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Question Polls */}
           {post.type === 'question' && post.question_options && post.question_options.length > 0 && (
@@ -620,56 +753,69 @@ export function PostCard({
           )}
         </div>
 
-        {/* ── 5. Action Footer Bar ── */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-[#E8D8C4]/60 dark:border-stone-800 text-[#8C7A6B] dark:text-stone-400 select-none">
-          {/* Blessings / Heart */}
+        {/* ── 5. Action Footer Bar (4 Equal Balanced Devotional Action Buttons) ── */}
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 pt-3 border-t border-[#E8D8C4]/60 dark:border-stone-800 text-stone-600 dark:text-stone-300 select-none">
+          {/* 1. Like Button */}
           <button
+            type="button"
             onClick={() => onToggleReaction(post.id)}
-            className={`inline-flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+            className={cn(
+              "flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-9.5 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer border",
               post.has_reacted
-                ? "text-rose-600 dark:text-rose-400"
-                : "hover:text-[#651317] dark:hover:text-amber-300"
-            }`}
-            aria-label={isHi ? "प्रणाम" : "Blessings"}
-          >
-            <Heart className={`w-4 h-4 ${post.has_reacted ? "fill-rose-500 text-rose-500" : ""}`} />
-            <span>{isHi ? "प्रणाम" : "Blessings"}</span>
-            {post.reaction_count > 0 && (
-              <span className="tabular-nums font-bold">({post.reaction_count})</span>
+                ? "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 shadow-2xs"
+                : "bg-transparent border-transparent hover:bg-[#FAF0E4] dark:hover:bg-[#2B1F14] hover:border-[#E8D8C4] dark:hover:border-stone-800 text-stone-600 dark:text-stone-300 hover:text-[#651317] dark:hover:text-amber-300"
             )}
-          </button>
-
-          {/* Comments */}
-          <button
-            onClick={() => onToggleComments(post.id)}
-            className={`inline-flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
-              isCommentsExpanded
-                ? "text-[#651317] dark:text-amber-300"
-                : "hover:text-[#651317] dark:hover:text-amber-300"
-            }`}
-            aria-label={isHi ? "टिप्पणी" : "Comments"}
-            aria-expanded={isCommentsExpanded}
+            aria-label={isHi ? "लाइक" : "Like"}
           >
-            <MessageSquare className="w-4 h-4" />
-            <span>{post.comment_count || 0}</span>
+            <Heart
+              className={cn(
+                "w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform shrink-0",
+                post.has_reacted ? "fill-rose-500 text-rose-500 scale-110" : "text-stone-500 dark:text-stone-400"
+              )}
+            />
+            <span className="tabular-nums font-extrabold">{post.reaction_count || 0}</span>
           </button>
 
-          {/* Save */}
+          {/* 2. Comment Button */}
           <button
+            type="button"
+            onClick={() => onToggleComments(post.id)}
+            className={cn(
+              "flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-9.5 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer border",
+              isCommentsExpanded
+                ? "bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 border-[#651317]/30 shadow-2xs"
+                : "bg-transparent border-transparent hover:bg-[#FAF0E4] dark:hover:bg-[#2B1F14] hover:border-[#E8D8C4] dark:hover:border-stone-800 text-stone-600 dark:text-stone-300 hover:text-[#651317] dark:hover:text-amber-300"
+            )}
+            aria-label={isHi ? "टिप्पणियाँ" : "Comments"}
+          >
+            <MessageSquare className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-stone-500 dark:text-stone-400 shrink-0" />
+            <span className="tabular-nums font-extrabold">{post.comment_count || 0}</span>
+          </button>
+
+          {/* 3. Save / Bookmark Button */}
+          <button
+            type="button"
             onClick={() => onToggleSavePost(post.id)}
-            className={`inline-flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+            className={cn(
+              "flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-9.5 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer border",
               isPostSaved
-                ? "text-amber-600 dark:text-amber-400"
-                : "hover:text-[#651317] dark:hover:text-amber-300"
-            }`}
+                ? "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 shadow-2xs"
+                : "bg-transparent border-transparent hover:bg-[#FAF0E4] dark:hover:bg-[#2B1F14] hover:border-[#E8D8C4] dark:hover:border-stone-800 text-stone-600 dark:text-stone-300 hover:text-[#651317] dark:hover:text-amber-300"
+            )}
             aria-label={isHi ? "सहेजें" : "Save"}
           >
-            <Bookmark className={`w-4 h-4 ${isPostSaved ? "fill-amber-500 text-amber-500" : ""}`} />
-            <span>{isHi ? "सहेजें" : "Save"}</span>
+            <Bookmark
+              className={cn(
+                "w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform shrink-0",
+                isPostSaved ? "fill-amber-500 text-amber-500 scale-110" : "text-stone-500 dark:text-stone-400"
+              )}
+            />
+            <span className="truncate">{isHi ? "सहेजें" : "Save"}</span>
           </button>
 
-          {/* Share */}
+          {/* 4. Share Button */}
           <button
+            type="button"
             onClick={() => {
               const link = `${window.location.origin}/community/posts/${post.id}`;
               if (navigator.share) {
@@ -688,11 +834,11 @@ export function PostCard({
                 toast.success(isHi ? "पोस्ट लिंक कॉपी की गई!" : "Post link copied!");
               }
             }}
-            className="inline-flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-xs font-semibold hover:text-[#651317] dark:hover:text-amber-300 transition-all active:scale-95 cursor-pointer"
-            aria-label={isHi ? "साझा करें" : "Share"}
+            className="flex items-center justify-center gap-1.5 sm:gap-2 h-9 sm:h-9.5 rounded-xl text-xs sm:text-sm font-bold bg-transparent border border-transparent hover:bg-[#FAF0E4] dark:hover:bg-[#2B1F14] hover:border-[#E8D8C4] dark:hover:border-stone-800 text-stone-600 dark:text-stone-300 hover:text-[#651317] dark:hover:text-amber-300 transition-all active:scale-95 cursor-pointer"
+            aria-label={isHi ? "शेयर" : "Share"}
           >
-            <Share2 className="w-4 h-4" />
-            <span>{isHi ? "साझा करें" : "Share"}</span>
+            <Share2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-stone-500 dark:text-stone-400 shrink-0" />
+            <span className="truncate">{isHi ? "शेयर" : "Share"}</span>
           </button>
         </div>
 

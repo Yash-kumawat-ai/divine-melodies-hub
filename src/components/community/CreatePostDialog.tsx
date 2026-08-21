@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, Tag } from "lucide-react";
+import { Eye, EyeOff, Tag, Calendar as CalendarIcon, Clock, Sparkles, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parse, isValid, addDays } from "date-fns";
 import { ImageAdjuster } from "@/components/community/ImageAdjuster";
 import { cn } from "@/lib/utils";
 
@@ -219,6 +226,7 @@ export function CreatePostDialog({
   const [entryFee, setEntryFee] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [shlokaTranslation, setShlokaTranslation] = useState("");
+  const [datePopoverOpen, setDatePopoverOpen] = useState(false);
 
   // Reset local state when modal closes
   useEffect(() => {
@@ -238,10 +246,26 @@ export function CreatePostDialog({
       setEntryFee("");
       setContactInfo("");
       setShlokaTranslation("");
+      setDatePopoverOpen(false);
     }
   }, [open]);
 
   const fl = (en: string, hi: string) => (isHi ? hi : en);
+
+  const selectedDateObj = eventDate ? (() => {
+    try {
+      const parsed = parse(eventDate, "yyyy-MM-dd", new Date());
+      return isValid(parsed) ? parsed : undefined;
+    } catch {
+      return undefined;
+    }
+  })() : undefined;
+
+  const formattedDateDisplay = selectedDateObj
+    ? (isHi
+        ? selectedDateObj.toLocaleDateString("hi-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+        : format(selectedDateObj, "EEE, MMM d, yyyy"))
+    : (isHi ? "तारीख चुनें" : "Select date");
 
   const chipCls = (active: boolean) =>
     cn(
@@ -757,26 +781,116 @@ export function CreatePostDialog({
                   />
                 </Field>
 
-                {/* Date and Time */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label={fl("Date", "तारीख")} required>
-                    <Input
-                      type="date"
-                      value={eventDate}
-                      onChange={(e) => setEventDate(e.target.value)}
-                      required
-                      className={inputCls}
-                    />
+                {/* ── Enhanced Date and Time Section ── */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Interactive Date Picker with Popover Calendar */}
+                  <Field label={fl("Event Date", "कार्यक्रम की तारीख")} required>
+                    <div className="space-y-2">
+                      <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={cn(
+                              "w-full h-11 px-3.5 rounded-xl border flex items-center justify-between text-left text-xs sm:text-sm font-semibold transition-all bg-white dark:bg-stone-900 cursor-pointer",
+                              eventDate
+                                ? "border-[#651317]/50 text-[#651317] dark:text-amber-200 dark:border-amber-700/50 shadow-2xs"
+                                : "border-[#E8D8C4] dark:border-stone-700 text-stone-500 hover:border-[#651317]/40"
+                            )}
+                          >
+                            <span className="flex items-center gap-2 truncate">
+                              <CalendarIcon className="w-4 h-4 text-[#651317] dark:text-amber-400 shrink-0" />
+                              <span className="truncate">{formattedDateDisplay}</span>
+                            </span>
+                            <ChevronDown className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 rounded-2xl shadow-xl z-50" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDateObj}
+                            onSelect={(date) => {
+                              if (date) {
+                                setEventDate(format(date, "yyyy-MM-dd"));
+                                setDatePopoverOpen(false);
+                              }
+                            }}
+                            initialFocus
+                            className="p-3"
+                          />
+                        </PopoverContent>
+                      </Popover>
+
+                      {/* Quick date chips */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                          { label: fl("Today", "आज"), dateStr: format(new Date(), "yyyy-MM-dd") },
+                          { label: fl("Tomorrow", "कल"), dateStr: format(addDays(new Date(), 1), "yyyy-MM-dd") },
+                          { label: fl("In 2 Days", "2 दिन बाद"), dateStr: format(addDays(new Date(), 2), "yyyy-MM-dd") },
+                          { label: fl("This Sunday", "रविवार"), dateStr: (() => {
+                            const now = new Date();
+                            const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+                            return format(addDays(now, daysUntilSunday), "yyyy-MM-dd");
+                          })() }
+                        ].map((preset) => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => setEventDate(preset.dateStr)}
+                            className={cn(
+                              "text-[10px] px-2 py-0.5 rounded-md border font-bold transition-all cursor-pointer",
+                              eventDate === preset.dateStr
+                                ? "bg-[#651317] text-white border-[#651317]"
+                                : "bg-[#FAF0E4]/60 dark:bg-[#2B1F14] text-[#7c2d12] dark:text-amber-300 border-[#E8D8C4]/70 dark:border-stone-700 hover:border-[#651317]/50"
+                            )}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </Field>
 
-                  <Field label={fl("Time", "समय")} required>
-                    <Input
-                      type="time"
-                      value={eventTime}
-                      onChange={(e) => setEventTime(e.target.value)}
-                      required
-                      className={inputCls}
-                    />
+                  {/* Enhanced Time Selector with Presets */}
+                  <Field label={fl("Event Time", "कार्यक्रम का समय")} required>
+                    <div className="space-y-2">
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 pointer-events-none text-[#651317] dark:text-amber-400">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <Input
+                          type="time"
+                          value={eventTime}
+                          onChange={(e) => setEventTime(e.target.value)}
+                          required
+                          className={cn(inputCls, "pl-9 font-bold text-xs sm:text-sm")}
+                        />
+                      </div>
+
+                      {/* Quick Devotional Time Slot Chips */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                          { label: fl("🌅 06:00 AM", "🌅 06:00 AM (आरती)"), time: "06:00" },
+                          { label: fl("☀️ 09:00 AM", "☀️ 09:00 AM (सत्संग)"), time: "09:00" },
+                          { label: fl("🪔 05:00 PM", "🪔 05:00 PM (संध्या)"), time: "17:00" },
+                          { label: fl("📿 07:00 PM", "📿 07:00 PM (कीर्तन)"), time: "19:00" },
+                          { label: fl("🌙 08:30 PM", "🌙 08:30 PM (शयन)"), time: "20:30" },
+                        ].map((slot) => (
+                          <button
+                            key={slot.time}
+                            type="button"
+                            onClick={() => setEventTime(slot.time)}
+                            className={cn(
+                              "text-[10px] px-2 py-0.5 rounded-md border font-bold transition-all cursor-pointer",
+                              eventTime === slot.time
+                                ? "bg-[#651317] text-white border-[#651317]"
+                                : "bg-[#FAF0E4]/60 dark:bg-[#2B1F14] text-[#7c2d12] dark:text-amber-300 border-[#E8D8C4]/70 dark:border-stone-700 hover:border-[#651317]/50"
+                            )}
+                          >
+                            {slot.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </Field>
                 </div>
 
@@ -846,30 +960,6 @@ export function CreatePostDialog({
                   isHi={isHi}
                   label={fl("Event Poster (optional)", "कार्यक्रम पोस्टर (वैकल्पिक)")}
                 />
-
-                {myBhajans.length > 0 && (
-                  <Field
-                    label={fl(
-                      "Attach a Bhajan (optional)",
-                      "पुस्तकालय से भजन जोड़ें (वैकल्पिक)"
-                    )}
-                  >
-                    <select
-                      value={eventLinkedBhajan || ""}
-                      onChange={(e) =>
-                        setEventLinkedBhajan(e.target.value ? Number(e.target.value) : null)
-                      }
-                      className="w-full min-w-0 h-9 px-3 text-sm rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-white dark:bg-stone-900 focus:border-[#651317] focus:outline-none dark:text-stone-200"
-                    >
-                      <option value="">— {isHi ? "कोई नहीं" : "None"} —</option>
-                      {myBhajans.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.title} ({b.singer_name})
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                )}
               </>
             )}
 

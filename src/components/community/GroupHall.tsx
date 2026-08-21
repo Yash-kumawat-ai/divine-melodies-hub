@@ -15,7 +15,7 @@ import {
   ChevronLeft, ChevronRight, Plus, Users, MessageSquare, 
   Calendar, Copy, Trash2, Globe, Lock, Bell, Share2, 
   MoreVertical, Search, Music, Sparkles, Image, Smile, Mic, Bookmark, Flame, Trophy,
-  Shield, Check, ArrowRight, HeartHandshake
+  Shield, Check, ArrowRight, HeartHandshake, BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,6 +219,7 @@ export function GroupHall({
   // Leave Group Confirmation Modal State
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [feedFilter, setFeedFilter] = useState<'all' | 'thought' | 'bhajan_share' | 'shloka' | 'event' | 'requests'>('all');
 
   const handleConfirmLeave = async () => {
     try {
@@ -558,95 +559,82 @@ export function GroupHall({
         </div>
       )}
 
-      {/* 7. COMMUNITY FEATURES (Clean 2-Row Fixed Grid with Large Prominent Icons) */}
+      {/* 7. COMMUNITY FEATURES / QUICK POST ACTIONS (8 Tiles that launch dedicated actions) */}
       <div className="mt-5 sm:mt-6 text-left">
         <h4 className="font-display font-bold text-xs sm:text-sm md:text-base text-[#651317] dark:text-amber-100 flex items-center gap-1.5 mb-3">
-          ✨ {isHi ? "सामुदायिक सुविधाएँ" : "Community Features"}
+          ✨ {isHi ? "त्वरित पोस्ट व सामुदायिक क्रियाएँ" : "Quick Actions & Posts"}
         </h4>
         
-        {/* Fixed 4-Column x 2-Row Non-Scrolling Grid with Large Icons */}
+        {/* Fixed 4-Column x 2-Row Non-Scrolling Grid with Action Launchers */}
         <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3 sm:p-4 shadow-xs">
           <div className="grid grid-cols-4 gap-2.5 sm:gap-3.5">
             {[
               { 
-                id: 'feed', 
+                id: 'satsang', 
                 icon: MessageSquare, 
                 title: isHi ? 'सत्संग' : 'Satsang', 
-                desc: isHi ? 'चर्चा व विचार' : 'Devotional feed' 
+                desc: isHi ? 'विचार लिखें' : 'Post thought',
+                action: () => { setPostType('thought'); setCreatePostOpen(true); }
               },
               { 
                 id: 'bhajans', 
                 icon: Music, 
                 title: isHi ? 'भजन' : 'Bhajans', 
-                desc: isHi ? 'भजन साझा करें' : 'Shared bhajans' 
+                desc: isHi ? 'भजन साझा करें' : 'Share bhajan',
+                action: () => { setPostType('bhajan_share'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'shloka', 
+                icon: BookOpen, 
+                title: isHi ? 'श्लोक' : 'Shloka', 
+                desc: isHi ? 'श्लोक साझा करें' : 'Post shloka',
+                action: () => { setPostType('shloka'); setCreatePostOpen(true); }
               },
               { 
                 id: 'events', 
                 icon: Calendar, 
                 title: isHi ? 'कार्यक्रम' : 'Events', 
-                desc: isHi ? 'सत्संग व उत्सव' : 'Upcoming events' 
-              },
-              { 
-                id: 'members', 
-                icon: Trophy, 
-                title: isHi ? 'लीडरबोर्ड' : 'Leaderboard', 
-                desc: isHi ? 'जप यज्ञ रैंकिंग' : 'Chanting ranks' 
-              },
-              { 
-                id: 'gallery', 
-                icon: Image, 
-                title: isHi ? 'गैलरी' : 'Gallery', 
-                desc: isHi ? 'दिव्य दर्शन' : 'Photos & media' 
-              },
-              { 
-                id: 'requests', 
-                icon: Sparkles, 
-                title: isHi ? 'प्रार्थना' : 'Requests', 
-                desc: isHi ? 'भजन अनुरोध' : 'Prayer requests' 
+                desc: isHi ? 'सत्संग जोड़ें' : 'Host event',
+                action: () => { setPostType('event'); setCreatePostOpen(true); }
               },
               { 
                 id: 'naam_jap', 
                 icon: Flame, 
                 title: isHi ? 'नाम जाप' : 'Start Japa', 
-                desc: isHi ? 'सामूहिक नाम जाप' : 'Log group jap' 
+                desc: isHi ? 'जप दर्ज करें' : 'Log Japa',
+                action: () => setLogChantsOpen(true)
               },
               { 
-                id: 'add_bhajan', 
+                id: 'requests', 
+                icon: Sparkles, 
+                title: isHi ? 'प्रार्थना' : 'Requests', 
+                desc: isHi ? 'अनुरोध पूछें' : 'Ask request',
+                action: () => { setPostType('question'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'members', 
+                icon: Trophy, 
+                title: isHi ? 'लीडरबोर्ड' : 'Leaderboard', 
+                desc: isHi ? 'जप रैंकिंग' : 'Top devotees',
+                action: () => setActiveGroupTab('members')
+              },
+              { 
+                id: 'upload', 
                 icon: Plus, 
-                title: isHi ? 'भजन जोड़ें' : 'Upload', 
-                desc: isHi ? 'नया भजन अपलोड' : 'Upload & share' 
+                title: isHi ? 'नई पोस्ट' : 'New Post', 
+                desc: isHi ? 'सभी विकल्प' : 'Create post',
+                action: () => setCreatePostOpen(true)
               }
             ].map(item => {
-              const isActive = activeGroupTab === item.id;
               const IconComp = item.icon;
-
-              const handleCardClick = () => {
-                if (item.id === 'naam_jap') {
-                  setLogChantsOpen(true);
-                } else if (item.id === 'add_bhajan') {
-                  navigate("/upload-bhajan");
-                } else {
-                  setActiveGroupTab(item.id as any);
-                }
-              };
 
               return (
                 <div
                   key={item.id}
-                  onClick={handleCardClick}
-                  className={cn(
-                    "rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] min-h-[92px] sm:min-h-[108px]",
-                    isActive
-                      ? "bg-[#FAF0E4]/80 dark:bg-[#2B1F14] border-2 border-[#651317] dark:border-amber-400 shadow-xs"
-                      : "bg-[#FFFDF8] dark:bg-[#16110B] border border-[#E8D8C4] dark:border-stone-800/80 hover:border-[#651317]/50 shadow-2xs"
-                  )}
+                  onClick={item.action}
+                  className="rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] min-h-[92px] sm:min-h-[108px] bg-[#FFFDF8] dark:bg-[#16110B] border border-[#E8D8C4] dark:border-stone-800/80 hover:border-[#651317]/50 shadow-2xs group select-none"
                 >
-                  <div className={cn(
-                    "w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-1.5 shadow-inner shrink-0",
-                    isActive
-                      ? "bg-[#651317] text-white shadow-xs"
-                      : "bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300"
-                  )}>
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-1.5 shadow-inner shrink-0 bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 group-hover:bg-[#651317] group-hover:text-white transition-colors">
                     <IconComp className="w-5 h-5 stroke-[1.5]" />
                   </div>
                   <div className="w-full">
@@ -664,46 +652,25 @@ export function GroupHall({
         </div>
       </div>
 
-      {/* 8. SECTION TABS — compact pill tabs matching page style */}
-      <div className="mt-5 sm:mt-6">
-        <div 
-          className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden text-left scroll-smooth"
-          style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
-        >
-          {[
-            { id: 'feed', label: isHi ? 'सत्संग' : 'Satsang' },
-            { id: 'bhajans', label: isHi ? 'भजन' : 'Bhajan' },
-            { id: 'requests', label: isHi ? 'प्रार्थना' : 'Requests' },
-            { id: 'events', label: isHi ? 'कार्यक्रम' : 'Events' },
-            { id: 'gallery', label: isHi ? 'गैलरी' : 'Gallery' },
-            { id: 'members', label: isHi ? 'सदस्य' : 'Members' },
-          ].map(tab => {
-            const isActive = activeGroupTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveGroupTab(tab.id as any)}
-                className={cn(
-                  "inline-flex items-center justify-center h-8 sm:h-8.5 px-3.5 sm:px-4 rounded-full font-semibold text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap border",
-                  isActive
-                    ? "bg-[#651317] text-white border-[#651317]"
-                    : "bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-stone-300 hover:border-[#651317]/40"
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ─── TAB CONTENT (Feed, Bhajans, Requests, Events, Members, Gallery) ─── */}
-      <div className="mt-4">
-        
-        {/* 9. POST COMPOSER & 10. FEED */}
-        {activeGroupTab === 'feed' && (
+      {/* ─── TAB CONTENT (Feed & Members) ─── */}
+      <div className="mt-5 space-y-4">
+        {/* If Active Tab is Members/Leaderboard */}
+        {activeGroupTab === 'members' ? (
           <div className="space-y-4">
-            {/* Post Composer card */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setActiveGroupTab('feed')}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#651317] dark:text-amber-300 hover:underline cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>{isHi ? "फीड पर वापस जाएं" : "Back to Feed"}</span>
+              </button>
+            </div>
+            <DevoteesTab groupMembers={groupMembers} groupRankings={groupRankings} isHi={isHi} />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* 8. POST COMPOSER CARD (Placed above the Filter Bar) */}
             {user && (
               <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3 text-left">
                 <div className="flex items-center gap-3">
@@ -722,7 +689,7 @@ export function GroupHall({
                   </div>
                   <button
                     onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                    className="flex-1 text-left text-[#8C7A6B] dark:text-stone-400 text-xs sm:text-sm font-medium py-1.5 px-3 rounded-xl bg-[#FAF6EE] dark:bg-stone-900 border border-[#E8D8C4]/60 hover:border-[#651317]/30 transition-all"
+                    className="flex-1 text-left text-[#8C7A6B] dark:text-stone-400 text-xs sm:text-sm font-medium py-1.5 px-3 rounded-xl bg-[#FAF6EE] dark:bg-stone-900 border border-[#E8D8C4]/60 hover:border-[#651317]/30 transition-all cursor-pointer"
                   >
                     😊 {isHi ? "विचार साझा करें..." : "Share your thoughts..."}
                   </button>
@@ -732,21 +699,21 @@ export function GroupHall({
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
                       <Image className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "चित्र" : "Media"}</span>
                     </button>
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
                       <Smile className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "इमोजी" : "Emoji"}</span>
                     </button>
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] transition-colors"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
                       <Mic className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "आवाज" : "Voice"}</span>
@@ -763,48 +730,128 @@ export function GroupHall({
               </div>
             )}
 
-            {/* Posts Lists / Empty state */}
-            {groupPosts.length === 0 ? (
-              <div className="text-center py-8 bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl px-5 relative overflow-hidden shadow-xs">
-                <span className="text-2xl block select-none mb-1.5">🌸</span>
-                <h4 className="font-display font-bold text-sm text-[#651317] dark:text-amber-100">
-                  {isHi ? "सत्संग पोस्ट नहीं है" : "No Satsang Posts Yet"}
-                </h4>
-                <p className="text-[#8C7A6B] dark:text-stone-400 font-normal text-xs mt-1 max-w-xs mx-auto leading-relaxed">
-                  {isHi 
-                    ? "पहला भक्तिमय पोस्ट साझा करें और सत्संग शुरू करें!" 
-                    : "Share today's spiritual thoughts and start the discussion."}
-                </p>
-                <div className="mt-3 flex justify-center">
-                  <button
-                    onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                    className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs active:scale-95 transition-all shadow-xs cursor-pointer leading-none whitespace-nowrap"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-white" />
-                    <span>{isHi ? "पहला सत्संग पोस्ट लिखें" : "Write First Post"}</span>
-                  </button>
+            {/* 9. MODERN FILTER SECTION (Placed directly below Post Composer and above feed) */}
+            <div className="pt-1">
+              <div 
+                className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden text-left scroll-smooth"
+                style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+              >
+                {[
+                  { id: 'all', label: isHi ? '🌟 सभी' : '🌟 All', count: groupPosts.length },
+                  { id: 'thought', label: isHi ? '💬 सत्संग' : '💬 Satsang', count: groupPosts.filter(p => p.type === 'thought' || !p.type).length },
+                  { id: 'bhajan_share', label: isHi ? '🎵 भजन' : '🎵 Bhajan', count: groupPosts.filter(p => p.type === 'bhajan_share').length },
+                  { id: 'shloka', label: isHi ? '📖 श्लोक' : '📖 Shloka', count: groupPosts.filter(p => p.type === 'shloka' || p.content?.startsWith('[SHLOKA]') || p.content?.includes('📖 भावार्थ') || p.content?.includes('📖 अर्थ')).length },
+                  { id: 'event', label: isHi ? '📅 कार्यक्रम' : '📅 Events', count: groupPosts.filter(p => p.type === 'event').length },
+                  { id: 'requests', label: isHi ? '✨ प्रार्थना' : '✨ Requests', count: groupPosts.filter(p => p.type === 'bhajan_request' || p.type === 'question').length },
+                  { id: 'leaderboard', label: isHi ? '🏆 लीडरबोर्ड' : '🏆 Leaderboard', isTab: true },
+                ].map(tab => {
+                  const isTab = (tab as any).isTab;
+                  const isActive = isTab 
+                    ? activeGroupTab === 'members' 
+                    : (activeGroupTab === 'feed' && feedFilter === tab.id);
+
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        if (isTab) {
+                          setActiveGroupTab('members');
+                        } else {
+                          setActiveGroupTab('feed');
+                          setFeedFilter(tab.id as any);
+                        }
+                      }}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-3.5 sm:px-4 rounded-full font-bold text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap border",
+                        isActive
+                          ? "bg-[#651317] text-white border-[#651317] shadow-xs"
+                          : "bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-stone-300 hover:border-[#651317]/50"
+                      )}
+                    >
+                      <span>{tab.label}</span>
+                      {typeof tab.count === 'number' && (
+                        <span className={cn(
+                          "text-[10px] px-1.5 py-0.2 rounded-full tabular-nums font-extrabold",
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300"
+                        )}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 10. POST FEED (Filtered by selected filter) */}
+            {(() => {
+              const displayedPosts = groupPosts.filter((p) => {
+                if (feedFilter === 'all') return true;
+                if (feedFilter === 'thought') return p.type === 'thought' || !p.type;
+                if (feedFilter === 'bhajan_share') return p.type === 'bhajan_share';
+                if (feedFilter === 'shloka') {
+                  return p.type === 'shloka' || (p.content && (p.content.startsWith('[SHLOKA]') || p.content.includes('📖 भावार्थ') || p.content.includes('📖 अर्थ') || p.content.includes('भावार्थ:')));
+                }
+                if (feedFilter === 'event') return p.type === 'event';
+                if (feedFilter === 'requests') return p.type === 'bhajan_request' || p.type === 'question';
+                return true;
+              });
+
+              if (displayedPosts.length === 0) {
+                return (
+                  <div className="text-center py-8 bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl px-5 relative overflow-hidden shadow-xs">
+                    <span className="text-2xl block select-none mb-1.5">🌸</span>
+                    <h4 className="font-display font-bold text-sm text-[#651317] dark:text-amber-100">
+                      {isHi ? "इस श्रेणी में कोई पोस्ट नहीं है" : "No Posts in this category"}
+                    </h4>
+                    <p className="text-[#8C7A6B] dark:text-stone-400 font-normal text-xs mt-1 max-w-xs mx-auto leading-relaxed">
+                      {isHi 
+                        ? "पहला भक्तिमय पोस्ट साझा करें और सत्संग शुरू करें!" 
+                        : "Share a spiritual post and start the discussion."}
+                    </p>
+                    <div className="mt-3 flex justify-center">
+                      <button
+                        onClick={() => { 
+                          if (feedFilter === 'bhajan_share') setPostType('bhajan_share');
+                          else if (feedFilter === 'shloka') setPostType('shloka');
+                          else if (feedFilter === 'event') setPostType('event');
+                          else if (feedFilter === 'requests') setPostType('question');
+                          else setPostType('thought');
+                          setCreatePostOpen(true); 
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs active:scale-95 transition-all shadow-xs cursor-pointer leading-none whitespace-nowrap"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-white" />
+                        <span>{isHi ? "पहली पोस्ट लिखें" : "Write First Post"}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {displayedPosts.map(post => (
+                    <PostCard
+                      key={post.id} post={post} user={user} isHi={isHi}
+                      comments={commentsMap[post.id] || []}
+                      isCommentsExpanded={expandedCommentsPostId === post.id}
+                      onToggleComments={handleToggleComments} onToggleReaction={handleToggleReaction}
+                      onToggleRsvp={handleToggleRsvp} onVoteOption={handleVoteOption}
+                      onDeleteComment={handleDeleteComment} onAddComment={handleAddComment}
+                      newCommentText={newCommentText} setNewCommentText={setNewCommentText}
+                      commentIsLyricsSubmit={commentIsLyricsSubmit} setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                      isLoadingComments={loadingCommentsPostIds[post.id]}
+                      isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
+                      onDeletePost={handleDeletePost}
+                      onPostUpdated={loadPosts}
+                    />
+                  ))}
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {groupPosts.map(post => (
-                  <PostCard
-                    key={post.id} post={post} user={user} isHi={isHi}
-                    comments={commentsMap[post.id] || []}
-                    isCommentsExpanded={expandedCommentsPostId === post.id}
-                    onToggleComments={handleToggleComments} onToggleReaction={handleToggleReaction}
-                    onToggleRsvp={handleToggleRsvp} onVoteOption={handleVoteOption}
-                    onDeleteComment={handleDeleteComment} onAddComment={handleAddComment}
-                    newCommentText={newCommentText} setNewCommentText={setNewCommentText}
-                    commentIsLyricsSubmit={commentIsLyricsSubmit} setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                    isLoadingComments={loadingCommentsPostIds[post.id]}
-                    isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
-                    onDeletePost={handleDeletePost}
-                    onPostUpdated={loadPosts}
-                  />
-                ))}
-              </div>
-            )}
+              );
+            })()}
           </div>
         )}
 

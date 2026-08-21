@@ -696,7 +696,7 @@ export default function JoinCommunityPage() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-display text-sm md:text-base font-bold text-orange-950/80 dark:text-amber-100/80">
+            <span className="font-display text-base sm:text-lg font-extrabold tracking-tight text-[#651317] dark:text-amber-100">
               {isHi ? "समुदाय" : "Community"}
             </span>
           </div>
