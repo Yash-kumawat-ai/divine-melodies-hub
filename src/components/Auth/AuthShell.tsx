@@ -75,14 +75,16 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
 
   const handleOpenLogin = () => {
     if (mode !== 'login') {
-      navigate('/auth/login');
+      const search = window.location.search;
+      navigate(`/auth/login${search}`);
     }
     setIsMobileModalOpen(true);
   };
 
   const handleOpenSignup = () => {
     if (mode !== 'signup') {
-      navigate('/auth/signup');
+      const search = window.location.search;
+      navigate(`/auth/signup${search}`);
     }
     setIsMobileModalOpen(true);
   };

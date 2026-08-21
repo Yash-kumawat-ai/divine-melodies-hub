@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,8 @@ import { ArrowRight, Mail, Lock, User, Loader2, Phone, Eye, EyeOff } from 'lucid
 import { signupSchema, type SignupInput } from '@/schemas';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useRateLimitTimer } from '@/hooks/useRateLimitTimer';
+import { toast } from 'sonner';
+import { supabase } from '@/lib/supabaseClient';
 
 const signupCopy = {
   en: {
@@ -96,10 +98,12 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp, signIn, signInWithGoogle } = useAuth();
   const { language } = useLanguage();
   const copy = language === 'hi' ? signupCopy.hi : signupCopy.en;
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || searchParams.get('next') || '/';
 
   const { isRateLimited, secondsRemaining, setRateLimit } = useRateLimitTimer();
 
@@ -127,6 +131,30 @@ export default function SignupForm() {
       return;
     }
 
+    // Check if session exists or attempt immediate auto-login
+    let session = (result.data as any)?.session;
+    if (!session) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      session = sessionData?.session;
+    }
+
+    if (!session) {
+      const loginRes = await signIn(data.email, data.password);
+      session = (loginRes.data as any)?.session;
+    }
+
+    if (session) {
+      toast.success(
+        language === 'hi'
+          ? `स्वागत है ${data.name}! आपका खाता सफलतापूर्वक बन गया है। 🙏`
+          : `Welcome ${data.name}! Your account is ready and you are logged in. 🙏`
+      );
+      navigate(redirectUrl, { replace: true });
+      setLoading(false);
+      return;
+    }
+
+    // Only if email confirmation link is strictly required by Supabase:
     setRegisteredName(data.name);
     setSuccess(true);
     setLoading(false);
@@ -172,7 +200,7 @@ export default function SignupForm() {
     setError('');
     setLoading(true);
     try {
-      const { error } = await signInWithGoogle('/upload-bhajan');
+      const { error } = await signInWithGoogle(redirectUrl);
       if (error) {
         const parsed = toFriendlySignupError((error as any)?.message || copy.googleFailed);
         if (parsed.isRateLimit) {
@@ -218,8 +246,8 @@ export default function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 sm:space-y-3.5 md:space-y-2.5 w-full">
-      <div className="space-y-1 text-center">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4 md:space-y-3.5 w-full">
+      <div className="space-y-1 text-center mb-1">
         <h2 className="font-serif font-black text-xl sm:text-2xl md:text-xl text-[#5C1615] dark:text-amber-100 tracking-tight drop-shadow-xs">{copy.title}</h2>
         <p className="text-xs sm:text-sm md:text-xs text-[#7A6455] dark:text-stone-300 font-medium leading-relaxed max-w-xs md:max-w-md mx-auto">{copy.subtitle}</p>
       </div>
@@ -236,104 +264,114 @@ export default function SignupForm() {
         </div>
       )}
 
-      <div className="space-y-0.5 text-left">
-        <label htmlFor="name" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.fullName}</label>
+      <div className="space-y-1.5 text-left">
+        <label htmlFor="name" className="text-xs font-bold md:text-[12px] text-[#5C1615] dark:text-amber-300 block">
+          {copy.fullName}
+        </label>
         <div className="relative">
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="name"
             type="text"
             {...register('name')}
             placeholder={copy.fullNamePlaceholder}
-            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
+            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
         </div>
         {errors.name && (
-          <p className="text-xs text-rose-600 font-semibold">{errors.name.message}</p>
+          <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.name.message}</p>
         )}
       </div>
 
-      <div className="space-y-0.5 text-left">
-        <label htmlFor="email" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.email}</label>
+      <div className="space-y-1.5 text-left">
+        <label htmlFor="email" className="text-xs font-bold md:text-[12px] text-[#5C1615] dark:text-amber-300 block">
+          {copy.email}
+        </label>
         <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="email"
             type="email"
             {...register('email')}
             placeholder="namaste@raghavam.com"
-            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
+            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
         </div>
         {errors.email && (
-          <p className="text-xs text-rose-600 font-semibold">{errors.email.message}</p>
+          <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-0.5 text-left">
-        <label htmlFor="phone" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.phone}</label>
+      <div className="space-y-1.5 text-left">
+        <label htmlFor="phone" className="text-xs font-bold md:text-[12px] text-[#5C1615] dark:text-amber-300 block">
+          {copy.phone}
+        </label>
         <div className="relative">
-          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="phone"
             type="tel"
             {...register('phone')}
             placeholder="+91 98765 43210"
-            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
+            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
         </div>
         {errors.phone && (
-          <p className="text-xs text-rose-600 font-semibold">{errors.phone.message}</p>
+          <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.phone.message}</p>
         )}
       </div>
 
-      <div className="space-y-0.5 text-left">
-        <label htmlFor="password" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.password}</label>
+      <div className="space-y-1.5 text-left">
+        <label htmlFor="password" className="text-xs font-bold md:text-[12px] text-[#5C1615] dark:text-amber-300 block">
+          {copy.password}
+        </label>
         <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             {...register('password')}
             placeholder="••••••••"
-            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
+            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1"
             title={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
         {errors.password && (
-          <p className="text-xs text-rose-600 font-semibold">{errors.password.message}</p>
+          <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.password.message}</p>
         )}
       </div>
 
-      <div className="space-y-0.5 text-left">
-        <label htmlFor="confirmPassword" className="text-xs font-bold md:text-[11.5px] text-[#5C1615] dark:text-amber-300 block">{copy.confirmPassword}</label>
+      <div className="space-y-1.5 text-left">
+        <label htmlFor="confirmPassword" className="text-xs font-bold md:text-[12px] text-[#5C1615] dark:text-amber-300 block">
+          {copy.confirmPassword}
+        </label>
         <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7A6455]/70 dark:text-amber-400/60 w-4 h-4 pointer-events-none" />
           <Input
             id="confirmPassword"
             type={showConfirmPassword ? "text" : "password"}
             {...register('confirmPassword')}
             placeholder="••••••••"
-            className="h-10 sm:h-11 md:h-10 rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-inner"
+            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-0.5"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1"
             title={showConfirmPassword ? "Hide password" : "Show password"}
           >
             {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
         {errors.confirmPassword && (
-          <p className="text-xs text-rose-600 font-semibold">{errors.confirmPassword.message}</p>
+          <p className="text-[11px] text-rose-600 font-semibold mt-1">{errors.confirmPassword.message}</p>
         )}
       </div>
 
@@ -341,18 +379,18 @@ export default function SignupForm() {
         type="submit" 
         size="lg"
         disabled={loading || isRateLimited} 
-        className="mt-2.5 md:mt-3.5 h-11 sm:h-12 md:h-10.5 w-full rounded-2xl md:rounded-xl bg-[#6B1D16] hover:bg-[#541611] dark:bg-[#7A1C20] dark:hover:bg-[#651317] text-white font-extrabold tracking-wide text-sm sm:text-base shadow-[0_8px_20px_rgba(107,29,22,0.22)] hover:shadow-[0_12px_24px_rgba(107,29,22,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-[0.99]"
+        className="mt-3.5 md:mt-4 h-11 sm:h-12 md:h-11 w-full rounded-xl bg-[#6B1D16] hover:bg-[#541611] dark:bg-[#7A1C20] dark:hover:bg-[#651317] text-white font-extrabold tracking-wide text-sm sm:text-base shadow-[0_6px_18px_rgba(107,29,22,0.22)] hover:shadow-[0_8px_20px_rgba(107,29,22,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-[0.99]"
       >
         {loading ? <Loader2 className="mr-2 w-4 h-4 animate-spin text-white" /> : null}
         {isRateLimited ? `${copy.blocked} ${secondsRemaining}s` : copy.submit}
       </Button>
 
-      <div className="relative py-0.5">
+      <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-[#EADBCC] dark:border-stone-800" />
         </div>
         <div className="relative flex justify-center text-xs font-medium">
-          <span className="bg-[#FFFDF9] dark:bg-[#140F0A] px-3 text-[#7A6455] dark:text-stone-400">{copy.divider}</span>
+          <span className="bg-white dark:bg-[#140F0A] px-3 text-[#7A6455] dark:text-stone-400 font-medium text-xs">{copy.divider}</span>
         </div>
       </div>
 
@@ -361,15 +399,18 @@ export default function SignupForm() {
         variant="outline"
         onClick={handleGoogleSignup}
         disabled={loading}
-        className="h-11 sm:h-12 md:h-10.5 w-full rounded-2xl md:rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF4EB] font-bold text-sm shadow-xs transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+        className="h-11 sm:h-12 md:h-11 w-full rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 hover:bg-[#FAF4EB] font-bold text-sm shadow-2xs transition-all flex items-center justify-center gap-2.5 cursor-pointer"
       >
         <GoogleLogo />
         <span>{copy.google}</span>
       </Button>
 
-      <p className="text-center text-xs sm:text-sm text-[#7A6455] dark:text-stone-400 font-medium pt-0.5">
+      <p className="text-center text-xs sm:text-sm text-[#7A6455] dark:text-stone-400 font-medium pt-1">
         {copy.alreadyAccount}{' '}
-        <Link to="/auth/login" className="font-extrabold text-[#6B1D16] dark:text-amber-400 hover:underline">
+        <Link 
+          to={searchParams.toString() ? `/auth/login?${searchParams.toString()}` : "/auth/login"} 
+          className="font-extrabold text-[#6B1D16] dark:text-amber-400 hover:underline"
+        >
           {copy.login}
         </Link>
       </p>

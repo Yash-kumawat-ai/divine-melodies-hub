@@ -256,7 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null);
         const redirectTo =
           typeof window !== 'undefined'
-            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/upload-bhajan')}`
+            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/')}`
             : undefined;
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -280,6 +280,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await ensureUserProfile(data.user);
           if (data.session) {
             await fetchUserProfile(data.user.id);
+          } else {
+            // If session was not directly returned, attempt automatic login
+            try {
+              const { data: signInData } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+              if (signInData?.session && signInData?.user) {
+                await ensureUserProfile(signInData.user);
+                await fetchUserProfile(signInData.user.id);
+                return { data: signInData, error: null };
+              }
+            } catch (autoErr) {
+              console.warn('Auto sign-in after signup attempt:', autoErr);
+            }
           }
         }
 

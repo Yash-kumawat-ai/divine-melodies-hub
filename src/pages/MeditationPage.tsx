@@ -7,7 +7,6 @@ import {
   getPracticeById,
   type MeditationPractice,
 } from "@/lib/meditation/meditationTypes";
-import { loadPreferences } from "@/lib/meditation/meditationStorage";
 import PremiumJapaCounter from "@/components/meditation/PremiumJapaCounter";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 
@@ -49,10 +48,7 @@ export default function MeditationPage() {
   };
 
   const handleQuickStart = () => {
-    const prefs = loadPreferences();
-    const last = prefs.lastPracticeId ? getPracticeById(prefs.lastPracticeId) : null;
-    const targetPractice = last ?? getPracticeById("mantra_shiva")!;
-    setSearchParams({ practice: targetPractice.id });
+    setSearchParams({ practice: "mantra_jap_home" });
   };
 
   const handlePracticeChange = (newPractice: MeditationPractice) => {
