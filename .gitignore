@@ -16,6 +16,7 @@ dist-ssr
 .env.local
 .env.*.local
 supabase/.env.local
+hostinger/api/media/config.php
 supabase/.env.*.local
 
 # Editor directories and files

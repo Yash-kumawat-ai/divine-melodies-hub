@@ -206,7 +206,7 @@ export default function LoginForm() {
             type="email"
             {...register('email')}
             placeholder="namaste@raghavam.com"
-            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
+            className="h-11 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-4 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
         </div>
         {errors.email && (
@@ -225,12 +225,12 @@ export default function LoginForm() {
             type={showPassword ? "text" : "password"}
             {...register('password')}
             placeholder="••••••••"
-            className="h-10.5 sm:h-11 md:h-10.5 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-10.5 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
+            className="h-11 rounded-xl border border-[#EADBCC] dark:border-stone-700 bg-[#FAF4EB]/80 dark:bg-stone-900/80 pl-11 pr-11 text-stone-900 dark:text-white text-xs sm:text-sm font-medium placeholder:text-stone-400/80 focus:border-[#6B1D16] dark:focus:border-amber-400 focus:ring-2 focus:ring-[#6B1D16]/15 transition-all shadow-2xs"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1 cursor-pointer"
             title={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

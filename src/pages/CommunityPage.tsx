@@ -42,6 +42,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { supabase } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import {
@@ -145,6 +146,7 @@ export default function CommunityPage() {
   const [createdGroupData, setCreatedGroupData] = useState<{id: string; name: string; inviteCode: string} | null>(null);
   // Custom group image upload
   const [customGroupImage, setCustomGroupImage] = useState<string | null>(null);
+  const [customGroupImageFile, setCustomGroupImageFile] = useState<File | null>(null);
   const groupImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const isNameUnique = groupName.trim()
@@ -355,13 +357,19 @@ export default function CommunityPage() {
 
     try {
       setSubmitting(true);
+      let imageUrl = selectedImage;
+      if (customGroupImageFile) {
+        imageUrl = await uploadToCloudinary(customGroupImageFile, "groups");
+      } else if (customGroupImage && !customGroupImage.startsWith("data:")) {
+        imageUrl = customGroupImage;
+      }
       const result = await createGroup({
         name: groupName.trim(),
         description: groupDesc.trim(),
         targetCount: Number(groupTarget),
         createdBy: user.id,
         inviteCode: inviteCode.trim().toUpperCase(),
-        imageUrl: customGroupImage || selectedImage,
+        imageUrl,
         isPublic: isPublic,
       });
 
@@ -396,6 +404,7 @@ export default function CommunityPage() {
     setIsPublic(true);
     setIsInviteCodeManuallyEdited(false);
     setCustomGroupImage(null);
+    setCustomGroupImageFile(null);
   };
 
   // WhatsApp share
@@ -411,9 +420,11 @@ export default function CommunityPage() {
   const handleGroupImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setCustomGroupImage(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    if (customGroupImage?.startsWith("blob:")) {
+      URL.revokeObjectURL(customGroupImage);
+    }
+    setCustomGroupImageFile(file);
+    setCustomGroupImage(URL.createObjectURL(file));
   };
 
   const featuredGroup = groups.find(g => g.is_member) || groups[0] || null;

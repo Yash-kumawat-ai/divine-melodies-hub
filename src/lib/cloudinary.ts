@@ -1,4 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
+import {
+  isHostingerMediaConfigured,
+  uploadUserMedia,
+  type SecureUploadType as MediaUploadType,
+} from '@/lib/mediaUpload';
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -8,7 +13,7 @@ const SUPABASE_KEY =
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET ?? 'divine_upload';
 
-export type SecureUploadType = 'lyrics' | 'avatar' | 'deity';
+export type SecureUploadType = MediaUploadType;
 
 /** Readable message from Error, PostgrestError, or other thrown values. */
 export function formatUploadError(err: unknown, fallback = 'Upload failed'): string {
@@ -74,6 +79,10 @@ function canTryUnsignedFallback(status: number, serverMessage: string): boolean 
 }
 
 export async function uploadToCloudinary(file: File, uploadType: SecureUploadType = 'lyrics'): Promise<string> {
+  if (isHostingerMediaConfigured()) {
+    return uploadUserMedia(file, uploadType);
+  }
+
   const prepared = prepareUploadFile(file);
   validateUploadFile(prepared);
 

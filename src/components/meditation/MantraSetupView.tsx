@@ -21,27 +21,11 @@ import { fetchGroups } from "@/lib/naamSangh/naamSanghApi";
 import prayingSvg from "@/pages/images/svg/praying-svgrepo-com.svg";
 import groupUsersSvg from "@/pages/images/svg/group-of-users-svgrepo-com.svg";
 import voiceRadioSvg from "@/pages/images/svg/voice-radio-svgrepo-com.svg";
+import malasSvg from "@/pages/images/svg/malas.svg";
 
-// Sacred Japamala SVG Icon
-const SacredJapamalaIcon = ({ className = "w-8 h-8" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-    <circle cx="16" cy="5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="21" cy="6.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="25" cy="10.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="26.5" cy="15.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="25" cy="20.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="21" cy="24.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="11" cy="6.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="7" cy="10.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="5.5" cy="15.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="7" cy="20.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="11" cy="24.5" r="2.2" fill="#D97706" stroke="#92400E" strokeWidth="0.8" />
-    <circle cx="16" cy="25" r="2.8" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-    <circle cx="16" cy="25" r="1.2" fill="#FEF08A" />
-    <path d="M15 27.5L13 31H19L17 27.5H15Z" fill="#DC2626" />
-    <line x1="16" y1="28" x2="16" y2="31" stroke="#FEF08A" strokeWidth="0.8" />
-  </svg>
-);
+// Module-level group cache to ensure instant, zero-delay rendering of Dedication
+let cachedUserGroups: any[] = [];
+let isFetchingGroups = false;
 
 const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -85,7 +69,7 @@ export default function MantraSetupView({
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("mala");
   const [isSankalpSheetOpen, setIsSankalpSheetOpen] = useState(false);
   const [isGroupSheetOpen, setIsGroupSheetOpen] = useState(false);
-  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [userGroups, setUserGroups] = useState<any[]>(() => cachedUserGroups);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(() => initialGroupId || null);
 
   const { user } = useAuth();
@@ -103,9 +87,18 @@ export default function MantraSetupView({
   }, [initialGroupId]);
 
   React.useEffect(() => {
-    fetchGroups(user?.id).then((groups) => {
-      setUserGroups(groups || []);
-    });
+    if (isFetchingGroups) return;
+    isFetchingGroups = true;
+    fetchGroups(user?.id)
+      .then((groups) => {
+        if (groups) {
+          cachedUserGroups = groups;
+          setUserGroups(groups);
+        }
+      })
+      .finally(() => {
+        isFetchingGroups = false;
+      });
   }, [user?.id]);
 
   const sankalpOptions = useMemo(
@@ -187,16 +180,16 @@ export default function MantraSetupView({
         transition={{ duration: 0.22, ease: "easeOut" }}
         className="relative w-full max-w-lg bg-[#FAF6EE] dark:bg-[#120a06] border border-[#E8D8C4] dark:border-amber-500/30 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden my-auto max-h-[92vh] flex flex-col z-20"
       >
-        {/* Modal Top Header (Clean, sleek devotional header without image) */}
+        {/* Modal Top Header (Devotional & Aesthetic) */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-[#FAF0E4] dark:bg-amber-500/15 border border-[#E8D8C4] dark:border-amber-500/30 flex items-center justify-center shrink-0 shadow-xs">
-              <span className="font-display font-black text-xl text-[#651317] dark:text-amber-300 leading-none">ॐ</span>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400/25 via-[#FAF0E4] to-orange-400/20 dark:from-amber-500/25 dark:via-stone-900 dark:to-orange-500/10 border border-amber-400/50 dark:border-amber-400/40 flex items-center justify-center shrink-0 shadow-xs">
+              <span className="font-display font-black text-2xl text-[#651317] dark:text-amber-300 leading-none">ॐ</span>
             </div>
             <div className="min-w-0 text-left">
-              <div className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider leading-none mb-1">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                <span>{isHi ? "जप साधना सेटअप" : "Japa Sadhana Setup"}</span>
+              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider leading-none mb-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-400/30" />
+                <span>{isHi ? "दैनिक जप साधना" : "Daily Japa Sadhana"}</span>
               </div>
               <h2 className="text-base sm:text-lg font-display font-bold text-[#651317] dark:text-amber-100 truncate leading-normal py-0.5">
                 {isHi ? mantra.name_hindi : mantra.name_english}
@@ -228,13 +221,15 @@ export default function MantraSetupView({
                 type="button"
                 onClick={() => setPracticeMode("mala")}
                 className={cn(
-                  "relative flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left cursor-pointer active:scale-[0.98]",
+                  "relative flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all text-left cursor-pointer active:scale-[0.98]",
                   practiceMode === "mala"
                     ? "border-[#651317] bg-[#651317]/10 text-[#651317] dark:border-amber-500 dark:bg-amber-500/15 dark:text-amber-200 shadow-xs"
                     : "border-[#E8D8C4] bg-[#FFFDF8] text-[#786252] hover:bg-[#FAF0E4]/60 dark:border-stone-700 dark:bg-stone-900/50 dark:text-stone-300"
                 )}
               >
-                <SacredJapamalaIcon className="w-7 h-7 shrink-0 drop-shadow-xs" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center">
+                  <img src={malasSvg} alt="Mala" className="w-full h-full object-contain drop-shadow-xs" />
+                </div>
                 <div className="min-w-0">
                   <span className="text-xs sm:text-sm font-bold block leading-normal py-0.5">
                     {isHi ? "माला जप" : "Mala Jap"}
@@ -255,14 +250,14 @@ export default function MantraSetupView({
                 type="button"
                 onClick={() => setPracticeMode("voice")}
                 className={cn(
-                  "relative flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left cursor-pointer active:scale-[0.98]",
+                  "relative flex items-center gap-3 p-3 sm:p-3.5 rounded-2xl border transition-all text-left cursor-pointer active:scale-[0.98]",
                   practiceMode === "voice"
                     ? "border-[#651317] bg-[#651317]/10 text-[#651317] dark:border-amber-500 dark:bg-amber-500/15 dark:text-amber-200 shadow-xs"
                     : "border-[#E8D8C4] bg-[#FFFDF8] text-[#786252] hover:bg-[#FAF0E4]/60 dark:border-stone-700 dark:bg-stone-900/50 dark:text-stone-300"
                 )}
               >
-                <div className="w-7 h-7 shrink-0 flex items-center justify-center p-0.5">
-                  <img src={voiceRadioSvg} alt="Voice" className="w-full h-full object-contain dark:invert" />
+                <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center p-0.5">
+                  <img src={voiceRadioSvg} alt="Voice" className="w-full h-full object-contain dark:invert drop-shadow-xs" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-xs sm:text-sm font-bold block leading-normal py-0.5">
@@ -281,7 +276,7 @@ export default function MantraSetupView({
             </div>
           </div>
 
-          {/* Target Count Selection (Balanced, nicely aligned pills) */}
+          {/* Target Count Selection (Balanced, clearly visible star badge) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
@@ -291,7 +286,7 @@ export default function MantraSetupView({
                 ~{currentEstTime} {isHi ? "मिनट अनुमानित" : "min estimated"}
               </span>
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-2 pt-1">
               {goalOptions.map((g) => {
                 const isSelected = targetCount === g.count;
                 return (
@@ -300,7 +295,7 @@ export default function MantraSetupView({
                     type="button"
                     onClick={() => setTargetCount(g.count)}
                     className={cn(
-                      "relative flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl border transition-all cursor-pointer active:scale-95 text-center min-h-[58px]",
+                      "relative flex flex-col items-center justify-center py-2.5 px-1.5 rounded-2xl border transition-all cursor-pointer active:scale-95 text-center min-h-[60px]",
                       isSelected
                         ? "bg-[#651317] text-white border-[#651317] dark:bg-amber-500 dark:text-black dark:border-amber-400 font-bold shadow-sm"
                         : "bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#3A2418] dark:text-stone-300 hover:border-amber-400"
@@ -311,13 +306,16 @@ export default function MantraSetupView({
                       {isHi ? g.labelHi : g.labelEn}
                     </span>
                     {g.recommended && (
-                      <span className={cn(
-                        "absolute -top-1.5 -right-1 px-1.5 py-0.2 text-[8px] font-black rounded-full shadow-xs",
-                        isSelected
-                          ? "bg-amber-300 text-[#651317]"
-                          : "bg-amber-500 text-white dark:bg-amber-400 dark:text-black"
-                      )}>
-                        ★
+                      <span
+                        className={cn(
+                          "absolute -top-2.5 right-1 px-1.5 py-0.5 rounded-full text-[9px] font-black tracking-tight shadow-md flex items-center gap-0.5 z-10 border",
+                          isSelected
+                            ? "bg-amber-300 text-[#651317] border-[#651317]/20"
+                            : "bg-amber-400 text-stone-950 border-white/80 dark:border-stone-900"
+                        )}
+                      >
+                        <Star className="w-2.5 h-2.5 fill-current" />
+                        <span>{isHi ? "मुख्य" : "Best"}</span>
                       </span>
                     )}
                   </button>
@@ -326,7 +324,7 @@ export default function MantraSetupView({
             </div>
           </div>
 
-          {/* Sankalp / Intention Picker (No text cut off) */}
+          {/* Sankalp / Intention Picker */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
               {isHi ? "शुभ संकल्प" : "Intention (Sankalp)"}
@@ -353,34 +351,38 @@ export default function MantraSetupView({
             </button>
           </div>
 
-          {/* Group Dedication Picker (No text cut off) */}
-          {userGroups.length > 0 && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
-                {isHi ? "समर्पण गंतव्य" : "Dedication"}
-              </label>
-              <button
-                type="button"
-                onClick={() => setIsGroupSheetOpen(true)}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-left hover:bg-[#FAF0E4]/50 dark:hover:bg-stone-800/50 transition-all cursor-pointer shadow-2xs"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 border p-2", brandIconWell)}>
-                    <img src={groupUsersSvg} alt="" className="w-4 h-4 object-contain" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-sm font-bold block text-[#651317] dark:text-amber-200 leading-normal py-0.5">
-                      {selectedGroupName}
-                    </span>
-                    <span className="text-xs text-[#786252] dark:text-stone-400 block mt-0.5">
-                      {isHi ? "व्यक्तिगत या समूह चुनें" : "Personal or group dedication"}
-                    </span>
-                  </div>
+          {/* Group Dedication Picker (Zero lag / always seamless) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
+              {isHi ? "समर्पण गंतव्य" : "Dedication"}
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsGroupSheetOpen(true)}
+              className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-left hover:bg-[#FAF0E4]/50 dark:hover:bg-stone-800/50 transition-all cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 border p-2", brandIconWell)}>
+                  <img src={groupUsersSvg} alt="" className="w-4 h-4 object-contain" />
                 </div>
-                <ChevronRight className="w-4 h-4 text-[#786252] dark:text-stone-500 shrink-0" />
-              </button>
-            </div>
-          )}
+                <div className="min-w-0">
+                  <span className="text-sm font-bold block text-[#651317] dark:text-amber-200 leading-normal py-0.5">
+                    {selectedGroupName}
+                  </span>
+                  <span className="text-xs text-[#786252] dark:text-stone-400 block mt-0.5">
+                    {userGroups.length > 0
+                      ? isHi
+                        ? "व्यक्तिगत या समूह चुनें"
+                        : "Personal or group dedication"
+                      : isHi
+                        ? "व्यक्तिगत साधना (कोई समूह नहीं)"
+                        : "Personal devotion"}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#786252] dark:text-stone-500 shrink-0" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Sticky Footer (Always fully accessible & on top) */}
@@ -419,7 +421,7 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSankalpSheetOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120]"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[340]"
             />
             <motion.div
               initial={{ y: "100%" }}
@@ -515,7 +517,7 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsGroupSheetOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120]"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[340]"
             />
             <motion.div
               initial={{ y: "100%" }}

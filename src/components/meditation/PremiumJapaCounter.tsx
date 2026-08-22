@@ -30,6 +30,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
+import { transcriptMatchesActiveMantra } from "@/lib/meditation/japaVoice";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -381,6 +382,36 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                   />
                 </div>
               </div>
+            ) : malaType === "rudraksha" ? (
+              /* Previous textured rudraksha beads */
+              <div
+                className={`w-full h-full rounded-full transition-all duration-300 ${
+                  isActiveBead
+                    ? isDark
+                      ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
+                      : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
+                    : isCompletedBead
+                    ? "shadow-[0_0_8px_rgba(245,158,11,0.85)] border border-amber-400/35"
+                    : "opacity-45"
+                }`}
+                style={{
+                  backgroundImage: "url('/images/rudraksha.webp')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundColor:
+                    isCompletedBead || isActiveBead
+                      ? "#D97706"
+                      : isDark
+                      ? "#5c2a13"
+                      : "#A14D16",
+                  filter:
+                    isCompletedBead || isActiveBead
+                      ? "brightness(1.15) saturate(1.4) contrast(1.1)"
+                      : isDark
+                      ? "brightness(0.6) contrast(1.1) sepia(0.25)"
+                      : "brightness(0.95) contrast(1.1) sepia(0.2)",
+                }}
+              />
             ) : (
               <div
                 className={`w-full h-full rounded-full transition-all duration-300 ${
@@ -390,16 +421,12 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                   background: isCompletedBead || isActiveBead ? theme.beadDone : theme.beadTodo,
                   boxShadow: isActiveBead
                     ? theme.activeGlow
-                    : isCompletedBead
-                    ? theme.beadShadow
                     : theme.beadShadow,
                   opacity: isCompletedBead || isActiveBead ? 1 : 0.78,
                   outline: isActiveBead ? `2.5px solid ${theme.activeRing}` : undefined,
                   outlineOffset: isActiveBead ? 2 : undefined,
                   border:
-                    malaType === "rudraksha"
-                      ? "1px solid rgba(42,21,8,0.45)"
-                      : malaType === "tulsi"
+                    malaType === "tulsi"
                       ? "1px solid rgba(58,74,36,0.35)"
                       : "1px solid rgba(196,160,112,0.45)",
                 }}
@@ -484,17 +511,32 @@ function MalaTypePicker({
             }`}
           >
             <div className="flex items-center -space-x-1.5">
-              {t.previewBeads.map((c, i) => (
-                <span
-                  key={i}
-                  className="w-4 h-4 rounded-full border border-black/15 shadow-sm"
-                  style={{
-                    background: c,
-                    zIndex: 3 - i,
-                    boxShadow: t.beadShadow,
-                  }}
-                />
-              ))}
+              {id === "rudraksha"
+                ? [0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-4 h-4 rounded-full border border-black/15 shadow-sm"
+                      style={{
+                        backgroundImage: "url('/images/rudraksha.webp')",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundColor: "#A14D16",
+                        zIndex: 3 - i,
+                        filter: "brightness(1.05) saturate(1.2) contrast(1.05)",
+                      }}
+                    />
+                  ))
+                : t.previewBeads.map((c, i) => (
+                    <span
+                      key={i}
+                      className="w-4 h-4 rounded-full border border-black/15 shadow-sm"
+                      style={{
+                        background: c,
+                        zIndex: 3 - i,
+                        boxShadow: t.beadShadow,
+                      }}
+                    />
+                  ))}
             </div>
             <span
               className={`text-[11px] font-bold leading-none ${
@@ -688,9 +730,9 @@ export default function PremiumJapaCounter({
     }
   }, [searchParams, setSearchParams]);
   
-  // Timer tracking
+  // Timer tracking — voice mode stays paused until listening starts
   const [secondsElapsed, setSecondsElapsed] = useState(initialSeconds);
-  const [timerActive, setTimerActive] = useState(true);
+  const [timerActive, setTimerActive] = useState(() => initialPracticeMode !== "voice");
 
   // Auto Jap (ऑटो जप) states
   const [isAutoJapaActive, setIsAutoJapaActive] = useState(false);
@@ -703,10 +745,17 @@ export default function PremiumJapaCounter({
 
   // Voice Mode specific states
   const [voiceActive, setVoiceActive] = useState(false);
-  const [showVoiceInstructions, setShowVoiceInstructions] = useState(true);
+  const [voiceEverStarted, setVoiceEverStarted] = useState(false);
+  const [showVoiceInstructions, setShowVoiceInstructions] = useState(() => {
+    if (initialPracticeMode !== "voice") return false;
+    try {
+      return localStorage.getItem("voice_instructions_seen") !== "1";
+    } catch {
+      return true;
+    }
+  });
   const [dbLevel, setDbLevel] = useState(0);
   const [micDenied, setMicDenied] = useState(false);
-  const micWaveCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [lastRecognizedText, setLastRecognizedText] = useState("");
   const [recognitionSupported, setRecognitionSupported] = useState(true);
 
@@ -730,6 +779,7 @@ export default function PremiumJapaCounter({
   const animationFrameRef = useRef<number | null>(null);
   const lastVoiceCountTime = useRef<number>(0);
   const speechRecognitionRef = useRef<any>(null);
+  const voiceActiveRef = useRef(false);
   const guidedTimerRef = useRef<NodeJS.Timeout | null>(null);
   const wakeLockRef = useRef<any>(null);
 
@@ -1052,42 +1102,51 @@ export default function PremiumJapaCounter({
 
   // ─── RESET HANDLER ──────────────────────────────────────────────
   const handleResetClick = useCallback(() => {
+    if (practiceMode === "voice") {
+      voiceActiveRef.current = false;
+      setVoiceActive(false);
+      setVoiceEverStarted(false);
+    }
     setCount(0);
     setSecondsElapsed(0);
     setIsCompleted(false);
     setTimerActive(false);
     setFloatingTexts([]);
-  }, []);
+  }, [practiceMode]);
 
   // ─── VOICE COUNTING (SPEECH RECOGNITION) ──────────────────────
+  useEffect(() => {
+    voiceActiveRef.current = voiceActive;
+  }, [voiceActive]);
+
+  const beginVoiceListening = useCallback(() => {
+    setShowVoiceInstructions(false);
+    setVoiceEverStarted(true);
+    setMicDenied(false);
+    setTimerActive(true);
+    setVoiceActive(true);
+  }, []);
+
+  const pauseVoiceListening = useCallback(() => {
+    voiceActiveRef.current = false;
+    setVoiceActive(false);
+    setTimerActive(false);
+  }, []);
+
   const startMicListening = async () => {
-    // ── Helper: extract key words from mantra text ──────────────
-    const getMantraKeywords = (): string[] => {
-      const hi = activeMantra.full_text_hindi || activeMantra.name_hindi || "";
-      const en = activeMantra.transliteration || activeMantra.name_english || "";
-      const combined = (hi + " " + en).toLowerCase();
-      // Split on spaces / punctuation, remove very short tokens
-      return combined
-        .replace(/[।|,!?॥.]/g, " ")
-        .split(/\s+/)
-        .map((w) => w.trim())
-        .filter((w) => w.length >= 2);
-    };
-
-    // ── Helper: fuzzy match — at least 1 keyword found in transcript ─
-    const transcriptMatchesMantra = (transcript: string): boolean => {
-      const lower = transcript.toLowerCase();
-      const keywords = getMantraKeywords();
-      if (keywords.length === 0) return false;
-      // Count how many keywords appear
-      const matchCount = keywords.filter((kw) => lower.includes(kw)).length;
-      // At least 1 keyword must match (lenient for long mantras)
-      return matchCount >= 1;
-    };
-
     const SpeechRecognitionAPI =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
+
+    const matchesTranscript = (transcript: string) =>
+      transcriptMatchesActiveMantra({
+        nameEn: activeMantra.name_english,
+        nameHi: activeMantra.name_hindi,
+        deity: activeMantra.deity,
+        mantraTextHi: activeMantra.full_text_hindi || activeMantra.name_hindi,
+        mantraTextEn: activeMantra.transliteration || activeMantra.name_english,
+        transcript,
+      });
 
     if (!SpeechRecognitionAPI) {
       // ── FALLBACK: volume-based counting (browser doesn't support SR) ──
@@ -1112,7 +1171,7 @@ export default function PremiumJapaCounter({
         const dataArray = new Uint8Array(bufferLength);
 
         const processAudio = () => {
-          if (!analyserRef.current) return;
+          if (!analyserRef.current || !voiceActiveRef.current) return;
           analyser.getByteFrequencyData(dataArray);
           let total = 0;
           for (let i = 0; i < bufferLength; i++) total += dataArray[i];
@@ -1125,27 +1184,6 @@ export default function PremiumJapaCounter({
             incrementCount();
           }
 
-          const canvas = micWaveCanvasRef.current;
-          if (canvas) {
-            const canvasCtx = canvas.getContext("2d");
-            if (canvasCtx) {
-              canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-              canvasCtx.lineWidth = 2.5;
-              canvasCtx.strokeStyle = "rgba(245, 158, 11, 0.75)";
-              canvasCtx.beginPath();
-              const sliceWidth = canvas.width / bufferLength;
-              let x = 0;
-              for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = (v * canvas.height) / 2;
-                if (i === 0) canvasCtx.moveTo(x, y);
-                else canvasCtx.lineTo(x, y);
-                x += sliceWidth;
-              }
-              canvasCtx.lineTo(canvas.width, canvas.height / 2);
-              canvasCtx.stroke();
-            }
-          }
           animationFrameRef.current = requestAnimationFrame(processAudio);
         };
         processAudio();
@@ -1153,6 +1191,7 @@ export default function PremiumJapaCounter({
         console.warn("Microphone access denied:", err);
         setMicDenied(true);
         setVoiceActive(false);
+        setTimerActive(false);
       }
       return;
     }
@@ -1160,7 +1199,6 @@ export default function PremiumJapaCounter({
     // ── PRIMARY: Web Speech Recognition ────────────────────────────
     setRecognitionSupported(true);
     try {
-      // Also start audio analyser for the waveform canvas visualization
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       micStreamRef.current = stream;
       setMicDenied(false);
@@ -1179,46 +1217,24 @@ export default function PremiumJapaCounter({
       const dataArray = new Uint8Array(bufferLength);
 
       const drawWaveform = () => {
-        if (!analyserRef.current) return;
+        if (!analyserRef.current || !voiceActiveRef.current) return;
         analyser.getByteFrequencyData(dataArray);
         let total = 0;
         for (let i = 0; i < bufferLength; i++) total += dataArray[i];
         setDbLevel(Math.min(100, Math.round((total / bufferLength / 140) * 100)));
-        const canvas = micWaveCanvasRef.current;
-        if (canvas) {
-          const canvasCtx = canvas.getContext("2d");
-          if (canvasCtx) {
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-            canvasCtx.lineWidth = 2.5;
-            canvasCtx.strokeStyle = "rgba(245, 158, 11, 0.75)";
-            canvasCtx.beginPath();
-            const sliceWidth = canvas.width / bufferLength;
-            let x = 0;
-            for (let i = 0; i < bufferLength; i++) {
-              const v = dataArray[i] / 128.0;
-              const y = (v * canvas.height) / 2;
-              if (i === 0) canvasCtx.moveTo(x, y);
-              else canvasCtx.lineTo(x, y);
-              x += sliceWidth;
-            }
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
-          }
-        }
         animationFrameRef.current = requestAnimationFrame(drawWaveform);
       };
       drawWaveform();
 
-      // ── Speech Recognizer setup ──────────────────────────────────
       const recognition = new SpeechRecognitionAPI();
       recognition.lang = isHi ? "hi-IN" : "en-US";
-      recognition.continuous = true;       // keep listening non-stop
-      recognition.interimResults = true;   // get partial results too
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 3;
       speechRecognitionRef.current = recognition;
 
       let lastMatchTime = 0;
-      const COOLDOWN_MS = 1800; // min gap between two counts
+      const COOLDOWN_MS = 1800;
 
       recognition.onresult = (event: any) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -1226,13 +1242,12 @@ export default function PremiumJapaCounter({
           const transcript = result[0].transcript;
           setLastRecognizedText(transcript);
 
-          // Only count on final results (or confident interim)
           const isFinal = result.isFinal;
           const confidence = result[0].confidence;
           if (!isFinal && confidence < 0.5) continue;
 
           const now = Date.now();
-          if (transcriptMatchesMantra(transcript) && now - lastMatchTime > COOLDOWN_MS) {
+          if (matchesTranscript(transcript) && now - lastMatchTime > COOLDOWN_MS) {
             lastMatchTime = now;
             incrementCount();
           }
@@ -1243,14 +1258,17 @@ export default function PremiumJapaCounter({
         if (event.error === "not-allowed" || event.error === "service-not-allowed") {
           setMicDenied(true);
           setVoiceActive(false);
+          setTimerActive(false);
         }
-        // 'no-speech' and 'aborted' are harmless — recognition auto-restarts
       };
 
       recognition.onend = () => {
-        // Auto-restart if still active (browser stops recognition after silence)
-        if (speechRecognitionRef.current && voiceActive) {
-          try { speechRecognitionRef.current.start(); } catch (_) { /* already started */ }
+        if (speechRecognitionRef.current && voiceActiveRef.current) {
+          try {
+            speechRecognitionRef.current.start();
+          } catch (_) {
+            /* already started */
+          }
         }
       };
 
@@ -1259,27 +1277,34 @@ export default function PremiumJapaCounter({
       console.warn("Microphone access denied:", err);
       setMicDenied(true);
       setVoiceActive(false);
+      setTimerActive(false);
     }
   };
 
-  const stopMicListening = () => {
-    setVoiceActive(false);
+  const stopMicListening = (opts?: { clearActive?: boolean }) => {
+    const clearActive = opts?.clearActive !== false;
+    if (clearActive) {
+      voiceActiveRef.current = false;
+      setVoiceActive(false);
+    }
     setDbLevel(0);
     setLastRecognizedText("");
-    // Stop speech recognition
     if (speechRecognitionRef.current) {
-      try { speechRecognitionRef.current.stop(); } catch (_) { /* already stopped */ }
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (_) {
+        /* already stopped */
+      }
       speechRecognitionRef.current = null;
     }
-    // Stop waveform animation
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
-    // Stop mic stream
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
     }
-    // Close audio context
     if (audioCtxRef.current) {
       audioCtxRef.current.close().catch(() => {});
       audioCtxRef.current = null;
@@ -1289,10 +1314,12 @@ export default function PremiumJapaCounter({
   useEffect(() => {
     if (practiceMode === "voice" && voiceActive) {
       startMicListening();
-    } else {
-      stopMicListening();
+      return () => stopMicListening({ clearActive: false });
     }
-    return () => stopMicListening();
+    if (practiceMode === "voice" && !voiceActive) {
+      stopMicListening({ clearActive: false });
+    }
+    return undefined;
   }, [practiceMode, voiceActive]);
 
   // ─── GUIDED MODE AUTO PLAY ──────────────────────────────────────
@@ -2213,11 +2240,11 @@ export default function PremiumJapaCounter({
           }`}>
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => setShowVoiceInstructions(false)}
-              className={`w-full py-3.5 md:py-4 rounded-2xl font-bold text-[15px] tracking-wide transition-all font-serif flex items-center justify-center gap-2 shadow-lg active:scale-98 ${
+              onClick={beginVoiceListening}
+              className={`w-full py-3.5 md:py-4 rounded-2xl font-bold text-[15px] tracking-wide transition-all font-display flex items-center justify-center gap-2 shadow-lg active:scale-98 ${
                 isDark
                   ? "bg-gradient-to-r from-amber-600 to-yellow-500 text-black shadow-[0_0_20px_rgba(212,165,58,0.35)]"
-                  : "bg-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] border border-[#591A0D] shadow-[0_4px_16px_rgba(89,26,13,0.2)]"
+                  : "bg-[#651317] hover:bg-[#4f0f12] text-[#FFFDF8] border border-amber-400/30 shadow-[0_4px_16px_rgba(101,19,23,0.35)]"
               }`}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -2225,17 +2252,28 @@ export default function PremiumJapaCounter({
             </motion.button>
 
             <button
+              type="button"
               onClick={() => {
-                try { localStorage.setItem("voice_instructions_seen", "1"); } catch { /* ignore */ }
-                setShowVoiceInstructions(false);
+                try {
+                  localStorage.setItem("voice_instructions_seen", "1");
+                } catch {
+                  /* ignore */
+                }
+                beginVoiceListening();
               }}
               className={`flex items-center justify-center gap-2 text-[11px] transition-colors select-none mx-auto pb-1 ${
-                isDark ? "text-amber-200/40 hover:text-amber-200/70" : "text-[#786252] hover:text-[#591A0D]"
+                isDark ? "text-amber-200/40 hover:text-amber-200/70" : "text-[#786252] hover:text-[#651317]"
               }`}
             >
-              <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
-                isDark ? "border-amber-500/30 bg-black/30 text-amber-400" : "border-[#E8D8C4] bg-[#FFFDF8] text-[#591A0D]"
-              }`}>✓</span>
+              <span
+                className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
+                  isDark
+                    ? "border-amber-500/30 bg-black/30 text-amber-400"
+                    : "border-[#E8D8C4] bg-[#FFFDF8] text-[#651317]"
+                }`}
+              >
+                ✓
+              </span>
               {isHi ? "दोबारा न दिखाएं" : "Don't show again"}
             </button>
           </div>
@@ -2245,84 +2283,111 @@ export default function PremiumJapaCounter({
   }
 
   if (practiceMode === "voice") {
-    const deityImage =
-      activeMantra.id?.includes("shiv") || activeMantra.deity?.toLowerCase().includes("shiv")
-        ? shivWallpaper
-        : activeMantra.id?.includes("krishna") || activeMantra.id?.includes("radhe") || activeMantra.id?.includes("hare")
-        ? mayapurTvImg
-        : activeMantra.id?.includes("hanuman")
-        ? salangpurHanumanImg
-        : activeMantra.image_url || shivWallpaper;
-
-    const mantraDisplayName = isHi
-      ? activeMantra.name_hindi
-      : activeMantra.name_english;
-
-    // Build 20 waveform bars driven by real dbLevel (0–255)
-    const barCount = 20;
+    const mantraDisplayName = isHi ? activeMantra.name_hindi : activeMantra.name_english;
+    const barCount = 24;
     const normalizedLevel = Math.min(1, (dbLevel || 0) / 90);
+    const progressPct = Math.min(100, Math.round((count / Math.max(1, targetCount)) * 100));
+
+    const statusTitle = voiceActive
+      ? isHi
+        ? "सुन रहा है..."
+        : "Listening..."
+      : voiceEverStarted
+        ? isHi
+          ? "रुका हुआ है"
+          : "Paused"
+        : isHi
+          ? "शुरू करें दबाएँ, फिर मंत्र बोलें"
+          : "Press Start, then speak the mantra";
+
+    const statusHint = micDenied
+      ? isHi
+        ? "माइक एक्सेस अस्वीकार — सेटिंग्स में अनुमति दें"
+        : "Mic access denied — allow permission in settings"
+      : voiceActive && lastRecognizedText
+        ? `"${lastRecognizedText}"`
+        : recognitionSupported
+          ? isHi
+            ? "फ़ोन पास रखें — बोलते ही गिनती बढ़ेगी"
+            : "Keep the phone nearby — speaking increments the count"
+          : isHi
+            ? "आवाज़ से गिन रहे हैं (पहचान उपलब्ध नहीं)"
+            : "Counting by voice volume";
+
+    const primaryCtaLabel = voiceActive
+      ? isHi
+        ? "रोकें"
+        : "Pause"
+      : voiceEverStarted
+        ? isHi
+          ? "फिर से शुरू करें"
+          : "Resume"
+        : isHi
+          ? "शुरू करें"
+          : "Start";
 
     return (
-      <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-start md:justify-center overflow-hidden ${
-        isDark ? "bg-[#050305] text-[#fbf6f0]" : "bg-[#FAF5E8] text-[#33140A]"
-      }`}>
-        {/* Soft background light */}
-        <div className={`absolute inset-0 pointer-events-none ${
-          isDark ? "bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.04),transparent_70%)]" : "bg-[radial-gradient(circle_at_center,rgba(89,26,13,0.04),transparent_70%)]"
-        }`} />
-        
-        {/* Mobile Mockup Container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className={`relative w-full h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] md:h-[92dvh] md:max-h-[820px] max-w-md flex flex-col select-none overflow-hidden md:rounded-[2.5rem] md:border ${
-            isDark 
-              ? "bg-[#080608] text-[#fbf6f0] border-amber-500/25 shadow-[0_0_50px_rgba(0,0,0,0.85)]" 
-              : "bg-[#FFFDF8] text-[#33140A] border-[#E8D8C4] shadow-[0_10px_40px_rgba(89,26,13,0.1)]"
+      <div
+        className={`fixed inset-0 z-[100] flex flex-col overflow-hidden ${
+          isDark ? "bg-[#0c0a08] text-amber-50" : "bg-[#FAF6EE] text-[#3A2418]"
+        }`}
+      >
+        {!isDark && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(180deg, #FFFDF8 0%, #FAF6EE 45%, #F5EDE0 100%)",
+            }}
+          />
+        )}
+
+        {/* Full-bleed Hanuman hero — same as mala mode */}
+        <div
+          className={`absolute top-0 left-0 right-0 pointer-events-none overflow-hidden z-0 select-none ${
+            isDark ? "opacity-[0.55]" : "opacity-[0.7]"
           }`}
-          style={{ 
-            background: isDark 
-              ? "radial-gradient(ellipse at 50% 0%, #1a0a04 0%, #080608 60%)" 
-              : "radial-gradient(ellipse at 50% 0%, #FFFDF8 0%, #FAF5E8 100%)",
-            transform: "translate3d(0, 0, 0)" // Establish local containing block for absolute overlays
-          }}
+          style={{ height: isMobile ? "48vh" : "55vh" }}
         >
-          {/* ── HEADER ─────────────────────────────────────────────────── */}
-          <div className={`relative z-20 flex items-center justify-between px-5 pt-[max(1.1rem,env(safe-area-inset-top))] pb-3 border-b ${
-            isDark ? "border-white/5 bg-black/10" : "border-[#E8D8C4] bg-[#FAF5E8]"
-          }`}>
+          <img
+            src={hanumanDevotionalImg}
+            className="w-full h-full object-cover object-top max-w-5xl mx-auto"
+            style={{
+              maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+            }}
+            alt=""
+          />
+        </div>
+
+        {/* Floating header */}
+        <div className="relative z-20 shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
+          <div className="mx-auto max-w-lg flex items-center justify-between gap-2">
             <button
+              type="button"
               onClick={() => {
-                stopMicListening();
+                pauseVoiceListening();
+                stopMicListening({ clearActive: false });
                 if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
                 else onClose(activeMantra.id);
               }}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                isDark 
-                  ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                  : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-              }`}
+              className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
               aria-label="Back"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
 
-            <div className="text-center flex flex-col items-center flex-1 mx-2">
-              <h1 className={`font-serif text-[18px] md:text-[20px] font-bold tracking-wide select-none ${
-                isDark ? "text-amber-400/90" : "text-[#591A0D]"
-              }`}>
+            <div className="min-w-0 text-center flex-1 px-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#786252] dark:text-amber-500/70">
                 {isHi ? "ध्वनि जाप" : "Voice Japa"}
-              </h1>
-              <span className={`text-[11px] font-semibold tracking-widest mt-0.5 select-none uppercase font-serif truncate max-w-[180px] ${
-                isDark ? "text-amber-500/80" : "text-amber-700"
-              }`}>
+              </p>
+              <h1 className="font-display text-sm sm:text-base font-bold text-[#651317] dark:text-amber-200 truncate">
                 {mantraDisplayName}
-              </span>
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
+                type="button"
                 onClick={() => {
                   const currentQuery = new URLSearchParams(window.location.search);
                   currentQuery.set("resumeCount", count.toString());
@@ -2330,532 +2395,344 @@ export default function PremiumJapaCounter({
                   const returnPath = `/meditation?${currentQuery.toString()}`;
                   navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
                 }}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                  isDark 
-                    ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                    : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-                }`}
+                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
                 aria-label="Leaderboard"
               >
-                <Trophy className="w-5 h-5" />
+                <Trophy className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={() => setSettingsOpen((s) => !s)}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                  isDark 
-                    ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                    : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-                }`}
+                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
                 aria-label="Settings"
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-4 h-4" />
               </button>
             </div>
           </div>
+        </div>
 
-          {/* ── BODY ───────────────────────────────────────────────────── */}
-          <div className="flex-1 flex flex-col items-center justify-between px-5 py-3 pb-28 md:pb-8 overflow-y-auto max-h-full gap-3 md:gap-4 scrollbar-none overscroll-contain">
-            {/* Circular Mala Ring with central Deity Image & Voice Mic Badge */}
-            <div className="relative flex-shrink-0 my-1">
-              <CircularMalaRing
-                count={count}
-                targetCount={targetCount}
-                isDark={isDark}
-                isMobile={isMobile}
-                malaType={malaType}
-                activeMantra={activeMantra}
-                isHi={isHi}
-                floatingTexts={floatingTexts}
-                radiusOverride={isMobile ? 100 : 130}
-                showCenterStats={false}
-                centerContent={
-                  <div className="relative flex items-center justify-center">
-                    {/* Outer glow ring animates when listening */}
-                    <div
-                      className={`absolute inset-0 rounded-full transition-all duration-700 ${
-                        voiceActive ? "shadow-[0_0_35px_8px_rgba(212,165,58,0.35)] scale-102" : "shadow-[0_0_15px_2px_rgba(212,165,58,0.15)]"
-                      }`}
-                    />
-                    <div
-                      className="rounded-full border-[3px] overflow-hidden"
-                      style={{
-                        width: isMobile ? "96px" : "130px",
-                        height: isMobile ? "96px" : "130px",
-                        borderColor: isDark ? "#d4a53a" : "#591A0D",
-                        boxShadow: voiceActive
-                          ? "0 0 24px 4px rgba(212,165,58,0.3), inset 0 0 10px rgba(212,165,58,0.06)"
-                          : "0 0 10px 2px rgba(212,165,58,0.12)",
-                      }}
-                    >
-                      <img
-                        src={typeof deityImage === "string" ? deityImage : (deityImage as { src: string }).src ?? ""}
-                        alt={mantraDisplayName}
-                        className="w-full h-full object-cover select-none pointer-events-none"
-                        draggable={false}
-                      />
-                    </div>
-                    {/* Mic active badge */}
-                    {voiceActive && (
-                      <motion.div
-                        animate={{ scale: [1, 1.15, 1] }}
-                        transition={{ repeat: Infinity, duration: 1.2 }}
-                        className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-green-500 border-2 border-black flex items-center justify-center shadow-lg"
-                      >
-                        <Mic className="w-3 h-3 text-white" />
-                      </motion.div>
-                    )}
-                  </div>
-                }
-              />
-            </div>
-
-            {/* Chants count big text */}
-            <div className="text-center flex-shrink-0">
-              <span className={`font-serif text-[44px] md:text-[68px] font-black leading-none tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.22)] tabular-nums ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
-              }`}>
-                {count}
-              </span>
-              <span className={`text-xs md:text-sm font-semibold ml-1 ${
-                isDark ? "text-amber-200/40" : "text-[#786252]/80"
-              }`}>
-                /{targetCount}
-              </span>
-              <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-1 leading-none ${
-                isDark ? "text-amber-500/70" : "text-[#786252]"
-              }`}>
-                {isHi ? `दौर ${Math.floor(count / 108) + 1}` : `Round ${Math.floor(count / 108) + 1}`}
-              </p>
-            </div>
-
-            {/* Listening / Status text info */}
-            <div className="text-center flex-shrink-0">
-              <motion.h2
-                key={voiceActive ? "listening" : "paused"}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`font-serif text-[18px] md:text-[24px] font-semibold tracking-tight leading-none ${
-                  isDark ? "text-white" : "text-[#591A0D]"
-                }`}
-              >
-                {voiceActive
-                  ? (isHi ? "सुन रहा है..." : "Listening...")
-                  : (isHi ? "रुका हुआ है..." : "Paused...")}
-              </motion.h2>
-              {/* Show what was last heard */}
-              {voiceActive && lastRecognizedText ? (
-                <motion.p
-                  key={lastRecognizedText}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`text-[11px] md:text-[12px] mt-1 leading-snug max-w-[220px] mx-auto italic truncate ${
-                    isDark ? "text-amber-300/80" : "text-[#591A0D]/80"
-                  }`}
-                >
-                  "{lastRecognizedText}"
-                </motion.p>
-              ) : (
-                <p className={`text-[10px] md:text-[11px] mt-1 leading-none ${
-                  isDark ? "text-white/45" : "text-[#786252]"
-                }`}>
-                  {recognitionSupported
-                    ? (isHi ? "मंत्र बोलें, हम पहचान रहे हैं" : "Speak the mantra, we'll recognize it")
-                    : (isHi ? "आवाज़ पहचान उपलब्ध नहीं, ध्वनि से गिन रहे हैं" : "Speak loudly — counting by voice volume")}
-                </p>
-              )}
-              {micDenied && (
-                <p className="text-[10px] md:text-[11px] text-red-400 mt-1 leading-none">
-                  {isHi ? "माइक एक्सेस अस्वीकार" : "Microphone access denied"}
-                </p>
-              )}
-              {/* Recognition mode badge */}
+        {/* Body — listening orb is the primary visual */}
+        <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4">
+          <div className="mx-auto max-w-lg h-full min-h-[320px] flex flex-col items-center justify-center gap-3 sm:gap-4 py-3">
+            {/* Listening orb + radial waveform bars */}
+            <div className="relative flex items-center justify-center w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
+              {/* Pulse rings when listening */}
               {voiceActive && (
-                <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${recognitionSupported ? "bg-green-500/15 text-green-500" : "bg-amber-500/15 text-amber-600"}`}>
-                  {recognitionSupported ? (isHi ? "मंत्र पहचान चालू" : "Mantra Recognition") : (isHi ? "ध्वनि मोड" : "Volume Mode")}
-                </span>
+                <>
+                  <motion.div
+                    className="absolute inset-6 rounded-full border border-[#651317]/35 dark:border-amber-400/40"
+                    animate={{ scale: [1, 1.18, 1], opacity: [0.55, 0, 0.55] }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
+                  />
+                  <motion.div
+                    className="absolute inset-2 rounded-full border border-[#651317]/20 dark:border-amber-400/25"
+                    animate={{ scale: [1, 1.12, 1], opacity: [0.4, 0, 0.4] }}
+                    transition={{ repeat: Infinity, duration: 1.8, delay: 0.35, ease: "easeOut" }}
+                  />
+                </>
               )}
-            </div>
 
-            {/* Active Sadhana Details Cards */}
-            <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm flex-shrink-0 select-none">
-              {/* Card 1: Sankalp */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>🌸 {isHi ? "संकल्प" : "Sankalp"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                </span>
-              </div>
-
-              {/* Card 2: Method */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>📿 {isHi ? "विधि" : "Method"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {isHi ? "स्वर जप" : "Voice Japa"}
-                </span>
-              </div>
-
-              {/* Card 3: Goal */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>🎯 {isHi ? "लक्ष्य" : "Goal"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {targetCount} {isHi ? "जाप" : "Chants"}
-                </span>
-              </div>
-            </div>
-
-            {/* Sacred Mantra Text Display */}
-            <div className="px-6 text-center max-w-sm select-none relative z-10 animate-fade-in flex-shrink-0">
-              <p className={`font-serif text-sm sm:text-base font-bold leading-normal tracking-wide whitespace-pre-line ${
-                isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-[#591A0D]"
-              }`}>
-                {isHi 
-                  ? activeMantra.full_text_hindi || activeMantra.name_hindi 
-                  : activeMantra.transliteration || activeMantra.name_english}
-              </p>
-            </div>
-
-            {/* Chant Instructions */}
-            <div className={`flex items-center gap-3.5 font-serif text-[11px] tracking-widest select-none w-full justify-center flex-shrink-0 ${
-              isDark ? "text-amber-400/80" : "text-amber-800"
-            }`}>
-              <span className={`w-6 h-[1px] ${isDark ? "bg-gradient-to-r from-transparent to-amber-500/40" : "bg-gradient-to-r from-transparent to-amber-600/30"}`} />
-              <span>
-                {isHi ? "जाप बोलने पर अपने आप गिना जाएगा" : "Speak to chant automatically"}
-              </span>
-              <span className={`w-6 h-[1px] ${isDark ? "bg-gradient-to-l from-transparent to-amber-500/40" : "bg-gradient-to-l from-transparent to-amber-600/30"}`} />
-            </div>
-
-            {/* Mantra card */}
-            <div className={`relative w-full max-w-sm rounded-2xl px-3 py-2.5 md:px-4 md:py-3.5 flex items-center gap-3 md:gap-4 backdrop-blur-md shadow-md overflow-hidden flex-shrink-0 border ${
-              isDark ? "bg-[#1a1008]/80 border-amber-500/20" : "bg-[#FAF5E8] border-[#E8D8C4]"
-            }`}>
-              {/* Pink Lotus Background Watermark */}
-              <div className="absolute -right-4 -bottom-6 w-20 h-20 md:w-24 md:h-24 opacity-[0.12] pointer-events-none">
-                <LotusFlowerSvg className="w-full h-full" color="#ec4899" />
-              </div>
-              
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-amber-500/40 bg-amber-950/60 flex items-center justify-center flex-shrink-0 shadow-[0_0_12px_rgba(212,165,58,0.2)] z-10">
-                <LotusFlowerSvg className="w-6 h-6 md:w-7 md:h-7" color="#ec4899" />
-              </div>
-              
-              <div className="flex-1 min-w-0 z-10">
-                <p className={`text-[13px] md:text-[15px] font-semibold truncate ${isDark ? "text-white" : "text-[#591A0D]"}`}>{mantraDisplayName}</p>
-                <p className={`text-[10px] md:text-[11px] mt-0.5 ${isDark ? "text-amber-400/70" : "text-[#786252]"}`}>
-                  {count} {isHi ? "बार पहचाना गया" : "repetitions detected"}
-                </p>
-              </div>
-            </div>
-
-            {/* 3-stat row: Duration | Chants | Goal */}
-            <div className={`relative w-full max-w-sm rounded-2xl backdrop-blur-md overflow-hidden flex-shrink-0 border ${
-              isDark ? "bg-[#110c06]/60 border-amber-500/15" : "bg-[#FAF5E8] border-[#E8D8C4]"
-            }`}>
-              {/* Pink Lotus Background Watermark */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-36 md:h-36 opacity-[0.035] pointer-events-none">
-                <LotusFlowerSvg className="w-full h-full" color="#ec4899" />
-              </div>
-
-              <div className={`relative z-10 flex divide-x ${isDark ? "divide-amber-500/15" : "divide-amber-500/20"}`}>
-                {/* Duration */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "समय" : "Duration"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {formatTime(secondsElapsed)}
-                  </span>
-                </div>
-
-                {/* Chants */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "जाप" : "Chants"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {count}
-                  </span>
-                </div>
-
-                {/* Goal */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeWidth="1.2" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "लक्ष्य" : "Goal"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {targetCount}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Progress bar and Waveform */}
-            <div className="w-full max-w-sm flex flex-col items-center gap-2 md:gap-4 flex-shrink-0">
-              {/* Progress bar */}
-              <div className={`w-full h-1 rounded-full overflow-hidden ${isDark ? "bg-amber-900/30" : "bg-amber-200/50"}`}>
-                <motion.div
-                  className={`h-full rounded-full ${isDark ? "bg-gradient-to-r from-amber-500 to-yellow-400" : "bg-[#591A0D]"}`}
-                  animate={{ width: `${Math.min(100, Math.round((count / targetCount) * 100))}%` }}
-                  transition={{ duration: 0.4 }}
-                />
-              </div>
-
-              {/* Waveform / Visualizer */}
-              <div className="w-full flex items-end justify-center gap-[3px] h-6 md:h-9">
+              {/* Circular waveform ticks around orb */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 {Array.from({ length: barCount }).map((_, i) => {
-                  const center = barCount / 2;
-                  const distFromCenter = Math.abs(i - center) / center;
-                  const baseHeight = 0.15;
-                  const maxExtra = voiceActive ? normalizedLevel * (1 - distFromCenter * 0.5) : 0;
-                  const randomVariance = voiceActive ? Math.sin(i * 2.3 + Date.now() / 180) * 0.15 : 0;
-                  const heightFrac = Math.max(baseHeight, Math.min(1, baseHeight + maxExtra + randomVariance));
+                  const angle = (i / barCount) * 360;
+                  const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
+                  const base = 10;
+                  const boost = voiceActive
+                    ? normalizedLevel * (18 + (1 - distFromCenter) * 10)
+                    : 0;
+                  const h = base + boost + (voiceActive ? Math.sin(i * 1.7 + Date.now() / 200) * 4 : 0);
                   return (
-                    <motion.div
+                    <div
                       key={i}
-                      animate={{ scaleY: heightFrac }}
-                      transition={{ duration: 0.12, ease: "easeOut" }}
-                      className="rounded-full origin-bottom flex-1"
+                      className="absolute left-1/2 top-1/2 origin-bottom"
                       style={{
-                        height: "100%",
+                        width: 3,
+                        height: Math.max(8, h),
+                        marginLeft: -1.5,
+                        marginTop: -100,
+                        transform: `rotate(${angle}deg) translateY(-72px)`,
+                        borderRadius: 999,
                         background: voiceActive
-                          ? isDark ? `linear-gradient(to top, #d4a53a, #f59e0b88)` : `linear-gradient(to top, #591A0D, #8C2B18)`
-                          : isDark ? "rgba(212,165,58,0.18)" : "rgba(89,26,13,0.18)",
-                        minWidth: "2px",
-                        maxWidth: "6px",
+                          ? "linear-gradient(to top, #651317, #F5C15C)"
+                          : "rgba(101,19,23,0.22)",
                       }}
                     />
                   );
                 })}
               </div>
-            </div>
 
-            {/* Today Stats Card */}
-            <div className="w-full max-w-sm relative z-10 select-none flex-shrink-0">
-              <div className={`backdrop-blur-md border rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x ${
-                isDark 
-                  ? "bg-[#130d0a]/40 border-amber-500/15 divide-amber-500/10" 
-                  : "bg-[#FAF5E8] border-[#E8D8C4] divide-amber-500/20"
-              }`}>
-                {/* Left Col: Today Chants */}
-                <div className="flex items-center gap-3 flex-1 justify-center pr-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                    isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-                  }`}>
-                    <Flame className="w-5 h-5 fill-current" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "आज का" : "Today"}</span>
-                    <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>{displayTodayChants}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wide ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "मंत्र जाप" : "Chants"}</span>
-                  </div>
-                </div>
-
-                {/* Right Col: Rounds Completed */}
-                <div className="flex items-center gap-3 flex-1 justify-center pl-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                    isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-                  }`}>
-                    <Check className="w-5 h-5 stroke-[2.5]" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "माला चक्र" : "Rounds"}</span>
-                    <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>{displayTodayMalas}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wide ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "पूर्ण" : "Completed"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pause / Resume Button */}
-            <button
-              onClick={() => {
-                if (voiceActive) {
-                  stopMicListening();
-                  setTimerActive(false);
-                } else {
-                  setTimerActive(true);
-                  setVoiceActive(true);
+              {/* Mic orb */}
+              <motion.button
+                type="button"
+                onClick={() => {
+                  if (voiceActive) pauseVoiceListening();
+                  else beginVoiceListening();
+                }}
+                animate={
+                  voiceActive
+                    ? { scale: [1, 1.04, 1] }
+                    : { scale: 1 }
                 }
+                transition={
+                  voiceActive
+                    ? { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+                    : undefined
+                }
+                className={`relative z-10 w-[104px] h-[104px] sm:w-[120px] sm:h-[120px] rounded-full flex items-center justify-center border-2 transition-shadow active:scale-95 ${
+                  voiceActive
+                    ? "bg-[#651317] border-amber-400/50 shadow-[0_0_32px_rgba(101,19,23,0.45)] text-amber-300"
+                    : voiceEverStarted
+                    ? "bg-[#FFFDF8] border-[#E8D8C4] text-[#651317] dark:bg-stone-900 dark:border-stone-600 dark:text-amber-300 opacity-90"
+                    : "bg-[#FFFDF8] border-[#651317]/40 text-[#651317] dark:bg-stone-900 dark:border-amber-500/40 dark:text-amber-300 shadow-md"
+                }`}
+                aria-label={primaryCtaLabel}
+              >
+                {voiceActive ? (
+                  <Pause className="w-9 h-9 sm:w-10 sm:h-10 fill-current" />
+                ) : (
+                  <Mic className="w-9 h-9 sm:w-10 sm:h-10" />
+                )}
+              </motion.button>
+            </div>
+
+            {/* Progress */}
+            <div className="w-44 sm:w-52 h-1.5 rounded-full bg-[#E8D8C4]/80 dark:bg-stone-700 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#651317] dark:bg-amber-400"
+                animate={{ width: `${progressPct}%` }}
+                transition={{ duration: 0.35 }}
+              />
+            </div>
+
+            {/* One count */}
+            <div className="text-center">
+              <p className="font-display text-[52px] sm:text-[64px] font-bold leading-none tracking-tight tabular-nums text-[#651317] dark:text-amber-300">
+                {count}
+                <span className="text-xl sm:text-2xl font-semibold text-[#786252] dark:text-amber-200/50 ml-1.5">
+                  /{targetCount}
+                </span>
+              </p>
+              <span className="inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase border border-[#E8D8C4] bg-[#FFFDF8]/95 text-[#651317] dark:bg-stone-900 dark:border-stone-700 dark:text-amber-300">
+                {isHi
+                  ? `दौर ${Math.floor(count / 108) + 1}`
+                  : `Round ${Math.floor(count / 108) + 1}`}
+              </span>
+            </div>
+
+            {/* Status */}
+            <div className="text-center max-w-sm px-2">
+              <motion.h2
+                key={statusTitle}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-display text-base sm:text-lg font-semibold text-[#651317] dark:text-amber-100"
+              >
+                {statusTitle}
+              </motion.h2>
+              <p
+                className={`text-xs mt-1 leading-snug ${
+                  micDenied
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-[#786252] dark:text-stone-400"
+                }`}
+              >
+                {statusHint}
+              </p>
+            </div>
+
+            {/* Mantra once */}
+            <div className="text-center max-w-md px-3">
+              <p className="font-display text-sm sm:text-base font-bold leading-relaxed text-[#651317] dark:text-amber-200 whitespace-pre-line">
+                {isHi
+                  ? activeMantra.full_text_hindi || activeMantra.name_hindi
+                  : activeMantra.transliteration || activeMantra.name_english}
+              </p>
+              <p className="text-[11px] mt-1.5 text-[#786252] dark:text-stone-500 tracking-wide">
+                {isHi
+                  ? "फ़ोन पास रखें — बोलते ही गिनती बढ़ेगी"
+                  : "Keep the phone nearby — speaking increments the count"}
+              </p>
+            </div>
+
+            {/* Compact strip */}
+            <div className="w-full max-w-md rounded-full border border-[#E8D8C4] bg-[#FFFDF8]/95 dark:bg-stone-900/80 dark:border-stone-700 px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-[#786252] dark:text-stone-400 shadow-sm">
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                {formatTime(secondsElapsed)}
+              </span>
+              <span className="opacity-40">·</span>
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                {count}/{targetCount}
+              </span>
+              <span className="opacity-40">·</span>
+              <span>
+                {isHi ? "आज" : "Today"}{" "}
+                <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                  {displayTodayChants}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sticky Start / Pause / Resume — always in view */}
+        <div className="relative z-20 shrink-0 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/98 dark:bg-[#120a06]/98 backdrop-blur-sm px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-lg flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleResetClick}
+              className="w-12 h-12 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 flex items-center justify-center active:scale-95 transition-all shrink-0"
+              aria-label={isHi ? "रीसेट" : "Reset"}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (voiceActive) pauseVoiceListening();
+                else beginVoiceListening();
               }}
-              className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center active:scale-95 transition-all flex-shrink-0 ${
-                isDark 
-                  ? "border-[2px] border-amber-500 bg-transparent text-amber-400 shadow-[0_0_15px_rgba(212,165,58,0.2)] hover:shadow-[0_0_22px_rgba(212,165,58,0.35)]" 
-                  : "bg-[#591A0D] text-[#FFFDF8] border border-[#591A0D] shadow-[0_4px_16px_rgba(89,26,13,0.25)] hover:bg-[#4A0E12]"
-              }`}
-              aria-label={voiceActive ? "Pause" : "Start listening"}
+              className="flex-1 h-12 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-[0_6px_20px_rgba(101,19,23,0.4)] border border-amber-400/30"
             >
               {voiceActive ? (
-                <Pause className="w-5.5 h-5.5 md:w-7 md:h-7 fill-current" />
+                <Pause className="w-4 h-4 fill-current text-amber-300" />
               ) : (
-                <Mic className="w-5.5 h-5.5 md:w-7 md:h-7" />
+                <Mic className="w-4 h-4 text-amber-300" />
               )}
+              {primaryCtaLabel}
             </button>
           </div>
+        </div>
 
-          {/* Absolute Overlays Render */}
-          {/* 1. Settings Drawer */}
-          <AnimatePresence>
-            {settingsOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+        {/* Settings drawer */}
+        <AnimatePresence>
+          {settingsOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSettingsOpen(false)}
+                className="fixed inset-0 z-[80] bg-black/65 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 24, stiffness: 180 }}
+                className="fixed bottom-0 inset-x-0 z-[90] max-w-lg mx-auto rounded-t-[28px] px-6 pb-8 pt-4 border-t border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-[#130d0a] text-[#3A2418] dark:text-amber-100 shadow-2xl"
+              >
+                <div
                   onClick={() => setSettingsOpen(false)}
-                  className="absolute inset-0 z-[80] bg-black/65 backdrop-blur-xs select-none rounded-[2.5rem]"
+                  className="w-12 h-1.5 rounded-full mx-auto mb-6 cursor-pointer bg-[#E8D8C4] dark:bg-amber-500/20"
                 />
-                <motion.div
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 24, stiffness: 180 }}
-                  className={`absolute bottom-0 inset-x-0 z-[90] rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl settings-panel select-none border-t ${
-                    isDark 
-                      ? "bg-gradient-to-b from-[#130d0a] to-[#0a0507] border-amber-500/20 text-amber-100" 
-                      : "bg-[#FFFDF8] border-[#E8D8C4] text-[#33140A]"
-                  }`}
-                >
-                  <div 
-                    onClick={() => setSettingsOpen(false)}
-                    className={`w-12 h-1.5 rounded-full mx-auto mb-6 cursor-pointer transition-colors ${
-                      isDark ? "bg-amber-500/20 hover:bg-amber-500/40" : "bg-[#591A0D]/20 hover:bg-[#591A0D]/40"
-                    }`}
-                  />
-                  <div className="space-y-4">
-                    {/* Mantra Dropdown */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Flower2 className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "मंत्र" : "Mantra"}</span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={activeMantra.id}
-                          onChange={(e) => handleMantraChange(e.target.value)}
-                          className={`rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer border ${
-                            isDark 
-                              ? "bg-black/40 border-amber-500/20 text-amber-300 focus:border-amber-500/50" 
-                              : "bg-[#FAF5E8] border-[#E8D8C4] text-[#591A0D] focus:border-[#591A0D]"
-                          }`}
-                        >
-                          {(mantras || []).map((m) => (
-                            <option key={m.id} value={m.id} className={isDark ? "bg-[#130d0a] text-amber-100" : "bg-[#FFFDF8] text-[#591A0D]"}>
-                              {isHi ? m.name_hindi : m.name_english}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className={`w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? "text-amber-500" : "text-[#591A0D]"}`} />
-                      </div>
-                    </div>
-
-                    {/* Mala Type Picker */}
-                    <div className={`py-2 border-b space-y-3 ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>
-                        {isHi ? "माला का प्रकार" : "Mala Type"}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Flower2 className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "मंत्र" : "Mantra"}
                       </span>
-                      <MalaTypePicker
-                        malaType={malaType}
-                        onChange={setMalaType}
-                        isHi={isHi}
-                        isDark={isDark}
-                      />
                     </div>
-
-                    {/* Sound Toggle */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Volume2 className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "ध्वनि (Sound)" : "Sound"}</span>
-                      </div>
-                      <button
-                        onClick={() => setSoundEnabled(!soundEnabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          soundEnabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
+                    <div className="relative">
+                      <select
+                        value={activeMantra.id}
+                        onChange={(e) => handleMantraChange(e.target.value)}
+                        className="rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer border border-[#E8D8C4] dark:border-amber-500/20 bg-[#FAF0E4] dark:bg-black/40 text-[#651317] dark:text-amber-300"
                       >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: soundEnabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Vibration Toggle */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Smartphone className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "कंपन (Vibration)" : "Vibration"}</span>
-                      </div>
-                      <button
-                        onClick={() => setVibrationEnabled(!vibrationEnabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          vibrationEnabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
-                      >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: vibrationEnabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Screen Awake Toggle */}
-                    <div className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <Lock className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "स्क्रीन हमेशा चालू रखें" : "Auto-lock screen"}</span>
-                      </div>
-                      <button
-                        onClick={() => setAutoLockDisabled(!autoLockDisabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          autoLockDisabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
-                      >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: autoLockDisabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
+                        {(mantras || []).map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {isHi ? m.name_hindi : m.name_english}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#651317] dark:text-amber-500" />
                     </div>
                   </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
 
-          {/* 2. Leaderboard Full-Screen Overlay */}
-          {renderLeaderboardOverlay()}
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Volume2 className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "ध्वनि" : "Sound"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSoundEnabled(!soundEnabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        soundEnabled ? "bg-[#651317] dark:bg-amber-500" : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: soundEnabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
 
-          {/* 3. Completed Overlay */}
-          {renderCompletedOverlay()}
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "कंपन" : "Vibration"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setVibrationEnabled(!vibrationEnabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        vibrationEnabled
+                          ? "bg-[#651317] dark:bg-amber-500"
+                          : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: vibrationEnabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
 
-          {/* Too Fast Tap Toast Notification */}
-          {renderTooFastToast()}
-        </motion.div>
-        
-        {/* Fixed Mobile Bottom Navigation */}
-        <MobileBottomNav />
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <Lock className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "स्क्रीन चालू रखें" : "Keep screen on"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAutoLockDisabled(!autoLockDisabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        autoLockDisabled
+                          ? "bg-[#651317] dark:bg-amber-500"
+                          : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: autoLockDisabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {renderLeaderboardOverlay()}
+        {renderCompletedOverlay()}
+        {renderTooFastToast()}
       </div>
     );
   }

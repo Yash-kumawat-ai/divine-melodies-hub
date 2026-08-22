@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import fs from "fs";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import liveAartisData from "./src/data/liveAartis.json";
@@ -160,6 +161,38 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    {
+      name: "hostinger-spa-fallback",
+      closeBundle() {
+        const distDir = path.resolve(__dirname, "dist");
+        const htaccess = `Options -MultiViews
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteRule ^index\\.html$ - [L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/api/
+  RewriteCond %{REQUEST_URI} !^/uploads/
+  RewriteRule . /index.html [L]
+</IfModule>
+
+ErrorDocument 404 /404.php
+`;
+        fs.writeFileSync(path.join(distDir, ".htaccess"), htaccess);
+        fs.writeFileSync(path.join(distDir, "htaccess.txt"), htaccess);
+        const php404 = `<?php
+http_response_code(200);
+header("Content-Type: text/html; charset=UTF-8");
+readfile(__DIR__ . "/index.html");
+`;
+        fs.writeFileSync(path.join(distDir, "404.php"), php404);
+      },
+    },
     react(),
     mode === "development" && {
       name: "youtube-search-dev-proxy",
