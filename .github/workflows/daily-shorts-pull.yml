@@ -1,0 +1,39 @@
+name: Daily YouTube Shorts Fetch
+
+on:
+  schedule:
+    # 03:00 UTC = 08:30 IST — Daily automated shorts pull
+    - cron: '0 3 * * *'
+    # 15:00 UTC = 20:30 IST — Evening refresh
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  pull-shorts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Trigger Supabase pull-shorts Edge Function
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          echo "Triggering pull-shorts edge function..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "${SUPABASE_URL}/functions/v1/pull-shorts" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -d '{"action": "pull"}')
+          
+          echo "Response:"
+          echo "$RESPONSE"
+          
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Daily Shorts Pull completed successfully!"
+          else
+            echo "⚠️ Warning: pull-shorts returned status $HTTP_STATUS"
+          fi
