@@ -6,16 +6,19 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: 'website' | 'article';
+  lang?: string;
 }
 
-export function SEO({ title, description, image, url, type = 'website' }: SEOProps) {
+export function SEO({ title, description, image, url, type = 'website', lang }: SEOProps) {
   const siteName = 'Raghavam';
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   return (
     <Helmet>
+      {lang && <html lang={lang} />}
       <title>{fullTitle}</title>
       {description && <meta name="description" content={description} />}
+      {url && <link rel="canonical" href={url} />}
       
       {/* Open Graph */}
       <meta property="og:title" content={fullTitle} />

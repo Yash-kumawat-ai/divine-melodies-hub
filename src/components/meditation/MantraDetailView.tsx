@@ -5,6 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 import type { Mantra, JapTotal } from "@/lib/mantraJapa/mantraJapaApi";
+import { SEO } from "@/components/SEO";
 
 const japaStepsData = [
   {
@@ -391,6 +392,17 @@ export default function MantraDetailView({
         isDark ? "text-amber-50 bg-[#0c0a08]" : "text-[#3A2418] bg-[#FAF6EE]"
       )}
     >
+      <SEO
+        title={isHi ? mantra.name_hindi : mantra.name_english}
+        description={isHi ? detail.meaningHindi : detail.meaningEnglish}
+        image={image}
+        url={
+          typeof window !== "undefined"
+            ? `${window.location.origin}/meditation?practice=mantra_jap_home&mantraId=${mantra.id}`
+            : `/meditation?practice=mantra_jap_home&mantraId=${mantra.id}`
+        }
+        lang={isHi ? "hi" : "en"}
+      />
       {!isDark && (
         <div
           className="absolute inset-0 -z-20 pointer-events-none"
@@ -400,50 +412,24 @@ export default function MantraDetailView({
         />
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-[#E8D8C4] dark:border-stone-800">
-        <div className="mx-auto max-w-5xl px-4 lg:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 active:scale-95 transition-all shrink-0"
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-
-          <div className="flex-1 min-w-0 flex justify-center items-center px-2">
-            <h1 className="text-base sm:text-lg font-bold font-display tracking-tight text-[#651317] dark:text-amber-100 truncate text-center leading-normal py-1">
-              {isHi ? mantra.name_hindi : mantra.name_english}
-            </h1>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleShare}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 active:scale-95 transition-all shrink-0"
-            aria-label="Share"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
-
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <div className="mx-auto max-w-5xl px-4 lg:px-6 mt-4 md:mt-5 pb-6 md:pb-8 space-y-4 md:space-y-5">
-          {/* Hero — Compact balanced height matching MantraJapHome */}
           <motion.section
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="relative min-h-[190px] sm:min-h-[220px] md:min-h-[240px] max-h-[260px] sm:max-h-[280px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 py-5 sm:py-6 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="relative w-full h-[200px] sm:h-[220px] md:h-[280px] lg:h-[320px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 pt-14 pb-5 sm:pt-16 sm:pb-6 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
           >
-            <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 z-0 overflow-hidden rounded-[inherit]">
               {image ? (
                 <img
                   src={image}
                   alt=""
-                  className="w-full h-full object-cover object-[center_25%] md:object-[center_30%]"
+                  width={1024}
+                  height={1024}
+                  fetchpriority="high"
+                  decoding="async"
+                  className="w-full h-full object-cover object-[center_25%] md:object-[center_28%]"
                 />
               ) : (
                 <div className="w-full h-full bg-[#2a1210] flex items-center justify-center">
@@ -455,13 +441,32 @@ export default function MantraDetailView({
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
             </div>
 
+            <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
+              <button
+                type="button"
+                onClick={onBack}
+                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
+                aria-label="Share"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+            </div>
+
             <div className="relative z-10 max-w-xl md:max-w-2xl text-left">
               <p className="text-[#F5C15C] font-bold tracking-[0.18em] text-[10.5px] sm:text-xs uppercase mb-1">
                 {isHi ? "मंत्र साधना" : "Mantra Sadhana"}
               </p>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white leading-tight drop-shadow-sm">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white leading-tight drop-shadow-sm">
                 {isHi ? mantra.name_hindi : mantra.name_english}
-              </h2>
+              </h1>
               <p className="text-white/85 text-xs sm:text-sm mt-0.5 font-medium drop-shadow-xs">
                 {isHi ? mantra.name_english : mantra.name_hindi}
               </p>
@@ -603,6 +608,9 @@ export default function MantraDetailView({
             type="button"
             onClick={onStartJapa}
             className="flex w-full md:max-w-md md:mx-auto items-center justify-center gap-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-8 py-3.5 text-sm sm:text-base active:scale-95 transition-all shadow-[0_8px_24px_rgba(101,19,23,0.35)]"
+            onPointerEnter={() => {
+              void import("@/components/meditation/PremiumJapaCounter");
+            }}
           >
             <span className="font-display text-lg leading-none">ॐ</span>
             <span>{isHi ? "जप प्रारंभ करें" : "Start Japa"}</span>

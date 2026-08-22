@@ -16,6 +16,7 @@ import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { useHomeCommunityBhajans, useHomeJapStats, useHomePublicStats } from '@/hooks/useHomeDashboardQueries';
 import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
+import { prefetchMeditationPage } from '@/lib/prefetchMeditation';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
 import mandalaSvg from '@/pages/images/mandala.svg';
 import templeOptimized from '@/pages/images/temple-optimized.webp';
@@ -212,6 +213,21 @@ export default function Home() {
   const [featurePage, setFeaturePage] = useState(1);
   const FEATURE_PAGE_SIZE = 8;
 
+  useEffect(() => {
+    const run = () => prefetchMeditationPage();
+    const idleId =
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(run, { timeout: 2500 })
+        : window.setTimeout(run, 1200);
+    return () => {
+      if ("cancelIdleCallback" in window && typeof idleId === "number") {
+        window.cancelIdleCallback(idleId);
+      } else {
+        window.clearTimeout(idleId);
+      }
+    };
+  }, []);
+
   const testimonials = isHi ? [
     { name: 'प्रिया शर्मा', city: 'जयपुर', initials: 'PS', quote: 'राघवम् में भजनों का सबसे संपूर्ण संग्रह है जो मुझे ऑनलाइन मिला है। मैं अपनी सुबह की पूजा के लिए हर दिन इसका उपयोग करती हूँ।' },
     { name: 'रमेश कुमार', city: 'वाराणसी', initials: 'RK', quote: 'मैंने यहाँ अपने दादाजी के दुर्लभ भजन अपलोड किए हैं। यह जानकर बहुत अच्छा लगता है कि वे आने वाली पीढ़ियों के लिए सुरक्षित रहेंगे।' },
@@ -272,7 +288,7 @@ export default function Home() {
               { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', imageSrc: panchangWebp },
               { title: isHi ? 'ध्यान' : 'Meditation', path: '/meditation', imageSrc: meditationWebp },
               { title: isHi ? 'मंदिर' : 'Temples', path: '/temple', imageSrc: templeOptimized },
-              { title: isHi ? 'कृष्णा AI' : 'Krishna AI', path: '/kirtan-ai', imageSrc: '/images/narad-ai.webp' },
+              { title: isHi ? 'नारद AI' : 'Narad AI', path: '/narad-ai', imageSrc: '/images/narad-ai.webp' },
               { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', imageSrc: wallpapersWebp },
               { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', imageSrc: posterWebp },
               { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', imageSrc: japWebp },
@@ -283,6 +299,9 @@ export default function Home() {
               <m.button
                 key={item.title}
                 onClick={() => navigate(item.path)}
+                onPointerEnter={() => {
+                  if (item.path.startsWith('/meditation')) prefetchMeditationPage();
+                }}
                 initial={{ opacity: 0, y: 8 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '200px' }}

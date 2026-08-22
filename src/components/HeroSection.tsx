@@ -58,7 +58,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 alt="Raghavam — Devotional Music Platform"
                 width={1400}
                 height={900}
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 className="w-full h-full object-cover object-center rounded-r-[28px]"
               />

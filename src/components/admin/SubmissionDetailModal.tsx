@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -16,8 +17,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, AlertTriangle, Loader2, FileText, ExternalLink } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertTriangle, Loader2, FileText, ExternalLink, Save } from 'lucide-react';
 import SubmitterPopover from './SubmitterPopover';
+import { deities } from '@/data/bhajans';
+import { extractYouTubeVideoId } from '@/lib/youtubeSearch';
+import type { AdminBhajanContentUpdate } from '@/lib/supabaseQueries';
 
 export interface QueueItem {
   id: string;
@@ -25,6 +29,7 @@ export interface QueueItem {
   title: string;
   title_hindi: string;
   singer_name: string;
+  composer_name?: string;
   language?: string;
   deity_id?: number;
   status: string;
@@ -50,33 +55,56 @@ const REJECTION_TEMPLATES = [
   'Custom reason...',
 ] as const;
 
+const CONTENT_TYPES = ['bhajan', 'aarti', 'chalisa', 'katha', 'other'] as const;
+
 interface SubmissionDetailModalProps {
   item: QueueItem | null;
   open: boolean;
   onClose: () => void;
   onAction: (id: string, status: 'approved' | 'rejected' | 'changes_requested', reason?: string) => Promise<void>;
+  onSave: (id: string, fields: AdminBhajanContentUpdate) => Promise<boolean>;
   processing: boolean;
 }
-
-const extractYouTubeVideoId = (url: string) => {
-  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
-  return match?.[1] || null;
-};
 
 export default function SubmissionDetailModal({
   item,
   open,
   onClose,
   onAction,
+  onSave,
   processing,
 }: SubmissionDetailModalProps) {
   const [reason, setReason] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [activeAction, setActiveAction] = useState<'rejected' | 'changes_requested' | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState('');
+  const [titleHindi, setTitleHindi] = useState('');
+  const [lyricsHindi, setLyricsHindi] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [singerName, setSingerName] = useState('');
+  const [composerName, setComposerName] = useState('');
+  const [deityId, setDeityId] = useState<string>('');
+  const [contentType, setContentType] = useState<string>('bhajan');
+
+  useEffect(() => {
+    if (!item) return;
+    setTitle(item.title || '');
+    setTitleHindi(item.title_hindi || '');
+    setLyricsHindi(item.lyrics_hindi || '');
+    setYoutubeUrl(item.youtube_url || '');
+    setSingerName(item.singer_name || '');
+    setComposerName(item.composer_name || '');
+    setDeityId(item.deity_id != null ? String(item.deity_id) : '');
+    setContentType(item.content_type || 'bhajan');
+    setReason('');
+    setSelectedTemplate('');
+    setActiveAction(null);
+  }, [item]);
 
   if (!item) return null;
 
-  const videoId = item.youtube_url ? extractYouTubeVideoId(item.youtube_url) : null;
+  const videoId = extractYouTubeVideoId(youtubeUrl);
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
@@ -108,37 +136,45 @@ export default function SubmissionDetailModal({
     onClose();
   };
 
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave(item.id, {
+        title,
+        title_hindi: titleHindi,
+        lyrics_hindi: lyricsHindi,
+        youtube_url: youtubeUrl,
+        singer_name: singerName,
+        composer_name: composerName,
+        deity_id: deityId ? Number(deityId) : null,
+        content_type: contentType,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const showReasonForm = activeAction !== null;
+  const busy = processing || saving;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && resetAndClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-2 border-[#E8D8C4] dark:border-zinc-800 bg-white dark:bg-[#1E1710] text-[#32251E] dark:text-[#FFFDF8] rounded-3xl shadow-xl p-6 sm:p-8">
         <DialogHeader className="border-b border-[#EFE4D7] dark:border-zinc-800 pb-4">
           <DialogTitle className="font-serif text-2xl font-bold text-[#32251E] dark:text-[#FFFDF8] pr-6">
-            {item.title_hindi || item.title}
+            {titleHindi || title || item.title}
           </DialogTitle>
-          {item.title && item.title !== item.title_hindi && (
-            <DialogDescription className="text-xs sm:text-sm text-[#7A6B60] dark:text-[#D4C5B9] font-medium mt-0.5">
-              {item.title}
-            </DialogDescription>
-          )}
+          <DialogDescription className="text-xs sm:text-sm text-[#7A6B60] dark:text-[#D4C5B9] font-medium mt-0.5">
+            Edit content, then approve or reject. Saving does not change status.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
-          {/* Metadata Badges Bar */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-[#7A6B60] dark:text-[#D4C5B9] font-medium">By</span>
             <SubmitterPopover userId={item.user_id} displayName={item.singer_name} />
             <span className="text-[#7A6B60] dark:text-[#D4C5B9]">•</span>
             <span className="text-[#7A6B60] dark:text-[#D4C5B9] font-medium">{new Date(item.created_at).toLocaleDateString()}</span>
-            {item.content_type && (
-              <>
-                <span className="text-[#7A6B60] dark:text-[#D4C5B9]">•</span>
-                <Badge variant="outline" className="text-[10px] uppercase font-bold border-[#EFE4D7] dark:border-amber-900/40 bg-[#FAF2E8] dark:bg-amber-950/40 text-[#7A2D28] dark:text-[#E8B15C]">
-                  {item.content_type}
-                </Badge>
-              </>
-            )}
             <Badge
               variant="outline"
               className="text-[10px] uppercase font-bold border-[#EFE4D7] dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
@@ -147,7 +183,6 @@ export default function SubmissionDetailModal({
             </Badge>
           </div>
 
-          {/* Admin Duplicate Alert & Comparison Card */}
           {(() => {
             const isDuplicateFlagged = Boolean(item.is_duplicate_flagged || item.duplicate_reference_title || item.admin_notes?.includes('[DUPLICATE_CHECK]'));
             const userClaimedDifferent = Boolean(item.user_claimed_different || item.admin_notes?.includes('User Claimed Different: true'));
@@ -186,12 +221,70 @@ export default function SubmissionDetailModal({
             );
           })()}
 
-          {/* YouTube Video Embedded Preview */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-bold">Title</label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} className="h-9 text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold">शीर्षक</label>
+              <Input value={titleHindi} onChange={(e) => setTitleHindi(e.target.value)} className="h-9 text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold">Singer</label>
+              <Input value={singerName} onChange={(e) => setSingerName(e.target.value)} className="h-9 text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold">Composer</label>
+              <Input value={composerName} onChange={(e) => setComposerName(e.target.value)} className="h-9 text-sm rounded-xl" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold">Deity</label>
+              <Select value={deityId || 'none'} onValueChange={(v) => setDeityId(v === 'none' ? '' : v)}>
+                <SelectTrigger className="h-9 text-sm rounded-xl">
+                  <SelectValue placeholder="Select deity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {deities.map((d) => (
+                    <SelectItem key={d.id} value={String(d.id)}>
+                      {d.nameHindi} ({d.name})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold">Content type</label>
+              <Select value={contentType} onValueChange={setContentType}>
+                <SelectTrigger className="h-9 text-sm rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTENT_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs font-bold">YouTube URL</label>
+              <Input
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="h-9 text-sm rounded-xl"
+              />
+            </div>
+          </div>
+
           {videoId && (
             <div className="aspect-video rounded-2xl overflow-hidden border-2 border-[#E8D8C4] dark:border-zinc-800 shadow-sm">
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${videoId}`}
-                title={`Preview ${item.title}`}
+                title={`Preview ${title}`}
                 className="w-full h-full"
                 referrerPolicy="strict-origin-when-cross-origin"
                 allow="autoplay; encrypted-media; picture-in-picture"
@@ -200,26 +293,39 @@ export default function SubmissionDetailModal({
             </div>
           )}
 
-          {/* Lyrics Preview */}
-          {item.lyrics_hindi && (
-            <div className="rounded-2xl border-2 border-[#E8D8C4] dark:border-zinc-800 bg-[#FCF8F2] dark:bg-[#2A1F14] p-4 max-h-48 overflow-y-auto space-y-1.5 shadow-sm">
-              <p className="text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
-                <span>Submitted Lyrics Preview</span>
-              </p>
-              <p className="text-xs text-[#32251E] dark:text-[#FFFDF8] whitespace-pre-wrap leading-relaxed font-sans">
-                {item.lyrics_hindi}
-              </p>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <p className="text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5" />
+              <span>Lyrics (Hindi)</span>
+            </p>
+            <Textarea
+              value={lyricsHindi}
+              onChange={(e) => setLyricsHindi(e.target.value)}
+              className="min-h-[140px] rounded-xl text-xs font-medium whitespace-pre-wrap"
+            />
+          </div>
 
-          {item.youtube_url && !videoId && (
+          {youtubeUrl && !videoId && (
             <p className="text-xs text-[#7A6B60] dark:text-[#D4C5B9] font-medium">
-              YouTube Link: <a href={item.youtube_url} target="_blank" rel="noopener noreferrer" className="text-[#7A2D28] dark:text-[#E8B15C] font-bold underline">{item.youtube_url}</a>
+              YouTube Link:{' '}
+              <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-[#7A2D28] dark:text-[#E8B15C] font-bold underline">
+                {youtubeUrl}
+              </a>
             </p>
           )}
 
-          {/* Rejection / Request Changes Form */}
+          <Button
+            type="button"
+            disabled={busy || !title.trim()}
+            onClick={handleSave}
+            variant="outline"
+            className="w-full rounded-xl font-bold text-xs h-10 border-[#7A2D28] text-[#7A2D28]"
+          >
+            {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            <Save className="w-4 h-4 mr-1.5" />
+            Save content
+          </Button>
+
           {showReasonForm && (
             <div className="rounded-2xl border-2 border-[#E8D8C4] dark:border-zinc-800 bg-[#FAF2E8]/70 dark:bg-amber-950/20 p-4 space-y-3 shadow-sm animate-in fade-in-50">
               <p className="text-xs font-bold text-[#32251E] dark:text-[#FFFDF8]">
@@ -243,7 +349,7 @@ export default function SubmissionDetailModal({
               />
               <div className="flex gap-2 pt-1">
                 <Button
-                  disabled={!reason.trim() || processing}
+                  disabled={!reason.trim() || busy}
                   onClick={() => handleRejectOrChanges(activeAction!)}
                   variant={activeAction === 'rejected' ? 'destructive' : 'secondary'}
                   className="flex-1 rounded-xl font-bold text-xs h-10"
@@ -258,21 +364,22 @@ export default function SubmissionDetailModal({
             </div>
           )}
 
-          {/* Main Action Buttons */}
           {!showReasonForm && (
             <div className="flex flex-wrap gap-2.5 pt-3 border-t border-[#EFE4D7] dark:border-zinc-800">
-              <Button
-                disabled={processing}
-                onClick={handleApprove}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex-1 sm:flex-none px-5 h-10 shadow-sm"
-              >
-                {processing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                Approve & Publish
-              </Button>
+              {item.status !== 'approved' && (
+                <Button
+                  disabled={busy}
+                  onClick={handleApprove}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex-1 sm:flex-none px-5 h-10 shadow-sm"
+                >
+                  {processing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                  Approve & Publish
+                </Button>
+              )}
               <Button
                 variant="destructive"
-                disabled={processing}
+                disabled={busy}
                 onClick={() => setActiveAction('rejected')}
                 className="font-bold rounded-xl flex-1 sm:flex-none px-5 h-10 shadow-sm"
               >
@@ -281,7 +388,7 @@ export default function SubmissionDetailModal({
               </Button>
               <Button
                 variant="secondary"
-                disabled={processing}
+                disabled={busy}
                 onClick={() => setActiveAction('changes_requested')}
                 className="font-bold rounded-xl flex-1 sm:flex-none px-5 h-10 shadow-sm border border-[#EFE4D7] dark:border-zinc-700"
               >

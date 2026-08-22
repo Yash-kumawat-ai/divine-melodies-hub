@@ -134,12 +134,12 @@ export const MAIN_NAV_ITEMS: NavigationItem[] = [
   {
     id: 'kirtanAi',
     titleKey: 'kirtanAi',
-    titleFallback: 'Kirtan AI',
-    route: ROUTES.KIRTAN_AI,
+    titleFallback: 'Narad AI',
+    route: ROUTES.NARAD_AI,
     icon: Sparkles,
     group: 'main',
     badge: 'new',
-    permission: 'auth',
+    permission: 'public',
     visible: true,
   },
 ];

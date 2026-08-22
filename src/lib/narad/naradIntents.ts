@@ -7,6 +7,7 @@ export type NaradIntentType =
   | "explain_mantra"
   | "show_favorites"
   | "search_bhajan"
+  | "offer_flower"
   | "unknown";
 
 export type NaradIntent = {
@@ -88,18 +89,33 @@ function findMantra(text: string) {
 
 function extractBhajanQuery(rawText: string): string {
   return rawText
-    .replace(/\b(chalao|play|bajao|sunao|find|search|mujhe|please|koi)\b/gi, " ")
-    .replace(/\b(bhajan|aarti|chalisa)\b/gi, " ")
+    .replace(/\b(chalao|play|bajao|sunao|find|search|dhundho|mujhe|please|koi|show me)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function hasSongCue(rawText: string): boolean {
+  return /\b(chalao|play|bajao|sunao|bhajan|aarti|chalisa|\u092d\u091c\u0928|\u0906\u0930\u0924\u0940|\u091a\u093e\u0932\u0940\u0938\u093e)\b/i.test(
+    rawText,
+  );
 }
 
 export function looksLikeDirectSongQuery(rawText: string): boolean {
   const text = rawText.trim();
   if (!text || text.length < 2 || text.length > 80) return false;
   if (/[?]/.test(text)) return false;
-  if (/^(hi|hello|hey|namaste|help)$/i.test(text)) return false;
+  if (/^(hi|hello|hey|namaste|help|ram ram)$/i.test(text)) return false;
   if (/^(kya|kaise|kyun|why|how|what)\b/i.test(text)) return false;
+  if (
+    /^(find a bhajan|add a bhajan|start 108 japa|start meditation|offer flower|today'?s pick|today'?s devotion|aarti collection|my favorites)$/i.test(
+      text,
+    )
+  ) {
+    return false;
+  }
+  const words = text.split(/\s+/).filter(Boolean);
+  const hasDevanagari = /[\u0900-\u097F]/.test(text);
+  if (words.length === 1 && !hasDevanagari && text.length < 6) return false;
   return true;
 }
 
@@ -114,6 +130,10 @@ export function parseNaradIntent(rawText: string): NaradIntent {
     mantra,
   };
 
+  if (/offer flower|phool chadh|flower offering|offer a flower|diya jalao|ghanti bajao/i.test(normalizedRaw)) {
+    return { type: "offer_flower", confidence: 0.9, rawText: normalizedRaw, entities };
+  }
+
   if (/japa|jaap|jap|chant|108|\u092e\u093e\u0932\u093e|\u091c\u092a|\u091c\u093e\u092a/i.test(normalizedRaw)) {
     return { type: "start_japa", confidence: 0.94, rawText: normalizedRaw, entities };
   }
@@ -121,7 +141,10 @@ export function parseNaradIntent(rawText: string): NaradIntent {
     return { type: "start_meditation", confidence: 0.9, rawText: normalizedRaw, entities };
   }
 
-  if (/daily|today|aaj|\u0906\u091c|suggestion|sankalp|\u0938\u0902\u0915\u0932\u094d\u092a/i.test(normalizedRaw)) {
+  if (
+    !hasSongCue(normalizedRaw) &&
+    /daily|today|aaj|\u0906\u091c|suggestion|sankalp|\u0938\u0902\u0915\u0932\u094d\u092a/i.test(normalizedRaw)
+  ) {
     return { type: "daily_devotion", confidence: 0.82, rawText: normalizedRaw, entities };
   }
   if (/meaning|explain|arth|matlab|\u0905\u0930\u094d\u0925|\u092e\u0924\u0932\u092c/i.test(normalizedRaw)) {
@@ -195,6 +218,22 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
       spokenText: `Starting 108 japa for ${mantra}. Set your sankalp when ready.`,
       primaryLabel: "Start japa",
       secondaryLabel: "Open chat",
+      route: "/meditation?practice=mantra_jap_home",
+      mantra,
+      ...deityFields,
+    };
+  }
+
+  if (intent.type === "offer_flower") {
+    return {
+      kind: "offering",
+      intentType: intent.type,
+      title: "Temple offering",
+      displayText: "Open the temple to offer a flower, bell, or diya.",
+      spokenText: "Opening the temple for your offering.",
+      primaryLabel: "Open temple",
+      route: "/temple",
+      offeringType: "flower",
       mantra,
       ...deityFields,
     };
@@ -270,5 +309,12 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
     };
   }
 
+  return null;
+}
+
+export function resolveNaradActionPath(action: NaradActionResult): string | null {
+  if (action.route) return action.route;
+  if (action.kind === "japa_start") return "/meditation?practice=mantra_jap_home";
+  if (action.kind === "offering") return "/temple";
   return null;
 }

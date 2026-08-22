@@ -16,7 +16,7 @@ export default function AppShell() {
   // Prevent visual flash of header/footer on first mount if router defaults to "/" initially
   const resolvedPath = pathname === "/" && window.location.pathname !== "/" ? window.location.pathname : pathname;
 
-  const isKirtanAi = resolvedPath === "/kirtan-ai";
+  const isKirtanAi = resolvedPath === "/kirtan-ai" || resolvedPath === "/narad-ai";
   const isTemplePage = resolvedPath === "/temple";
   const isLeaderboard = resolvedPath === "/leaderboard";
   const activePracticeId = searchParams.get("practice");

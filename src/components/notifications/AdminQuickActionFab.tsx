@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import { useModerationPendingCount } from '@/hooks/useModerationNotificationQueries';
 import { cn } from '@/lib/utils';
+import { prefetchAdminPages } from '@/lib/prefetchAdminPages';
 
 interface AdminQuickActionFabProps {
   isSuperAdmin: boolean;
@@ -21,6 +22,7 @@ export function AdminQuickActionFab({ isSuperAdmin }: AdminQuickActionFabProps) 
           <Button
             type="button"
             size="icon"
+            onPointerEnter={() => prefetchAdminPages()}
             className={cn(
               'relative h-14 w-14 rounded-full shadow-lg border border-border bg-primary text-primary-foreground hover:bg-primary/90',
             )}

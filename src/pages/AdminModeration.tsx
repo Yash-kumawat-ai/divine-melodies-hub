@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   getPendingSubmissions,
   reviewSubmission,
+  updateAdminBhajanContent,
+  type AdminBhajanContentUpdate,
   type AdminQueueFilters,
 } from '@/lib/supabaseQueries';
 import { supabase } from '@/lib/supabaseClient';
@@ -41,6 +43,7 @@ export default function AdminModeration() {
     submittedBy: '',
     language: 'All',
     status: 'All',
+    contentType: 'All',
   });
 
   // Community Requests Moderation State
@@ -244,6 +247,38 @@ export default function AdminModeration() {
     }
   };
 
+  const handleSaveContent = async (id: string, fields: AdminBhajanContentUpdate): Promise<boolean> => {
+    if (!user) return false;
+    if (profile?.mfa_enabled && mfaAal !== 'aal2') {
+      toast.error('MFA required', {
+        description: 'Complete a high-assurance session before moderation actions.',
+      });
+      return false;
+    }
+
+    setProcessingId(id);
+    try {
+      const { data, error } = await updateAdminBhajanContent(id, fields, user.id);
+      if (error) {
+        toast.error('Save failed', { description: error.message });
+        return false;
+      }
+      toast.success('Bhajan content updated. Status unchanged.');
+      if (data) {
+        setSelectedItem(data as QueueItem);
+        setItems((prev) => prev.map((row) => (row.id === id ? (data as QueueItem) : row)));
+      }
+      await loadQueue();
+      setRefreshKey((k) => k + 1);
+      return true;
+    } catch {
+      toast.error('Something went wrong');
+      return false;
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -286,7 +321,7 @@ export default function AdminModeration() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
               <Input
-                placeholder="Filter by submitter..."
+                placeholder="Search title or singer..."
                 value={filters.submittedBy || ''}
                 onChange={(e) => setFilters((prev) => ({ ...prev, submittedBy: e.target.value }))}
                 className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]"
@@ -306,8 +341,8 @@ export default function AdminModeration() {
                 </SelectContent>
               </Select>
               <Select
-                value={(filters as any).contentType || 'All'}
-                onValueChange={(value) => setFilters((prev) => ({ ...prev, contentType: value } as any))}
+                value={filters.contentType || 'All'}
+                onValueChange={(value) => setFilters((prev) => ({ ...prev, contentType: value }))}
               >
                 <SelectTrigger className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8]">
                   <SelectValue placeholder="All Content Types" />
@@ -332,6 +367,9 @@ export default function AdminModeration() {
                   <SelectItem value="All">All Statuses</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="resubmitted">Resubmitted</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="changes_requested">Changes requested</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -586,6 +624,7 @@ export default function AdminModeration() {
         open={selectedItem !== null}
         onClose={() => setSelectedItem(null)}
         onAction={handleDecision}
+        onSave={handleSaveContent}
         processing={processingId !== null}
       />
     </AdminLayout>

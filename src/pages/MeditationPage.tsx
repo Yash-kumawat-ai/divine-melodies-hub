@@ -1,14 +1,23 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MeditationPracticeHome from "@/components/meditation/MeditationPracticeHome";
-import MeditationSession from "@/components/meditation/MeditationSession";
-import MantraJapHome from "@/components/meditation/MantraJapHome";
 import {
   getPracticeById,
   type MeditationPractice,
 } from "@/lib/meditation/meditationTypes";
-import PremiumJapaCounter from "@/components/meditation/PremiumJapaCounter";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
+
+const MeditationSession = lazy(() => import("@/components/meditation/MeditationSession"));
+const MantraJapHome = lazy(() => import("@/components/meditation/MantraJapHome"));
+const PremiumJapaCounter = lazy(() => import("@/components/meditation/PremiumJapaCounter"));
+
+function MeditationChunkFallback() {
+  return (
+    <div className="min-h-[60vh] bg-[#090506] flex items-center justify-center">
+      <div className="h-10 w-10 rounded-full border-2 border-amber-500/80 border-t-transparent animate-spin" aria-label="Loading Dhyan" />
+    </div>
+  );
+}
 
 export default function MeditationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,13 +26,14 @@ export default function MeditationPage() {
   const practice = practiceId ? getPracticeById(practiceId) || null : null;
 
   useEffect(() => {
-    if (!practice) return;
+    const lockSession = Boolean(practice) || practiceId === "mantra_japa_counter";
+    if (!lockSession) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [practice]);
+  }, [practice, practiceId]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -56,21 +66,31 @@ export default function MeditationPage() {
   };
 
   if (practiceId === "mantra_jap_home") {
-    return <MantraJapHome onBack={handleExit} />;
+    return (
+      <Suspense fallback={<MeditationChunkFallback />}>
+        <MantraJapHome onBack={handleExit} />
+      </Suspense>
+    );
   }
 
   if (practiceId === "mantra_japa_counter") {
-    return <MantraJapaCounterView />;
+    return (
+      <Suspense fallback={<MeditationChunkFallback />}>
+        <MantraJapaCounterView />
+      </Suspense>
+    );
   }
 
   if (practice) {
     return (
-      <MeditationSession
-        key={practice.id}
-        practice={practice}
-        onPracticeChange={handlePracticeChange}
-        onExit={handleExit}
-      />
+      <Suspense fallback={<MeditationChunkFallback />}>
+        <MeditationSession
+          key={practice.id}
+          practice={practice}
+          onPracticeChange={handlePracticeChange}
+          onExit={handleExit}
+        />
+      </Suspense>
     );
   }
 

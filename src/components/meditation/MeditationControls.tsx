@@ -201,6 +201,8 @@ export default function MeditationControls({
                     <img
                       src={deity.imageUrl}
                       alt=""
+                      width={112}
+                      height={112}
                       className="h-14 w-14 shrink-0 rounded-2xl object-cover ring-1 ring-amber-200/35"
                       loading="lazy"
                       decoding="async"

@@ -162,54 +162,49 @@ export default function MantraSetupView({
     "fixed bottom-0 left-0 right-0 max-w-lg mx-auto border-t rounded-t-[28px] p-6 pb-12 max-h-[85vh] overflow-y-auto z-[350] bg-[#FFFDF8] border-[#E8D8C4] text-[#3A2418] shadow-2xl dark:bg-[#140b07] dark:border-stone-700 dark:text-amber-50";
 
   return createPortal(
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 overflow-hidden">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.08 }}
         onClick={onBack}
-        className="fixed inset-0 bg-black/75 backdrop-blur-sm -z-10"
+        className="fixed inset-0 bg-black/55 -z-10"
       />
 
-      {/* Pop-up Modal Container */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-        className="relative w-full max-w-lg bg-[#FAF6EE] dark:bg-[#120a06] border border-[#E8D8C4] dark:border-amber-500/30 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden my-auto max-h-[92vh] flex flex-col z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.08 }}
+        className="relative w-full max-w-lg bg-[#FAF6EE] dark:bg-[#120a06] border border-[#E8D8C4] dark:border-amber-500/30 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden my-auto max-h-[min(92vh,720px)] flex flex-col z-20"
       >
-        {/* Modal Top Header (Devotional & Aesthetic) */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400/25 via-[#FAF0E4] to-orange-400/20 dark:from-amber-500/25 dark:via-stone-900 dark:to-orange-500/10 border border-amber-400/50 dark:border-amber-400/40 flex items-center justify-center shrink-0 shadow-xs">
-              <span className="font-display font-black text-2xl text-[#651317] dark:text-amber-300 leading-none">ॐ</span>
+            <div className="w-10 h-10 rounded-full border border-[#E8D8C4] dark:border-amber-500/30 bg-[#FFFDF8] dark:bg-stone-900 flex items-center justify-center shrink-0">
+              <span className="font-hindi text-[22px] leading-none text-[#651317] dark:text-amber-300" style={{ fontFamily: '"Noto Sans Devanagari", sans-serif' }}>ॐ</span>
             </div>
             <div className="min-w-0 text-left">
-              <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider leading-none mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-400/30" />
-                <span>{isHi ? "दैनिक जप साधना" : "Daily Japa Sadhana"}</span>
-              </div>
-              <h2 className="text-base sm:text-lg font-display font-bold text-[#651317] dark:text-amber-100 truncate leading-normal py-0.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#651317] dark:text-amber-300 leading-none mb-1">
+                {isHi ? "दैनिक जप साधना" : "Daily Japa Sadhana"}
+              </p>
+              <h2 className="text-base sm:text-lg font-semibold text-[#651317] dark:text-amber-100 truncate leading-tight">
                 {isHi ? mantra.name_hindi : mantra.name_english}
               </h2>
             </div>
           </div>
 
-          {/* Close Button */}
           <button
             type="button"
             onClick={onBack}
-            className="h-8 w-8 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 flex items-center justify-center hover:bg-[#FAF0E4] dark:hover:bg-stone-800 active:scale-95 transition-all cursor-pointer shrink-0 ml-2"
+            className="h-11 w-11 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 flex items-center justify-center hover:bg-[#FAF0E4] dark:hover:bg-stone-800 active:scale-95 transition-all cursor-pointer shrink-0 ml-2"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Modal Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-left">
+        <div className="overflow-hidden p-3 sm:p-4 space-y-3 text-left">
           {/* Practice Method Selection */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
@@ -228,7 +223,7 @@ export default function MantraSetupView({
                 )}
               >
                 <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center">
-                  <img src={malasSvg} alt="Mala" className="w-full h-full object-contain drop-shadow-xs" />
+                  <img src={malasSvg} alt="Mala" width={40} height={40} decoding="async" className="w-full h-full object-contain drop-shadow-xs" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-xs sm:text-sm font-bold block leading-normal py-0.5">
@@ -257,7 +252,7 @@ export default function MantraSetupView({
                 )}
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 flex items-center justify-center p-0.5">
-                  <img src={voiceRadioSvg} alt="Voice" className="w-full h-full object-contain dark:invert drop-shadow-xs" />
+                  <img src={voiceRadioSvg} alt="Voice" width={40} height={40} decoding="async" className="w-full h-full object-contain dark:invert drop-shadow-xs" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-xs sm:text-sm font-bold block leading-normal py-0.5">
@@ -283,7 +278,8 @@ export default function MantraSetupView({
                 {isHi ? "जप संख्या (माला)" : "Mantra Count (Mala)"}
               </label>
               <span className="text-xs font-semibold text-[#786252] dark:text-stone-400">
-                ~{currentEstTime} {isHi ? "मिनट अनुमानित" : "min estimated"}
+                ~<span style={{ fontVariantNumeric: "lining-nums tabular-nums", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}>{currentEstTime}</span>{" "}
+                {isHi ? "मिनट अनुमानित" : "min estimated"}
               </span>
             </div>
             <div className="grid grid-cols-5 gap-2 pt-1">
@@ -301,7 +297,12 @@ export default function MantraSetupView({
                         : "bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#3A2418] dark:text-stone-300 hover:border-amber-400"
                     )}
                   >
-                    <span className="text-base font-black leading-none">{g.count}</span>
+                    <span
+                      className="text-base font-semibold leading-none font-sans tabular-nums lining-nums"
+                      style={{ fontVariantNumeric: "lining-nums tabular-nums", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+                    >
+                      {g.count}
+                    </span>
                     <span className="text-[11px] font-medium leading-normal mt-1 opacity-90">
                       {isHi ? g.labelHi : g.labelEn}
                     </span>
@@ -336,7 +337,7 @@ export default function MantraSetupView({
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 border p-2", brandIconWell)}>
-                  <img src={prayingSvg} alt="" className="w-4 h-4 object-contain" />
+                  <img src={prayingSvg} alt="" width={16} height={16} decoding="async" className="w-4 h-4 object-contain" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-sm font-bold block text-[#651317] dark:text-amber-200 leading-normal py-0.5">
@@ -363,7 +364,7 @@ export default function MantraSetupView({
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className={cn("w-9 h-9 rounded-full flex items-center justify-center shrink-0 border p-2", brandIconWell)}>
-                  <img src={groupUsersSvg} alt="" className="w-4 h-4 object-contain" />
+                  <img src={groupUsersSvg} alt="" width={16} height={16} decoding="async" className="w-4 h-4 object-contain" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-sm font-bold block text-[#651317] dark:text-amber-200 leading-normal py-0.5">
@@ -386,10 +387,16 @@ export default function MantraSetupView({
         </div>
 
         {/* Modal Sticky Footer (Always fully accessible & on top) */}
-        <div className="p-4 sm:p-5 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0 space-y-3">
+        <div className="p-3 sm:p-4 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0 space-y-3">
           <div className="flex items-center justify-between text-xs text-[#786252] dark:text-stone-400 px-1 font-medium">
             <span>
-              <strong className="text-[#651317] dark:text-amber-300 font-bold">{targetCount}</strong> {isHi ? "मंत्र" : "mantras"}
+              <strong
+                className="text-[#651317] dark:text-amber-300 font-semibold font-sans tabular-nums lining-nums"
+                style={{ fontVariantNumeric: "lining-nums tabular-nums", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+              >
+                {targetCount}
+              </strong>{" "}
+              {isHi ? "मंत्र" : "mantras"}
             </span>
             <span>·</span>
             <span>
@@ -421,7 +428,7 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSankalpSheetOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[340]"
+              className="fixed inset-0 bg-black/55 z-[340]"
             />
             <motion.div
               initial={{ y: "100%" }}
@@ -517,7 +524,7 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsGroupSheetOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[340]"
+              className="fixed inset-0 bg-black/55 z-[340]"
             />
             <motion.div
               initial={{ y: "100%" }}

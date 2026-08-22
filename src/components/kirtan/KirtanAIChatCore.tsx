@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BookOpen, Bot, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X } from "lucide-react";
+import { BookOpen, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -8,9 +8,7 @@ import { TextToSpeech, VoiceManager, checkVoiceSupport } from "@/lib/voiceUtils"
 import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "@/data/bhajans";
-import { bhajanMatchesQuery, naradSearchBhajans } from "@/lib/searchAlgorithm";
-import { searchUserBhajans } from "@/lib/supabaseQueries";
-import { generateBhajanSlug } from "@/lib/slugUtils";
+import { bhajanMatchesQuery } from "@/lib/searchAlgorithm";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   createChatSession,
@@ -24,12 +22,8 @@ import {
   KirtanBhajan,
   KirtanDeity,
   KirtanLanguage,
-  KirtanMood,
   OFFLINE_BHAJANS,
   createBhajanFromDraft,
-  filterByDeityAndLanguage,
-  filterByMood,
-  getOccasionSuggestions,
   isDuplicateBhajan,
   loadSavedBhajans,
   saveBhajans,
@@ -42,6 +36,15 @@ import {
   parseNaradIntent,
   type NaradActionResult,
 } from "@/lib/narad/naradIntents";
+import {
+  NARAD_RESULT_LIMIT,
+  catalogAartis,
+  catalogOccasionSuggestions,
+  dedupeBhajans,
+  filterCatalogByDeityName,
+  filterCatalogByMoodTag,
+  searchNaradCatalog,
+} from "@/lib/narad/naradCatalogSearch";
 
 type Role = "user" | "bot";
 type Flow =
@@ -68,15 +71,11 @@ const FAVORITES_KEY = "kirtan_ai_favorites";
 const QUICK_ACTIONS = [
   "Find a Bhajan",
   "Add a Bhajan",
-  "Start 108 Japa",
-  "Start Meditation",
-  "Offer Flower",
-  "Today's Devotion",
+  "Today's pick",
   "Aarti Collection",
   "My Favorites",
 ];
 const DEITY_OPTIONS = ["Krishna", "Shiva", "Devi", "Ganesh", "Hanuman", "All"];
-const LANGUAGE_OPTIONS = ["Hindi", "Sanskrit", "Regional", "Any"];
 const ADD_DEITIES = ["Krishna", "Shiva", "Devi", "Ganesh", "Hanuman", "General"];
 const ADD_LANGUAGES = ["Hindi", "Sanskrit", "Gujarati", "Marathi", "Other"];
 const MOOD_OPTIONS = ["Morning Prayer", "Meditation", "Festival", "Grief", "Celebration"];
@@ -137,34 +136,11 @@ function extractChatSearchTerm(value: string): { term: string; isSearch: boolean
     .trim();
 
   const isShortcutCommand =
-    /^(find a bhajan|suggest bhajans by mood|bhajans for today|aarti collection|my favorites|add a bhajan|start 108 japa|start meditation|offer flower|today's devotion)$/i.test(
+    /^(find a bhajan|suggest bhajans by mood|bhajans for today|today's pick|aarti collection|my favorites|add a bhajan|start 108 japa|start meditation|offer flower|today's devotion)$/i.test(
       text,
     );
-  const directName = !isShortcutCommand && (containsDevanagari(text) ? text.length >= 2 : text.length >= 3);
+  const directName = !isShortcutCommand && (containsDevanagari(text) ? text.length >= 2 : text.length >= 4);
   return { term: text, isSearch: directName, isDeityBrowse: false };
-}
-
-function convertUploadToBhajan(upload: any, index: number): Bhajan {
-  const converted = {
-    id: Number.parseInt(String(upload.id), 10) || 100000 + index,
-    slug: generateBhajanSlug(upload.title || `uploaded-bhajan-${index}`),
-    title: upload.title || "Untitled Bhajan",
-    titleHindi: upload.title_hindi || upload.title || "",
-    deityId: Number(upload.deity_id) || 0,
-    singerName: upload.singer_name || "Unknown",
-    composerName: upload.composer_name || "",
-    youtubeUrl: upload.youtube_url || "",
-    lyricsHindi: upload.lyrics_hindi || "",
-    lyricsTransliteration: "",
-    playCount: upload.play_count || 0,
-    rating: upload.average_rating || 0,
-    tags: upload.mood_tags || [],
-    featured: false,
-  } as Bhajan & { language?: string; aliases?: string[] };
-
-  converted.language = upload.language || "";
-  converted.aliases = upload.aliases || [];
-  return converted;
 }
 
 function getDeityNameForBhajan(bhajan: Bhajan): string {
@@ -174,19 +150,9 @@ function getDeityNameForBhajan(bhajan: Bhajan): string {
 
 function strictBhajanMatch(term: string, bhajan: Bhajan): boolean {
   if (bhajanMatchesQuery(bhajan, term)) return true;
-  const query = term.normalize('NFC').toLowerCase().trim();
+  const query = term.normalize("NFC").toLowerCase().trim();
   if (!query) return false;
-  return getDeityNameForBhajan(bhajan).normalize('NFC').toLowerCase().includes(query);
-}
-
-function dedupeBhajans(items: Bhajan[]): Bhajan[] {
-  const seen = new Set<string>();
-  return items.filter((bhajan) => {
-    const key = `${bhajan.slug}-${bhajan.title.toLowerCase()}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return getDeityNameForBhajan(bhajan).normalize("NFC").toLowerCase().includes(query);
 }
 
 function speakableBotText(text: string): string {
@@ -211,6 +177,8 @@ export interface KirtanAIChatCoreProps {
   onBotReplyText?: (text: string) => void;
   onVoiceError?: (message: string) => void;
   onNaradAction?: (action: NaradActionResult) => void;
+  onVoiceQuery?: (text: string) => void;
+  initialQuery?: string;
   /** Fired once voice engine is initialized (for gesture-safe listen). */
   onCoreReady?: () => void;
   voiceLang?: "hi" | "en";
@@ -239,6 +207,8 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     onBotReplyText,
     onVoiceError,
     onNaradAction,
+    onVoiceQuery,
+    initialQuery,
     onCoreReady,
     voiceLang = "hi",
     ttsMuted = false,
@@ -268,13 +238,14 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
   const voiceRef = useRef<VoiceManager | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
   const lastSpokenRef = useRef("");
+  const initialQueryRef = useRef<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const displayName = profile?.name || user?.email?.split("@")[0] || "User";
 
   useEffect(() => {
     setLibrary([...OFFLINE_BHAJANS, ...loadSavedBhajans()]);
     setFavorites(loadFavorites());
-    const stored = loadChatSessions();
+    const stored = loadChatSessions().filter((s) => s.messages.length > 0);
     const initial = stored[0] ?? createChatSession();
     const sessions = stored.length ? stored : [initial];
     setChatSessions(sessions);
@@ -368,7 +339,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
 
   const showQuickActions = () => {
     pushBot({
-      text: `Namaste ${displayName}. Main offline Kirtan AI hoon. Aap kya karna chahenge?`,
+      text: `Namaste ${displayName}. Main Narad AI hoon. Main isi catalog se dhundhta hoon jo Search page use karta hai.`,
       options: QUICK_ACTIONS,
     });
   };
@@ -388,19 +359,27 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     pushBot({ text: "Aapka current mood/occasion kya hai?", options: MOOD_OPTIONS });
   };
 
-  const startOccasionFlow = () => {
-    setFlow({ type: "occasion", step: "date" });
-    const results = getOccasionSuggestions(library).slice(0, 6);
+  const pushCatalogResults = (text: string, results: Bhajan[], term?: string) => {
     pushBot({
-      text: "Aaj ke liye suggestion: weekday ke hisaab se curated bhajans yeh rahe. Monday ko Shiva, Tuesday/Saturday ko Hanuman, Wednesday ko Ganesh, Friday ko Devi.",
-      bhajans: results,
+      text,
+      options: results.length ? undefined : ["Yes, Add It", "No Thanks"],
+      appBhajans: results.slice(0, NARAD_RESULT_LIMIT),
+      searchQuery: term,
+      hasMoreResults: results.length > NARAD_RESULT_LIMIT,
     });
+  };
+
+  const startOccasionFlow = () => {
     setFlow({ type: "idle" });
+    const results = catalogOccasionSuggestions();
+    pushCatalogResults(
+      "Aaj ke liye catalog se suggestions — weekday ke hisaab se (Somvar Shiva, Mangal/Shani Hanuman, Budh Ganesh, Shukra Devi, baaki Krishna).",
+      results,
+    );
   };
 
   const showAartiCollection = () => {
-    const results = library.filter((bhajan) => bhajan.mood.includes("Aarti"));
-    pushBot({ text: "Aarti collection ready hai.", bhajans: results });
+    pushCatalogResults("Aarti collection from the same library as Search.", catalogAartis(), "aarti");
   };
 
   const showFavorites = () => {
@@ -415,58 +394,63 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     const term = query.trim();
     if (!term) return;
 
-    let apiBhajans: Bhajan[] = [];
-    try {
-      const uploadRows = await searchUserBhajans(term, 20);
-      if (uploadRows && uploadRows.length > 0) {
-        apiBhajans = uploadRows.map(convertUploadToBhajan);
+    if (isDeityBrowse) {
+      let apiBhajans: Bhajan[] = [];
+      try {
+        const extra = await searchNaradCatalog(term, uploadedBhajans);
+        apiBhajans = extra;
+      } catch {
+        apiBhajans = [];
+      }
+      const pool = dedupeBhajans([...appBhajans, ...uploadedBhajans, ...apiBhajans]);
+      const matches = pool.filter((bhajan) => strictBhajanMatch(term, bhajan));
+      if (apiBhajans.length) {
         setUploadedBhajans((prev) => dedupeBhajans([...prev, ...apiBhajans]));
       }
-    } catch (error) {
-      console.error("Kirtan AI Supabase search failed:", error);
+      pushCatalogResults(
+        matches.length
+          ? `Yeh results mile "${term}" ke liye. Card par click karke details kholein.`
+          : `Koi bhajan nahi mila '${term}' ke liye. Pura naam Hindi ya English me try karein, ya site search kholein.`,
+        matches,
+        term,
+      );
+      return;
     }
 
-    const fullPool = dedupeBhajans([...appBhajans, ...uploadedBhajans, ...apiBhajans]);
-    const matches = isDeityBrowse
-      ? fullPool.filter((bhajan) => strictBhajanMatch(term, bhajan))
-      : naradSearchBhajans(term, fullPool);
-
-    pushBot({
-      text: matches.length
-        ? `Yeh results mile "${term}" ke liye. Card par click karke details popup open karein.`
-        : `कोई भजन नहीं मिला '${term}' के लिए। पूरा नाम Hindi ya English me likh kar phir try karein, ya add karein।`,
-      options: matches.length ? undefined : ["Yes, Add It", "No Thanks"],
-      appBhajans: matches.slice(0, 6),
-      searchQuery: term,
-      hasMoreResults: matches.length > 6,
-    });
+    const matches = await searchNaradCatalog(term, uploadedBhajans);
+    setUploadedBhajans((prev) => dedupeBhajans([...prev, ...matches.filter((m) => typeof m.id === "string" || Number(m.id) >= 100000)]));
+    pushCatalogResults(
+      matches.length
+        ? `Yeh results mile "${term}" ke liye — same ranking as Search.`
+        : `Koi bhajan nahi mila '${term}' ke liye. Pura naam Hindi ya English me try karein, ya site search kholein.`,
+      matches,
+      term,
+    );
   };
 
   const handleFindFlow = (value: string) => {
     if (flow.type !== "find") return;
     if (flow.step === "deity") {
       const deity = value as KirtanDeity | "All";
-      setFlow({ type: "find", step: "language", deity });
-      pushBot({ text: "Language kya chahiye?", options: LANGUAGE_OPTIONS });
-      return;
+      const results = filterCatalogByDeityName(deity);
+      pushCatalogResults(
+        results.length
+          ? `${deity} ke catalog bhajans — Search page jaisi library.`
+          : "Is deity ke liye catalog empty hai. Add karein ya Search kholein.",
+        results,
+        deity === "All" ? "" : deity,
+      );
+      setFlow({ type: "idle" });
     }
-
-    const results = filterByDeityAndLanguage(library, flow.deity || "All", value as KirtanLanguage | "Regional" | "Any");
-    pushBot({
-      text: results.length ? "Filtered bhajans mil gaye. Card se details/play open kar sakte hain." : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["Add a Bhajan"],
-      bhajans: results.slice(0, 12),
-    });
-    setFlow({ type: "idle" });
   };
 
   const handleMoodFlow = (value: string) => {
-    const results = filterByMood(library, value as KirtanMood);
-    pushBot({
-      text: results.length ? `${value} ke liye curated bhajans:` : "Bhajan not found in our library. Would you like to add it?",
-      options: results.length ? undefined : ["Add a Bhajan"],
-      bhajans: results.slice(0, 10),
-    });
+    const results = filterCatalogByMoodTag(value);
+    pushCatalogResults(
+      results.length ? `${value} ke liye catalog bhajans:` : "Is mood ke liye catalog me kam results hain. Add karein ya Search kholein.",
+      results,
+      value,
+    );
     setFlow({ type: "idle" });
   };
 
@@ -560,6 +544,13 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
     if (normalized === "yes, add it") return startAddFlow();
     if (normalized === "no thanks") return pushBot({ text: "Theek hai. Aap koi aur bhajan search kar sakte hain.", options: QUICK_ACTIONS });
     if (isGreeting(text)) return showQuickActions();
+    if (normalized === "find a bhajan") return startFindFlow();
+    if (normalized === "add a bhajan") return startAddFlow();
+    if (normalized === "today's pick" || normalized === "bhajans for today's occasion" || normalized === "today's devotion") {
+      return startOccasionFlow();
+    }
+    if (normalized === "aarti collection") return showAartiCollection();
+    if (normalized === "my favorites") return showFavorites();
 
     const naradIntent = parseNaradIntent(text);
     const action = createNaradActionResult(naradIntent);
@@ -580,13 +571,14 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
       return;
     }
 
-    if (normalized.includes("add")) return startAddFlow();
+    if (normalized === "add a bhajan") return startAddFlow();
     const detected = extractChatSearchTerm(text);
     if (detected.isSearch && normalized !== "find a bhajan") return runExistingBhajanSearch(detected.term, detected.isDeityBrowse);
-    if (normalized === "find a bhajan") return startFindFlow();
     if (normalized.includes("mood") || normalized.includes("suggest")) return startMoodFlow();
-    if (normalized.includes("occasion") || normalized.includes("today")) return startOccasionFlow();
-    if (normalized.includes("aarti")) return showAartiCollection();
+    if (normalized.includes("occasion")) return startOccasionFlow();
+    if (normalized === "aarti collection" || (normalized.includes("aarti") && !looksLikeDirectSongQuery(text))) {
+      return showAartiCollection();
+    }
     if (normalized.includes("favorite")) return showFavorites();
 
     if (looksLikeDirectSongQuery(text)) {
@@ -598,6 +590,14 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
       options: QUICK_ACTIONS,
     });
   };
+
+  useEffect(() => {
+    const q = initialQuery?.trim();
+    if (!q || initialQueryRef.current === q) return;
+    initialQueryRef.current = q;
+    startNewChat();
+    void handleAction(q);
+  }, [initialQuery]);
 
   const toggleFavorite = (bhajan: KirtanBhajan) => {
     setFavorites((prev) => {
@@ -673,7 +673,11 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
         const transcript = voiceRef.current?.getTranscript() || "";
         if (transcript.trim()) {
           onVoicePhaseChange?.("thinking");
-          handleAction(transcript);
+          if (isHiddenBridge && onVoiceQuery) {
+            onVoiceQuery(transcript.trim());
+          } else {
+            handleAction(transcript);
+          }
         } else {
           onVoicePhaseChange?.("idle");
           onVoiceError?.("");
@@ -714,7 +718,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
         case "explain":
           h.pushUser("Explain this Bhajan");
           h.pushBot({
-            text: "Kripya neeche bhajan ka naam likhein aur bhejein. Jab aap card par click karenge, poora lyrics aur play options Kirtan AI ki tarah khulenge.",
+            text: "Kripya neeche bhajan ka naam likhein. Card par click karke lyrics aur play Narad AI ki tarah khulenge.",
             options: ["Find a Bhajan", "Suggest Bhajans by Mood"],
           });
           break;
@@ -790,7 +794,9 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
             ))}
           </div>
           <div className="border-t border-border p-3 space-y-2">
-            <p className="text-xs text-muted-foreground rounded-lg border border-border p-3">100% offline. No AI API calls. Added bhajans and favorites save in this browser.</p>
+            <p className="text-xs text-muted-foreground rounded-lg border border-border p-3">
+              Narad AI searches the same bhajan catalog as Search. Chat history and added bhajans stay in this browser.
+            </p>
             {NAVIGATION.map((nav) => (
               <Link key={nav.path} to={nav.path} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-accent" onClick={() => isMobile && setSidebarOpen(false)}>
                 <nav.icon className="h-4 w-4 shrink-0" /> {nav.label}
@@ -820,14 +826,24 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
             </div>
           ) : !isCompact ? (
             <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2">
+              <Link
+                to="/"
+                className="rounded-lg p-2 hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label="Back to Home"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
               <button onClick={() => setSidebarOpen(true)} className="rounded-lg p-2 hover:bg-accent md:hidden" aria-label="Open sidebar">
                 <Menu className="h-5 w-5" />
               </button>
               <button onClick={() => setSidebarOpen((prev) => !prev)} className="hidden rounded-lg p-2 hover:bg-accent md:inline-flex" aria-label="Toggle sidebar">
                 {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
-              <Bot className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold">Kirtan AI</span>
+              <img src="/images/narad-ai.webp" alt="" className="h-8 w-8 rounded-lg object-cover" />
+              <div className="min-w-0">
+                <span className="text-sm font-semibold">Narad AI</span>
+                <p className="text-[11px] text-muted-foreground truncate">Same library as Search</p>
+              </div>
             </div>
           ) : null}
 
@@ -853,7 +869,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                       Namaste, {displayName}
                     </h1>
                     <p className={cn("mt-2 px-2 text-muted-foreground", isCompact ? "text-xs" : "text-sm sm:text-base")}>
-                      Kya karna chahenge? Quick action choose karein ya bhajan ka exact naam type karein.
+                      Kya karna chahenge? Quick action choose karein, ya bhajan ka naam type karein — search Search page jaisi hai.
                     </p>
                   </div>
                   <div className="flex flex-wrap justify-center gap-2">
@@ -979,6 +995,15 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                         </div>
                       )}
 
+                      {message.searchQuery && (!message.appBhajans || message.appBhajans.length === 0) && (
+                        <Link
+                          to={`/search?q=${encodeURIComponent(message.searchQuery)}`}
+                          className="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+                        >
+                          Search the full site →
+                        </Link>
+                      )}
+
                       {message.options && (
                         <div className="mt-4 flex flex-wrap gap-2">
                           {message.options.map((option) => (
@@ -1037,7 +1062,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                 onKeyDown={(event) => event.key === "Enter" && submitInput()}
                 placeholder={
                   inputPlaceholder ??
-                  "Exact bhajan name type karein, ya 'add a bhajan'..."
+                  "Bhajan name or ask Narad…"
                 }
                 className={cn(
                   "min-w-0 flex-1 rounded-lg border border-border bg-card focus:border-primary focus:outline-none",

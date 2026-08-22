@@ -165,4 +165,27 @@ describe('searchAlgorithm', () => {
     expect(results).toHaveLength(1);
     expect(results[0].id).toBe(100000);
   });
+
+  it('narad search matches smartSearch ranking when the catalog scorer finds hits', () => {
+    const source = [chupChapBhajan, ...unrelatedBhajans];
+    const smart = smartSearchBhajans('चुपचाप', source);
+    const narad = naradSearchBhajans('चुपचाप', source);
+    expect(narad.map((b) => b.id)).toEqual(smart.map((b) => b.id));
+  });
+
+  it('narad search keeps aarti titles findable like the main search bar', () => {
+    const aarti = {
+      id: 21,
+      title: 'Om Jai Jagdish Hare',
+      titleHindi: 'ॐ जय जगदीश हरे',
+      singerName: 'Traditional',
+      lyricsHindi: '',
+      lyricsTransliteration: 'Om Jai Jagdish Hare Aarti',
+      tags: ['aarti'],
+    };
+    const smart = smartSearchBhajans('om jai jagdish aarti', [aarti, ...unrelatedBhajans]);
+    const narad = naradSearchBhajans('om jai jagdish aarti', [aarti, ...unrelatedBhajans]);
+    expect(smart.some((b) => b.id === 21) || narad.some((b) => b.id === 21)).toBe(true);
+    expect(narad.some((b) => b.id === 21)).toBe(true);
+  });
 });

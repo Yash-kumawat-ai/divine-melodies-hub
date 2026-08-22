@@ -27,8 +27,24 @@
     <meta name="description" content="Discover and share Hindu devotional songs (bhajans). Find lyrics, mantras, stotrams for Krishna, Shiva, Hanuman, Rama, and more deities." />
     <meta name="author" content="Raghavam" />
     <link rel="icon" type="image/png" href="/mandala-logo.png" />
-    <link rel="preload" as="image" href="/hero-lcp-mobile.webp" media="(max-width: 767px)" />
-    <link rel="preload" as="image" href="/hero-lcp-desktop.webp" media="(min-width: 768px)" />
+    <script>
+      (function () {
+        var isMobile = window.matchMedia("(max-width: 767px)").matches;
+        var splash = document.createElement("link");
+        splash.rel = "preload";
+        splash.as = "image";
+        splash.href = isMobile ? "/splash-compact-mobile.webp" : "/splash-compact-desktop.webp";
+        splash.setAttribute("fetchpriority", "high");
+        document.head.appendChild(splash);
+        var path = location.pathname;
+        if (path !== "/" && path !== "/index.html") return;
+        var link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "image";
+        link.href = isMobile ? "/hero-lcp-mobile.webp" : "/hero-lcp-desktop.webp";
+        document.head.appendChild(link);
+      })();
+    </script>
     <meta property="og:title" content="Raghavam - Indian Bhajans" />
     <meta property="og:description" content="Discover and share Hindu devotional songs. Find lyrics for Krishna, Shiva, Hanuman and more." />
     <meta property="og:type" content="website" />
@@ -41,16 +57,26 @@
   <body>
     <div id="root">
       <!-- Premium Centered Splash Screen Loader (renders before React mounts) -->
-      <div id="loading-splash" style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: 'Inter', system-ui, sans-serif; transition: opacity 0.4s ease; opacity: 1; background-color: #080200;">
-        
-        <!-- Subtle floating background shimmer particles -->
-        <div id="splash-particles" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1;"></div>
+      <div id="loading-splash" style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; z-index: 9999; font-family: 'Inter', system-ui, sans-serif; transition: opacity 0.4s ease; opacity: 1; background-color: #f4e4b8;">
+        <picture style="position: absolute; inset: 0; z-index: 0;">
+          <source media="(min-width: 768px)" srcset="/splash-compact-desktop.webp" type="image/webp" />
+          <img
+            src="/splash-compact-mobile.webp"
+            alt="Lord Rama and Goddess Sita blessing devotees, with Raghavam written in Devanagari"
+            width="473"
+            height="1024"
+            fetchpriority="high"
+            decoding="async"
+            style="width: 100%; height: 100%; object-fit: cover; object-position: center top;"
+          />
+        </picture>
+        <div style="position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(8,2,0,0.12) 0%, rgba(8,2,0,0.04) 45%, rgba(8,2,0,0.28) 100%);"></div>
 
-        <!-- Spacer to push the loader below the golden background text -->
-        <div style="height: 250px; pointer-events: none;"></div>
+        <!-- Subtle floating background shimmer particles -->
+        <div id="splash-particles" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 2;"></div>
 
         <!-- Circular glowing dot ring with lotus center -->
-        <div style="position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-top: 30px; z-index: 10;">
+        <div style="position: relative; width: 130px; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: calc(28px + env(safe-area-inset-bottom)); z-index: 10;">
           <!-- Soft dark glow behind loader -->
           <div style="position: absolute; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(139,30,63,0.32) 0%, rgba(139,30,63,0) 70%); filter: blur(6px); pointer-events: none; z-index: -1;"></div>
           
@@ -99,19 +125,11 @@
 
         <style>
           #loading-splash {
-            background-color: #080200;
-            background-image:
-              linear-gradient(180deg, rgba(8,2,0,0.35) 0%, rgba(8,2,0,0.15) 40%, rgba(8,2,0,0.55) 100%),
-              url('/splash-compact-mobile.webp');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-color: #f4e4b8;
           }
           @media (min-width: 768px) {
-            #loading-splash {
-              background-image:
-                linear-gradient(180deg, rgba(8,2,0,0.35) 0%, rgba(8,2,0,0.15) 40%, rgba(8,2,0,0.55) 100%),
-                url('/splash-compact-desktop.webp');
+            #loading-splash img {
+              object-position: center center;
             }
           }
           @keyframes splash-pulse {

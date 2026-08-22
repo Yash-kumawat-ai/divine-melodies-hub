@@ -162,7 +162,7 @@ export const APP_FEATURES: FeatureSearchItem[] = [
     titleHindi: 'नारद AI आध्यात्मिक सहायक',
     description: 'Ask spiritual questions, get bhajan recommendations, and chat about holy scriptures with Narad AI.',
     descriptionHindi: 'नारद AI से आध्यात्मिक प्रश्न पूछें, भजन सुझाव पाएं और धर्मग्रंथों पर चर्चा करें।',
-    path: '/kirtan-ai',
+    path: '/narad-ai',
     badge: 'AI Tool',
     badgeHindi: 'एआई सहायक',
     iconName: 'Bot',

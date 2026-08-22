@@ -37,6 +37,9 @@ const DeityPage = lazy(() => import("./pages/DeityPage"));
 const BhajanPage = lazy(() => import("./pages/BhajanPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const KirtanAIPage = lazy(() => import("./pages/KirtanAIPage"));
+const RedirectKirtanToNarad = lazy(() =>
+  import("./pages/KirtanAIPage").then((m) => ({ default: m.RedirectKirtanToNarad })),
+);
 const MeditationPage = lazy(() => import("./pages/MeditationPage"));
 const PanchangPage = lazy(() => import("./pages/PanchangPage"));
 const PanchangDetailsPage = lazy(() => import("./pages/PanchangDetailsPage"));
@@ -172,17 +175,11 @@ function AppContent() {
             <Route path="/deity/:slug" element={<DeityPage />} />
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route
-              path="/meditation"
-              element={
-                <ProtectedRoute>
-                  <MeditationPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/meditation" element={<MeditationPage />} />
             <Route path="/panchang" element={<PanchangPage />} />
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
-            <Route path="/kirtan-ai" element={<KirtanAIPage />} />
+            <Route path="/narad-ai" element={<KirtanAIPage />} />
+            <Route path="/kirtan-ai" element={<RedirectKirtanToNarad />} />
             <Route path="/chalisa" element={<AartiChalisaPage />} />
             <Route path="/aarti" element={<AartiChalisaPage />} />
             <Route path="/aarti-chalisa" element={<AartiChalisaPage />} />
@@ -288,19 +285,10 @@ function AppContent() {
             />
             <Route path="/wallpaper" element={<WallpaperPage />} />
             <Route path="/poster-maker" element={<WallpaperPage />} />
-            <Route
-              path="/upload-bhajan"
+            <Route path="/upload-bhajan"
               element={
                 <ProtectedRoute>
                   <UploadBhajan />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/kirtan-ai"
-              element={
-                <ProtectedRoute>
-                  <KirtanAIPage />
                 </ProtectedRoute>
               }
             />

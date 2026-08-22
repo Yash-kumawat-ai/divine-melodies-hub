@@ -107,6 +107,24 @@ export interface AdminQueueFilters {
   status?: string;
   fromDate?: string;
   toDate?: string;
+  contentType?: string;
+}
+
+export interface AdminBhajanContentUpdate {
+  title: string;
+  title_hindi: string | null;
+  lyrics_hindi: string | null;
+  youtube_url: string | null;
+  singer_name: string | null;
+  composer_name: string | null;
+  deity_id: number | null;
+  content_type?: string | null;
+}
+
+function isValidOptionalYoutubeUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return true;
+  return /youtube\.com|youtu\.be/i.test(trimmed);
 }
 
 export interface ReviewSubmissionInput {
@@ -120,22 +138,32 @@ export interface ReviewSubmissionInput {
 
 export const getPendingSubmissions = async (filters?: AdminQueueFilters) => {
   const client = supabase as any;
+  const status = filters?.status ?? 'All';
+  const statuses =
+    status === 'All'
+      ? ['pending', 'resubmitted', 'approved', 'rejected', 'changes_requested']
+      : [status];
+
   let query = client
     .from('user_uploads')
     .select('*')
-    .in('status', ['pending', 'resubmitted'])
-    .order('created_at', { ascending: false });
+    .in('status', statuses)
+    .order('created_at', { ascending: false })
+    .limit(80);
 
   if (filters?.language && filters.language !== 'All') {
     query = query.eq('language', filters.language);
   }
 
-  if (filters?.status && filters.status !== 'All') {
-    query = query.eq('status', filters.status);
+  if (filters?.contentType && filters.contentType !== 'All') {
+    query = query.eq('content_type', filters.contentType);
   }
 
-  if (filters?.submittedBy) {
-    query = query.ilike('singer_name', `%${filters.submittedBy.trim()}%`);
+  if (filters?.submittedBy?.trim()) {
+    const safe = filters.submittedBy.trim().replace(/[,()%]/g, ' ');
+    query = query.or(
+      `singer_name.ilike.%${safe}%,title.ilike.%${safe}%,title_hindi.ilike.%${safe}%`,
+    );
   }
 
   if (filters?.fromDate) {
@@ -267,6 +295,60 @@ export const markMyModerationNotificationsRead = async () => {
   const client = supabase as any;
   const { error } = await client.rpc('mark_my_moderation_notifications_read');
   return { error };
+};
+
+export const updateAdminBhajanContent = async (
+  id: string | number,
+  fields: AdminBhajanContentUpdate,
+  adminUserId: string,
+) => {
+  const client = supabase as any;
+  const title = fields.title.trim();
+  if (!title) {
+    return { data: null, error: { message: 'Title is required' } };
+  }
+
+  const youtube = (fields.youtube_url ?? '').trim();
+  if (!isValidOptionalYoutubeUrl(youtube)) {
+    return { data: null, error: { message: 'YouTube URL must be a youtube.com or youtu.be link' } };
+  }
+
+  const payload: Record<string, unknown> = {
+    title,
+    title_hindi: fields.title_hindi?.trim() || null,
+    lyrics_hindi: fields.lyrics_hindi?.trim() || null,
+    youtube_url: youtube || null,
+    singer_name: fields.singer_name?.trim() || null,
+    composer_name: fields.composer_name?.trim() || null,
+    deity_id: fields.deity_id ?? null,
+  };
+  if (fields.content_type !== undefined) {
+    payload.content_type = fields.content_type?.trim() || null;
+  }
+
+  const { data, error } = await client
+    .from('user_uploads')
+    .update(payload)
+    .eq('id', id)
+    .select('*')
+    .single();
+
+  if (!error) {
+    try {
+      await client.from('admin_audit_logs').insert([
+        {
+          admin_user_id: adminUserId,
+          action: 'content_edited',
+          entity_type: 'user_upload',
+          entity_id: id,
+        },
+      ]);
+    } catch {
+      // audit log insert is non-critical
+    }
+  }
+
+  return { data, error };
 };
 
 export const reviewSubmission = async (input: ReviewSubmissionInput, adminUserId: string) => {

@@ -27,6 +27,8 @@ import MantraSetupView from "./MantraSetupView";
 import { cn } from "@/lib/utils";
 import mantraJapBanner from "@/pages/images/mantra_jap_banner.webp";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
+import { SEO } from "@/components/SEO";
+import { prefetchMantraImage } from "@/lib/prefetchMeditation";
 
 // Gold lotus mark (matches MeditationPracticeHome)
 const LotusMark = ({ className = "w-5 h-4" }: { className?: string }) => (
@@ -436,6 +438,9 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             const gId = searchParams.get("groupId");
             const retUrl = searchParams.get("returnUrl");
             setShowSetup(true);
+            if (searchParams.get("showSetup") === "true" && searchParams.get("mantraId") === selectedMantraForDetail.id) {
+              return;
+            }
             setSearchParams({
               practice: "mantra_jap_home",
               mantraId: selectedMantraForDetail.id,
@@ -490,6 +495,17 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
         isDark ? "text-amber-50 bg-[#0c0a08]" : "text-[#3A2418] bg-[#FAF6EE]"
       )}
     >
+      <SEO
+        title={isHi ? "मंत्र जाप साधना" : "Mantra Japa Sadhana"}
+        description={
+          isHi
+            ? "मंत्र चुनें और माला या ध्वनि से जप करें। नियमित जाप से मन शांत और एकाग्र होता है।"
+            : "Choose a mantra and chant with mala or voice. Daily japa calms the mind and sharpens focus."
+        }
+        image={mantraJapBanner}
+        url={typeof window !== "undefined" ? `${window.location.origin}/meditation?practice=mantra_jap_home` : "/meditation?practice=mantra_jap_home"}
+        lang={isHi ? "hi" : "en"}
+      />
       {!isDark && (
         <div
           className="absolute inset-0 -z-20 pointer-events-none"
@@ -499,63 +515,59 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
         />
       )}
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between border-b bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-[#E8D8C4] dark:border-stone-800">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 active:scale-95 transition-all shrink-0"
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <div className="flex items-center gap-1.5 min-w-0">
-            <h1 className="text-base sm:text-lg font-bold font-display tracking-tight text-[#651317] dark:text-amber-100 truncate leading-normal py-0.5">
-              {copy.title}
-            </h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {isGuest && (
-            <span className="text-[10px] px-2.5 py-1 rounded-full border border-[#E8D8C4] bg-[#FAF0E4] text-[#651317] font-bold dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-300">
-              {isHi ? "अतिथि" : "Guest"}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => navigate("/leaderboard")}
-            className="h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all"
-            title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
-          >
-            <Trophy className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            className="h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 flex items-center justify-center text-[#651317] dark:text-amber-300/80 transition-all"
-            aria-label="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
-
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-8">
         <div className="mx-auto max-w-5xl px-4 lg:px-6 mt-4 space-y-5">
-          {/* Hero Banner — Full Size Artwork with Harmonious Spiritual Typography */}
-          <section className="relative overflow-hidden rounded-[24px] border border-[#E8D8C4] dark:border-amber-500/20 shadow-[0_10px_30px_rgba(42,18,15,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.5)] min-h-[220px] sm:min-h-[250px] md:min-h-[280px] flex flex-col justify-center">
-            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden">
+          <section className="relative w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px] border border-[#E8D8C4] dark:border-amber-500/20 shadow-[0_10px_30px_rgba(42,18,15,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.5)] flex flex-col justify-end">
+            <div className="absolute inset-0 z-0 select-none pointer-events-none overflow-hidden rounded-[inherit]">
               <img
                 src={mantraJapBanner}
                 alt="Mantra Japa Sacred Banner"
-                className="w-full h-full object-cover object-center sm:object-[center_35%] transition-transform duration-700 hover:scale-[1.02]"
+                width={1971}
+                height={798}
+                fetchpriority="high"
+                decoding="async"
+                className="w-full h-full object-cover object-[72%_center] md:object-[center_38%]"
               />
               {/* Soft, light directional overlay — keeping image bright, golden & vibrant */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
             </div>
 
-            <div className="relative z-10 px-5 py-6 sm:px-8 sm:py-8 text-left max-w-xl">
+            <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
+              <button
+                type="button"
+                onClick={onBack}
+                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
+                {isGuest && (
+                  <span className="text-[10px] px-2.5 py-1 rounded-full border border-white/25 bg-black/35 text-white font-bold">
+                    {isHi ? "अतिथि" : "Guest"}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => navigate("/leaderboard")}
+                  className="h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-all"
+                  title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
+                >
+                  <Trophy className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  className="h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md flex items-center justify-center text-white/90 transition-all"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <h1 className="sr-only">{copy.title}</h1>
+            <div className="relative z-10 px-5 pt-14 pb-6 sm:px-8 sm:pt-16 sm:pb-8 text-left max-w-xl md:max-w-lg">
               <p className="text-[#F5C15C] font-bold tracking-[0.18em] text-xs uppercase mb-2">
                 {isHi ? "दैनिक साधना" : "Daily Sadhana"}
               </p>
@@ -593,7 +605,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
           </section>
 
           {/* Mantra list */}
-          <section id="mantra-list" className="space-y-3.5 scroll-mt-24">
+          <section id="mantra-list" className="space-y-3.5 scroll-mt-4">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm sm:text-base font-bold flex items-center gap-2 text-[#651317] dark:text-amber-300">
                 <Sparkles className="w-4 h-4 shrink-0 text-[#651317] dark:text-amber-400" />
@@ -632,7 +644,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 w-full">
                 {mantras.map((m) => {
                   const cardData = getMantraCardData(m);
                   const image = resolveMantraImage(m);
@@ -648,6 +660,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                           mantraId: m.id,
                         });
                       }}
+                      onPointerEnter={() => prefetchMantraImage(image)}
                       whileHover={{ y: -2 }}
                       role="button"
                       tabIndex={0}
@@ -676,6 +689,10 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                           <img
                             src={image}
                             alt=""
+                            width={480}
+                            height={480}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                           />
                         ) : (

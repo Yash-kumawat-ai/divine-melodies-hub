@@ -293,11 +293,12 @@ const NaradVoiceOverlay = forwardRef<HTMLDivElement, NaradVoiceOverlayProps>(fun
 
           <button
             type="button"
-            onClick={onToggleMute}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] text-xs font-bold text-[#5A1F1A] hover:bg-[#FAF2E8] transition-all"
+            onClick={onRepeat}
+            disabled={!lastReply}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFF5E5] border border-[#E8D8C4] text-xs font-bold text-[#5A1F1A] hover:bg-[#FAF2E8] transition-all disabled:opacity-40"
           >
-            {ttsMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-            <span>{isHi ? (ttsMuted ? "आवाज़ Off" : "आवाज़ On") : (ttsMuted ? "Voice Off" : "Voice On")}</span>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{isHi ? "दोहराएँ" : "Repeat"}</span>
           </button>
 
           <button
@@ -312,11 +313,11 @@ const NaradVoiceOverlay = forwardRef<HTMLDivElement, NaradVoiceOverlayProps>(fun
 
         {/* Bottom Link: Sacred Studio */}
         <Link
-          to="/kirtan-ai"
+          to="/narad-ai"
           onClick={onClose}
           className="relative z-10 mt-3 inline-flex items-center justify-center gap-1 font-serif text-xs font-bold text-[#7A2D28] hover:underline"
         >
-          <span>{isHi ? "Sacred Studio खोलें" : "Open Sacred Studio"}</span>
+          <span>{isHi ? "नारद AI खोलें" : "Open Narad AI"}</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
 

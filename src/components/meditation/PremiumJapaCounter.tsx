@@ -1479,7 +1479,10 @@ export default function PremiumJapaCounter({
             >
               <img 
                 src={ramJiSvg} 
-                alt="Shree Ram" 
+                alt="Shree Ram"
+                width={56}
+                height={56}
+                decoding="async"
                 className="w-14 h-14 object-contain filter drop-shadow-sm" 
               />
             </div>
@@ -1713,7 +1716,7 @@ export default function PremiumJapaCounter({
                           </div>
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500/30 flex items-center justify-center">
                             {filteredDevotees[1].avatar && (filteredDevotees[1].avatar.includes("http") || filteredDevotees[1].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[1].avatar} alt={filteredDevotees[1].name} className="w-full h-full object-cover" />
+                              <img src={filteredDevotees[1].avatar} alt={filteredDevotees[1].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-slate-300 font-bold text-sm font-serif">{filteredDevotees[1].name.charAt(0).toLowerCase()}</span>
                             )}
@@ -1750,7 +1753,7 @@ export default function PremiumJapaCounter({
                           </div>
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-700 to-orange-950 border border-yellow-500/30 flex items-center justify-center">
                             {filteredDevotees[0].avatar && (filteredDevotees[0].avatar.includes("http") || filteredDevotees[0].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[0].avatar} alt={filteredDevotees[0].name} className="w-full h-full object-cover" />
+                              <img src={filteredDevotees[0].avatar} alt={filteredDevotees[0].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-amber-200 font-bold text-lg font-serif">{filteredDevotees[0].name.charAt(0).toLowerCase()}</span>
                             )}
@@ -1786,7 +1789,7 @@ export default function PremiumJapaCounter({
                           </div>
                           <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-800 to-orange-955 border border-amber-700/30 flex items-center justify-center">
                             {filteredDevotees[2].avatar && (filteredDevotees[2].avatar.includes("http") || filteredDevotees[2].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[2].avatar} alt={filteredDevotees[2].name} className="w-full h-full object-cover" />
+                              <img src={filteredDevotees[2].avatar} alt={filteredDevotees[2].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-amber-500 font-bold text-sm font-serif">{filteredDevotees[2].name.charAt(0).toLowerCase()}</span>
                             )}
@@ -1845,7 +1848,7 @@ export default function PremiumJapaCounter({
                               {/* Small Avatar circle with initials/gradient */}
                               <div className="w-8 h-8 rounded-full border border-amber-600/20 overflow-hidden bg-[#221221] flex items-center justify-center shrink-0">
                                 {devotee.avatar && (devotee.avatar.includes("http") || devotee.avatar.includes("/")) ? (
-                                  <img src={devotee.avatar} alt={devotee.name} className="w-full h-full object-cover" />
+                                  <img src={devotee.avatar} alt={devotee.name} width={64} height={64} decoding="async" className="w-full h-full object-cover" />
                                 ) : (
                                   <span className="text-[10px] font-black text-amber-300 font-serif">
                                     {devotee.name.charAt(0).toLowerCase()}
@@ -2350,6 +2353,9 @@ export default function PremiumJapaCounter({
         >
           <img
             src={hanumanDevotionalImg}
+            width={1672}
+            height={941}
+            decoding="async"
             className="w-full h-full object-cover object-top max-w-5xl mx-auto"
             style={{
               maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
@@ -2776,8 +2782,11 @@ export default function PremiumJapaCounter({
             <img
               src={flower.image}
               alt=""
+              width={64}
+              height={64}
               className="w-full h-full object-contain pointer-events-none"
               loading="eager"
+              decoding="async"
             />
           </div>
         ))}
@@ -2791,6 +2800,9 @@ export default function PremiumJapaCounter({
       >
         <img
           src={hanumanDevotionalImg}
+          width={1672}
+          height={941}
+          decoding="async"
           className="w-full h-full object-cover object-top max-w-5xl mx-auto"
           style={{
             maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
@@ -2983,6 +2995,9 @@ export default function PremiumJapaCounter({
               >
                 <img
                   src={playCircleSvg}
+                  width={14}
+                  height={14}
+                  decoding="async"
                   className="w-3.5 h-3.5 object-contain"
                   style={{ filter: isAutoJapaActive ? "brightness(0) invert(1)" : undefined }}
                   alt=""

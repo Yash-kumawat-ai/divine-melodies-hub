@@ -12,13 +12,29 @@ describe("parseNaradIntent", () => {
     expect(parseNaradIntent("meditation start karo").type).toBe("start_meditation");
   });
 
-  it("detects play bhajan", () => {
-    const intent = parseNaradIntent("Hanuman Chalisa chalao");
+  it("keeps aarti in the extracted song query", () => {
+    const intent = parseNaradIntent("play om jai jagdish aarti");
     expect(intent.type).toBe("search_bhajan");
-    expect(intent.entities.bhajanName).toBeTruthy();
+    expect(intent.entities.bhajanName?.toLowerCase()).toContain("aarti");
+    expect(intent.entities.bhajanName?.toLowerCase()).toContain("jagdish");
   });
 
+  it("detects play bhajan and keeps chalisa in the title", () => {
+    const intent = parseNaradIntent("Hanuman Chalisa chalao");
+    expect(intent.type).toBe("search_bhajan");
+    expect(intent.entities.bhajanName?.toLowerCase()).toContain("chalisa");
+  });
 
+  it("does not treat start japa as a song search", () => {
+    expect(parseNaradIntent("start japa").type).toBe("start_japa");
+    const action = createNaradActionResult(parseNaradIntent("start 108 japa"));
+    expect(action?.kind).toBe("japa_start");
+    expect(action?.route).toContain("/meditation");
+  });
+
+  it("does not treat today as devotion when the user named an aarti", () => {
+    expect(parseNaradIntent("om jai jagdish aarti").type).toBe("search_bhajan");
+  });
 });
 
 describe("createNaradActionResult", () => {

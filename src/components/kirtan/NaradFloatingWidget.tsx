@@ -12,14 +12,11 @@ import KirtanAIChatCore, {
 } from "@/components/kirtan/KirtanAIChatCore";
 import NaradVoiceOverlay from "@/components/kirtan/NaradVoiceOverlay";
 import { NARAD_HI } from "@/lib/narad/naradVoiceStrings";
-import type { NaradActionResult } from "@/lib/narad/naradIntents";
-import devotionalTanpura from "@/pages/images/devotional_tanpura.webp";
+import { resolveNaradActionPath, type NaradActionResult } from "@/lib/narad/naradIntents";
+import { ROUTES } from "@/config/routes";
+import MorphingAIButton from "@/components/kirtan/MorphingAIButton";
 
 type UiState = "closed" | "voice";
-
-const FAB_SIZE = 74;
-
-import MorphingAIButton from "@/components/kirtan/MorphingAIButton";
 
 export default function NaradFloatingWidget() {
   const [uiState, setUiState] = useState<UiState>("closed");
@@ -138,34 +135,42 @@ export default function NaradFloatingWidget() {
     setVoiceSupported(coreRef.current?.isVoiceSupported() ?? false);
   }, []);
 
-  // Submit query directly to Kirtan AI page
+  const goNaradChat = useCallback((query?: string) => {
+    closeAll();
+    const q = query?.trim();
+    navigate(q ? `${ROUTES.NARAD_AI}?q=${encodeURIComponent(q)}` : ROUTES.NARAD_AI);
+  }, [closeAll, navigate]);
+
   const handleSubmitText = useCallback((text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    closeAll();
-    navigate(`/kirtan-ai?q=${encodeURIComponent(trimmed)}`);
-  }, [closeAll, navigate]);
+    goNaradChat(trimmed);
+  }, [goNaradChat]);
 
   const openChatPanel = useCallback(() => {
-    closeAll();
-    navigate("/kirtan-ai");
-  }, [closeAll, navigate]);
+    goNaradChat();
+  }, [goNaradChat]);
 
   const handleNaradAction = useCallback((action: NaradActionResult) => {
-    const query = action.searchQuery || action.spokenText || transcriptPreview;
+    const path = resolveNaradActionPath(action);
     closeAll();
-    if (query?.trim()) {
-      navigate(`/kirtan-ai?q=${encodeURIComponent(query.trim())}`);
-    } else {
-      navigate("/kirtan-ai");
+    if (path) {
+      navigate(path);
+      return;
     }
-  }, [closeAll, navigate, transcriptPreview]);
+    if (action.kind === "bhajan_search" && action.searchQuery?.trim()) {
+      navigate(`${ROUTES.NARAD_AI}?q=${encodeURIComponent(action.searchQuery.trim())}`);
+      return;
+    }
+    navigate(ROUTES.NARAD_AI);
+  }, [closeAll, navigate]);
 
   if (
     isDrawerOpen ||
     isMoreDrawerOpen ||
     isBhajanModalOpen ||
     pathname === "/kirtan-ai" ||
+    pathname === "/narad-ai" ||
     pathname.startsWith("/auth") ||
     pathname === "/meditation" ||
     pathname.startsWith("/shorts") ||
@@ -186,6 +191,7 @@ export default function NaradFloatingWidget() {
     onVoicePhaseChange: setVoicePhase,
     onBotReplyText: setLastReply,
     onNaradAction: handleNaradAction,
+    onVoiceQuery: goNaradChat,
   };
 
   return (

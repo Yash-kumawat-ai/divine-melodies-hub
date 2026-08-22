@@ -16,6 +16,7 @@ export const ROUTES = {
   PANCHANG: '/panchang',
   TEMPLE: '/temple',
   KIRTAN_AI: '/kirtan-ai',
+  NARAD_AI: '/narad-ai',
   SEARCH: '/search',
 
   // Personal

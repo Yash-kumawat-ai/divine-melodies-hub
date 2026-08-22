@@ -51,6 +51,8 @@ import ProfileHubSheet from "@/components/account/ProfileHubSheet";
 import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { cn } from "@/lib/utils";
 import { HamburgerButton } from "@/components/navigation/HamburgerButton";
+import { prefetchAdminPages } from "@/lib/prefetchAdminPages";
+import { prefetchMeditationPage } from "@/lib/prefetchMeditation";
 
 const MeditationIcon = ({ className }: { className?: string }) => (
   <svg
@@ -101,6 +103,10 @@ export default function Header() {
   const location = useLocation();
   const isHome = location.pathname === "/";
 
+  useEffect(() => {
+    if (isAdmin) prefetchAdminPages();
+  }, [isAdmin]);
+
   const getLinkClass = (path: string) => {
     const active = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
     return cn(
@@ -134,6 +140,7 @@ export default function Header() {
     "/all-deities",
     "/meditation",
     "/panchang",
+    "/narad-ai",
     "/kirtan-ai",
     "/temple",
     "/pricing",
@@ -225,7 +232,7 @@ export default function Header() {
     { to: "/recent-bhajans", label: t("recent"), icon: Clock3, match: (path: string) => path.startsWith("/recent-bhajans") },
     { to: "/wallpaper", label: language === 'hi' ? 'वॉलपेपर' : 'Wallpapers', icon: Image, match: (path: string) => path.startsWith("/wallpaper") },
     { to: "/shorts", label: language === 'hi' ? 'शॉर्ट्स' : 'Shorts', icon: Film, match: (path: string) => path.startsWith("/shorts") },
-    { to: "/kirtan-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/kirtan-ai") },
+    { to: "/narad-ai", label: t("kirtanAi"), icon: Sparkles, match: (path: string) => path.startsWith("/narad-ai") || path.startsWith("/kirtan-ai") },
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
   ];
 
@@ -315,7 +322,11 @@ export default function Header() {
             <Music className="w-3.5 h-3.5" />
             {t('browse')}
           </Link>
-          <Link to="/meditation" className={getLinkClass('/meditation')}>
+          <Link
+            to="/meditation"
+            className={getLinkClass('/meditation')}
+            onPointerEnter={() => prefetchMeditationPage()}
+          >
             <MeditationIcon className="w-3.5 h-3.5" />
             {t('meditation')}
           </Link>
@@ -329,7 +340,7 @@ export default function Header() {
           </Link>
 
           {/* Narad AI link — styled matching standard nav items */}
-          <Link to="/kirtan-ai" className={getLinkClass('/kirtan-ai')}>
+          <Link to="/narad-ai" className={getLinkClass('/narad-ai')}>
             <NaradNavIcon className="w-3.5 h-3.5" />
             {t('kirtanAi')}
           </Link>
@@ -516,17 +527,27 @@ export default function Header() {
                   </DropdownMenuItem>
                   {isAdmin && (
                     <>
-                      <DropdownMenuItem onClick={() => navigate('/admin/moderation')}>
+                      <DropdownMenuItem
+                        onPointerEnter={() => prefetchAdminPages()}
+                        onFocus={() => prefetchAdminPages()}
+                        onClick={() => navigate('/admin/moderation')}
+                      >
                         <ShieldCheck className="mr-2 h-4 w-4" />
                         {t('adminModeration')}
                       </DropdownMenuItem>
                       {isSuperAdmin && (
-                        <DropdownMenuItem onClick={() => navigate('/admin/accounts')}>
+                        <DropdownMenuItem
+                          onPointerEnter={() => prefetchAdminPages()}
+                          onClick={() => navigate('/admin/accounts')}
+                        >
                           <ShieldCheck className="mr-2 h-4 w-4" />
                           {t('adminAccounts')}
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => navigate('/admin/audit')}>
+                      <DropdownMenuItem
+                        onPointerEnter={() => prefetchAdminPages()}
+                        onClick={() => navigate('/admin/audit')}
+                      >
                         <ShieldCheck className="mr-2 h-4 w-4" />
                         {t('auditLog')}
                       </DropdownMenuItem>
@@ -578,6 +599,9 @@ export default function Header() {
               <Link
                 key={item.to}
                 to={item.to}
+                onPointerEnter={() => {
+                  if (item.to.startsWith("/meditation")) prefetchMeditationPage();
+                }}
                 className={cn(
                   "tab-item shrink-0 snap-start h-9 rounded-full px-3",
                   active && "tab-active"

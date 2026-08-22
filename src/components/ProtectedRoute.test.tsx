@@ -70,6 +70,32 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("Home page")).toBeInTheDocument();
   });
 
+  it("waits for profile before sending an owner away from admin routes", () => {
+    mockedUseAuth.mockReturnValue({
+      user: { id: "admin-1" },
+      loading: true,
+      isAdmin: false,
+    } as ReturnType<typeof useAuth>);
+
+    renderProtectedRoute(true);
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
+    expect(screen.queryByText("Home page")).not.toBeInTheDocument();
+    expect(screen.queryByText("Protected content")).not.toBeInTheDocument();
+  });
+
+  it("renders admin content once isAdmin is true", () => {
+    mockedUseAuth.mockReturnValue({
+      user: { id: "admin-1" },
+      loading: false,
+      isAdmin: true,
+    } as ReturnType<typeof useAuth>);
+
+    renderProtectedRoute(true);
+
+    expect(screen.getByText("Protected content")).toBeInTheDocument();
+  });
+
   it("keeps content mounted when loading while a user already exists", () => {
     mockedUseAuth.mockReturnValue({
       user: { id: "user-1" },

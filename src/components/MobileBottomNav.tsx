@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
+import { prefetchMeditationPage } from "@/lib/prefetchMeditation";
 import { cn } from "@/lib/utils";
 
 type NavKey = "home" | "browse" | "upload" | "panchang" | "more";
@@ -115,10 +116,10 @@ const FEATURE_ITEMS: FeatureItem[] = [
     match: (pathname) => pathname.startsWith("/temple"),
   },
   {
-    path: "/kirtan-ai",
+    path: "/narad-ai",
     labelKey: "kirtanAi",
     icon: Sparkles,
-    match: (pathname) => pathname.startsWith("/kirtan-ai"),
+    match: (pathname) => pathname.startsWith("/narad-ai") || pathname.startsWith("/kirtan-ai"),
   },
   { path: "/pricing", labelKey: "pricing", icon: Tags, match: (pathname) => pathname === "/pricing" },
   { path: "/about", labelKey: "about", icon: Info, match: (pathname) => pathname === "/about" },
@@ -311,6 +312,9 @@ export default function MobileBottomNav() {
                 <SheetClose key={item.path} asChild>
                   <Link
                     to={item.path}
+                    onPointerEnter={() => {
+                      if (item.path.startsWith("/meditation")) prefetchMeditationPage();
+                    }}
                     className={cn(
                       "flex min-h-[5.25rem] flex-col items-center justify-center gap-2 rounded-2xl border bg-card/75 px-2 text-center text-xs font-semibold shadow-sm transition-colors active:scale-[0.98]",
                       active

@@ -8,6 +8,7 @@ import hanumanHd2 from "@/pages/images/hanuman_hd (2).webp";
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
+import { SEO } from "@/components/SEO";
 
 const MEDITATION_QUOTES = [
   { hi: "\u201cशांति बाहर नहीं, अंदर मिलती है।\u201d", en: "\u201cPeace is not found outside, it is found within.\u201d" },
@@ -167,6 +168,9 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
 
   const goMantraJap = () => onSelectPractice({ id: "mantra_jap_home" });
 
+  const meditationUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/meditation` : "/meditation";
+
   return (
     <div
       className={cn(
@@ -174,6 +178,17 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
         isDark ? "bg-[#0c0a08] text-amber-50" : "bg-[#FAF6EE]"
       )}
     >
+      <SEO
+        title={isHi ? "ध्यान एवं मंत्र जप" : "Meditation & Mantra Japa"}
+        description={
+          isHi
+            ? "मंत्र जप, माला और ध्यान साधना से मन को शांत करें। अतिथि भी बिना लॉगिन अभ्यास कर सकते हैं।"
+            : "Calm the mind with mantra japa, mala counting, and meditation. Guests can practice without signing in."
+        }
+        image={meditationDesktopBg}
+        url={meditationUrl}
+        lang={isHi ? "hi" : "en"}
+      />
       <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
@@ -194,15 +209,19 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
       <div className="mx-auto max-w-5xl px-4 lg:px-6 mt-4 md:mt-5 space-y-5">
         {/* Hero — crisp image, bottom gradient */}
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative min-h-[220px] sm:min-h-[250px] md:min-h-[280px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 md:px-10 py-6 md:py-8 w-full shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          className="relative min-h-[220px] sm:min-h-[250px] md:min-h-[280px] aspect-[1672/941] max-h-[320px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 md:px-10 py-6 md:py-8 w-full shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
         >
           <div className="absolute inset-0 z-0">
             <img
               src={meditationDesktopBg}
               alt=""
+              width={1672}
+              height={941}
+              fetchpriority="high"
+              decoding="async"
               className="w-full h-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
@@ -299,6 +318,10 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               <img
                 src={redLotus}
                 alt=""
+                width={1149}
+                height={1369}
+                loading="lazy"
+                decoding="async"
                 className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-full animate-lotus-float"
               />
             </div>
@@ -415,6 +438,10 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               <img
                 src={hanumanHd2}
                 alt=""
+                width={1536}
+                height={1024}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover object-center opacity-90"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFFDF8] via-[#FFFDF8]/70 to-transparent dark:from-stone-900 dark:via-stone-900/70" />
