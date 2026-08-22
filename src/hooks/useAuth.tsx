@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -90,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mfaAal, setMfaAal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const userRef = useRef<User | null>(null);
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
       const client = supabase as any;
@@ -186,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (mounted) {
         setUser(null);
+        userRef.current = null;
         setProfile(null);
         setLoading(false);
       }
@@ -204,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       setUser(session?.user ?? null);
+      userRef.current = session?.user ?? null;
       if (session?.user) {
         void fetchUserProfile(session.user.id);
       } else {
@@ -217,13 +221,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser) {
+        // Token refresh / profile updates must not unmount protected pages.
+        // SIGNED_IN after getSession recovery also must not flash if user is already set.
+        if (event === 'SIGNED_IN' && !userRef.current) {
           setLoading(true);
         }
-        void fetchUserProfile(session.user.id);
+        userRef.current = nextUser;
+        void fetchUserProfile(nextUser.id);
       } else {
+        userRef.current = null;
         setProfile(null);
         setLoading(false);
       }

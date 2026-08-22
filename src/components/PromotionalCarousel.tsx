@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/hooks/useLanguage';
-
-// Import poster assets
-import raghavamHero from '@/pages/images/raghavam-hero-high-quality.webp';
 import bhajanSangrahBanner from '@/pages/images/bhajan_sangrah_high_quality(1).webp';
 import devWallpaperBanner from '@/pages/images/dev_wallpaper_high_quality.webp';
 import liveWallpaperBanner from '@/pages/images/live_wallpaper_high_quality.webp';
@@ -14,12 +11,15 @@ import panchangBanner from '@/pages/images/panchang_high_quality(1).webp';
 import naamJapBanner from '@/pages/images/naam_jap_high_quality.webp';
 import bhaktiSamudayBanner from '@/pages/images/bhakti_samuday_high_quality.webp';
 
+const HERO_MOBILE = '/hero-lcp-mobile.webp';
+const HERO_DESKTOP = '/hero-lcp-desktop.webp';
+
 // Banners Data Array
 const BANNERS = [
   { 
     id: 0, 
     title: "श्रीराम के चरणों में आपका स्वागत है", 
-    image: raghavamHero, 
+    image: HERO_MOBILE, 
     href: "/all-bhajans",
     isHeroCard: true 
   },
@@ -119,9 +119,9 @@ export function PromotionalCarousel() {
         handleEnd();
       }}
     >
-      {/* Prefetch adjacent banners */}
-      <link rel="prefetch" href={BANNERS[(currentIndex + 1) % numBanners].image} />
-      <link rel="prefetch" href={BANNERS[(currentIndex - 1 + numBanners) % numBanners].image} />
+      {currentIndex < numBanners - 1 && (
+        <link rel="prefetch" href={BANNERS[(currentIndex + 1) % numBanners].image} />
+      )}
 
       {/* Styled slide container heights tuned to match hero image height */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -199,9 +199,15 @@ export function PromotionalCarousel() {
                   style={{ boxShadow: '0 12px 35px rgba(0,0,0,0.10)' }}
                 >
                   <img
-                    src={raghavamHero}
+                    src={HERO_MOBILE}
+                    srcSet={`${HERO_MOBILE} 800w, ${HERO_DESKTOP} 1400w`}
+                    sizes="(max-width: 767px) 90vw, 660px"
                     alt="Lord Ram Darbar"
-                    loading="eager"
+                    width={800}
+                    height={450}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                    decoding="async"
                     className="absolute inset-0 w-full h-full object-cover object-[73%_center] z-0 pointer-events-none select-none brightness-[1.08] contrast-[1.03] saturate-[1.06]"
                   />
                   <div 
@@ -234,7 +240,10 @@ export function PromotionalCarousel() {
                 <img 
                   src={banner.image} 
                   alt={banner.title}
-                  loading="eager"
+                  width={660}
+                  height={355}
+                  loading={isActive ? 'eager' : 'lazy'}
+                  decoding="async"
                   className="w-full h-full object-cover pointer-events-none select-none transition-transform duration-700 hover:scale-[1.01]"
                   draggable={false}
                 />

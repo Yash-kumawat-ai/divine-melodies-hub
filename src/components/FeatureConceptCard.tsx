@@ -87,6 +87,10 @@ export function FeatureConceptCard({
               <img
                 src={imageSrc}
                 alt={imageAlt}
+                width={76}
+                height={76}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover object-center"
                 draggable={false}
               />

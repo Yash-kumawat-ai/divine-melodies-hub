@@ -10,8 +10,9 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { user, loading, isAdmin } = useAuth();
 
-  // While checking auth status
-  if (loading) {
+  // Initial boot only — keep the page mounted if we already have a user
+  // (token refresh must not unmount meditation / upload / account).
+  if (loading && !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -22,7 +23,6 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     );
   }
 
-  // Not authenticated - redirect to login
   if (!user) {
     return <Navigate to="/auth/login" replace />;
   }
@@ -31,6 +31,5 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     return <Navigate to="/" replace />;
   }
 
-  // Authenticated - render the protected component
   return <>{children}</>;
 }

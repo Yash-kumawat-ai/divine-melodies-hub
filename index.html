@@ -13,13 +13,13 @@
     />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap"
       media="print"
       onload="this.media='all'"
     />
     <noscript>
       <link
-        href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Noto+Sans+Gujarati:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
     </noscript>
@@ -27,6 +27,8 @@
     <meta name="description" content="Discover and share Hindu devotional songs (bhajans). Find lyrics, mantras, stotrams for Krishna, Shiva, Hanuman, Rama, and more deities." />
     <meta name="author" content="Raghavam" />
     <link rel="icon" type="image/png" href="/mandala-logo.png" />
+    <link rel="preload" as="image" href="/hero-lcp-mobile.webp" media="(max-width: 767px)" />
+    <link rel="preload" as="image" href="/hero-lcp-desktop.webp" media="(min-width: 768px)" />
     <meta property="og:title" content="Raghavam - Indian Bhajans" />
     <meta property="og:description" content="Discover and share Hindu devotional songs. Find lyrics for Krishna, Shiva, Hanuman and more." />
     <meta property="og:type" content="website" />
@@ -98,14 +100,18 @@
         <style>
           #loading-splash {
             background-color: #080200;
-            background-image: url('/splash-bg-mobile.webp');
+            background-image:
+              linear-gradient(180deg, rgba(8,2,0,0.35) 0%, rgba(8,2,0,0.15) 40%, rgba(8,2,0,0.55) 100%),
+              url('/splash-compact-mobile.webp');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
           }
           @media (min-width: 768px) {
             #loading-splash {
-              background-image: url('/splash-bg-desktop.webp');
+              background-image:
+                linear-gradient(180deg, rgba(8,2,0,0.35) 0%, rgba(8,2,0,0.15) 40%, rgba(8,2,0,0.55) 100%),
+                url('/splash-compact-desktop.webp');
             }
           }
           @keyframes splash-pulse {

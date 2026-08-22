@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 import SearchBar from "@/components/SearchBar";
 import { HeroInsightCards } from "@/components/HeroInsightCards";
 import { LiveAartiIcon } from "@/components/LiveAartiIcon";
 
-import raghavamHero from "@/pages/images/raghavam-hero-high-quality.webp";
+const HERO_MOBILE = "/hero-lcp-mobile.webp";
+const HERO_DESKTOP = "/hero-lcp-desktop.webp";
 
 import { PromotionalCarousel } from "@/components/PromotionalCarousel";
 import {
@@ -30,6 +31,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
   const isHi = language === "hi";
 
   return (
+    <LazyMotion features={domAnimation}>
     <section className="hero-section w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-3.5 pb-1 md:py-8 bg-[#FFFDF8] dark:bg-background md:bg-background">
       <div className="md:hidden flex flex-col w-full text-left">
         <PromotionalCarousel />
@@ -47,13 +49,17 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <div className="relative w-full overflow-hidden rounded-[28px] md:min-h-[440px] lg:min-h-[480px] flex flex-col justify-center p-8 lg:p-12 shadow-[0_16px_40px_rgba(0,0,0,0.10)] dark:shadow-[0_20px_48px_rgba(0,0,0,0.45)] border border-[#E8D8C4]/70 dark:border-zinc-800/60 bg-[#FFFDF8] dark:bg-[#120B05]">
           <div className="absolute right-0 top-0 bottom-0 w-1/2 lg:w-[46%] h-full z-0 overflow-hidden pointer-events-none">
             <picture className="block w-full h-full">
-              <source media="(min-width: 768px)" srcSet={raghavamHero} />
-              <motion.img
+              <source media="(min-width: 768px)" srcSet={HERO_DESKTOP} width={1400} height={900} />
+              <m.img
                 initial={{ scale: 1.03 }}
                 animate={{ scale: 1 }}
                 transition={{ duration: 8, ease: "easeOut" }}
-                src={raghavamHero}
+                src={HERO_DESKTOP}
                 alt="Raghavam — Devotional Music Platform"
+                width={1400}
+                height={900}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover object-center rounded-r-[28px]"
               />
             </picture>
@@ -62,7 +68,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
           </div>
 
           <div className="relative z-10 flex flex-col items-start w-full max-w-xl text-left">
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.5 }}
@@ -71,9 +77,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
               <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#651317]/50" />
               <span className="text-[#651317] dark:text-[#D4A437] text-[11px] font-medium tracking-wide">✦ ✦ ✦</span>
               <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#651317]/50" />
-            </motion.div>
+            </m.div>
 
-            <motion.h1
+            <m.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.22, duration: 0.65 }}
@@ -92,27 +98,27 @@ export function HeroSection({ stats }: HeroSectionProps) {
                   of Shri Rama
                 </>
               )}
-            </motion.h1>
+            </m.h1>
 
-            <motion.p
+            <m.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.32, duration: 0.55 }}
               className="mb-4 text-[#786252] dark:text-stone-400 text-sm md:text-base font-normal tracking-normal max-w-md"
             >
               {isHi ? "सत्संग · भजन · साधना · सेवा" : "Satsang · Bhajan · Sadhana · Seva"}
-            </motion.p>
+            </m.p>
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.42 }}
               className="w-full max-w-md mb-4 relative shrink-0 text-left cursor-pointer"
             >
               <SearchBar readOnly onClick={() => navigate("/search")} />
-            </motion.div>
+            </m.div>
 
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -135,12 +141,13 @@ export function HeroSection({ stats }: HeroSectionProps) {
                 <LiveAartiIcon className="!h-5 !w-5" />
                 <span className="truncate">{isHi ? "लाइव आरती" : "Live Aarti"}</span>
               </button>
-            </motion.div>
+            </m.div>
           </div>
         </div>
 
         <HeroInsightCards />
       </div>
     </section>
+    </LazyMotion>
   );
 }

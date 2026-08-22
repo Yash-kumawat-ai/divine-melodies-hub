@@ -69,4 +69,32 @@ describe("ProtectedRoute", () => {
 
     expect(screen.getByText("Home page")).toBeInTheDocument();
   });
+
+  it("keeps content mounted when loading while a user already exists", () => {
+    mockedUseAuth.mockReturnValue({
+      user: { id: "user-1" },
+      loading: true,
+      isAdmin: false,
+    } as ReturnType<typeof useAuth>);
+
+    renderProtectedRoute();
+
+    expect(screen.getByText("Protected content")).toBeInTheDocument();
+    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Login page")).not.toBeInTheDocument();
+  });
+
+  it("shows loading UI when checking auth with no user yet", () => {
+    mockedUseAuth.mockReturnValue({
+      user: null,
+      loading: true,
+      isAdmin: false,
+    } as ReturnType<typeof useAuth>);
+
+    renderProtectedRoute();
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
+    expect(screen.queryByText("Protected content")).not.toBeInTheDocument();
+    expect(screen.queryByText("Login page")).not.toBeInTheDocument();
+  });
 });

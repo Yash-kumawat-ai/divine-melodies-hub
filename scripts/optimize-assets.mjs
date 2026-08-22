@@ -31,6 +31,50 @@ async function optimizeDeities() {
   }
 }
 
+async function optimizeSplashAndHero() {
+  const splashMobileIn = path.join(root, 'public', 'splash-bg-mobile.webp');
+  const splashDesktopIn = path.join(root, 'public', 'splash-bg-desktop.webp');
+  const splashMobileOut = path.join(root, 'public', 'splash-compact-mobile.webp');
+  const splashDesktopOut = path.join(root, 'public', 'splash-compact-desktop.webp');
+  const heroSrc = path.join(root, 'src', 'pages', 'images', 'raghavam-hero-high-quality.webp');
+
+  try {
+    await fs.access(splashMobileIn);
+    await sharp(splashMobileIn)
+      .resize(768, 1024, { fit: 'cover', position: 'centre' })
+      .webp({ quality: 80 })
+      .toFile(splashMobileOut);
+    console.log(`splash-compact-mobile.webp -> ${Math.round((await fs.stat(splashMobileOut)).size / 1024)} KB`);
+  } catch {
+    console.log('Skipping splash mobile (source already replaced by compact file)');
+  }
+
+  try {
+    await fs.access(splashDesktopIn);
+    await sharp(splashDesktopIn)
+      .resize(1600, 900, { fit: 'cover', position: 'centre' })
+      .webp({ quality: 80 })
+      .toFile(splashDesktopOut);
+    console.log(`splash-compact-desktop.webp -> ${Math.round((await fs.stat(splashDesktopOut)).size / 1024)} KB`);
+  } catch {
+    console.log('Skipping splash desktop (source already replaced by compact file)');
+  }
+
+  const heroMobileOut = path.join(root, 'public', 'hero-lcp-mobile.webp');
+  const heroDesktopOut = path.join(root, 'public', 'hero-lcp-desktop.webp');
+  await sharp(heroSrc)
+    .resize(800, undefined, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toFile(heroMobileOut);
+  await sharp(heroSrc)
+    .resize(1400, undefined, { fit: 'inside', withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toFile(heroDesktopOut);
+  console.log(`hero-lcp-mobile.webp -> ${Math.round((await fs.stat(heroMobileOut)).size / 1024)} KB`);
+  console.log(`hero-lcp-desktop.webp -> ${Math.round((await fs.stat(heroDesktopOut)).size / 1024)} KB`);
+}
+
 await optimizeLogo();
 await optimizeDeities();
+await optimizeSplashAndHero();
 console.log('Asset optimization complete.');

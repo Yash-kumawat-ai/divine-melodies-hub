@@ -1,21 +1,19 @@
-import { motion, useInView } from 'framer-motion';
+import { LazyMotion, domAnimation, m, useInView } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Upload, Search, Users, ShieldCheck, Star, Headphones, ArrowRight, Landmark, Sun, Trophy, Gift } from 'lucide-react';
+import { Star, Headphones, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { HeroSection } from '@/components/HeroSection';
 import { PromotionalCarousel } from '@/components/PromotionalCarousel';
 import DevotionalDivider from '@/components/DevotionalDivider';
-import SearchBar from '@/components/SearchBar';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
-import { bhajans as staticBhajans } from '@/data/bhajans';
 import { generateBhajanSlug } from '@/lib/slugUtils';
-import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
+import { useHomeCommunityBhajans, useHomeJapStats, useHomePublicStats } from '@/hooks/useHomeDashboardQueries';
 import { usePresence } from '@/hooks/usePresence';
 import { toast } from 'sonner';
 import hanumanCommunityBanner from '@/pages/images/hanuman_community_banner_high_quality.webp';
@@ -200,11 +198,17 @@ export default function Home() {
   const { user } = useAuth();
   const { totalCount: totalBhajanCount } = useBhajanCounts();
   const { onlineCount } = usePresence();
+  const { data: publicStats } = useHomePublicStats();
+  const { data: japStats } = useHomeJapStats();
+  const { data: communityBhajanRows, isLoading: loading } = useHomeCommunityBhajans();
   const navigate = useNavigate();
-  const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ bhajans: 0, artists: 0, devotees: 0 });
-  const [communityStats, setCommunityStats] = useState({ members: 0, totalJaps: 0, todayParticipants: 0 });
+  const userBhajans = (communityBhajanRows ?? []) as UserBhajan[];
+  const stats = {
+    bhajans: totalBhajanCount,
+    artists: publicStats?.artists ?? 0,
+    devotees: publicStats?.devotees ?? 0,
+  };
+  const communityStats = japStats ?? { members: 0, totalJaps: 0, todayParticipants: 0 };
   const [featurePage, setFeaturePage] = useState(1);
   const FEATURE_PAGE_SIZE = 8;
 
@@ -218,115 +222,6 @@ export default function Home() {
     { name: 'Anjali Gupta', city: 'Mumbai', initials: 'AG', quote: 'The lyrics are accurate and easy to read. My children now sing along during our evening aarti thanks to this platform.' },
   ];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { count: profileCount } = await (supabase as any)
-          .from('user_profiles')
-          .select('id', { count: 'exact', head: true });
-
-        const { data: uploadSingers } = await (supabase as any)
-          .from('user_uploads')
-          .select('singer_name')
-          .or('status.eq.approved,status.is.null');
-
-        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
-        if (uploadSingers) {
-          uploadSingers.forEach((row: any) => {
-            if (row.singer_name) {
-              uniqueSingers.add(row.singer_name.trim());
-            }
-          });
-        }
-
-        setStats({
-          bhajans: totalBhajanCount,
-          artists: uniqueSingers.size,
-          devotees: profileCount ?? 0,
-        });
-      } catch (err) {
-        console.error('Error fetching dynamic stats:', err);
-        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
-        setStats({
-          bhajans: totalBhajanCount || staticBhajans.length,
-          artists: uniqueSingers.size,
-          devotees: 0,
-        });
-      }
-    };
-
-    const fetchBhajans = async () => {
-      try {
-        const { data, error } = await (supabase as any)
-          .from('user_uploads')
-          .select('*')
-          .or('status.eq.approved,status.is.null')
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        if (data) {
-          const bhajanOnly = (data as any[]).filter(
-            (item) => !item.content_type || item.content_type === 'bhajan'
-          );
-          setUserBhajans(bhajanOnly.slice(0, 6) as UserBhajan[]);
-        }
-      } catch (err) {
-        console.error('Error fetching user bhajans:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchCommunityStats = async () => {
-      try {
-        // Total registered members
-        const { count: memberCount } = await (supabase as any)
-          .from('user_profiles')
-          .select('id', { count: 'exact', head: true });
-
-        // Total chants and last session date across all users
-        const { data: japTotals } = await (supabase as any)
-          .from('user_jap_totals')
-          .select('user_id, total_chants, last_session_at');
-
-        let totalJaps = 0;
-        let todayCount = 0;
-
-        if (japTotals) {
-          totalJaps = japTotals.reduce(
-            (sum: number, row: any) => sum + (Number(row.total_chants) || 0), 0
-          );
-
-          const todayStart = new Date();
-          todayStart.setHours(0, 0, 0, 0);
-
-          const activeTodayUserIds = new Set(
-            japTotals
-              .filter((row: any) => row.last_session_at && new Date(row.last_session_at) >= todayStart)
-              .map((row: any) => row.user_id)
-          );
-          todayCount = activeTodayUserIds.size;
-        }
-
-        setCommunityStats({
-          members: memberCount ?? 0,
-          totalJaps,
-          todayParticipants: todayCount,
-        });
-      } catch (err) {
-        console.error('Error fetching community stats:', err);
-        setCommunityStats({
-          members: 0,
-          totalJaps: 0,
-          todayParticipants: 0,
-        });
-      }
-    };
-
-    fetchData();
-    fetchBhajans();
-    fetchCommunityStats();
-  }, [totalBhajanCount]);
-
   const handleUploadClick = () => {
     if (!user) {
       toast.info(language === 'hi' ? 'कृपया भजन अपलोड करने के लिए लॉग इन करें' : 'Please log in to upload bhajans');
@@ -337,6 +232,7 @@ export default function Home() {
   };
 
   return (
+    <LazyMotion features={domAnimation}>
     <div className="bg-[#FFFDF8] dark:bg-background min-h-screen">
       <SEO
         title="Raghavam - Indian Bhajans & Devotional Songs"
@@ -384,7 +280,7 @@ export default function Home() {
               { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', imageSrc: shortsWebp },
               { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', imageSrc: darshanWebp },
             ]).slice(0, featurePage * FEATURE_PAGE_SIZE).map((item, i) => (
-              <motion.button
+              <m.button
                 key={item.title}
                 onClick={() => navigate(item.path)}
                 initial={{ opacity: 0, y: 8 }}
@@ -406,7 +302,10 @@ export default function Home() {
                   <img
                     src={item.imageSrc}
                     alt={item.title}
+                    width={190}
+                    height={115}
                     loading="lazy"
+                    decoding="async"
                     className="max-w-full max-h-full object-contain object-center group-hover:scale-105 transition-transform duration-200 pointer-events-none select-none filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.06)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
                   />
                 </div>
@@ -417,7 +316,7 @@ export default function Home() {
                     {item.title}
                   </span>
                 </div>
-              </motion.button>
+              </m.button>
             ))}
           </div>
 
@@ -441,7 +340,7 @@ export default function Home() {
       {/* ── Hanuman Bhakt Community Banner Poster ── */}
       <section className="px-4 py-6 md:py-10 bg-[#FFFDF8] dark:bg-background">
         <div className="container mx-auto max-w-5xl px-0">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '200px' }}
@@ -452,7 +351,11 @@ export default function Home() {
             <img
               src={hanumanCommunityBanner}
               alt="Hanuman Bhakt Community"
-              className="w-full h-auto block"
+              width={1600}
+              height={640}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-auto block aspect-[5/2] object-cover"
             />
 
             {/* Clickable link covering the whole banner (except the button) */}
@@ -474,7 +377,7 @@ export default function Home() {
                 <ArrowRight className="w-3.5 h-3.5 md:w-4 h-4 text-stone-950" />
               </Link>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -534,7 +437,7 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((item) => (
-              <motion.div
+              <m.div
                 key={item.name}
                 className="rounded-2xl border border-border bg-card p-6"
                 initial={{ opacity: 0, y: 10 }}
@@ -557,7 +460,7 @@ export default function Home() {
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">"{item.quote}"</p>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -586,5 +489,6 @@ export default function Home() {
       </section>
 
     </div>
+    </LazyMotion>
   );
 }

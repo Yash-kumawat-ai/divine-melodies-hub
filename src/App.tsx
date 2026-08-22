@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,19 +13,25 @@ import { LanguageProvider, useLanguage } from "@/hooks/useLanguage";
 import { AssistantContextProvider } from "@/hooks/useAssistantContext";
 import { AIModalProvider, useAIModal } from "@/hooks/useAIModal";
 import { ThemeProvider } from "@/hooks/useTheme";
-import { YouTubePlayerProvider } from "@/hooks/useYouTubePlayer";
+import { YouTubePlayerProvider, useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
 import { DrawerProvider } from "@/context/DrawerContext";
 import { MobileDrawer } from "@/components/navigation/MobileDrawer";
-import Home from "./pages/Home";
-import AllBhajans from "./pages/AllBhajans";
 import LoginForm from "./components/Auth/LoginForm";
 import SignupTabs from "./components/Auth/SignupTabs";
 import AuthShell from "./components/Auth/AuthShell";
 import AuthCallback from "./components/Auth/AuthCallback";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
+const Home = lazy(() => import("./pages/Home"));
+const AllBhajans = lazy(() => import("./pages/AllBhajans"));
 const AllDeities = lazy(() => import("./pages/AllDeities"));
 const DeityPage = lazy(() => import("./pages/DeityPage"));
 const BhajanPage = lazy(() => import("./pages/BhajanPage"));
@@ -71,6 +77,50 @@ const ShortsFeed = lazy(() => import("./pages/ShortsFeed"));
 const ChannelWhitelist = lazy(() => import("./pages/admin/ChannelWhitelist"));
 const DMCAPage = lazy(() => import("./pages/DMCAPage"));
 
+
+function DeferredNaradWidget() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const enable = () => setReady(true);
+    const idleId =
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(enable, { timeout: 4000 })
+        : window.setTimeout(enable, 2500);
+    window.addEventListener("pointerdown", enable, { once: true, passive: true });
+    return () => {
+      if ("cancelIdleCallback" in window && typeof idleId === "number") {
+        window.cancelIdleCallback(idleId);
+      } else {
+        window.clearTimeout(idleId);
+      }
+      window.removeEventListener("pointerdown", enable);
+    };
+  }, []);
+
+  if (!ready) return null;
+  return (
+    <Suspense fallback={null}>
+      <NaradFloatingWidget />
+    </Suspense>
+  );
+}
+
+function DeferredYouTubePlayerHost() {
+  const { isOpen } = useYouTubePlayer();
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setLoaded(true);
+  }, [isOpen]);
+
+  if (!loaded) return null;
+  return (
+    <Suspense fallback={null}>
+      <YouTubePlayerHost />
+    </Suspense>
+  );
+}
 
 function AppContent() {
   const { isOpen } = useAIModal();
@@ -258,9 +308,7 @@ function AppContent() {
           </Route>
         </Routes>
 
-        <Suspense fallback={null}>
-          <NaradFloatingWidget />
-        </Suspense>
+        <DeferredNaradWidget />
       </BrowserRouter>
 
       {isOpen && (
@@ -268,9 +316,7 @@ function AppContent() {
           <AIAssistantModalHost />
         </Suspense>
       )}
-      <Suspense fallback={null}>
-        <YouTubePlayerHost />
-      </Suspense>
+      <DeferredYouTubePlayerHost />
     </>
   );
 }

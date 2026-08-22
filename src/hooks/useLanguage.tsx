@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { ensureLanguageFonts } from '@/lib/loadLanguageFonts';
 
 export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta';
 
@@ -804,6 +805,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('app_language', language);
     document.documentElement.lang = language;
     document.documentElement.classList.toggle('lang-hi', language === 'hi');
+    ensureLanguageFonts(language);
     // Safety net: clear any stuck body scroll/pointer locks left by modals
     // (e.g. native <select> inside Radix Sheet on mobile can leave body
     // with pointer-events:none / overflow:hidden, freezing the page).

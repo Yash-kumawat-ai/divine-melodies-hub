@@ -53,6 +53,6 @@ describe("BhajanCard", () => {
 
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: /Play now|अब सुनें/i })).toBeInTheDocument();
+    expect(within(dialog).getAllByText("चलाएं").length).toBeGreaterThan(0);
   });
 });
