@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -90,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mfaAal, setMfaAal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const userRef = useRef<User | null>(null);
   const fetchUserProfile = useCallback(async (userId: string) => {
     try {
       const client = supabase as any;
@@ -169,31 +171,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    const clearBrokenAuth = async (reason: string) => {
+      console.warn('Clearing broken auth session:', reason);
+      try {
+        await supabase.auth.signOut({ scope: 'local' });
+      } catch {
+        // ignore
+      }
+      try {
+        const keys = Object.keys(localStorage).filter(
+          (k) => k.startsWith('sb-') && k.includes('auth'),
+        );
+        for (const k of keys) localStorage.removeItem(k);
+      } catch {
+        // ignore
+      }
+      if (mounted) {
+        setUser(null);
+        userRef.current = null;
+        setProfile(null);
+        setLoading(false);
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (!mounted) return;
       if (error) {
-        console.warn("Session recovery failed, clearing stale auth data:", error.message);
-        // Wipe local storage to prevent future refresh token failures on reload
-        supabase.auth.signOut().catch(() => {});
+        const msg = error.message || '';
+        if (/refresh token/i.test(msg) || /session/i.test(msg)) {
+          void clearBrokenAuth(msg);
+          return;
+        }
+        console.warn('Session recovery failed, clearing stale auth data:', msg);
+        void clearBrokenAuth(msg);
+        return;
       }
       setUser(session?.user ?? null);
+      userRef.current = session?.user ?? null;
       if (session?.user) {
         void fetchUserProfile(session.user.id);
       } else {
         setLoading(false);
       }
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/refresh token/i.test(msg)) void clearBrokenAuth(msg);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      const nextUser = session?.user ?? null;
+      setUser(nextUser);
+      if (nextUser) {
+        // Token refresh / profile updates must not unmount protected pages.
+        // SIGNED_IN after getSession recovery also must not flash if user is already set.
+        if (event === 'SIGNED_IN' && !userRef.current) {
           setLoading(true);
         }
-        void fetchUserProfile(session.user.id);
+        userRef.current = nextUser;
+        void fetchUserProfile(nextUser.id);
       } else {
+        userRef.current = null;
         setProfile(null);
         setLoading(false);
       }
@@ -226,7 +265,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setError(null);
         const redirectTo =
           typeof window !== 'undefined'
-            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/upload-bhajan')}`
+            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent('/')}`
             : undefined;
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -250,6 +289,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await ensureUserProfile(data.user);
           if (data.session) {
             await fetchUserProfile(data.user.id);
+          } else {
+            // If session was not directly returned, attempt automatic login
+            try {
+              const { data: signInData } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+              if (signInData?.session && signInData?.user) {
+                await ensureUserProfile(signInData.user);
+                await fetchUserProfile(signInData.user.id);
+                return { data: signInData, error: null };
+              }
+            } catch (autoErr) {
+              console.warn('Auto sign-in after signup attempt:', autoErr);
+            }
           }
         }
 

@@ -15,7 +15,19 @@ import {
   Heart,
   Sparkles,
   Play,
-  X
+  X,
+  CalendarDays,
+  Film,
+  Bot,
+  Image as ImageIcon,
+  Camera,
+  Users,
+  BookOpen,
+  Landmark,
+  Trophy,
+  Upload,
+  Flame,
+  ArrowRight
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +35,14 @@ import BhajanCard from "@/components/BhajanCard";
 import BhajanDetailModal from "@/components/BhajanDetailModal";
 import { bhajans, deities, Bhajan, getDeityById } from "@/data/bhajans";
 import SearchBar from "@/components/SearchBar";
+import { 
+  searchFeatures, 
+  searchAartisAndChalisas, 
+  searchDeities,
+  FeatureSearchItem,
+  AartiChalisaSearchItem,
+  DeitySearchItem
+} from "@/lib/unifiedSearch";
 import Pagination from "@/components/Pagination";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
@@ -162,6 +182,40 @@ export default function SearchPage() {
 
     return filtered;
   }, [query, selectedDeity, userBhajans, allDeities]);
+
+  const matchedFeatures = useMemo(() => {
+    if (!query.trim()) return [];
+    return searchFeatures(query);
+  }, [query]);
+
+  const matchedAartis = useMemo(() => {
+    if (!query.trim()) return [];
+    return searchAartisAndChalisas(query);
+  }, [query]);
+
+  const matchedDeities = useMemo(() => {
+    if (!query.trim()) return [];
+    return searchDeities(query);
+  }, [query]);
+
+  const renderFeatureIcon = (iconName: string) => {
+    switch (iconName) {
+      case 'Sparkles': return <Sparkles className="w-5 h-5 text-amber-500" />;
+      case 'CalendarDays': return <CalendarDays className="w-5 h-5 text-orange-500" />;
+      case 'Flame': return <Flame className="w-5 h-5 text-red-500" />;
+      case 'Film': return <Film className="w-5 h-5 text-purple-500" />;
+      case 'Bot': return <Bot className="w-5 h-5 text-sky-500" />;
+      case 'Image': return <ImageIcon className="w-5 h-5 text-emerald-500" />;
+      case 'Camera': return <Camera className="w-5 h-5 text-pink-500" />;
+      case 'Users': return <Users className="w-5 h-5 text-indigo-500" />;
+      case 'BookOpen': return <BookOpen className="w-5 h-5 text-amber-700" />;
+      case 'Landmark': return <Landmark className="w-5 h-5 text-yellow-600" />;
+      case 'Trophy': return <Trophy className="w-5 h-5 text-yellow-500" />;
+      case 'Upload': return <Upload className="w-5 h-5 text-emerald-600" />;
+      case 'Heart': return <Heart className="w-5 h-5 text-rose-500" />;
+      default: return <Sparkles className="w-5 h-5 text-amber-500" />;
+    }
+  };
 
   useEffect(() => {
     const run = async () => {
@@ -438,6 +492,69 @@ export default function SearchPage() {
     return [];
   }, [activeCategory, deityBhajans, bhajanCategoryMap]);
 
+  const deityCategoryContent = useMemo(() => {
+    if (activeCategory === "वॉलपेपर" || activeCategory === "पोस्टर") {
+      const list = activeCategory === "वॉलपेपर" ? deityWallpapers : deityPosters;
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {list.map((item, idx) => {
+            const titleText = activeCategory === "वॉलपेपर" 
+              ? (language === 'hi' ? item.nameHindi || item.name : item.name)
+              : (language === 'hi' ? (item as any).titleHindi || item.title : item.title);
+            const downloadUrl = item.imageUrl || selectedDeityItem?.imageUrl || "";
+            const slug = selectedDeityItem ? getDeitySlug(selectedDeityItem) : 'deity';
+
+            return (
+              <div key={item.id} className="rounded-2xl overflow-hidden relative aspect-[9/16] group border border-amber-500/10 shadow-lg">
+                {downloadUrl ? (
+                  <img src={downloadUrl} alt={titleText} className="w-full h-full object-cover" loading="lazy" />
+                ) : (
+                  <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">ॐ</div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-white tracking-wide line-clamp-2 text-left">{titleText}</span>
+                  <button
+                    onClick={() => downloadImage(downloadUrl, `${slug}_${activeCategory === 'वॉलपेपर' ? 'wallpaper' : 'poster'}_${idx + 1}`)}
+                    className="w-full py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-sans text-[10px] font-black uppercase rounded-lg transition-all cursor-pointer shadow-md shadow-amber-500/25"
+                  >
+                    {language === 'hi' ? "डाउनलोड करें" : "Download"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (categoryFilteredBhajans.length > 0) {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+          {categoryFilteredBhajans.map((bhajan) => (
+            <div key={`${bhajan.source}-${bhajan.sourceKey}`} className="min-w-0">
+              <BhajanCard
+                bhajan={bhajan}
+                onCardClick={(clickedBhajan) => {
+                  setSelectedBhajanForDetail(clickedBhajan);
+                  setIsDetailModalOpen(true);
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="text-center py-10 bg-muted/20 border border-dashed border-border/80 rounded-2xl">
+        <p className="text-xs text-muted-foreground font-semibold">
+          {language === 'hi' ? "इस श्रेणी में कोई भजन उपलब्ध नहीं है।" : "No items available in this category."}
+        </p>
+      </div>
+    );
+  }, [activeCategory, deityWallpapers, deityPosters, categoryFilteredBhajans, language, selectedDeityItem]);
+
   const downloadImage = (url: string, name: string) => {
     const link = document.createElement('a');
     link.href = url;
@@ -489,7 +606,7 @@ export default function SearchPage() {
             <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
           </button>
           
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <SearchBar
               value={activeMode === 'bhajans' ? query : youtubeQuery}
               onChange={(val) => {
@@ -1162,69 +1279,8 @@ export default function SearchPage() {
                     : (language === 'hi' ? `${activeCategory} परिणाम` : `${activeCategory} Results`)}
                 </h3>
                 
-                {/* Wallpapers/Posters custom grid or Bhajans list */}
-                {activeCategory === "वॉलपेपर" || activeCategory === "पोस्टर" ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {(activeCategory === "वॉलपेपर" ? deityWallpapers : deityPosters).map((item, idx) => {
-                      const titleText = activeCategory === "वॉलपेपर" 
-                        ? (language === 'hi' ? item.nameHindi || item.name : item.name)
-                        : (language === 'hi' ? (item as any).titleHindi || item.title : item.title);
-                      
-                      const downloadUrl = item.imageUrl || selectedDeityItem?.imageUrl || "";
-                      const slug = selectedDeityItem ? getDeitySlug(selectedDeityItem) : 'deity';
-                      
-                      return (
-                        <div key={item.id} className="rounded-2xl overflow-hidden relative aspect-[9/16] group border border-amber-500/10 shadow-lg">
-                          {downloadUrl ? (
-                            <img 
-                              src={downloadUrl} 
-                              alt={titleText} 
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">ॐ</div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-                          <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2">
-                            <span className="text-[10px] font-bold text-white tracking-wide line-clamp-2 text-left">
-                              {titleText}
-                            </span>
-                            <button
-                              onClick={() => downloadImage(downloadUrl, `${slug}_${activeCategory === 'वॉलपेपर' ? 'wallpaper' : 'poster'}_${idx + 1}`)}
-                              className="w-full py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-sans text-[10px] font-black uppercase rounded-lg transition-all cursor-pointer shadow-md shadow-amber-500/25"
-                            >
-                              {language === 'hi' ? "डाउनलोड करें" : "Download"}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : categoryFilteredBhajans.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-                    {categoryFilteredBhajans.map((bhajan, index) => (
-                      <div
-                        key={`${bhajan.source}-${bhajan.sourceKey}`}
-                        className="min-w-0"
-                      >
-                        <BhajanCard
-                          bhajan={bhajan}
-                          onCardClick={(clickedBhajan) => {
-                            setSelectedBhajanForDetail(clickedBhajan);
-                            setIsDetailModalOpen(true);
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-10 bg-muted/20 border border-dashed border-border/80 rounded-2xl">
-                    <p className="text-xs text-muted-foreground font-semibold">
-                      {language === 'hi' ? "इस श्रेणी में कोई भजन उपलब्ध नहीं है।" : "No items available in this category."}
-                    </p>
-                  </div>
-                )}
+                {/* Deity Category Content Results */}
+                {deityCategoryContent}
               </div>
             </div>
           ) : (
@@ -1256,6 +1312,154 @@ export default function SearchPage() {
 
               {activeMode === 'bhajans' ? (
                 <>
+                  {/* Matched Features Banner */}
+                  {query.trim() && matchedFeatures.length > 0 && (
+                    <div className="space-y-3 bg-[#FAF2E8]/80 dark:bg-[#1E1710] p-3 sm:p-5 rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-xs overflow-hidden w-full max-w-full">
+                      <div className="flex items-center gap-2.5 px-1">
+                        <div className="w-7 h-7 rounded-full bg-amber-500/10 dark:bg-amber-400/10 flex items-center justify-center shrink-0">
+                          <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <h3 className="font-serif text-base sm:text-lg font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
+                          {language === 'hi' ? 'मिलती-जुलती विशेषताएं एवं सेवाएं' : 'Matching Features & Tools'}
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
+                        {matchedFeatures.map((feat) => (
+                          <div
+                            key={feat.id}
+                            onClick={() => navigate(feat.path)}
+                            className="bg-white dark:bg-black/30 border border-[#EFE4D7] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2.5 group relative overflow-hidden text-left w-full min-w-0"
+                          >
+                            <div className="flex items-start justify-between gap-2 w-full min-w-0">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-xs">
+                                  {renderFeatureIcon(feat.iconName)}
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm md:text-base text-[#32251E] dark:text-foreground truncate leading-snug">
+                                    {language === 'hi' ? feat.titleHindi : feat.title}
+                                  </h4>
+                                  <span className="text-[10px] font-semibold text-[#7A6B60] dark:text-muted-foreground/70 truncate">
+                                    {language === 'hi' ? 'विशेषता / सेवा' : 'Feature / Tool'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 shrink-0">
+                                {language === 'hi' ? feat.badgeHindi : feat.badge}
+                              </span>
+                            </div>
+
+                            <p className="text-[11px] sm:text-xs text-[#6E5E53] dark:text-muted-foreground/80 leading-relaxed line-clamp-2 min-w-0">
+                              {language === 'hi' ? feat.descriptionHindi : feat.description}
+                            </p>
+
+                            <div className="flex items-center justify-end pt-1.5 border-t border-[#EFE4D7]/60 dark:border-zinc-800/60 w-full">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#6A2C2A] text-white dark:bg-[#E8B15C] dark:text-black text-[11px] sm:text-xs font-bold shadow-xs group-hover:scale-[1.02] transition-transform">
+                                <span>{language === 'hi' ? 'शुरू करें' : 'Launch'}</span>
+                                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matched Aartis & Chalisas */}
+                  {query.trim() && matchedAartis.length > 0 && (
+                    <div className="space-y-3 bg-[#FAF2E8]/60 dark:bg-[#1E1710]/60 p-3 sm:p-5 rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-xs overflow-hidden w-full max-w-full">
+                      <div className="flex items-center gap-2.5 px-1">
+                        <div className="w-7 h-7 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                          <Flame className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h3 className="font-serif text-base sm:text-lg font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
+                          {language === 'hi' ? 'आरती एवं चालीसा परिणाम' : 'Matching Aartis & Chalisas'}
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
+                        {matchedAartis.map((ac) => (
+                          <div
+                            key={ac.id}
+                            onClick={() => navigate(ac.path || `/aarti-chalisa`)}
+                            className="bg-white dark:bg-black/30 border border-[#EFE4D7] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2.5 group relative overflow-hidden text-left w-full min-w-0"
+                          >
+                            <div className="flex items-start justify-between gap-2 w-full min-w-0">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 shadow-xs">
+                                  <Flame className="w-4.5 h-4.5 text-red-600 dark:text-red-400" />
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm md:text-base text-[#32251E] dark:text-foreground truncate leading-snug">
+                                    {language === 'hi' ? ac.titleHindi : ac.title}
+                                  </h4>
+                                  {ac.singerName && (
+                                    <span className="text-[10px] font-semibold text-[#7A6B60] dark:text-muted-foreground/70 truncate">
+                                      {ac.singerName}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-red-100 text-red-900 dark:bg-red-950/70 dark:text-red-300 border border-red-200 dark:border-red-800/60 shrink-0">
+                                {ac.type === 'chalisa' ? (language === 'hi' ? 'चालीसा' : 'Chalisa') : (language === 'hi' ? 'आरती' : 'Aarti')}
+                              </span>
+                            </div>
+
+                            {ac.lyricsSnippet && (
+                              <p className="text-[11px] sm:text-xs text-[#6E5E53] dark:text-muted-foreground/80 leading-relaxed line-clamp-2 italic font-serif min-w-0">
+                                "{ac.lyricsSnippet}"
+                              </p>
+                            )}
+
+                            <div className="flex items-center justify-end pt-1.5 border-t border-[#EFE4D7]/60 dark:border-zinc-800/60 w-full">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#6A2C2A] text-white dark:bg-[#E8B15C] dark:text-black text-[11px] sm:text-xs font-bold shadow-xs group-hover:scale-[1.02] transition-transform">
+                                <span>{language === 'hi' ? 'पढ़ें एवं देखें' : 'Read & View'}</span>
+                                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+
+                  {/* Matched Deities */}
+                  {query.trim() && matchedDeities.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base select-none">🕉️</span>
+                        <h3 className="font-serif text-base font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
+                          {language === 'hi' ? 'संबंधित आराध्य देवता' : 'Matching Deities'}
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {matchedDeities.map((d) => (
+                          <div
+                            key={d.id}
+                            onClick={() => {
+                              setSelectedDeity(d.slug);
+                              setQuery("");
+                            }}
+                            className="bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-2xl p-3 flex items-center gap-3 shadow-xs hover:shadow-md cursor-pointer transition-all group"
+                          >
+                            <span className="text-2xl shrink-0 select-none">{d.emoji}</span>
+                            <div className="flex flex-col min-w-0 text-left">
+                              <span className="font-bold text-xs text-[#32251E] dark:text-foreground truncate group-hover:text-[#6A2C2A] dark:group-hover:text-[#E8B15C]">
+                                {language === 'hi' ? d.nameHindi : d.name}
+                              </span>
+                              <span className="text-[10px] text-[#7A6B60] dark:text-muted-foreground truncate">
+                                {language === 'hi' ? 'देव लोक देखें →' : 'View Portal →'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {/* Deity Filter buttons row */}
                   <div>
                     <div className="flex items-center justify-between mb-4">

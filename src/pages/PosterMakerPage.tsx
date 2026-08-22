@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Sparkles, Upload, RotateCcw, Download, Info, Image } from "lucide-react";
+import { ArrowLeft, Sparkles, Upload, RotateCcw, Download, Info, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -94,10 +95,18 @@ type DragMode = "photo" | "frame" | "name";
 export default function PosterMakerPage() {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { setBhajanModalOpen } = useBhajanModalOpen();
   const isHi = language === "hi";
 
   // Editor States
   const [selectedTemplate, setSelectedTemplate] = useState<PosterTemplateConfig | null>(null);
+
+  useEffect(() => {
+    if (selectedTemplate) {
+      setBhajanModalOpen(true);
+      return () => setBhajanModalOpen(false);
+    }
+  }, [selectedTemplate, setBhajanModalOpen]);
   const [userImageSrc, setUserImageSrc] = useState<string | null>(null);
   const [zoom, setZoom] = useState<number>(1.0);
   const [offsetX, setOffsetX] = useState<number>(0);
@@ -142,14 +151,14 @@ export default function PosterMakerPage() {
       ? "ड्रैग मोड चुनें और खिसकाने के लिए सीधे कैनवास पर ड्रैग करें।"
       : "Select Drag Mode and drag directly on canvas to adjust.",
     zoomLabel: isHi ? "ज़ूम (Zoom)" : "Zoom",
-    shapeLabel: isHi ? "आकार बदलें (Shape)" : "Photo Frame Shape",
-    btnReset: isHi ? "रीसेट करें" : "Reset Photo",
+    shapeLabel: isHi ? "तस्वीर का आकार" : "Photo Frame Shape",
+    btnReset: isHi ? "पुनः सेट करें" : "Reset Photo",
     btnDownload: isHi ? "एचडी डाउनलोड करें" : "Download HD Poster",
     demoBtn: isHi ? "डेमो फोटो का उपयोग करें" : "Use Demo Photo",
-    shapeCircle: isHi ? "गोलाकार" : "Circle",
-    shapeSquare: isHi ? "चौकोर" : "Square",
-    shapeRounded: isHi ? "गोल किनारा" : "Rounded",
-    shapeOval: isHi ? "अंडाकार" : "Oval",
+    shapeCircle: isHi ? "वृत्ताकार" : "Circle",
+    shapeSquare: isHi ? "वर्गाकार" : "Square",
+    shapeRounded: isHi ? "मुड़ा वर्गाकार" : "Rounded",
+    shapeOval: isHi ? "दीर्घवृत्ताकार" : "Oval",
   };
 
   // Sync shape state when template changes
@@ -180,16 +189,23 @@ export default function PosterMakerPage() {
       return;
     }
     setLoading(true);
-    const img = new Image();
-    img.crossOrigin = "anonymous";
+    let isMounted = true;
+    const img = new window.Image();
     img.src = selectedTemplate.imageUrl;
     img.onload = () => {
-      setTemplateImgElement(img);
-      setLoading(false);
+      if (isMounted) {
+        setTemplateImgElement(img);
+        setLoading(false);
+      }
     };
     img.onerror = () => {
-      toast.error("Failed to load poster background.");
-      setLoading(false);
+      if (isMounted) {
+        toast.error("Failed to load poster background.");
+        setLoading(false);
+      }
+    };
+    return () => {
+      isMounted = false;
     };
   }, [selectedTemplate]);
 
@@ -199,13 +215,21 @@ export default function PosterMakerPage() {
       setUserImgElement(null);
       return;
     }
-    const img = new Image();
+    let isMounted = true;
+    const img = new window.Image();
     img.src = userImageSrc;
     img.onload = () => {
-      setUserImgElement(img);
+      if (isMounted) {
+        setUserImgElement(img);
+      }
     };
     img.onerror = () => {
-      toast.error("Failed to parse the uploaded image.");
+      if (isMounted) {
+        toast.error("Failed to parse the uploaded image.");
+      }
+    };
+    return () => {
+      isMounted = false;
     };
   }, [userImageSrc]);
 
@@ -248,7 +272,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -281,7 +309,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -301,7 +333,11 @@ export default function PosterMakerPage() {
         ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
       } else if (shape === "rounded-square") {
         const radius = Math.min(PW, PH) * 0.15;
-        ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        if (typeof ctx.roundRect === "function") {
+          ctx.roundRect(CX - PW / 2, CY - PH / 2, PW, PH, radius);
+        } else {
+          ctx.rect(CX - PW / 2, CY - PH / 2, PW, PH);
+        }
       } else if (shape === "oval") {
         ctx.ellipse(CX, CY, PW / 2, PH / 1.5, 0, 0, Math.PI * 2);
       }
@@ -341,7 +377,11 @@ export default function PosterMakerPage() {
       ctx.strokeStyle = "rgba(251, 191, 36, 0.6)";
       ctx.lineWidth = Math.min(W, H) * 0.003;
       ctx.beginPath();
-      ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(bannerX, bannerY, bannerW, bannerH, 16);
+      } else {
+        ctx.rect(bannerX, bannerY, bannerW, bannerH);
+      }
       ctx.fill();
       ctx.stroke();
 
@@ -584,7 +624,7 @@ export default function PosterMakerPage() {
               <h2 className="font-display text-lg md:text-xl font-bold border-l-2 border-brand-saffron pl-3 text-left">
                 {t.selectTitle}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                 {POSTER_TEMPLATES.map((item) => (
                   <div
                     key={item.id}
@@ -694,7 +734,7 @@ export default function PosterMakerPage() {
                       onClick={handleLoadDemo}
                       className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white font-sans font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-98 transition-transform cursor-pointer"
                     >
-                      <Image className="w-4 h-4 text-brand-gold" />
+                      <ImageIcon className="w-4 h-4 text-brand-gold" />
                       <span>{t.demoBtn}</span>
                     </button>
                   </div>

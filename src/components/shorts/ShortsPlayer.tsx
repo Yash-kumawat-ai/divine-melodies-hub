@@ -11,6 +11,7 @@ interface ShortsPlayerProps {
   channelName: string;
   channelHandle?: string;
   isActive: boolean;
+  isPreload?: boolean;
   liked: boolean;
   saved: boolean;
   likesCount: number;
@@ -27,6 +28,7 @@ export default function ShortsPlayer({
   channelName,
   channelHandle = '@creator',
   isActive,
+  isPreload = false,
   liked,
   saved,
   likesCount,
@@ -197,20 +199,21 @@ export default function ShortsPlayer({
       className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer select-none"
     >
       {/* Fullscreen Video / Embed */}
-      {isActive ? (
+      {isActive || isPreload ? (
         <div className="relative w-full h-full bg-black overflow-hidden">
           <iframe
             ref={iframeRef}
-            src={embedUrl}
+            src={isActive ? embedUrl : `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&autoplay=0&mute=1&controls=0&rel=0`}
             title={title}
             className="w-full h-full border-0 absolute inset-0 object-cover scale-[1.25] origin-center pointer-events-none"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
-          {/* Always-on transparent overlay: blocks YouTube native controls from showing/being clicked */}
+          {/* Always-on transparent overlay */}
           <div className="absolute inset-0 z-10 pointer-events-none" />
-          {/* Paused state: thumbnail overlay so the video frame is visible, while hiding YouTube native controls */}
-          {!isPlaying && (
+          
+          {/* Preload or Paused State Thumbnail Overlay */}
+          {(!isPlaying || !isActive) && (
             <img
               src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
               alt={title}

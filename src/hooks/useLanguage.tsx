@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { ensureLanguageFonts } from '@/lib/loadLanguageFonts';
 
 export type SupportedLanguage = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta';
 
@@ -330,7 +331,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     shareViaEmail: 'Share via Email',
     copyShareLink: 'Copy link',
     linkCopied: 'Link copied!',
-    kirtanAi: 'Kirtan AI',
+    kirtanAi: 'Narad AI',
     elderlyAssistant: 'Elderly Assistant',
     uploadBhajan: 'Upload',
     adminModeration: 'Moderation Queue',
@@ -574,7 +575,7 @@ const translations: Record<SupportedLanguage, Partial<Record<TranslationKey, str
     shareViaEmail: 'ईमेल के माध्यम से साझा करें',
     copyShareLink: 'लिंक कॉपी करें',
     linkCopied: 'लिंक कॉपी किया गया!',
-    kirtanAi: 'कीर्तन प्रवाह',
+    kirtanAi: 'नारद AI',
     elderlyAssistant: 'बुजुर्ग सहायक',
     uploadBhajan: 'अपलोड',
     adminModeration: 'संयोजन कतार',
@@ -797,13 +798,14 @@ const LanguageContext = createContext<LanguageContextValue | null>(null);
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<SupportedLanguage>(() => {
     const stored = localStorage.getItem('app_language') as SupportedLanguage | null;
-    return stored || 'en';
+    return stored || 'hi';
   });
 
   useEffect(() => {
     localStorage.setItem('app_language', language);
     document.documentElement.lang = language;
     document.documentElement.classList.toggle('lang-hi', language === 'hi');
+    ensureLanguageFonts(language);
     // Safety net: clear any stuck body scroll/pointer locks left by modals
     // (e.g. native <select> inside Radix Sheet on mobile can leave body
     // with pointer-events:none / overflow:hidden, freezing the page).

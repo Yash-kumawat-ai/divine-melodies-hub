@@ -31,14 +31,14 @@ export function useDrawerTheme() {
     /** Border color */
     border: isDark ? '#2E1E10' : '#E9DDCF',
 
-    /** Subtle hover background */
-    hoverBg: 'rgba(198,122,45,0.09)',
+    /** Subtle hover background — burgundy brand */
+    hoverBg: isDark ? 'rgba(230,196,106,0.08)' : 'rgba(101,19,23,0.06)',
 
     /** Active item background */
-    activeBg: 'rgba(198,122,45,0.13)',
+    activeBg: isDark ? 'rgba(230,196,106,0.12)' : 'rgba(101,19,23,0.10)',
 
     /** Active indicator bar and accent */
-    accent: '#C67A2D',
+    accent: isDark ? '#E6C46A' : '#651317',
 
     /** Danger / sign-out */
     danger: '#E53935',
@@ -52,10 +52,10 @@ export function useDrawerTheme() {
     divider: isDark ? '#2E1E10' : '#E9DDCF',
 
     /** Icon container background (resting) */
-    iconBg: isDark ? 'rgba(198,122,45,0.10)' : 'rgba(198,122,45,0.07)',
+    iconBg: isDark ? 'rgba(230,196,106,0.10)' : 'rgba(101,19,23,0.07)',
 
     /** Icon color (resting) */
-    iconColor: isDark ? '#B07840' : '#8B6D52',
+    iconColor: isDark ? '#E6C46A' : '#651317',
 
     /** Header gradient */
     headerGradient: isDark

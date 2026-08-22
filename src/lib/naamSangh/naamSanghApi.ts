@@ -118,12 +118,24 @@ function getLocalGroups(currentUserId?: string): NaamSanghGroup[] {
 }
 
 /** Fetch all groups */
-export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGroup[]> {
+export async function fetchGroups(
+  currentUserId?: string,
+  opts?: { limit?: number; offset?: number }
+): Promise<NaamSanghGroup[]> {
   try {
-    const { data: groups, error: groupsError } = await supabase
+    const limit = opts?.limit;
+    const offset = opts?.offset ?? 0;
+
+    let query = supabase
       .from("groups")
       .select("*")
       .order("created_at", { ascending: false });
+
+    if (typeof limit === "number" && limit > 0) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    const { data: groups, error: groupsError } = await query;
 
     if (groupsError) throw groupsError;
 
@@ -164,7 +176,12 @@ export async function fetchGroups(currentUserId?: string): Promise<NaamSanghGrou
     });
   } catch (err) {
     console.warn("Supabase fetchGroups failed, falling back to LocalStorage:", err);
-    return getLocalGroups(currentUserId);
+    const local = getLocalGroups(currentUserId);
+    if (typeof opts?.limit === "number" && opts.limit > 0) {
+      const offset = opts.offset ?? 0;
+      return local.slice(offset, offset + opts.limit);
+    }
+    return local;
   }
 }
 
@@ -369,18 +386,27 @@ export async function leaveGroup(groupId: string, userId: string): Promise<boole
 /** Fetch detailed group members & rankings from stats table */
 export async function fetchGroupRankings(groupId: string): Promise<GroupMember[]> {
   try {
-    // 1. Fetch rankings from naam_sangh_member_stats
-    const { data: stats, error: statsError } = await supabase
-      .from("naam_sangh_member_stats")
-      .select("user_id, total_japs, weekly_japs, current_streak")
+    // 1. Fetch all members of this group
+    const { data: members, error: membersError } = await supabase
+      .from("group_members")
+      .select("user_id, joined_at, role")
       .eq("group_id", groupId);
 
-    if (statsError) throw statsError;
-    if (!stats || stats.length === 0) return [];
+    if (membersError) throw membersError;
+    if (!members || members.length === 0) return [];
 
-    const memberIds = stats.map((s) => s.user_id);
+    const memberIds = members.map((m) => m.user_id);
 
-    // 2. Fetch profiles
+    // 2. Fetch stats for these members
+    const { data: stats } = await supabase
+      .from("naam_sangh_member_stats")
+      .select("user_id, total_japs, weekly_japs, current_streak")
+      .eq("group_id", groupId)
+      .in("user_id", memberIds);
+
+    const statsMap = new Map(stats?.map((s) => [s.user_id, s]));
+
+    // 3. Fetch user profiles
     const { data: profiles } = await supabase
       .from("user_profiles")
       .select("id, name, avatar_url")
@@ -388,29 +414,25 @@ export async function fetchGroupRankings(groupId: string): Promise<GroupMember[]
 
     const profilesMap = new Map(profiles?.map((p) => [p.id, p]));
 
-    const result: GroupMember[] = stats.map((s) => {
-      const p = profilesMap.get(s.user_id);
+    const result: GroupMember[] = members.map((m) => {
+      const p = profilesMap.get(m.user_id);
+      const s = statsMap.get(m.user_id);
       return {
-        user_id: s.user_id,
-        display_name: p?.name || "Unknown Devotee",
+        user_id: m.user_id,
+        display_name: p?.name || "Devotee",
         avatar_url: p?.avatar_url || null,
-        total_chants: Number(s.total_japs) || 0,
-        weekly_japs: Number(s.weekly_japs) || 0,
-        current_streak: Number(s.current_streak) || 0,
-        joined_at: new Date().toISOString(),
+        total_chants: Number(s?.total_japs) || 0,
+        weekly_japs: Number(s?.weekly_japs) || 0,
+        current_streak: Number(s?.current_streak) || 0,
+        joined_at: m.joined_at || new Date().toISOString(),
       };
     });
 
     // Sort by total chants (descending)
     return result.sort((a, b) => b.total_chants - a.total_chants);
   } catch (err) {
-    console.warn("Supabase fetchGroupRankings failed, using mock fallbacks:", err);
-    // Return mock data for standard group visual
-    return [
-      { user_id: "m-1", display_name: "Priya Sharma", avatar_url: null, total_chants: 12400, joined_at: "" },
-      { user_id: "m-2", display_name: "Amit Patel", avatar_url: null, total_chants: 8900, joined_at: "" },
-      { user_id: "m-3", display_name: "Rajesh Kumar", avatar_url: null, total_chants: 6100, joined_at: "" },
-    ];
+    console.warn("Supabase fetchGroupRankings error:", err);
+    return [];
   }
 }
 

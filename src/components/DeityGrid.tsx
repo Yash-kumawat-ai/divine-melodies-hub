@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { deities } from "@/data/bhajans";
 import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -11,6 +11,7 @@ export default function DeityGrid() {
   const displayDeities = deities.slice(0, 4); // Show only first 4 deities
   
   return (
+    <LazyMotion features={domAnimation}>
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-3 text-foreground">
@@ -21,7 +22,7 @@ export default function DeityGrid() {
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {displayDeities.map((deity, i) => (
-            <motion.div
+            <m.div
               key={deity.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -56,7 +57,7 @@ export default function DeityGrid() {
                 )}
                 <p className="text-sm text-muted-foreground mt-2">{getDeityCount(deity.id)} {t('bhajansCount')}</p>
               </Link>
-            </motion.div>
+            </m.div>
           ))}
         </div>
         
@@ -74,5 +75,6 @@ export default function DeityGrid() {
         )}
       </div>
     </section>
+    </LazyMotion>
   );
 }

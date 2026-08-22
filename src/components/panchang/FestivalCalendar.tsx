@@ -127,14 +127,16 @@ function FestivalDetailContent({
                   {festival.deity} · {festival.importance}
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant={findReminder(reminders, 'festival', festival.date, festival.id) ? 'default' : 'secondary'}
                 onClick={() => onToggleReminder(festival)}
                 className={cn(
-                  'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition',
+                  'shrink-0 rounded-full font-bold transition',
                   findReminder(reminders, 'festival', festival.date, festival.id)
-                    ? 'border-amber-400 bg-amber-500/15 text-amber-800 dark:text-amber-100'
-                    : 'border-border bg-background text-muted-foreground hover:border-amber-400 hover:text-amber-700',
+                    ? 'btn-primary'
+                    : 'btn-secondary',
                 )}
               >
                 <BellRing className="h-3.5 w-3.5" />
@@ -145,7 +147,7 @@ function FestivalDetailContent({
                   : language === 'hi'
                     ? 'रिमाइंड'
                     : 'Remind'}
-              </button>
+              </Button>
             </div>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -153,13 +155,13 @@ function FestivalDetailContent({
             </p>
 
             {festival.fasting.observed && (
-              <div className="mt-3 rounded-lg border border-amber-300/30 bg-amber-500/10 p-3">
-                <p className="flex items-center gap-2 text-sm font-bold text-amber-800 dark:text-amber-100">
+              <div className="mt-3 rounded-lg border border-brand-gold-border bg-brand-primary/10 p-3">
+                <p className="flex items-center gap-2 text-sm font-bold text-brand-primary dark:text-amber-100">
                   <Flame className="h-4 w-4" />
                   {language === 'hi' ? 'व्रत' : 'Fasting'}: {festival.fasting.type || (language === 'hi' ? 'पालन' : 'Observed')}
                 </p>
                 {(festival.fasting.rules_hi || festival.fasting.rules_en) && (
-                  <p className="mt-1 text-sm leading-relaxed text-amber-900/80 dark:text-amber-100/80">
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                     {language === 'hi' ? festival.fasting.rules_hi || festival.fasting.rules_en : festival.fasting.rules_en}
                   </p>
                 )}
@@ -254,26 +256,26 @@ export default function FestivalCalendar() {
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
-      className="festival-calendar rounded-[1.5rem] border border-amber-300/25 bg-card/92 p-3 shadow-[0_24px_80px_-44px_rgba(245,158,11,0.72)] backdrop-blur-md sm:p-5"
+      className="festival-calendar temple-panel p-4 backdrop-blur-md sm:p-6 rounded-3xl border border-brand-gold-border/60 bg-surface-raised/95 shadow-md"
     >
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-brand-gold-border/40 pb-4">
         <div>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-amber-600 dark:text-amber-300">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {lang === 'hi' ? 'हिंदू कैलेंडर' : 'Hindu Calendar'}
+          <p className="flex items-center gap-2 text-xs font-bold tracking-wider text-brand-primary dark:text-brand-gold">
+            <CalendarDays className="h-4 w-4 text-brand-gold" />
+            {lang === 'hi' ? 'हिंदू पर्व एवं व्रत कैलेंडर' : 'Hindu Festival & Vrat Calendar'}
           </p>
-          <h3 className="mt-1 font-display text-xl font-bold text-foreground sm:text-2xl">
+          <h3 className="mt-1 font-display text-2xl font-bold text-brand-primary dark:text-brand-gold tracking-wide">
             {formatMonthTitle(visibleMonth, lang)}
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, -1))}>
+          <Button type="button" size="icon" variant="outline" className="h-9 w-9 rounded-full border-brand-gold-border/60 text-brand-primary dark:text-brand-gold hover:bg-brand-primary/10" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, -1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button type="button" variant="outline" className="h-10 rounded-full px-4 text-xs font-bold" onClick={() => setVisibleMonth(getCurrentFestivalMonth())}>
+          <Button type="button" variant="outline" size="sm" className="rounded-full border-brand-gold-border/60 bg-brand-primary/10 text-brand-primary dark:text-brand-gold px-4 text-xs font-bold hover:bg-brand-primary/20" onClick={() => setVisibleMonth(getCurrentFestivalMonth())}>
             {lang === 'hi' ? 'आज' : 'Today'}
           </Button>
-          <Button type="button" size="icon" variant="outline" className="h-10 w-10 rounded-full" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, 1))}>
+          <Button type="button" size="icon" variant="outline" className="h-9 w-9 rounded-full border-brand-gold-border/60 text-brand-primary dark:text-brand-gold hover:bg-brand-primary/10" onClick={() => setVisibleMonth(shiftMonth(visibleMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -281,15 +283,16 @@ export default function FestivalCalendar() {
 
       {error && <div className="mb-3 rounded-xl border border-amber-300/40 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-100">{error}</div>}
 
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {weekDays.map((day) => (
-          <div key={day} className="px-1 py-2 text-center text-[11px] font-bold text-muted-foreground">
+          <div key={day} className="px-1 py-2 text-center text-xs font-bold text-brand-primary dark:text-brand-gold bg-brand-primary/5 dark:bg-brand-gold/10 rounded-xl border border-brand-gold-border/30">
             {day}
           </div>
         ))}
         {days.map((day, index) => {
           const active = selectedDate === day.date;
           const isToday = day.date === today;
+          const hasFestivals = day.festivals.length > 0;
           return (
             <button
               key={day.date || `blank-${index}`}
@@ -297,31 +300,46 @@ export default function FestivalCalendar() {
               disabled={!day.inMonth}
               onClick={() => selectDate(day)}
               className={cn(
-                'min-h-[4.8rem] rounded-xl border p-1.5 text-left transition sm:min-h-[6rem] sm:p-2',
-                day.inMonth ? 'border-border/65 bg-background/72 hover:border-amber-400/55 hover:bg-amber-50/80 dark:hover:bg-amber-950/25' : 'border-transparent bg-transparent',
-                active && 'border-amber-500 bg-amber-500/10',
-                isToday && 'ring-2 ring-amber-400/40',
+                'min-h-[5.2rem] rounded-2xl border p-2 text-left transition-all duration-200 sm:min-h-[6.5rem] sm:p-2.5 flex flex-col justify-between relative overflow-hidden',
+                day.inMonth
+                  ? 'border-brand-gold-border/40 bg-card dark:bg-zinc-900/60 hover:border-brand-gold hover:shadow-md hover:-translate-y-0.5'
+                  : 'border-transparent bg-transparent opacity-0 pointer-events-none',
+                active && 'border-brand-gold bg-brand-primary/15 dark:bg-amber-950/40 shadow-md ring-2 ring-brand-gold/50',
+                isToday && 'border-2 border-brand-gold bg-gradient-to-br from-brand-primary/15 via-brand-gold/15 to-amber-500/10 shadow-[0_0_18px_rgba(212,164,74,0.35)] ring-2 ring-brand-gold/60',
               )}
             >
               {day.inMonth && (
                 <>
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-foreground">
-                    {day.day}
-                  </span>
-                  <div className="mt-1 space-y-1">
+                  <div className="flex items-center justify-between w-full">
+                    <span className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all",
+                      isToday
+                        ? "bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] text-white shadow-sm font-extrabold"
+                        : "text-foreground"
+                    )}>
+                      {day.day}
+                    </span>
+                    {hasFestivals && (
+                      <span className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_8px_rgba(212,164,74,0.8)] animate-pulse" />
+                    )}
+                  </div>
+
+                  <div className="mt-1 space-y-1 w-full">
                     {day.festivals.slice(0, 2).map((festival) => (
                       <span
                         key={festival.id}
-                        className="block truncate rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-tight text-white"
-                        style={{ backgroundColor: festival.color }}
+                        className="block truncate rounded-lg px-2 py-0.5 text-[10px] font-bold leading-tight text-white shadow-xs"
+                        style={{ backgroundColor: festival.color || '#7A2D28' }}
                       >
                         {lang === 'hi' ? festival.name_hi : festival.name_en}
                       </span>
                     ))}
                     {day.festivals.length > 2 && (
-                      <span className="block text-[10px] font-bold text-amber-700 dark:text-amber-200">+{day.festivals.length - 2}</span>
+                      <span className="block text-[10px] font-bold text-brand-primary dark:text-brand-gold pl-0.5">
+                        +{day.festivals.length - 2} more
+                      </span>
                     )}
-                    {day.festivals.length === 0 && <Sparkles className="mt-3 h-3.5 w-3.5 text-muted-foreground/35" />}
+                    {!hasFestivals && <Sparkles className="mt-2 h-3.5 w-3.5 text-brand-gold/25" />}
                   </div>
                 </>
               )}

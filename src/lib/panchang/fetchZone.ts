@@ -17,8 +17,8 @@ type ZoneInput = {
   lng: number;
 };
 
-export async function buildPanchangForZone(zone: ZoneInput): Promise<PanchangData> {
-  const when = nowInIndia();
+export async function buildPanchangForZone(zone: ZoneInput, targetDateStr?: string): Promise<PanchangData> {
+  const when = nowInIndia(targetDateStr);
   const raw = await fetchPanchangFromVedAstro(zone, when);
 
   let tithiNumber = extractTithiNumber(raw.tithi);

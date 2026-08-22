@@ -12,6 +12,8 @@ import {
   Lock, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronUp,
+  ChevronDown,
   X, 
   Volume2, 
   VolumeX,
@@ -25,7 +27,13 @@ import {
   Move,
   Maximize2,
   RotateCw,
-  Trash2
+  Trash2,
+  Circle,
+  Square,
+  Eye,
+  EyeOff,
+  Plus,
+  Type
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -38,6 +46,14 @@ import { ImageCropModal } from "@/components/ImageCropModal";
 import { cn } from "@/lib/utils";
 import type { DailyDarshan, DevotionalWallpaper, DevotionalLiveWallpaper, Petal, PosterTemplate, BlessingsPosterEditorProps } from "./Blessings";
 import { DAILY_DARSHANS, WALLPAPERS_LIST, LIVE_WALLPAPERS_LIST, WALLPAPER_SECTIONS, WEEKDAYS, POSTER_TEMPLATES, MoreIcon, CustomDownloadIcon, CircleIcon, PosterLikeButton, WallpaperLikeButton, PetalsOverlay, AuraOverlay, FlameOverlay, ShimmerOverlay, PhoneFrame } from "./Blessings";
+import Moveable from "react-moveable";
+import { DiaryPage } from "./diary/DiaryPage";
+import { WallpaperPage } from "./wallpaper/WallpaperPage";
+import { TempleDrone } from "@/shared/audio/TempleDrone";
+import { BlessingsPosterEditor } from "@/features/poster-editor/BlessingsPosterEditor";
+import { ProfileSetupModal } from "./Blessings/components/modals/ProfileSetupModal";
+import { FeatureTabNav } from "./Blessings/components/FeatureTabNav";
+import { BlessingsHeader } from "./Blessings/components/BlessingsHeader";
 
 // ─── LOCAL IMAGES STILL USED DIRECTLY IN THIS FILE ────────────────
 import litDiyaImg from "./images/lit_diya.png";
@@ -49,816 +65,25 @@ import radhaKrishnaImg from "./images/radha_krishna_hd mayapur tv.webp";
 import shyamMandirImg from "./images/shyam_mandir_desktop_hd.webp";
 import mandalaGoldImg from "./images/mandala-gold.svg";
 import mandalaBeigeImg from "./images/mandala-beige.svg";
+import devotionalHeaderBg from "./images/devotional_background_high_quality(1).webp";
+import omSvg from "./images/om.svg";
 
-// ─── SYNTHESIZED MEDITATIVE TANPURA DRONE ─────────────────────────
-class TempleDrone {
-  private ctx: AudioContext | null = null;
-  private oscs: OscillatorNode[] = [];
-
-  private gain: GainNode | null = null;
-
-  start() {
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) return;
-      this.ctx = new AudioContextClass();
-      
-      this.gain = this.ctx.createGain();
-      this.gain.gain.setValueAtTime(0, this.ctx.currentTime);
-      this.gain.gain.linearRampToValueAtTime(0.05, this.ctx.currentTime + 1.2); // soft ambient volume
-      this.gain.connect(this.ctx.destination);
-
-      // Deep meditative tanpura base drone
-      // C#3 root frequency (138.59 Hz)
-      const baseFreq = 138.59;
-      const harmonyRatios = [1, 1.5, 2, 3]; // Root, Perfect Fifth, Octave, Octave Perfect Fifth
-      
-      harmonyRatios.forEach((ratio, idx) => {
-        if (!this.ctx || !this.gain) return;
-        const osc = this.ctx.createOscillator();
-        osc.type = idx === 0 ? "triangle" : "sine"; // triangle for base warmth, sine for high harmonics
-        osc.frequency.value = baseFreq * ratio;
-        
-        // Chorus detuning
-        osc.detune.value = (Math.random() - 0.5) * 6;
-
-        // Swelling slow volume LFO
-        const lfo = this.ctx.createOscillator();
-        lfo.frequency.value = 0.12 + Math.random() * 0.08;
-        const lfoGain = this.ctx.createGain();
-        lfoGain.gain.value = 0.01;
-        
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
-        
-        lfo.start();
-        osc.connect(this.gain);
-        osc.start();
-        
-        this.oscs.push(osc);
-        this.oscs.push(lfo as any);
-      });
-    } catch (e) {
-      console.error("AudioContext initialization failed", e);
-    }
-  }
-
-  stop() {
-    try {
-      if (this.gain && this.ctx) {
-        const now = this.ctx.currentTime;
-        this.gain.gain.setValueAtTime(this.gain.gain.value, now);
-        this.gain.gain.linearRampToValueAtTime(0, now + 0.8);
-        setTimeout(() => {
-          this.oscs.forEach(osc => {
-            try { osc.stop(); } catch(_) { /* ignore stop error */ }
-          });
-          try { this.ctx?.close(); } catch(_) { /* ignore close error */ }
-          this.ctx = null;
-          this.oscs = [];
-          this.gain = null;
-        }, 900);
-      }
-    } catch(e) { /* ignore top-level stop error */ }
-  }
-}
+// ─── CUSTOM DEITY SVGS ─────────────────────────────────────────────
+import templeSvg from "./images/svg/temple.svg";
+import shivayyWhiteFlowerSvg from "./images/svg/shivayy white flower.svg";
+import ramYellowFlowerSvg from "./images/svg/ram yellow flower.svg";
+import radhePinkFlowerSvg from "./images/svg/radhe pink flower.svg";
+import shyamBlueFlowerSvg from "./images/svg/shyam blue flower.svg";
+import basuriSvg from "./images/svg/basuri.svg";
+import meditationSvg from "./images/meditation svg.svg";
+import posterSvg from "./images/svg/poster.svg";
+import mobileEditedSvg from "./images/svg/mobile edited.svg";
+import playButtonLiveSvg from "./images/svg/play button live.svg";
 
 // ─── CONSTANTS & DATA ── (extracted to ./Blessings/constants.ts) ───
 // PosterTemplate exported from ./Blessings/types.ts
 export type { PosterTemplate } from "./Blessings/types";
 export { POSTER_TEMPLATES } from "./Blessings/constants";
-
-// ─── POSTER LIKE BUTTON ── (extracted to ./Blessings/components/PosterLikeButton.tsx) ───
-
-
-// Subcomponent: Dedicated Devotee Poster Editor (New Flow mockup)
-// BlessingsPosterEditorProps interface is in ./Blessings/types.ts
-
-function BlessingsPosterEditor({
-  isOpen,
-  onClose,
-  poster,
-  userPhoto,
-  initialZoom,
-  initialFrameScale,
-  initialOffsetX,
-  initialOffsetY,
-  initialShape,
-  initialRotation = 0,
-  onSave,
-  language
-}: BlessingsPosterEditorProps) {
-  const isHi = language === "hi";
-  
-  // State variables for editor values
-  const [shape, setShape] = useState(initialShape);
-  const [frameScale, setFrameScale] = useState(initialFrameScale);
-  const [offsetX, setOffsetX] = useState(initialOffsetX);
-  const [offsetY, setOffsetY] = useState(initialOffsetY);
-  const [photoZoom, setPhotoZoom] = useState(initialZoom);
-  const [photoOffsetX, setPhotoOffsetX] = useState(0);
-  const [photoOffsetY, setPhotoOffsetY] = useState(0);
-  const [rotation, setRotation] = useState(initialRotation);
-  
-  const [activeTab, setActiveTab] = useState<"shape" | "move" | "resize" | "rotate" | "reset">("shape");
-  const [bgLoaded, setBgLoaded] = useState(false);
-  const [userLoaded, setUserLoaded] = useState(false);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isPointerDown = useRef(false);
-  const activePointerId = useRef<number | null>(null);
-  
-  // Interaction action state: tl, tr, bl, br (corners), rot (rotate), move-frame, move-photo, none
-  const activeAction = useRef<"tl" | "tr" | "bl" | "br" | "rot" | "move-frame" | "move-photo" | "none">("none");
-  const dragStartX = useRef(0);
-  const dragStartY = useRef(0);
-  const touchStartDist = useRef(0);
-
-  // Initial values before a drag action starts
-  const dragStartValues = useRef({
-    ox: 0, oy: 0,
-    pox: 0, poy: 0,
-    fs: 1.0,
-    rot: 0,
-    r: 100
-  });
-
-  const bgImgRef = useRef<HTMLImageElement | null>(null);
-  const userImgRef = useRef<HTMLImageElement | null>(null);
-
-  // Sync state values when modal is opened
-  useEffect(() => {
-    if (isOpen) {
-      setShape(initialShape);
-      setFrameScale(initialFrameScale);
-      setOffsetX(initialOffsetX);
-      setOffsetY(initialOffsetY);
-      setPhotoZoom(initialZoom);
-      setPhotoOffsetX(0);
-      setPhotoOffsetY(0);
-      setRotation(initialRotation);
-      setActiveTab("shape");
-      activePointerId.current = null;
-      isPointerDown.current = false;
-      activeAction.current = "none";
-    }
-  }, [isOpen, initialZoom, initialFrameScale, initialOffsetX, initialOffsetY, initialShape, initialRotation]);
-
-  // Load resources
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setBgLoaded(false);
-    setUserLoaded(false);
-
-    const bg = new Image();
-    bg.crossOrigin = "anonymous";
-    bg.src = poster.imageUrl;
-    bg.onload = () => {
-      bgImgRef.current = bg;
-      setBgLoaded(true);
-    };
-
-    const user = new Image();
-    user.src = userPhoto;
-    user.onload = () => {
-      userImgRef.current = user;
-      setUserLoaded(true);
-    };
-  }, [poster, userPhoto, isOpen]);
-
-  // Point rotation helper
-  const rotatePoint = (x: number, y: number, cx: number, cy: number, angleRad: number) => {
-    const cos = Math.cos(angleRad);
-    const sin = Math.sin(angleRad);
-    const dx = x - cx;
-    const dy = y - cy;
-    return {
-      x: cx + dx * cos - dy * sin,
-      y: cy + dx * sin + dy * cos
-    };
-  };
-
-  // Paint loop
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !bgImgRef.current || !userImgRef.current) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const w = bgImgRef.current.naturalWidth || 1080;
-    const h = bgImgRef.current.naturalHeight || 1920;
-    canvas.width = w;
-    canvas.height = h;
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
-    // 1. Draw Background
-    ctx.drawImage(bgImgRef.current, 0, 0, w, h);
-
-    // 2. Draw Devotee Photo Layer
-    const photoX = poster.photoPosition.x + offsetX;
-    const photoY = poster.photoPosition.y + offsetY;
-    const radius = poster.photoPosition.radius * frameScale;
-
-    ctx.save();
-    // Translate and rotate around the shape center
-    ctx.translate(photoX, photoY);
-    ctx.rotate(rotation);
-
-    ctx.beginPath();
-    if (shape === "circle") {
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    } else if (shape === "square") {
-      ctx.rect(-radius, -radius, radius * 2, radius * 2);
-    } else if (shape === "rounded-square") {
-      const r = radius * 2 * 0.15;
-      ctx.roundRect(-radius, -radius, radius * 2, radius * 2, r);
-    } else if (shape === "oval") {
-      ctx.ellipse(0, 0, radius, radius * 1.33, 0, 0, Math.PI * 2);
-    }
-    ctx.closePath();
-    ctx.clip();
-
-    const targetW = radius * 2;
-    const targetH = radius * 2;
-    const baseScale = Math.max(targetW / userImgRef.current.width, targetH / userImgRef.current.height);
-    const DW = userImgRef.current.width * baseScale * photoZoom;
-    const DH = userImgRef.current.height * baseScale * photoZoom;
-    // Apply devotee photo pan offsets in the local rotated space
-    const drawX = -DW / 2 + photoOffsetX;
-    const drawY = -DH / 2 + photoOffsetY;
-
-    ctx.drawImage(userImgRef.current, drawX, drawY, DW, DH);
-    ctx.restore();
-
-    // 3. Gold border outline
-    ctx.save();
-    ctx.translate(photoX, photoY);
-    ctx.rotate(rotation);
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    if (shape === "circle") {
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    } else if (shape === "square") {
-      ctx.rect(-radius, -radius, radius * 2, radius * 2);
-    } else if (shape === "rounded-square") {
-      const r = radius * 2 * 0.15;
-      ctx.roundRect(-radius, -radius, radius * 2, radius * 2, r);
-    } else if (shape === "oval") {
-      ctx.ellipse(0, 0, radius, radius * 1.33, 0, 0, Math.PI * 2);
-    }
-    ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-
-    // 4. Rectangular dashed border outline (Corner handles guide box)
-    ctx.save();
-    ctx.translate(photoX, photoY);
-    ctx.rotate(rotation);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([8, 6]);
-    ctx.strokeRect(-radius, -radius, radius * 2, radius * 2);
-    ctx.restore();
-
-    // 5. Draw rotate handle connector line
-    const topCenter = rotatePoint(photoX, photoY - radius, photoX, photoY, rotation);
-    const rotHandle = rotatePoint(photoX, photoY - radius - 45, photoX, photoY, rotation);
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(topCenter.x, topCenter.y);
-    ctx.lineTo(rotHandle.x, rotHandle.y);
-    ctx.stroke();
-
-    // 6. Draw rotate handle dot (gold icon circle)
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    ctx.arc(rotHandle.x, rotHandle.y, 14, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    // 7. Draw corner handles (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
-    const corners = [
-      rotatePoint(photoX - radius, photoY - radius, photoX, photoY, rotation), // TL
-      rotatePoint(photoX + radius, photoY - radius, photoX, photoY, rotation), // TR
-      rotatePoint(photoX - radius, photoY + radius, photoX, photoY, rotation), // BL
-      rotatePoint(photoX + radius, photoY + radius, photoX, photoY, rotation)  // BR
-    ];
-
-    corners.forEach(pt => {
-      ctx.fillStyle = "#ffffff";
-      ctx.strokeStyle = "#fbbf24";
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-    });
-
-  }, [bgLoaded, userLoaded, shape, frameScale, offsetX, offsetY, photoZoom, photoOffsetX, photoOffsetY, rotation, poster]);
-
-  // Pointer gesture down
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (activePointerId.current !== null) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.setPointerCapture(e.pointerId);
-    activePointerId.current = e.pointerId;
-    isPointerDown.current = true;
-
-    // Convert screen coordinates to canvas space
-    const rect = canvas.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
-
-    dragStartX.current = clickX;
-    dragStartY.current = clickY;
-
-    // Current coordinates
-    const photoX = poster.photoPosition.x + offsetX;
-    const photoY = poster.photoPosition.y + offsetY;
-    const radius = poster.photoPosition.radius * frameScale;
-
-    // Detect click targets
-    const rotHandle = rotatePoint(photoX, photoY - radius - 45, photoX, photoY, rotation);
-    const corners = {
-      tl: rotatePoint(photoX - radius, photoY - radius, photoX, photoY, rotation),
-      tr: rotatePoint(photoX + radius, photoY - radius, photoX, photoY, rotation),
-      bl: rotatePoint(photoX - radius, photoY + radius, photoX, photoY, rotation),
-      br: rotatePoint(photoX + radius, photoY + radius, photoX, photoY, rotation)
-    };
-
-    // Store starting values for delta calculations
-    dragStartValues.current = {
-      ox: offsetX, oy: offsetY,
-      pox: photoOffsetX, poy: photoOffsetY,
-      fs: frameScale,
-      rot: rotation,
-      r: radius
-    };
-
-    // Check rotate handle
-    if (Math.hypot(clickX - rotHandle.x, clickY - rotHandle.y) < 32) {
-      activeAction.current = "rot";
-      return;
-    }
-    // Check corner handles
-    if (Math.hypot(clickX - corners.tl.x, clickY - corners.tl.y) < 32) { activeAction.current = "tl"; return; }
-    if (Math.hypot(clickX - corners.tr.x, clickY - corners.tr.y) < 32) { activeAction.current = "tr"; return; }
-    if (Math.hypot(clickX - corners.bl.x, clickY - corners.bl.y) < 32) { activeAction.current = "bl"; return; }
-    if (Math.hypot(clickX - corners.br.x, clickY - corners.br.y) < 32) { activeAction.current = "br"; return; }
-
-    // Check shape body
-    const distToCenter = Math.hypot(clickX - photoX, clickY - photoY);
-    if (distToCenter < radius) {
-      // If template is fixed, always drag the photo inside. 
-      // If flexible: move-shape in Move tab, move-photo-inside in Shape/Resize tabs
-      if (!poster.allowShapeChange) {
-        activeAction.current = "move-photo";
-      } else if (activeTab === "move") {
-        activeAction.current = "move-frame";
-      } else {
-        activeAction.current = "move-photo";
-      }
-    } else {
-      activeAction.current = "none";
-    }
-  };
-
-  // Pointer gesture move
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isPointerDown.current || e.pointerId !== activePointerId.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * canvas.width;
-    const clickY = ((e.clientY - rect.top) / rect.height) * canvas.height;
-
-    const photoX = poster.photoPosition.x + offsetX;
-    const photoY = poster.photoPosition.y + offsetY;
-    const baseRadius = poster.photoPosition.radius;
-
-    const dx = clickX - dragStartX.current;
-    const dy = clickY - dragStartY.current;
-
-    const action = activeAction.current;
-    const startVal = dragStartValues.current;
-
-    if (action === "move-frame") {
-      // Reposition circle frame center
-      setOffsetX(startVal.ox + dx);
-      setOffsetY(startVal.oy + dy);
-    } else if (action === "move-photo") {
-      // Pan photo inside shape
-      setPhotoOffsetX(startVal.pox + dx);
-      setPhotoOffsetY(startVal.poy + dy);
-    } else if (action === "rot") {
-      // Calculate angle from center to current pointer
-      const angle = Math.atan2(clickY - photoY, clickX - photoX);
-      // Offset by +PI/2 because rotate handle is at top center (-PI/2)
-      setRotation(angle + Math.PI / 2);
-    } else if (["tl", "tr", "bl", "br"].includes(action)) {
-      // Resize frame radius based on distance from center
-      const currentDist = Math.hypot(clickX - photoX, clickY - photoY);
-      // Ratio of new distance relative to base corner distance
-      const newRadius = currentDist / Math.sqrt(2);
-      const newScale = newRadius / baseRadius;
-      setFrameScale(Math.max(0.4, Math.min(2.5, newScale)));
-    }
-  };
-
-  // Pointer gesture up
-  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (e.pointerId === activePointerId.current) {
-      isPointerDown.current = false;
-      activePointerId.current = null;
-      activeAction.current = "none";
-      canvasRef.current?.releasePointerCapture(e.pointerId);
-    }
-  };
-
-  // Wheel zoom
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    const delta = -e.deltaY * 0.001;
-    if (activeTab === "resize" || !poster.allowShapeChange) {
-      setPhotoZoom(prev => Math.max(0.8, Math.min(3.0, prev + delta)));
-    } else {
-      setFrameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
-    }
-  };
-
-  // Pinch zoom (Mobile)
-  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (e.touches.length === 2) {
-      const dist = Math.sqrt(
-        Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
-        Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
-      );
-      touchStartDist.current = dist;
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (e.touches.length === 2 && touchStartDist.current > 0) {
-      e.preventDefault();
-      const dist = Math.sqrt(
-        Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
-        Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
-      );
-      const ratio = dist / touchStartDist.current;
-      const zoomDelta = (ratio - 1) * 0.35;
-      
-      if (activeTab === "resize" || !poster.allowShapeChange) {
-        setPhotoZoom(prev => Math.max(0.8, Math.min(3.0, prev * (1 + zoomDelta))));
-      } else {
-        setFrameScale(prev => Math.max(0.5, Math.min(2.5, prev * (1 + zoomDelta))));
-      }
-      touchStartDist.current = dist;
-    }
-  };
-
-  const handleResetAll = () => {
-    setShape(poster.defaultShape || "circle");
-    setFrameScale(1.0);
-    setOffsetX(0);
-    setOffsetY(0);
-    setPhotoZoom(1.0);
-    setPhotoOffsetX(0);
-    setPhotoOffsetY(0);
-    setRotation(0);
-  };
-
-  // Double tap to reset photo
-  const lastTap = useRef(0);
-  const handleDoubleTap = () => {
-    const now = Date.now();
-    if (now - lastTap.current < 300) {
-      setPhotoZoom(1.0);
-      setPhotoOffsetX(0);
-      setPhotoOffsetY(0);
-    }
-    lastTap.current = now;
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[250] flex flex-col bg-[#070200] text-stone-200 select-none">
-      
-      {/* ─── 1. TOP BAR ─── */}
-      <div className="h-14 border-b border-white/5 bg-[#0a0200] flex items-center justify-between px-4 shrink-0">
-        <button 
-          onClick={onClose}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-stone-300 hover:text-white hover:bg-white/5 active:scale-95 transition-all cursor-pointer"
-        >
-          <X className="w-5 h-5" />
-        </button>
-        <span className="font-sans font-black text-sm uppercase tracking-widest text-stone-300">
-          {isHi ? "एडिट करें" : "Edit Poster"}
-        </span>
-        <button 
-          onClick={() => onSave({ zoom: photoZoom, frameScale, offsetX, offsetY, shape, rotation })}
-          className="px-5 py-1.5 rounded-lg bg-[#e8960a] hover:bg-[#c97c04] text-[#1a0500] font-sans font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all cursor-pointer"
-        >
-          {isHi ? "पूरा करें" : "Done"}
-        </button>
-      </div>
-
-      {/* ─── 2. MIDDLE VIEWPORT ─── */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-4 bg-black/40 relative">
-        {(!bgLoaded || !userLoaded) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-stone-950/80 z-10">
-            <div className="w-8 h-8 rounded-full border-2 border-brand-saffron border-t-transparent animate-spin" />
-          </div>
-        )}
-        <div 
-          onClick={handleDoubleTap}
-          className="h-full w-auto max-h-full max-w-full rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative"
-          style={{ aspectRatio: "9/16", touchAction: "none" }}
-        >
-          <canvas
-            ref={canvasRef}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onWheel={handleWheel}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            className="w-full h-full block bg-[#0c0503] cursor-grab select-none"
-          />
-        </div>
-      </div>
-
-      {/* ─── 3. BOTTOM PANEL ─── */}
-      <div className="border-t border-white/5 bg-[#0a0200] shrink-0">
-        
-        {/* TAB LIST BAR */}
-        <div className="grid grid-cols-5 border-b border-white/5">
-          {[
-            { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
-            { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-4 h-4" /> },
-            { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
-            { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
-            { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
-          ].map(tab => {
-            const isTabActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  if (tab.id === "reset") {
-                    handleResetAll();
-                  } else {
-                    setActiveTab(tab.id as any);
-                  }
-                }}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1.5 py-3 border-b-2 text-[10px] font-sans font-black uppercase tracking-widest transition-all cursor-pointer",
-                  isTabActive
-                    ? "border-amber-500 bg-amber-500/10 text-amber-400"
-                    : "border-transparent text-stone-400 hover:text-stone-200"
-                )}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ACTIVE PANEL CONTENT */}
-        <div className="p-5 space-y-4 min-h-[170px] bg-[#0c0300]">
-          
-          {/* shape panel */}
-          {activeTab === "shape" && (
-            <div className="space-y-4">
-              {poster.allowShapeChange ? (
-                <div className="space-y-2">
-                  <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-left">
-                    {isHi ? "आकार चुनें" : "Shape Options"}
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[
-                      { id: "circle", label: isHi ? "गोल" : "Circle" },
-                      { id: "square", label: isHi ? "चौकोर" : "Square" },
-                      { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                      { id: "oval", label: isHi ? "ओवल" : "Oval" },
-                    ].map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => setShape(s.id as any)}
-                        className={cn(
-                          "py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
-                          shape === s.id
-                            ? "bg-amber-500/15 border-amber-500 text-amber-300"
-                            : "bg-transparent border-white/5 hover:border-white/20 text-stone-400 hover:text-stone-200"
-                        )}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="py-2 text-stone-400 text-xs font-semibold italic text-center">
-                  {isHi ? "इस थीम का आकार लॉक है" : "Shape is locked for this template."}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* move panel (fine nudge arrow keys) */}
-          {activeTab === "move" && (
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block text-center mb-1">
-                {isHi ? "पोजीशन फाइन-ट्यूनिंग" : "Fine-Tune Position"}
-              </span>
-              <div className="flex flex-col items-center gap-1.5">
-                <button 
-                  onClick={() => setOffsetY(prev => prev - 2)}
-                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
-                >
-                  ▲
-                </button>
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setOffsetX(prev => prev - 2)}
-                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
-                  >
-                    ◀
-                  </button>
-                  <button 
-                    onClick={() => { setOffsetX(0); setOffsetY(0); }}
-                    className="px-2.5 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[10px] text-stone-300 font-black uppercase tracking-wider border border-white/5 cursor-pointer"
-                  >
-                    Center
-                  </button>
-                  <button 
-                    onClick={() => setOffsetX(prev => prev + 2)}
-                    className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
-                  >
-                    ▶
-                  </button>
-                </div>
-                <button 
-                  onClick={() => setOffsetY(prev => prev + 2)}
-                  className="w-10 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-amber-400 border border-white/5 cursor-pointer active:scale-90"
-                >
-                  ▼
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* resize panel */}
-          {activeTab === "resize" && (
-            <div className="space-y-4">
-              {poster.allowShapeChange && (
-                <div className="space-y-1 text-left">
-                  <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
-                    <span className="font-sans text-amber-400">{frameScale.toFixed(2)}x</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setFrameScale(prev => Math.max(0.4, prev - 0.05))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="range"
-                      min="0.4"
-                      max="2.5"
-                      step="0.05"
-                      value={frameScale}
-                      onChange={(e) => setFrameScale(parseFloat(e.target.value))}
-                      className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
-                    />
-                    <button
-                      onClick={() => setFrameScale(prev => Math.min(2.5, prev + 0.05))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-1 text-left">
-                <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                  <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
-                  <span className="font-sans text-amber-400">{photoZoom.toFixed(2)}x</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setPhotoZoom(prev => Math.max(0.8, prev - 0.05))}
-                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="range"
-                    min="0.8"
-                    max="3.0"
-                    step="0.05"
-                    value={photoZoom}
-                    onChange={(e) => setPhotoZoom(parseFloat(e.target.value))}
-                    className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
-                  />
-                  <button
-                    onClick={() => setPhotoZoom(prev => Math.min(3.0, prev + 0.05))}
-                    className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* rotate panel */}
-          {activeTab === "rotate" && (
-            <div className="space-y-3 text-left">
-              <div className="flex justify-between text-[10px] text-stone-400 font-bold uppercase tracking-wider">
-                <span>{isHi ? "फ्रेम रोटेशन" : "Frame Rotation"}</span>
-                <span className="font-sans text-amber-400">{Math.round((rotation * 180) / Math.PI)}°</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setRotation(prev => prev - (5 * Math.PI) / 180)}
-                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                >
-                  ↺
-                </button>
-                <input
-                  type="range"
-                  min={-Math.PI}
-                  max={Math.PI}
-                  step={0.05}
-                  value={rotation}
-                  onChange={(e) => setRotation(parseFloat(e.target.value))}
-                  className="flex-1 accent-amber-500 cursor-pointer h-1 bg-stone-900 rounded-lg appearance-none"
-                />
-                <button
-                  onClick={() => setRotation(prev => prev + (5 * Math.PI) / 180)}
-                  className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-bold text-amber-300 cursor-pointer"
-                >
-                  ↻
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Adjust Photo Inside Helper Row */}
-          <div className="border-t border-white/5 pt-3.5 space-y-2">
-            <span className="text-[9px] text-stone-500 font-black uppercase tracking-wider block text-left">
-              {isHi ? "फोटो एडजस्ट करें" : "Adjust Photo Inside"}
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
-                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
-                  {isHi ? "ड्रैग करें" : "Drag to Move"}
-                </span>
-              </div>
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
-                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
-                  {isHi ? "पिंच ज़ूम" : "Pinch to Zoom"}
-                </span>
-              </div>
-              <div className="bg-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center gap-1.5 border border-white/5">
-                <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-2 2-2-2M9 6l2-2 2 2M11 4v16"/></svg>
-                <span className="text-[9px] font-sans font-black uppercase text-stone-300 text-center tracking-wide leading-tight">
-                  {isHi ? "डबल टैप रीसेट" : "Double Tap Reset"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Reset All Button */}
-          <button
-            onClick={handleResetAll}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[10px] font-black text-amber-400 border border-amber-500/20 transition-all active:scale-98 cursor-pointer select-none"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>{isHi ? "सब कुछ रीसेट करें" : "Reset All Settings"}</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Subcomponent: Mini Circle Helper Icon for shape tab
 // ─── LIVE WALLPAPER OVERLAYS ── (extracted to ./Blessings/components/Overlays.tsx) ───
@@ -944,11 +169,16 @@ export default function BlessingsPage() {
   // UI state variables
   const tabParam = searchParams.get("tab");
   const [activeTab, setActiveTab] = useState<"maker" | "wallpapers" | "saved">(
-    () => (tabParam === "maker" || tabParam === "wallpapers" || tabParam === "saved") ? tabParam : "wallpapers"
+    () => (tabParam === "maker" || tabParam === "wallpapers" || tabParam === "saved") 
+      ? tabParam 
+      : (typeof window !== 'undefined' && window.location.pathname.includes("poster")) 
+        ? "maker" 
+        : "wallpapers"
   );
 
   const [showLivePreviewModal, setShowLivePreviewModal] = useState<string | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState<string | null>(null);
+  const [isWallpaperPreviewOpen, setIsWallpaperPreviewOpen] = useState(false);
   const [isCardVisible, setIsCardVisible] = useState(true);
 
   useEffect(() => {
@@ -1012,6 +242,7 @@ export default function BlessingsPage() {
     });
   }, [showPreviewModal, showLivePreviewModal, setSearchParams]);
 
+  const [isWallpaperSearchOpen, setIsWallpaperSearchOpen] = useState(false);
   const [userName, setUserName] = useState<string>(() => {
     return localStorage.getItem("hk_profile_name") || "";
   });
@@ -1020,6 +251,7 @@ export default function BlessingsPage() {
     return localStorage.getItem("hk_profile_photo") || null;
   });
   const [selectedPoster, setSelectedPoster] = useState<PosterTemplate | null>(null);
+  const previousSelectedPosterRef = useRef<PosterTemplate | null>(null);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showSetupSheet, setShowSetupSheet] = useState(false);
   const [compiledPosterUrl, setCompiledPosterUrl] = useState<string | null>(null);
@@ -1043,7 +275,39 @@ export default function BlessingsPage() {
   const [posterNameScale, setPosterNameScale] = useState<number>(1.0);
   const [posterNameRotation, setPosterNameRotation] = useState<number>(0);
   const [posterNameShape, setPosterNameShape] = useState<"circle" | "square" | "rounded-square" | "oval">("rounded-square");
-  const [editingElement, setEditingElement] = useState<"photo" | "name">("photo");
+  const [extraTextBoxes, setExtraTextBoxes] = useState<Array<{ id: string; text: string; offsetX: number; offsetY: number; scale: number; rotation: number; shape: "circle" | "square" | "rounded-square" | "oval" }>>([]);
+  const [editingElement, setEditingElement] = useState<string>("photo");
+
+  const posterCardRef = useRef<HTMLDivElement>(null);
+  const photoLayerRef = useRef<HTMLDivElement>(null);
+  const nameLayerRef = useRef<HTMLDivElement>(null);
+  const boxLayerRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const handleAddTextBox = () => {
+    const newId = `text_${Date.now()}`;
+    const newBox = {
+      id: newId,
+      text: "",
+      offsetX: 0,
+      offsetY: (extraTextBoxes.length + 1) * 45,
+      scale: 1.0,
+      rotation: 0,
+      shape: "rounded-square" as const,
+    };
+    setExtraTextBoxes(prev => [...prev, newBox]);
+    setEditingElement(newId);
+  };
+
+  const handleRemoveTextBox = (id: string) => {
+    setExtraTextBoxes(prev => prev.filter(b => b.id !== id));
+    if (editingElement === id) {
+      setEditingElement("name");
+    }
+  };
+
+  const handleUpdateCustomTextBox = (id: string, updates: Partial<{ text: string; offsetX: number; offsetY: number; scale: number; rotation: number; shape: "circle" | "square" | "rounded-square" | "oval" }>) => {
+    setExtraTextBoxes(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+  };
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<'temp' | 'user'>('temp');
@@ -1068,10 +332,11 @@ export default function BlessingsPage() {
       return null;
     }
   );
-  const [wallpaperType, setWallpaperType] = useState<'static' | 'live'>('static');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPremiumTplModal, setShowPremiumTplModal] = useState<string | null>(null);
+
+  const isAnyModalOpen = isWallpaperPreviewOpen || !!(showPreviewModal || showLivePreviewModal || showPremiumTplModal || selectedPoster);
 
   // Phone Mockup Preview Settings
   const [previewMode, setPreviewMode] = useState<"lock" | "home">("lock");
@@ -1084,7 +349,6 @@ export default function BlessingsPage() {
 
 
 
-  const [savedSubTab, setSavedSubTab] = useState<"posters" | "liked">("posters");
   const [likedPosterIds, setLikedPosterIds] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('hk_liked_posters') || '[]');
@@ -1133,16 +397,6 @@ export default function BlessingsPage() {
     }
   }, [activeTab, selectedPoster]);
 
-  const likedPosters = React.useMemo(() => {
-    return POSTER_TEMPLATES.filter(tpl => likedPosterIds.includes(tpl.id));
-  }, [likedPosterIds]);
-
-  const likedWallpapers = React.useMemo(() => {
-    const staticLiked = WALLPAPERS_LIST.filter(wp => likedWallpaperIds.includes(wp.id));
-    const liveLiked = LIVE_WALLPAPERS_LIST.filter(wp => likedWallpaperIds.includes(wp.id));
-    return { staticLiked, liveLiked };
-  }, [likedWallpaperIds]);
-
   useEffect(() => {
     if (showSetupSheet) {
       setTempName(userName);
@@ -1178,16 +432,18 @@ export default function BlessingsPage() {
     } else {
       setCompiledPosterUrl(null);
     }
-  }, [selectedPoster, userName, userPhoto, generationType, posterZoom, posterOffsetX, posterOffsetY, posterShape]);
+  }, [selectedPoster, userName, userPhoto, generationType, posterZoom, posterOffsetX, posterOffsetY, posterShape, posterFrameScale, posterRotation, posterNameOffsetX, posterNameOffsetY, posterNameScale, posterNameRotation, posterNameShape, extraTextBoxes, hidePhotoFrame]);
 
   useEffect(() => {
-    if (selectedPoster) {
+    if (selectedPoster && !previousSelectedPosterRef.current) {
+      // Only reset when the modal first OPENS (null → poster), not when scrolling between posters
       const defaultShape = selectedPoster.defaultShape || "circle";
       setPosterShape(defaultShape);
       setPosterZoom(1.0);
       setPosterOffsetX(0);
       setPosterOffsetY(0);
     }
+    previousSelectedPosterRef.current = selectedPoster;
   }, [selectedPoster]);
 
   // Synchronize vertical scrolling with selected poster template inside the modal
@@ -1455,11 +711,11 @@ export default function BlessingsPage() {
     };
   }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster]);
 
-  // Wire modal visibility to app context to hide FAB Narad assistant
+  // Wire modal visibility to app context to hide FAB Narad assistant & app shell navigation
   useEffect(() => {
-    setBhajanModalOpen(!!(showPreviewModal || showLivePreviewModal || showPremiumTplModal || selectedPoster));
+    setBhajanModalOpen(isAnyModalOpen);
     return () => setBhajanModalOpen(false);
-  }, [showPreviewModal, showLivePreviewModal, showPremiumTplModal, selectedPoster, setBhajanModalOpen]);
+  }, [isAnyModalOpen, setBhajanModalOpen]);
 
   // Refs
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -2090,22 +1346,51 @@ export default function BlessingsPage() {
     });
   };
 
-  const drawPlaceholderOm = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number) => {
-    ctx.fillStyle = "rgba(251, 191, 36, 0.15)";
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
+  const drawPlaceholderOm = (
+    ctx: CanvasRenderingContext2D, 
+    cx: number, 
+    cy: number, 
+    r: number, 
+    shape: string = "circle", 
+    rot: number = 0
+  ) => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
 
-    ctx.strokeStyle = "#fbbf24";
-    ctx.lineWidth = 6;
+    ctx.fillStyle = isDark ? "rgba(20, 8, 4, 0.85)" : "#FFFDF8";
+    ctx.strokeStyle = isDark ? "#fbbf24" : "#651317";
+    ctx.lineWidth = 4.5;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+
+    if (shape === "circle") {
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+    } else if (shape === "square") {
+      ctx.rect(-r, -r, r * 2, r * 2);
+    } else if (shape === "rounded-square") {
+      ctx.roundRect(-r, -r, r * 2, r * 2, r * 2 * 0.15);
+    } else if (shape === "oval") {
+      ctx.ellipse(0, 0, r, r * 1.33, 0, 0, Math.PI * 2);
+    }
+    ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = "#fbbf24";
-    ctx.font = getCanvasFont(language, 80, 'heading', true);
-    ctx.textAlign = "center";
-    ctx.fillText("ॐ", x, y + 25);
+    const omImg = new Image();
+    omImg.src = omSvg;
+    const size = r * 1.1;
+    if (omImg.complete && omImg.naturalWidth > 0) {
+      ctx.drawImage(omImg, -size / 2, -size / 2, size, size);
+    } else {
+      omImg.onload = () => {
+        ctx.drawImage(omImg, -size / 2, -size / 2, size, size);
+      };
+      ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
+      ctx.font = "bold 80px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("ॐ", 0, 0);
+    }
+    ctx.restore();
   };
 
   const compilePoster = (poster: PosterTemplate, aspect: "status" | "square"): Promise<string> => {
@@ -2216,62 +1501,95 @@ export default function BlessingsPage() {
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          const displayName = userName.trim() ? userName : (isHi ? "भक्त" : "Devotee");
+          const displayName = userName.trim() ? userName : (isHi ? "आपका नाम..." : "Your Name...");
 
-          // Fit text size dynamically using fitTextToWidth
-          const resolvedFontString = fitTextToWidth(
-            ctx,
-            displayName,
-            w - 240, // max width limit for safety
-            posterTypography.nameSize,
-            posterTypography.nameFont,
-            'bold'
-          );
-          ctx.font = resolvedFontString;
+          // Match CSS preview proportions (3.2vw on 390px preview -> 35px on 1080px canvas)
+          const targetFontSize = 35;
+          ctx.font = `800 ${targetFontSize}px serif, "Tiro Devanagari Hindi", "Noto Sans Devanagari", sans-serif`;
           
-          const fontSizeMatch = resolvedFontString.match(/(\d+)px/);
-          const fontSize = fontSizeMatch ? parseInt(fontSizeMatch[1], 10) : posterTypography.nameSize;
-
           const nameWidth = ctx.measureText(displayName).width;
-          const bannerW = nameWidth + 80;
-          const bannerH = fontSize + 32;
+          const bannerW = nameWidth + 86;
+          const bannerH = targetFontSize + 22;
           const bannerX = -bannerW / 2;
           const bannerY = -bannerH / 2;
 
-          // Clear shadow for banner background
           ctx.shadowBlur = 0;
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 0;
 
-          // Rich dark glassmorphic style
-          ctx.fillStyle = "rgba(12, 5, 2, 0.85)";
-          ctx.strokeStyle = "rgba(251, 191, 36, 0.5)";
-          ctx.lineWidth = 3;
+          // Adaptive glassmorphic style
+          ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
+          ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
+          ctx.lineWidth = 4;
           ctx.beginPath();
           
-          // Custom corner radius based on posterNameShape setting
+          // Custom corner radius matching preview (12px on 390px card = 33px in canvas scale)
           const nameRadius = 
             posterNameShape === "circle" || posterNameShape === "oval"
-              ? bannerH / 2 // perfect capsule
+              ? bannerH / 2
               : posterNameShape === "square"
               ? 0
-              : 16; // rounded-square
+              : 33;
               
           ctx.roundRect(bannerX, bannerY, bannerW, bannerH, nameRadius);
           ctx.fill();
           ctx.stroke();
 
           // Set high-contrast text shadow for devotee name
-          ctx.shadowColor = "rgba(0, 0, 0, 0.95)";
-          ctx.shadowBlur = 8;
+          ctx.shadowColor = isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.8)";
+          ctx.shadowBlur = isDark ? 6 : 3;
           ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 3;
+          ctx.shadowOffsetY = 1;
 
-          ctx.fillStyle = "#fbbf24";
-          // Draw text centered at translated 0,0 origin
+          ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
           ctx.fillText(displayName, 0, 0);
 
           ctx.restore();
+
+          // Draw all extra text boxes
+          extraTextBoxes.forEach(box => {
+            if (!box.text.trim()) return;
+            ctx.save();
+            const finalX = nameX + posterNameOffsetX + box.offsetX;
+            const finalY = nameY + posterNameOffsetY + box.offsetY;
+            
+            ctx.translate(finalX, finalY);
+            ctx.rotate(box.rotation);
+            ctx.scale(box.scale, box.scale);
+            
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const boxFontSize = 32; // Matches CSS preview 3.0vw (~32px on 1080 canvas)
+            ctx.font = `800 ${boxFontSize}px serif, "Tiro Devanagari Hindi", "Noto Sans Devanagari", sans-serif`;
+
+            const bW = ctx.measureText(box.text).width + 80;
+            const bH = boxFontSize + 22;
+            const bX = -bW / 2;
+            const bY = -bH / 2;
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)";
+            ctx.strokeStyle = isDark ? "rgba(251, 191, 36, 0.5)" : "#651317";
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            
+            const boxRadius = 
+              box.shape === "circle" || box.shape === "oval"
+                ? bH / 2
+                : box.shape === "square"
+                ? 0
+                : 30; // Matches CSS 12px on 390px card
+                
+            ctx.roundRect(bX, bY, bW, bH, boxRadius);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = isDark ? "#fbbf24" : "#651317";
+            ctx.fillText(box.text, 0, 0);
+
+            ctx.restore();
+          });
 
           // Watermark - slightly larger and shadow supported
           ctx.save();
@@ -2295,10 +1613,9 @@ export default function BlessingsPage() {
           avatarImg.onload = () => {
             ctx.save();
             
-            const isFlexible = poster.allowShapeChange;
-            const finalCX = isFlexible ? (photoX + posterOffsetX) : photoX;
-            const finalCY = isFlexible ? (photoY + posterOffsetY) : photoY;
-            const finalRadius = isFlexible ? (radius * posterFrameScale) : radius;
+            const finalCX = photoX + posterOffsetX;
+            const finalCY = photoY + posterOffsetY;
+            const finalRadius = radius * posterFrameScale;
 
             // Translate and rotate around the shape center
             ctx.translate(finalCX, finalCY);
@@ -2320,27 +1637,24 @@ export default function BlessingsPage() {
             ctx.clip();
 
             const targetW = finalRadius * 2;
-            const targetH = finalRadius * 2;
+            const targetH = posterShape === "oval" ? finalRadius * 2.66 : finalRadius * 2;
 
             const userZoom = posterZoom;
-            const userOffsetX = isFlexible ? 0 : posterOffsetX;
-            const userOffsetY = isFlexible ? 0 : posterOffsetY;
-
             const baseScale = Math.max(targetW / avatarImg.width, targetH / avatarImg.height);
             const DW = avatarImg.width * baseScale * userZoom;
             const DH = avatarImg.height * baseScale * userZoom;
-            const drawX = -DW / 2 + userOffsetX;
-            const drawY = -DH / 2 + userOffsetY;
+            const drawX = -DW / 2;
+            const drawY = -DH / 2;
 
             ctx.drawImage(avatarImg, drawX, drawY, DW, DH);
             ctx.restore();
 
-            // Gold border matching active shape
+            // Border matching active shape and preview style
             ctx.save();
             ctx.translate(finalCX, finalCY);
             ctx.rotate(posterRotation);
-            ctx.strokeStyle = "#fbbf24";
-            ctx.lineWidth = 6;
+            ctx.strokeStyle = isDark ? "#fbbf24" : "#651317";
+            ctx.lineWidth = 4.5;
             ctx.beginPath();
             if (posterShape === "circle") {
               ctx.arc(0, 0, finalRadius, 0, Math.PI * 2);
@@ -2359,11 +1673,17 @@ export default function BlessingsPage() {
             drawNameText();
           };
           avatarImg.onerror = () => {
-            drawPlaceholderOm(ctx, photoX, photoY, radius);
+            const finalCX = photoX + posterOffsetX;
+            const finalCY = photoY + posterOffsetY;
+            const finalRadius = radius * posterFrameScale;
+            drawPlaceholderOm(ctx, finalCX, finalCY, finalRadius, posterShape, posterRotation);
             drawNameText();
           };
         } else {
-          drawPlaceholderOm(ctx, photoX, photoY, radius);
+          const finalCX = photoX + posterOffsetX;
+          const finalCY = photoY + posterOffsetY;
+          const finalRadius = radius * posterFrameScale;
+          drawPlaceholderOm(ctx, finalCX, finalCY, finalRadius, posterShape, posterRotation);
           drawNameText();
         }
       };
@@ -2744,130 +2064,28 @@ export default function BlessingsPage() {
       {/* Compiler Hidden Canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* ─── HEADER BAR ─────────────────────────────────────────────── */}
-      {activeTab === "wallpapers" ? (
-        <header className={cn("sticky top-0 z-40 backdrop-blur-md px-4 py-3 flex items-center justify-between w-full select-none border-b", isDark ? "bg-[#0d0502]/95 border-amber-950/10" : "bg-[#FAF8F4]/95 border-[#EFE5DA]/60")}>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/")}
-              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#D88A15] hover:bg-[#FAF8F4]")}
-            >
-              <ArrowLeft className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#D88A15]")} />
-            </button>
-            <div className="text-left">
-              <h1 className={cn("font-serif text-lg font-black leading-none", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-                {isHi ? "वॉलपेपर" : "Wallpapers"}
-              </h1>
-              <span className={cn("font-sans text-[10px] block mt-1.5 font-semibold leading-none", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
-                {isHi ? "अपने मोबाइल को दिव्यता से सजाएँ" : "Decorate your mobile with divinity"}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/pricing")}
-              className={cn("flex items-center gap-1.5 border rounded-full px-3 py-1.5 font-sans text-xs font-black shadow-sm active:scale-95 transition-all", isDark ? "bg-[#fbbf24]/10 border-[#fbbf24]/30 text-[#fbbf24] hover:bg-[#fbbf24]/25" : "bg-[#D88A15]/10 border-[#D88A15]/30 text-[#D88A15] hover:bg-[#D88A15]/20")}
-            >
-              <Sparkles className="w-3.5 h-3.5 fill-current animate-pulse text-[#fbbf24]" />
-              <span>{isHi ? "महाभक्त" : "Mahabhakt"}</span>
-            </button>
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all border", isDark ? "bg-black/30 border-amber-900/20 text-amber-400 hover:bg-amber-950/30" : "bg-[#FFFFFF] border-[#EFE5DA] text-[#D88A15] hover:bg-[#FAF8F4]")}
-            >
-              <Search className={cn("w-5 h-5", isDark ? "text-amber-400" : "text-[#D88A15]")} />
-            </button>
-          </div>
-        </header>
-      ) : (
-        <header className={cn("sticky top-0 z-40 backdrop-blur-md px-4 py-3.5 flex items-center justify-between w-full border-b", isDark ? "bg-[#160a06]/90 border-amber-950/20" : "bg-[#FAF8F4]/95 border-[#EFE5DA]/60")}>
-          <button
-            onClick={() => navigate("/")}
-            className={cn("flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all focus:outline-none border", isDark ? "bg-black/40 border-amber-500/10 hover:bg-amber-500/10 text-amber-100" : "bg-white/70 border-[#EAD7C3]/80 text-[#B27A1C] hover:bg-[#FCF6E8]/30")}
-          >
-            <ArrowLeft className="w-5 h-5 text-amber-400" />
-          </button>
-          <div className="text-center">
-            <h1 className={cn("font-serif text-base md:text-lg font-black uppercase flex items-center gap-1.5 justify-center leading-none", isHi ? "" : "tracking-widest", isDark ? "text-amber-400" : "text-[#2B1F18]")}>
-              <Sparkles className="w-4 h-4 text-amber-400 fill-current animate-pulse" />
-              {isHi ? "नित्य दर्शन व आशीर्वाद" : "Nitya Darshan & Blessings"}
-            </h1>
-            <span className={cn("font-sans text-[10px] uppercase tracking-wider block mt-0.5 leading-none font-bold", isDark ? "text-amber-200" : "text-[#8A7A6B]")}>
-              Raghavam Devotional Hub
-            </span>
-          </div>
-          <div className={cn("flex items-center gap-1.5 border rounded-full px-3 py-1.5 font-sans text-xs font-black shadow-inner", isDark ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-[#D88A15]/10 border-[#D88A15]/25 text-[#D88A15]")}>
-            <Flame className="w-3.5 h-3.5 text-orange-500 fill-current animate-bounce" />
-            <span>{streakCount} {isHi ? "दिन साधना" : "Days Streak"}</span>
-          </div>
-        </header>
+      {/* ─── PERSISTENT HEADER BAR ─────────────────────────────────── */}
+      {!isAnyModalOpen && (
+        <BlessingsHeader
+          isDark={isDark}
+          isHi={isHi}
+          activeTab={activeTab}
+          isSearchOpen={isWallpaperSearchOpen}
+          onToggleSearch={() => setIsWallpaperSearchOpen((prev) => !prev)}
+          onNavigateBack={() => navigate("/")}
+        />
       )}
 
-      {/* ─── TAB NAVIGATION SWITCHER ───────────────────────────────── */}
-      <div className="w-full max-w-md mx-auto px-4 mt-4 select-none">
-        <nav className={cn("p-1.5 rounded-full border flex items-center shadow-md transition-colors", isDark ? "bg-[#120704]/80 border-amber-950/40" : "bg-[#FFFDF8] border-[#EAD7C3]")}>
-          <button
-            onClick={() => {
-              setActiveTab("maker");
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className={cn(
-              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
-              isHi ? '' : 'tracking-wider',
-              activeTab === "maker"
-                ? isDark
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
-                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
-                : isDark
-                  ? "text-amber-200/80 hover:text-amber-200"
-                  : "text-[#543D2B] hover:text-[#651317]"
-            )}
-          >
-            <span>✨</span>
-            <span>{isHi ? "पोस्टर" : "Posters"}</span>
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("wallpapers");
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className={cn(
-              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
-              isHi ? '' : 'tracking-wider',
-              activeTab === "wallpapers"
-                ? isDark
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
-                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
-                : isDark
-                  ? "text-amber-200/80 hover:text-amber-200"
-                  : "text-[#543D2B] hover:text-[#651317]"
-            )}
-          >
-            <span>📱</span>
-            <span>{isHi ? "वॉलपेपर" : "Wallpapers"}</span>
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("saved");
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className={cn(
-              "flex-1 py-2.5 rounded-full font-sans text-[11px] font-black uppercase transition-all duration-300 flex items-center justify-center gap-1.5 focus:outline-none cursor-pointer active:scale-95 shadow-sm",
-              isHi ? '' : 'tracking-wider',
-              activeTab === "saved"
-                ? isDark
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/20"
-                  : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
-                : isDark
-                  ? "text-amber-200/80 hover:text-amber-200"
-                  : "text-[#543D2B] hover:text-[#651317]"
-            )}
-          >
-            <span>📖</span>
-            <span>{isHi ? "डायरी" : "Diary"}</span>
-          </button>
-        </nav>
-      </div>
+      {/* ─── PERSISTENT TAB NAVIGATION SWITCHER ────────────────────── */}
+      {!isAnyModalOpen && (
+        <FeatureTabNav
+          isDark={isDark}
+          isHi={isHi}
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          className="mt-4"
+        />
+      )}
 
       {/* ─── MAIN CONTENT ────────────────────────────────────────── */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-5 pb-24 relative z-10 flex flex-col items-center">
@@ -2882,7 +2100,7 @@ export default function BlessingsPage() {
                 
                 {/* Good Morning Greeting Header */}
                 <div 
-                  className={cn("w-full rounded-3xl p-5 text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300 hover:shadow-xl border group/card", isDark ? "border-amber-500/20 hover:shadow-amber-500/5" : "border-[#EFE5DA] hover:shadow-[#D88A15]/5")}
+                  className={cn("w-full rounded-3xl p-5 text-left flex items-center gap-4 relative overflow-hidden transition-all duration-300 hover:shadow-xl border group/card", isDark ? "border-amber-500/20 hover:shadow-amber-500/5" : "border-[#EFE5DA] hover:shadow-[#651317]/5")}
                   style={{
                     background: isDark ? 'linear-gradient(135deg, rgba(32,13,5,0.9) 0%, rgba(20,7,3,0.95) 50%, rgba(12,3,1,0.98) 100%)' : '#FFFFFF',
                     boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 30px rgba(239, 229, 218, 0.2)'
@@ -3066,12 +2284,12 @@ export default function BlessingsPage() {
                           {isHi ? "आज के पावन पोस्टर" : "Today's Sacred Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "todays").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -3132,12 +2350,12 @@ export default function BlessingsPage() {
                           {isHi ? "उत्सव एवं विशेष पर्व पोस्टर" : "Festival Special Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "festival").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -3192,12 +2410,12 @@ export default function BlessingsPage() {
                           {isHi ? "सुप्रभात दर्शन पोस्टर" : "Morning Special Posters"}
                         </h3>
                       </div>
-                      <div className="flex flex-row overflow-x-auto gap-4 pb-3.5 pt-1 w-full scrollbar-none snap-x snap-mandatory">
+                      <div className="grid grid-cols-2 min-[480px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3.5 sm:gap-4 pt-1 w-full">
                         {filteredPosterTemplates.filter(p => p.category === "good_morning").map((tpl) => (
                           <div
                             key={tpl.id}
                             onClick={() => setSelectedPoster(tpl)}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shrink-0 snap-start w-[140px] sm:w-[160px] md:w-[180px]"
+                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
                             style={{
                                   background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
                                   border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
@@ -3253,863 +2471,40 @@ export default function BlessingsPage() {
         {/* ========================================================= */}
         {/* TAB 2: WALLPAPERS GALLERY WITH CATEGORIES & MOCKUPS       */}
         {/* ========================================================= */}
-        {activeTab === "wallpapers" && (() => {
-          const renderDevotionalCard = (wp, index, isLive) => {
-            return (
-              <div
-                key={wp.id}
-                onClick={() => isLive ? handleLiveWallpaperAction(wp) : handleWallpaperAction(wp)}
-                className={cn(
-                  "rounded-2xl overflow-hidden relative cursor-pointer group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm w-full border",
-                  isDark 
-                    ? "bg-[#150703]/80 border-[#2a120b]/35 shadow-black/50" 
-                    : "bg-[#FFFFFF] border-[#EFE5DA]/60 shadow-[#EFE5DA]/15"
-                )}
-              >
-                {/* Image wrapper */}
-                <div className="w-full overflow-hidden relative aspect-[3/4]">
-                  {isLive && wp.effect === "aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
-                  {isLive && wp.effect === "shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
-                  {isLive && wp.effect === "flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
-                  
-                  <img 
-                    src={isLive ? wp.thumbnailUrl : wp.imageUrl} 
-                    alt={wp.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.05] transition-all duration-500 pointer-events-none brightness-[0.9] group-hover:brightness-100"
-                  />
-                  {/* Subtle overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-
-                  {/* Floating Like control (bottom left) */}
-                  <div className="absolute bottom-2.5 left-2.5 z-30">
-                    <WallpaperLikeButton
-                      wpId={wp.id}
-                      isLiked={likedWallpaperIds.includes(wp.id)}
-                      onToggle={() => toggleLikeWallpaper(wp.id)}
-                      likesCount={likedWallpaperIds.includes(wp.id) ? 1 : 0}
-                    />
-                  </div>
-
-                  {/* Floating Download/Preview control (bottom right) */}
-                  {isLive ? (
-                    <button
-                      onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
-                      className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-200 active:scale-90 focus:outline-none z-30 shadow-md"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: "rgba(0,0,0,0.6)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      }}
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownloadWallpaper(wp);
-                      }}
-                      className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-200 active:scale-90 focus:outline-none z-30 shadow-md"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: "rgba(0,0,0,0.6)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      }}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:13,height:13}}>
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                    </button>
-                  )}
-
-                  {/* Effect tag (Live only) */}
-                  {isLive && (
-                    <div className="absolute top-[42px] left-2.5 z-10">
-                      <span style={{
-                        fontSize: 7, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em",
-                        padding: "2px 6px", borderRadius: 4, background: "rgba(0,0,0,0.6)",
-                        border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24"
-                      }}>{wp.effect}</span>
-                    </div>
-                  )}
-
-                  {/* Premium Badge (top right) */}
-                  <div 
-                    className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10 text-[8px] font-black uppercase font-sans tracking-wider"
-                    style={{
-                      background: wp.tier !== "free" ? "#D88A15" : "rgba(0,0,0,0.55)",
-                      color: wp.tier !== "free" ? "#FFFFFF" : "#fbbf24",
-                      border: wp.tier !== "free" ? "1px solid #D88A15" : "1px solid rgba(251,191,36,0.25)"
-                    }}
-                  >
-                    {wp.tier !== "free" ? "👑 Pro" : "Free"}
-                  </div>
-                </div>
-              </div>
-            );
-          };
-
-          return (
-            <div className="w-full flex flex-col items-center animate-fade-in select-none">
-
-              {/* ── Static / Live toggle ── */}
-              <div className="w-full max-w-xs mx-auto mb-7 px-4">
-                <div className="p-1 rounded-full flex items-center shadow-lg border" style={{background: isDark ? "rgba(18,7,4,0.6)" : "#FFFFFF", border: isDark ? "1px solid rgba(120,60,10,0.25)" : "1px solid #EFE5DA"}}>
-                  <button
-                    onClick={() => setWallpaperType("static")}
-                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
-                      wallpaperType === "static"
-                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#D88A15] shadow-md")
-                        : (isDark ? "text-amber-200/75 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
-                    }`}
-                    style={wallpaperType==="static"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(216, 138, 21, 0.1)",border:"1px solid rgba(216, 138, 21, 0.25)"}):{}}
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>{isHi ? "स्थिर (STATIC)" : "Static"}</span>
-                  </button>
-                  <button
-                    onClick={() => setWallpaperType("live")}
-                    className={`flex-1 py-2.5 rounded-full font-sans text-xs font-black uppercase transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none ${isHi ? '' : 'tracking-wider'} ${
-                      wallpaperType === "live"
-                        ? (isDark ? "text-[#fbbf24] shadow-md" : "text-[#D88A15] shadow-md")
-                        : (isDark ? "text-amber-200/75 hover:text-amber-200" : "text-[#8A7A6B] hover:text-[#2B1F18]")
-                    }`}
-                    style={wallpaperType==="live"?(isDark ? {background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.35)"} : {background:"rgba(216, 138, 21, 0.1)",border:"1px solid rgba(216, 138, 21, 0.25)"}):{}}
-                  >
-                    <Flame className="w-3.5 h-3.5" />
-                    <span>{isHi ? "सजीव (LIVE)" : "Live"}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Search bar */}
-              {isSearchOpen && (
-                <div className="w-full max-w-md mx-auto px-1 mb-6 animate-fade-in">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder={isHi ? "वॉलपेपर खोजें..." : "Search wallpapers..."}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className={cn("w-full rounded-full py-3 pl-5 pr-11 text-xs focus:outline-none tracking-wide font-sans font-medium border", isDark ? "bg-black/45 border-amber-500/20 focus:border-amber-500/45 text-amber-100 placeholder:text-amber-200/20" : "bg-[#FFFFFF] border-[#EFE5DA] focus:border-[#D88A15]/50 text-[#2B1F18] placeholder-[#8A7A6B]/40")}
-                    />
-                    {searchQuery ? (
-                      <button onClick={() => setSearchQuery("")} className={cn("absolute right-4 top-1/2 -translate-y-1/2 focus:outline-none", isDark ? "text-amber-400 hover:text-amber-200" : "text-[#D88A15] hover:text-[#2B1F18]")}>
-                        <X className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <Search className={cn("absolute right-4.5 top-1/2 -translate-y-1/2 w-4 h-4", isDark ? "text-amber-500/30" : "text-[#D88A15]/35")} />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* ══════════════════════════════════════════ */}
-              {/* A. STATIC WALLPAPERS                      */}
-              {/* ══════════════════════════════════════════ */}
-              {wallpaperType === "static" && (
-                <div className="w-full flex flex-col items-center space-y-6 animate-fade-in">
-
-                  {/* Deity chips */}
-                  <div className="w-full flex flex-col">
-                    <div className="flex items-center justify-between w-full mb-3 px-0.5">
-                      <h3 className={cn("font-serif text-sm font-black flex items-center gap-2", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-                        <span>🕉️</span>
-                        {isHi ? "देवता चुनें" : "Choose Deity"}
-                      </h3>
-                      <button
-                        onClick={() => setSelectedDeityFilter(null)}
-                        className={cn("font-sans text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all", isDark ? "text-amber-500 hover:text-amber-400" : "text-[#8A7A6B] hover:text-[#2B1F18]")}
-                      >
-                        {isHi ? "सभी देखें" : "View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
-                      </button>
-                    </div>
-                    <div className="flex items-start gap-1.5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
-                      {[
-                        { id: null,          name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
-                        { id:"Shiva",        name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
-                        { id:"Rama",         name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
-                        { id:"Krishna",      name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
-                        { id:"Hanuman",      name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"",   image:hanumanImg },
-                        { id:"Radha",        name:"राधा",   nameEn:"Radha",  isIcon:false, symbol:"",   image:radhaKrishnaImg },
-                        { id:"Khatu Shyam",  name:"श्याम",  nameEn:"Shyam",  isIcon:false, symbol:"",   image:shyamMandirImg },
-                      ].map((deity) => {
-                        const isActive = selectedDeityFilter === deity.id;
-                        return (
-                          <button
-                            key={deity.id ?? "all"}
-                            onClick={() => setSelectedDeityFilter(deity.id)}
-                            className={cn(
-                              "w-[92px] h-[132px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-300 relative shrink-0 outline-none focus:outline-none group",
-                              isActive
-                                ? "bg-[#FFFDF9] border-2 border-[#D89B1F] -translate-y-[3px] shadow-[0_4px_16px_rgba(216,155,31,0.22)]"
-                                : (isDark 
-                                    ? "bg-[#1f0f08]/90 border border-amber-900/30 shadow-sm" 
-                                    : "bg-[#FFFDF9] border border-[#E9D7B3] shadow-sm shadow-[#E9D7B3]/10 hover:-translate-y-[1px]")
-                            )}
-                          >
-                            {/* Centering container for watermark and crop */}
-                            <div className="relative w-[78px] h-[78px] flex items-center justify-center shrink-0">
-                              {/* Mandala Watermark */}
-                              <img 
-                                src={isActive ? mandalaGoldImg : mandalaBeigeImg} 
-                                alt="" 
-                                className={cn(
-                                  "absolute w-[78px] h-[78px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-700 select-none",
-                                  isActive 
-                                    ? "opacity-[0.88] scale-110 rotate-[25deg]" 
-                                    : "opacity-[0.45] scale-100 rotate-0 group-hover:rotate-[15deg] group-hover:opacity-[0.62]"
-                                )} 
-                              />
-                              
-                              {/* Centered 62px circular image crop */}
-                              <div className={cn("relative z-10 w-[62px] h-[62px] rounded-full overflow-hidden flex items-center justify-center bg-white shadow-inner transition-all", isActive ? "border-2 border-[#D89B1F]" : "border-2 border-[#E9D7B3]")}>
-                                {deity.isIcon ? (
-                                  <span className={cn("text-2xl transition-transform duration-300", isActive ? "scale-110" : "")}>{deity.symbol}</span>
-                                ) : (
-                                  <img 
-                                    src={deity.image} 
-                                    alt={deity.nameEn}
-                                    className={cn("w-full h-full object-cover transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-105")}
-                                  />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Deity name */}
-                            <span className={cn(
-                              "relative z-10 text-[15px] font-bold font-serif text-center leading-tight tracking-wide mt-2.5 pb-0.5",
-                              isActive
-                                ? (isDark ? "text-amber-300" : "text-[#D89B1F]")
-                                : (isDark ? "text-amber-200/80" : "text-[#2B1F18]")
-                            )}>
-                              {isHi ? deity.name : deity.nameEn}
-                            </span>
-
-                            {/* Selected gold check badge */}
-                            {isActive && (
-                              <span className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-[#D89B1F] flex items-center justify-center shadow-md z-20 border border-white">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-[10px] h-[10px]">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-
-                  {/* Wallpaper Sections */}
-                  <div className="w-full flex flex-col space-y-8">
-                    {filteredWallpapers.length === 0 ? (
-                      <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
-                        <span>📭</span>
-                        <span>{isHi ? "कोई वॉलपेपर नहीं मिला।" : "No wallpapers found."}</span>
-                      </div>
-                    ) : (
-                      WALLPAPER_SECTIONS.map((sec) => {
-                        const sectionItems = filteredWallpapers.filter(wp => wp.category === sec.key);
-                        if (sectionItems.length === 0) return null;
-
-                        return (
-                          <div key={sec.key} className="w-full space-y-3.5 text-left mb-4">
-                            <div className="flex items-center justify-between w-full mb-1 px-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[#D88A15] text-xs">✨</span>
-                                <h3 className={cn("font-serif text-sm font-black uppercase", isDark ? "text-amber-400" : "text-[#2B1F18]")}>
-                                  {isHi ? sec.nameHindi : sec.name}
-                                </h3>
-                              </div>
-                              <button
-                                onClick={() => setSelectedDeityFilter(null)}
-                                className={cn("font-sans text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all", isDark ? "text-amber-500 hover:text-amber-400" : "text-[#8A7A6B] hover:text-[#2B1F18]")}
-                              >
-                                {isHi ? "सभी देखें" : "See All"} <span className="ml-1 text-sm font-black">→</span>
-                              </button>
-                            </div>
-
-                            {/* 2-Column Equal Grid with Thin Gap */}
-                            <div className="grid grid-cols-2 gap-2 w-full">
-                              {sectionItems.map((wp, idx) => renderDevotionalCard(wp, idx, false))}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  {/* Premium upsell banner */}
-                  <div className="w-full rounded-[20px] p-5 flex items-center justify-between shadow-md"
-                    style={{
-                      background: isDark ? "linear-gradient(135deg,rgba(251,191,36,0.08),rgba(217,119,6,0.12))" : "#FFFFFF",
-                      border: isDark ? "1px solid rgba(251,191,36,0.2)" : "1px solid #EFE5DA"
-                    }}>
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-black shadow-md shrink-0">
-                        <Sparkles className="w-5 h-5 text-black fill-current animate-pulse"/>
-                      </div>
-                      <div className="text-left">
-                        <h4 className={cn("font-serif text-sm font-bold", isDark ? "text-amber-200" : "text-[#2B1F18]")}>{isHi?"महाभक्त प्रीमियम":"Mahabhakt Premium"}</h4>
-                        <p className={cn("text-[10px] font-sans mt-0.5 font-semibold", isDark ? "text-amber-200/85" : "text-[#8A7A6B]")}>108+ Exclusive Wallpapers</p>
-                        <p className={cn("text-[9px] font-sans mt-1", isDark ? "text-amber-200/70" : "text-[#8A7A6B]/70")}>{isHi?"एचडी • विज्ञापन-मुक्त • प्रीमियम":"HD Quality • Ad-Free • Premium"}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={()=>navigate("/pricing")}
-                      className={`px-4 py-2.5 font-sans text-[10px] font-black uppercase rounded-xl transition-all active:scale-95 flex items-center gap-1 shadow-md shrink-0 cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
-                      style={{background:"linear-gradient(135deg,#D88A15,#D88A15)",color:"#FFFFFF"}}
-                    >
-                      <span>{isHi?"देखें":"Explore"}</span><span>→</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ══════════════════════════════════════════ */}
-              {/* B. LIVE WALLPAPERS                        */}
-              {/* ══════════════════════════════════════════ */}
-              {wallpaperType === "live" && (
-                <div className="w-full flex flex-col items-center space-y-6 animate-fade-in">
-
-                  {/* Live Deity chips */}
-                  <div className="w-full flex flex-col">
-                    <div className="flex items-center justify-between w-full mb-3 px-0.5">
-                      <h3 className={cn("font-serif text-sm font-black flex items-center gap-2", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-                        <span>🕉️</span>
-                        {isHi ? "सजीव देवता दर्शन" : "Live Deity Feed"}
-                      </h3>
-                      <button onClick={()=>setSelectedDeityFilter(null)} className={cn("font-sans text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all", isDark ? "text-amber-500 hover:text-amber-400" : "text-[#8A7A6B] hover:text-[#2B1F18]")}>
-                        {isHi?"सभी देखें":"View All"} <span className="ml-0.5 text-base leading-none" style={{lineHeight:1}}>›</span>
-                      </button>
-                    </div>
-                    <div className="flex items-start gap-1.5 overflow-x-auto pb-3 pt-1.5 scrollbar-none w-full justify-start sm:justify-center px-1">
-                      {[
-                        { id:null,     name:"सभी",    nameEn:"All",    isIcon:true,  symbol:"🕉️", image:"" },
-                        { id:"Shiva",  name:"शिव",    nameEn:"Shiva",  isIcon:false, symbol:"",   image:shivWallpaperImg },
-                        { id:"Rama",   name:"राम",    nameEn:"Ram",    isIcon:false, symbol:"",   image:deityRamImg },
-                        { id:"Krishna",name:"कृष्ण",  nameEn:"Krishna",isIcon:false, symbol:"",   image:krishnaImg },
-                        { id:"Hanuman",name:"हनुमान", nameEn:"Hanuman",isIcon:false, symbol:"",   image:hanumanImg },
-                      ].map((deity) => {
-                        const isActive = selectedDeityFilter === deity.id;
-                        return (
-                          <button
-                            key={deity.id ?? "all"}
-                            onClick={() => setSelectedDeityFilter(deity.id)}
-                            className={cn(
-                              "w-[92px] h-[132px] flex flex-col items-center justify-between p-2 pb-3.5 rounded-2xl transition-all duration-300 relative shrink-0 outline-none focus:outline-none group",
-                              isActive
-                                ? "bg-[#FFFDF9] border-2 border-[#D89B1F] -translate-y-[3px] shadow-[0_4px_16px_rgba(216,155,31,0.22)]"
-                                : (isDark 
-                                    ? "bg-[#1f0f08]/90 border border-amber-900/30 shadow-sm" 
-                                    : "bg-[#FFFDF9] border border-[#E9D7B3] shadow-sm shadow-[#E9D7B3]/10 hover:-translate-y-[1px]")
-                            )}
-                          >
-                            {/* Centering container for watermark and crop */}
-                            <div className="relative w-[78px] h-[78px] flex items-center justify-center shrink-0">
-                              {/* Mandala Watermark */}
-                              <img 
-                                src={isActive ? mandalaGoldImg : mandalaBeigeImg} 
-                                alt="" 
-                                className={cn(
-                                  "absolute w-[78px] h-[78px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-700 select-none",
-                                  isActive 
-                                    ? "opacity-[0.88] scale-110 rotate-[25deg]" 
-                                    : "opacity-[0.45] scale-100 rotate-0 group-hover:rotate-[15deg] group-hover:opacity-[0.62]"
-                                )} 
-                              />
-                              
-                              {/* Centered 62px circular image crop */}
-                              <div className={cn("relative z-10 w-[62px] h-[62px] rounded-full overflow-hidden flex items-center justify-center bg-white shadow-inner transition-all", isActive ? "border-2 border-[#D89B1F]" : "border-2 border-[#E9D7B3]")}>
-                                {deity.isIcon ? (
-                                  <span className={cn("text-2xl transition-transform duration-300", isActive ? "scale-110" : "")}>{deity.symbol}</span>
-                                ) : (
-                                  <img 
-                                    src={deity.image} 
-                                    alt={deity.nameEn}
-                                    className={cn("w-full h-full object-cover transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-105")}
-                                  />
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Deity name */}
-                            <span className={cn(
-                              "relative z-10 text-[15px] font-bold font-serif text-center leading-tight tracking-wide mt-2.5 pb-0.5",
-                              isActive
-                                ? (isDark ? "text-amber-300" : "text-[#D89B1F]")
-                                : (isDark ? "text-amber-200/80" : "text-[#2B1F18]")
-                            )}>
-                              {isHi ? deity.name : deity.nameEn}
-                            </span>
-
-                            {/* Selected gold check badge */}
-                            {isActive && (
-                              <span className="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-[#D89B1F] flex items-center justify-center shadow-md z-20 border border-white">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" className="w-[10px] h-[10px]">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Today's live recommendation */}
-                  {!selectedDeityFilter && !searchQuery && (
-                    <div className="w-full flex flex-col">
-                      <div className="flex items-center justify-between w-full mb-3 px-0.5">
-                        <h3 className={cn("font-serif text-sm font-black flex items-center gap-2", isDark ? "text-amber-100" : "text-[#2B1F18]")}>
-                          <span>🌌</span>
-                          {isHi?"आज की दिव्य सजीव लीला":"Today's Living Darshan"}
-                        </h3>
-                        <span className="text-[9px] font-sans text-white bg-[#D88A15] px-2 py-0.5 rounded-full font-black animate-pulse">{isHi?"लाइव":"Live"}</span>
-                      </div>
-                      <div className="w-full rounded-[20px] overflow-hidden relative cursor-pointer group"
-                        style={{
-                          border: isDark ? "1px solid rgba(251,191,36,0.15)" : "1px solid #EFE5DA",
-                          boxShadow: isDark ? "0 8px 40px rgba(0,0,0,0.7)" : "0 8px 30px rgba(239,229,218,0.25)"
-                        }}
-                        onClick={()=>handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0])}>
-                        <div className="w-full aspect-[16/9] relative overflow-hidden flex items-center justify-center bg-black/60">
-                          {/* Blurred background backup */}
-                          <img src={radhaKrishnaImg} alt=""
-                            className="absolute inset-0 w-full h-full object-cover filter blur-md opacity-35 scale-110 pointer-events-none" />
-                          
-                          {/* Central portrait wallpaper image (Fully seen!) */}
-                          <div className="h-full aspect-[9/16] relative z-10 overflow-hidden shadow-2xl">
-                            <img src={radhaKrishnaImg} alt="Vrindavan Leela"
-                              className="w-full h-full object-cover scale-[1.02] group-hover:scale-[1.07] transition-transform duration-700 pointer-events-none"/>
-                          </div>
-                          
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.1)_0%,transparent_75%)] animate-pulse z-10" style={{animationDuration:"4s"}}/>
-                          
-                          <div className="absolute inset-0 pointer-events-none z-12 overflow-hidden">
-                            <div className="absolute top-2 left-[20%] text-sm opacity-40 animate-bounce">🌸</div>
-                            <div className="absolute top-3 left-[55%] text-sm opacity-30 animate-bounce" style={{animationDelay:"1.2s"}}>🌼</div>
-                            <div className="absolute top-1 left-[80%] text-sm opacity-45 animate-bounce" style={{animationDelay:"0.6s"}}>🌸</div>
-                          </div>
-                          <div className="absolute inset-0 z-15" style={{background:"linear-gradient(to top,rgba(5,2,1,0.96) 0%,rgba(5,2,1,0.45) 40%,transparent 100%)"}}/>
-                          <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between z-20">
-                            <div className="flex flex-col gap-1.5 text-left">
-                              <span className="inline-block px-2 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[7px] font-sans font-black text-amber-300 tracking-wider w-fit leading-none mb-0.5 uppercase shadow-sm">
-                                Vrindavan Live
-                              </span>
-                              <h4 className="font-serif text-base md:text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-100 leading-tight">
-                                {isHi?"राधा-कृष्ण दिव्य रास":"Radha-Krishna Divine Raas"}
-                              </h4>
-                              <p style={{fontSize:9}} className="text-amber-200/75 italic">{isHi?"पुष्प वर्षा एवं दिव्य आभा के साथ...":"With divine petals & aura glow..."}</p>
-                            </div>
-                            <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(LIVE_WALLPAPERS_LIST[0]);}}
-                              className={`shrink-0 px-4 py-2 rounded-full font-sans text-[10px] font-black uppercase flex items-center gap-1.5 transition-all active:scale-95 ${isHi ? '' : 'tracking-wide'}`}
-                              style={{background:"rgba(255,255,255,0.92)",color:"#0d0502",boxShadow:"0 4px 14px rgba(0,0,0,0.4)"}}>
-                              <Sparkles className="w-3.5 h-3.5 fill-current animate-spin" style={{animationDuration:"3s"}}/>
-                              <span>{isHi?"प्रीव्यू":"Preview"}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Live gallery sections */}
-                  <div className="w-full flex flex-col space-y-8">
-                    {filteredLiveWallpapers.length === 0 ? (
-                      <div className="w-full py-16 border border-dashed border-amber-900/20 rounded-2xl flex flex-col items-center justify-center text-stone-500 font-sans text-xs gap-2">
-                        <span>📭</span><span>{isHi?"कोई लाइव वॉलपेपर नहीं मिला।":"No live wallpapers found."}</span>
-                      </div>
-                    ) : (
-                      WALLPAPER_SECTIONS.map((sec) => {
-                        const sectionItems = filteredLiveWallpapers.filter(wp => wp.category === sec.key);
-                        if (sectionItems.length === 0) return null;
-
-                        return (
-                          <div key={sec.key} className="w-full space-y-3.5 text-left mb-4">
-                            <div className="flex items-center justify-between w-full mb-1 px-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[#D88A15] text-xs">🎬</span>
-                                <h3 className={cn("font-serif text-sm font-black uppercase", isDark ? "text-amber-400" : "text-[#2B1F18]")}>
-                                  {isHi ? sec.nameHindi : sec.name}
-                                </h3>
-                              </div>
-                              <button
-                                onClick={() => setSelectedDeityFilter(null)}
-                                className={cn("font-sans text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all", isDark ? "text-amber-500 hover:text-amber-400" : "text-[#8A7A6B] hover:text-[#2B1F18]")}
-                              >
-                                {isHi ? "सभी देखें" : "See All"} <span className="ml-1 text-sm font-black">→</span>
-                              </button>
-                            </div>
-
-                            {/* 2-Column Equal Grid with Thin Gap */}
-                            <div className="grid grid-cols-2 gap-2 w-full">
-                              {sectionItems.map((wp, idx) => renderDevotionalCard(wp, idx, true))}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-
-                  {/* How-to tip */}
-                  <div className="w-full rounded-[20px] p-4 flex flex-col items-center gap-2"
-                    style={{
-                      background: isDark ? "rgba(27,13,7,0.4)" : "#FFFFFF",
-                      border: isDark ? "1px solid rgba(120,60,10,0.2)" : "1px solid #EFE5DA"
-                    }}>
-                    <span className={cn("text-xs", isDark ? "text-amber-400" : "text-[#D88A15]")}>💡 {isHi?"सजीव वॉलपेपर कैसे लगाएं?":"How to Apply Live Wallpapers?"}</span>
-                    <p className={cn("text-[9px] font-sans text-center tracking-wide leading-relaxed max-w-md", isDark ? "text-amber-200/85" : "text-[#8A7A6B]")}>
-                      {isHi
-                        ? "सजीव वॉलपेपर डाउनलोड करने पर एचडी मोशन जिफ/वेबपी प्राप्त होगी। किसी भी लाइव वॉलपेपर लॉन्चर की सहायता से इसे अपने लॉकस्क्रीन पर सेट करें।"
-                        : "Downloading a live wallpaper grants you an HD motion webp/gif. Apply it to your lock screen using any live wallpaper settings on Android or iOS."}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}        {/* ========================================================= */}
+        {activeTab === "wallpapers" && (
+          <WallpaperPage
+            isDark={isDark}
+            isHi={isHi}
+            likedWallpaperIds={likedWallpaperIds}
+            userTier={userTier}
+            onToggleLikeWallpaper={toggleLikeWallpaper}
+            onNavigateToPricing={() => navigate("/pricing")}
+            onNavigateBack={() => navigate("/")}
+            activeTab={activeTab}
+            onSelectTab={setActiveTab}
+            hideHeader={true}
+            isSearchOpen={isWallpaperSearchOpen}
+            onToggleSearch={() => setIsWallpaperSearchOpen((prev) => !prev)}
+            onPreviewStateChange={setIsWallpaperPreviewOpen}
+          />
+        )}        {/* ========================================================= */}
         {/* TAB 3: MY SAVED GALLERY DIARY                             */}
         {/* ========================================================= */}
         {activeTab === "saved" && (
-          <div className="w-full space-y-5 flex flex-col items-center animate-fade-in">
-            {/* Title / Description */}
-            <div className="text-center">
-              <h2 className={cn("font-serif text-base font-bold", isDark ? "text-amber-400" : "text-[#B27A1C]")}>
-                {isHi ? "मेरी पावन साधना गैलरी" : "My Sadhana Diary"}
-              </h2>
-              <p className={cn("text-xs font-sans mt-1 font-medium", isDark ? "text-amber-200/85" : "text-[#8C6D53]")}>
-                {isHi ? "आपके द्वारा पूर्व में सहेजे गए दैनिक पोस्टर" : "Revisit your personalized posters saved on this device"}
-              </p>
-            </div>
-
-            {/* Sub-tab selection within Saved tab */}
-            <div className={cn("flex rounded-full p-1 max-w-xs w-full select-none font-sans text-xs mb-2 border shadow-sm", isDark ? "bg-[#120704]/80 border-amber-950/40" : "bg-[#FFFDF8] border-[#EAD7C3]")}>
-              <button
-                onClick={() => setSavedSubTab("posters")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none font-black uppercase text-[10px]",
-                  savedSubTab === "posters"
-                    ? isDark
-                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md"
-                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-md"
-                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#543D2B] hover:text-[#651317]"
-                )}
-              >
-                <span>{isHi ? "सहेजे गए" : "Saved"}</span>
-                <span className="text-[10px] opacity-75">({savedBlessings.length})</span>
-              </button>
-              <button
-                onClick={() => setSavedSubTab("liked")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2 px-4 rounded-full transition-all duration-200 cursor-pointer focus:outline-none font-black uppercase text-[10px]",
-                  savedSubTab === "liked"
-                    ? isDark
-                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md"
-                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-md"
-                    : isDark ? "bg-transparent text-amber-200/80 hover:text-amber-200" : "bg-transparent text-[#543D2B] hover:text-[#651317]"
-                )}
-              >
-                <span>{isHi ? "पसंदीदा" : "Liked"}</span>
-                <span className="text-[10px] opacity-75">({likedPosters.length + likedWallpaperIds.length})</span>
-              </button>
-            </div>
-
-            {/* A. SAVED POSTERS DIARY */}
-            {savedSubTab === "posters" && (
-              savedBlessings.length === 0 ? (
-                <div className={cn("w-full border border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3", isDark ? "border-amber-900/30" : "border-[#EAD7C3]")}>
-                  <BookOpen className="w-8 h-8 text-amber-500/30" />
-                  <p className={cn("text-xs font-sans", isDark ? "text-amber-200/85" : "text-[#8C6D53]")}>
-                    {isHi ? "अभी तक कोई पोस्टर संग्रहित नहीं है।" : "Your saved posters diary is empty."}
-                  </p>
-                  <button
-                    onClick={() => setActiveTab("maker")}
-                    className={cn("px-4 py-2 border font-sans font-black text-[10px] uppercase rounded-lg transition-all active:scale-95 cursor-pointer", isHi ? "" : "tracking-widest", isDark ? "border-amber-500/20 hover:bg-amber-500/10 text-amber-300" : "border-[#B27A1C]/30 hover:bg-[#B27A1C]/10 text-[#B27A1C]")}
-                  >
-                    {isHi ? "पोस्टर बनाएं" : "Create Poster Now"}
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full select-none">
-                  {savedBlessings.map((url, idx) => (
-                    <div
-                      key={idx}
-                      className={cn("border rounded-2xl p-1.5 relative group overflow-hidden", isDark ? "bg-[#1b0d07]/40 border-amber-950/20" : "bg-white/70 border-[#EAD7C3]/60")}
-                      style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}
-                    >
-                      <img src={url} alt="saved card" className="w-full h-auto rounded-xl pointer-events-none" />
-                      
-                      {/* Hover controls overlay */}
-                      <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch(url);
-                              const blob = await res.blob();
-                              const file = new File([blob], `Blessing_${idx}.png`, { type: "image/png" });
-                              if (navigator.share) {
-                                await navigator.share({ files: [file] });
-                              } else {
-                                const link = document.createElement("a");
-                                link.download = `Sadhana_Blessing_${idx}.png`;
-                                link.href = url;
-                                link.click();
-                              }
-                            } catch (_) { /* ignore share error */ }
-                          }}
-                          className="w-10 h-10 rounded-full bg-amber-500 text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-transform focus:outline-none cursor-pointer"
-                        >
-                          <Share2 className="w-5 h-5 text-black" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {/* B. LIKED DESIGNS GALLERY SECTION */}
-            {savedSubTab === "liked" && (
-              likedPosters.length === 0 && likedWallpapers.staticLiked.length === 0 && likedWallpapers.liveLiked.length === 0 ? (
-                <div className="w-full border border-dashed border-amber-900/30 rounded-3xl p-10 flex flex-col items-center justify-center text-center gap-3">
-                  <Heart className="w-8 h-8 text-amber-500/30 animate-pulse" />
-                  <p className="text-xs text-amber-200/85 font-sans leading-relaxed whitespace-pre-line">
-                    {isHi 
-                      ? "पसंदीदा सूची अभी खाली है।\nपोस्टर या वॉलपेपर को ❤️ आइकन दबाकर पसंदीदा बनाएं।" 
-                      : "Your liked list is empty. Mark posters or wallpapers with ❤️ to see them here."}
-                  </p>
-                  <button
-                    onClick={() => setActiveTab("maker")}
-                    className={`px-4 py-2 border border-amber-500/20 hover:bg-amber-500/10 text-amber-300 font-sans font-black text-[10px] uppercase rounded-lg transition-all active:scale-95 cursor-pointer ${isHi ? '' : 'tracking-widest'}`}
-                  >
-                    {isHi ? "पोस्टर गैलरी देखें" : "Explore Posters"}
-                  </button>
-                </div>
-              ) : (
-                <div className="w-full space-y-8 text-left">
-                  {/* 1. Liked Posters */}
-                  {likedPosters.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className={cn("font-serif text-xs font-black uppercase flex items-center gap-2 border-b pb-2 tracking-wider", isDark ? "text-amber-400 border-amber-500/20" : "text-[#B27A1C] border-[#EAD7C3]")}>
-                        <span>✨</span>
-                        {isHi ? "पसंदीदा पोस्टर" : "Liked Posters"}
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
-                        {likedPosters.map((tpl) => (
-                          <div
-                            key={tpl.id}
-                            onClick={() => setSelectedPoster(tpl)}
-                            className={cn("border p-2 cursor-pointer group active:scale-[0.97] transition-all duration-300 rounded-2xl", isDark ? "bg-[#1b0d07]/40 border-amber-500/10 hover:border-amber-500/35" : "bg-white/70 border-[#EAD7C3]/60 hover:border-[#B27A1C]/45")}
-                            style={{ boxShadow: "0 6px 20px rgba(0,0,0,0.5)" }}
-                          >
-                            <div className="w-full aspect-[9/16] relative rounded-xl overflow-hidden mb-2">
-                              <img
-                                src={tpl.imageUrl}
-                                alt={isHi ? tpl.titleHindi : tpl.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
-                              />
-                              {/* Hover Overlay */}
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span style={{ fontSize: 10, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.08em" }} className="px-3 py-1.5 bg-[#fbbf24] text-stone-950 rounded-lg font-sans">
-                                  {isHi ? "बनाएं" : "Customize"}
-                                </span>
-                              </div>
-                              {/* Like Button Overlay */}
-                              <div className="absolute top-2.5 left-2.5 z-30">
-                                <PosterLikeButton
-                                  posterId={tpl.id}
-                                  isLiked={likedPosterIds.includes(tpl.id)}
-                                  onToggle={() => toggleLike(tpl.id)}
-                                />
-                              </div>
-                            </div>
-                            <div className="text-left px-1">
-                              <h4 className="font-serif text-[11px] font-bold text-amber-100 leading-tight truncate">
-                                {isHi ? tpl.titleHindi : tpl.title}
-                              </h4>
-                              <span style={{ fontSize: 8, color: isDark ? "rgba(251,191,36,0.85)" : "#B27A1C", fontWeight: 700, textTransform: "uppercase", letterSpacing: isHi ? "normal" : "0.04em", display: "block", marginTop: 2 }}>
-                                {tpl.category}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 2. Liked Static Wallpapers */}
-                  {likedWallpapers.staticLiked.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="font-serif text-xs font-black uppercase text-amber-400 flex items-center gap-2 border-b border-amber-500/20 pb-2 tracking-wider">
-                        <span>📱</span>
-                        {isHi ? "पसंदीदा वॉलपेपर" : "Liked Wallpapers"}
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
-                        {likedWallpapers.staticLiked.map((wp) => (
-                          <div
-                            key={wp.id}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
-                            style={{
-                                  background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
-                                  border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
-                                  boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(188,138,83,0.1)'
-                                }}
-                            onClick={() => handleWallpaperAction(wp)}
-                          >
-                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
-                              <img src={wp.imageUrl} alt={wp.name}
-                                className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
-                              {/* Cinematic gradient */}
-                              <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
-
-                              {/* Like Button Overlay */}
-                              <div className="absolute top-2.5 left-2.5 z-30">
-                                <PosterLikeButton
-                                  posterId={wp.id}
-                                  isLiked={likedWallpaperIds.includes(wp.id)}
-                                  onToggle={() => toggleLikeWallpaper(wp.id)}
-                                />
-                              </div>
-
-                              {/* Tier badge */}
-                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
-                                style={{fontSize:8,fontWeight:900,fontFamily:"sans-serif",textTransform:"uppercase",letterSpacing:"0.08em",
-                                  background:wp.tier!=="free"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
-                                  border:wp.tier!=="free"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
-                                  color:"#fbbf24",
-                                  backdropFilter:"blur(2px)"}}>
-                                {wp.tier !== "free" ? "👑 Pro" : "Free"}
-                              </div>
-
-                              {/* Download button */}
-                              <button
-                                onClick={(e)=>{e.stopPropagation();handleDownloadWallpaper(wp);}}
-                                className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-15 shadow-md"
-                                style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
-                                onMouseEnter={e=>{
-                                  (e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";
-                                  (e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";
-                                  (e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";
-                                }}
-                                onMouseLeave={e=>{
-                                  (e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";
-                                  (e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";
-                                  (e.currentTarget as HTMLButtonElement).style.boxShadow="none";
-                                }}
-                              >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{width:12,height:12}}>
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                  <polyline points="7 10 12 15 17 10"/>
-                                  <line x1="12" y1="15" x2="12" y2="3"/>
-                                </svg>
-                              </button>
-                            </div>
-
-                            {/* Bottom text */}
-                            <div className="px-2.5 py-2.5 text-left">
-                              <span className={cn("inline-block px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]", isDark ? "bg-amber-950/80 border border-amber-500/30 text-amber-300" : "bg-[#B27A1C]/10 border border-[#B27A1C]/30 text-[#B27A1C]")}>
-                                {isHi
-                                  ? (wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity==="Radha"?"राधा":wp.deity)
-                                  : wp.deity}
-                              </span>
-                              <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color: isDark ? "rgba(255,251,235,0.95)" : "#543D2B",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
-                                {isHi ? wp.nameHindi : wp.name}
-                              </h4>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 3. Liked Live Wallpapers */}
-                  {likedWallpapers.liveLiked.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="font-serif text-xs font-black uppercase text-amber-400 flex items-center gap-2 border-b border-amber-500/20 pb-2 tracking-wider">
-                        <span>🎬</span>
-                        {isHi ? "पसंदीदा सजीव वॉलपेपर" : "Liked Live Wallpapers"}
-                      </h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5 w-full">
-                        {likedWallpapers.liveLiked.map((wp) => (
-                          <div
-                            key={wp.id}
-                            className="rounded-2xl flex flex-col gap-0 relative cursor-pointer overflow-hidden group transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] w-full"
-                            style={{
-                                  background: isDark ? 'rgba(15,7,3,0.7)' : 'rgba(255,255,255,0.75)',
-                                  border: isDark ? '1px solid rgba(120,60,10,0.25)' : '1px solid rgba(188,138,83,0.25)',
-                                  boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(188,138,83,0.1)'
-                                }}
-                            onClick={() => handleLiveWallpaperAction(wp)}
-                          >
-                            <div className="w-full aspect-[9/16] rounded-2xl overflow-hidden relative">
-                              {wp.effect==="aura" && <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.18)_0%,transparent_75%)] pointer-events-none z-10 animate-pulse" style={{animationDuration:"2.5s"}}/>}
-                              {wp.effect==="shimmer" && <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_20%,rgba(255,255,255,0.08)_50%,transparent_80%)] pointer-events-none z-10 animate-shimmer"/>}
-                              {wp.effect==="flame" && <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 via-transparent to-transparent pointer-events-none z-10 animate-pulse" style={{animationDuration:"1.5s"}}/>}
-                              <img src={wp.thumbnailUrl} alt={wp.name}
-                                className="w-full h-full object-cover group-hover:scale-[1.07] transition-all duration-500 pointer-events-none brightness-[0.88] contrast-[1.03] group-hover:brightness-100 group-hover:contrast-100"/>
-                              <div className="absolute inset-0" style={{background:"linear-gradient(to top, rgba(10,4,2,0.96) 0%, rgba(10,4,2,0.5) 35%, rgba(10,4,2,0.05) 70%, transparent 100%)"}}/>
-                              
-                              {/* Like Button Overlay */}
-                              <div className="absolute top-2.5 left-2.5 z-30">
-                                <PosterLikeButton
-                                  posterId={wp.id}
-                                  isLiked={likedWallpaperIds.includes(wp.id)}
-                                  onToggle={() => toggleLikeWallpaper(wp.id)}
-                                />
-                              </div>
-
-                              {/* Effect tag */}
-                              <div className="absolute top-[42px] left-2.5 z-10">
-                                <span style={{fontSize:7,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.1em",padding:"2px 6px",borderRadius:4,background:"rgba(0,0,0,0.6)",border:"1px solid rgba(251,191,36,0.25)",color:"#fbbf24"}}>{wp.effect}</span>
-                              </div>
-
-                              {/* Tier badge */}
-                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full z-10"
-                                style={{fontSize:8,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",
-                                  background:wp.tier!=="free"?"linear-gradient(135deg,rgba(251,191,36,0.3),rgba(217,119,6,0.25))":"rgba(0,0,0,0.55)",
-                                  border:wp.tier!=="free"?"1px solid rgba(251,191,36,0.5)":"1px solid rgba(251,191,36,0.25)",
-                                  color:"#fbbf24",
-                                  backdropFilter:"blur(2px)"}}>
-                                {wp.tier !== "free" ? "👑 Pro" : "Free"}
-                              </div>
-
-                              {/* Action button */}
-                              <button onClick={(e)=>{e.stopPropagation();handleLiveWallpaperAction(wp);}}
-                                className="absolute bottom-2.5 right-2.5 flex items-center justify-center transition-all duration-250 active:scale-90 focus:outline-none z-20 shadow-md"
-                                style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.65)",border:"1.5px solid rgba(251,191,36,0.45)",boxShadow:"0 2px 10px rgba(0,0,0,0.4)"}}
-                                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.background="linear-gradient(135deg,#f59e0b,#d97706)";(e.currentTarget as HTMLButtonElement).style.borderColor="#fbbf24";(e.currentTarget as HTMLButtonElement).style.boxShadow="0 0 8px rgba(251,191,36,0.5)";}}
-                                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background="rgba(0,0,0,0.65)";(e.currentTarget as HTMLButtonElement).style.borderColor="rgba(251,191,36,0.45)";(e.currentTarget as HTMLButtonElement).style.boxShadow="none";}}>
-                                <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current"/>
-                              </button>
-                            </div>
-
-                            {/* Bottom text */}
-                            <div className="px-2.5 py-2.5 text-left">
-                              <span className={cn("inline-block px-1.5 py-0.5 rounded text-[7.5px] font-sans font-black tracking-wide w-fit leading-none mb-0.5 shadow-sm backdrop-blur-[2px]", isDark ? "bg-amber-950/80 border border-amber-500/30 text-amber-300" : "bg-[#B27A1C]/10 border border-[#B27A1C]/30 text-[#B27A1C]")}>
-                                {isHi?(wp.deity==="Shiva"?"शिव":wp.deity==="Rama"?"राम":wp.deity==="Krishna"?"कृष्ण":wp.deity==="Hanuman"?"हनुमान":wp.deity):wp.deity}
-                              </span>
-                              <h4 style={{fontFamily:"serif",fontSize:11,fontWeight:800,color: isDark ? "rgba(255,251,235,0.95)" : "#543D2B",lineHeight:1.2}} className="line-clamp-1 block mt-0.5">
-                                {isHi?wp.nameHindi:wp.name}
-                              </h4>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            )}
-          </div>
+          <DiaryPage
+            isDark={isDark}
+            isHi={isHi}
+            savedBlessings={savedBlessings}
+            likedPosterIds={likedPosterIds}
+            likedWallpaperIds={likedWallpaperIds}
+            onToggleLikePoster={toggleLike}
+            onToggleLikeWallpaper={toggleLikeWallpaper}
+            onSelectPoster={setSelectedPoster}
+            onWallpaperAction={handleWallpaperAction}
+            onLiveWallpaperAction={handleLiveWallpaperAction}
+            onDownloadWallpaper={handleDownloadWallpaper}
+            onNavigateToMaker={() => setActiveTab("maker")}
+          />
         )}
       </main>
 
@@ -4158,7 +2553,7 @@ export default function BlessingsPage() {
                   onClick={() => setShowPreviewModal(null)}
                   className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 z-[141]"
                 >
-                  <X className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2">
                   <button
@@ -4179,7 +2574,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
-                    className={`fixed bottom-[8%] left-[25px] w-[90%] max-w-[430px] md:max-w-[500px] md:left-1/2 md:-translate-x-1/2 backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                    className={`fixed bottom-[calc(4.25rem+10px+env(safe-area-inset-bottom,0px))] md:bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-auto sm:right-auto w-[calc(100%-1.5rem)] sm:w-full sm:max-w-xl md:max-w-2xl mx-auto backdrop-blur-xl border rounded-[2rem] p-5 z-[190] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
                       isDark 
                         ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
                         : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"
@@ -4373,7 +2768,7 @@ export default function BlessingsPage() {
                   onClick={() => setShowLivePreviewModal(null)}
                   className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/60 transition-all duration-300 cursor-pointer shadow-lg active:scale-95 z-[141]"
                 >
-                  <X className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center gap-2">
                   <button
@@ -4394,7 +2789,7 @@ export default function BlessingsPage() {
                     exit={{ opacity: 0, scale: 0.95, y: 50 }}
                     transition={{ type: "spring", damping: 25, stiffness: 185 }}
                     style={{ backgroundColor: isDark ? "rgba(20, 10, 5, 0.85)" : "rgba(255, 253, 248, 0.95)" }}
-                    className={`fixed bottom-[8%] left-1/2 -translate-x-1/2 w-[90%] max-w-[430px] md:max-w-[500px] backdrop-blur-xl border rounded-[2rem] p-5 z-[130] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
+                    className={`fixed bottom-[calc(4.25rem+10px+env(safe-area-inset-bottom,0px))] md:bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-3 right-3 sm:left-auto sm:right-auto w-[calc(100%-1.5rem)] sm:w-full sm:max-w-xl md:max-w-2xl mx-auto backdrop-blur-xl border rounded-[2rem] p-5 z-[190] flex flex-row items-center justify-between overflow-visible transition-colors duration-300 ${
                       isDark 
                         ? "border-amber-500/20 shadow-[0_25px_60px_rgba(0,0,0,0.95)]" 
                         : "border-[#EAD7C3] shadow-[0_20px_50px_rgba(84,61,43,0.18)]"
@@ -4746,201 +3141,43 @@ export default function BlessingsPage() {
       </AnimatePresence>
 
       {/* ─── SCREEN 3: FIRST-TIME SETUP BOTTOM SHEET ─── */}
-      <AnimatePresence>
-        {showSetupSheet && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowSetupSheet(false)}
-              className="fixed inset-0 bg-black/65 z-[150] backdrop-blur-sm"
-            />
-
-            {/* Bottom Sheet Drawer Container — position above mobile footer */}
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className={cn(
-                "fixed inset-x-0 bottom-[calc(4.2rem+env(safe-area-inset-bottom))] md:bottom-auto md:top-[20%] max-w-md mx-auto rounded-t-[2.2rem] md:rounded-[2rem] p-6 shadow-2xl z-[160] flex flex-col gap-5 text-stone-200 border pointer-events-auto",
-                isDark 
-                  ? "bg-gradient-to-b from-[#1c0d06] to-[#0e0502] border-amber-500/30 text-stone-200 shadow-black/80" 
-                  : "bg-[#FFFDF8] border-[#EAD7C3] text-[#3A2418] shadow-stone-900/20"
-              )}
-            >
-              {/* Drag handle */}
-              <div className={cn("w-12 h-1 rounded-full mx-auto md:hidden", isDark ? "bg-amber-500/20" : "bg-[#651317]/20")} />
-
-              <div className="flex justify-between items-center">
-                <h3 className={cn("font-serif text-base font-black uppercase tracking-widest", isDark ? "text-amber-400" : "text-[#651317]")}>
-                  {isHi ? "प्रोफ़ाइल सेटअप" : "Profile Setup"}
-                </h3>
-                <button
-                  onClick={() => setShowSetupSheet(false)}
-                  className={cn("w-8 h-8 rounded-full border flex items-center justify-center transition-colors cursor-pointer", isDark ? "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20 text-amber-400" : "bg-[#651317]/10 hover:bg-[#651317]/20 border-[#651317]/20 text-[#651317]")}
-                >
-                  <X className="w-4.5 h-4.5" />
-                </button>
-              </div>
-
-              {/* Upload Photo section — Elegant avatar with non-overlapping camera badge */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative inline-block">
-                  <div className={cn("w-24 h-24 rounded-full overflow-hidden border-2 flex items-center justify-center shadow-lg transition-all", isDark ? "border-amber-500/50 bg-stone-900/80 shadow-amber-500/10" : "border-[#D4A437] bg-[#FCF6E8] shadow-amber-900/10")}>
-                    {tempPhoto ? (
-                      <img src={tempPhoto} alt="Preview avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className={cn("font-serif text-2xl", isDark ? "text-amber-400/80" : "text-[#651317]")}>ॐ</span>
-                    )}
-                  </div>
-
-                  {/* Camera float overlay badge outside overflow container */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = "";
-                      }
-                      fileInputRef.current?.click();
-                    }}
-                    className={cn("absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md cursor-pointer active:scale-90 transition-transform border-2", isDark ? "bg-amber-500 border-stone-950 text-stone-950 hover:bg-amber-400" : "bg-[#651317] border-white text-white hover:bg-[#8B1E24]")}
-                  >
-                    <Camera className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <span className={cn("text-[10px] uppercase font-sans font-black tracking-wider", isDark ? "text-amber-500/90" : "text-[#651317]")}>
-                  {isHi ? "श्रद्धालु चित्र अपलोड करें" : "Upload Devotee Photo"}
-                </span>
-
-                {/* Hidden File Input */}
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        if (event.target?.result) {
-                          setCropImageSrc(event.target.result as string);
-                          setCropTarget('temp');
-                          setCropModalOpen(true);
-                        }
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Name Input section */}
-              <div className="space-y-1.5 text-left">
-                <label className={cn("text-[10px] uppercase font-sans font-black tracking-wider", isDark ? "text-amber-500/90" : "text-[#786252]")}>
-                  {isHi ? "आपका नाम" : "Your Name"}
-                </label>
-                <div className="relative">
-                  <div className={cn("absolute left-4 top-1/2 -translate-y-1/2", isDark ? "text-amber-500/70" : "text-[#651317]/70")}>
-                    <UserIcon className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    maxLength={30}
-                    placeholder={isHi ? "नाम दर्ज करें..." : "Enter your name..."}
-                    value={tempName}
-                    onChange={(e) => setTempName(e.target.value)}
-                    className={cn(
-                      "w-full rounded-xl py-3 pl-11 pr-16 text-xs focus:outline-none tracking-wide font-sans font-medium border transition-colors",
-                      isDark
-                        ? "bg-black/45 border-amber-500/20 focus:border-amber-500/45 text-amber-100 placeholder:text-amber-200/85"
-                        : "bg-white border-[#EAD7C3] focus:border-[#651317] text-[#3A2418] placeholder:text-[#786252]/60"
-                    )}
-                  />
-                  <span className={cn("absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
-                    {tempName.length}/30
-                  </span>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-2.5">
-                <button
-                  onClick={() => {
-                    const finalName = tempName.trim();
-                    if (!finalName) {
-                      toast.error(isHi ? "कृपया अपना नाम दर्ज करें!" : "Please enter your name!");
-                      return;
-                    }
-                    setUserName(finalName);
-                    setUserPhoto(tempPhoto);
-                    try {
-                      localStorage.setItem("hk_profile_name", finalName);
-                      if (tempPhoto) {
-                        localStorage.setItem("hk_profile_photo", tempPhoto);
-                      } else {
-                        localStorage.removeItem("hk_profile_photo");
-                      }
-                    } catch (err) {
-                      console.error("Failed to save profile details to localStorage", err);
-                    }
-                    setShowSetupSheet(false);
-                    toast.success(isHi ? "प्रोफ़ाइल सफलतापूर्वक सहेज ली गई!" : "Profile details saved successfully!");
-                  }}
-                  disabled={!tempName.trim()}
-                  className={cn(
-                    "w-full py-3.5 font-sans font-black text-xs uppercase rounded-xl transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 shadow-md cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed",
-                    isDark
-                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950"
-                      : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white"
-                  )}
-                >
-                  <Check className="w-4 h-4" />
-                  <span>{isHi ? "प्रोफ़ाइल सहेजें" : "Save Profile"}</span>
-                </button>
-
-                {/* Delete Profile Option */}
-                {(tempPhoto || (tempName && tempName !== "हरि भक्त")) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTempPhoto(null);
-                      setTempName("");
-                      setUserPhoto(null);
-                      setUserName("हरि भक्त");
-                      try {
-                        localStorage.removeItem("hk_profile_name");
-                        localStorage.removeItem("hk_profile_photo");
-                      } catch (err) {}
-                      setShowSetupSheet(false);
-                      toast.info(isHi ? "प्रोफ़ाइल हटा दी गई!" : "Profile deleted & reset!");
-                    }}
-                    className={cn(
-                      "w-full py-2.5 rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border active:scale-95",
-                      isDark
-                        ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                        : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
-                    )}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>{isHi ? "प्रोफ़ाइल / फ़ोटो हटाएं" : "Delete Profile & Photo"}</span>
-                  </button>
-                )}
-
-                <p className="text-[9.5px] font-sans text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1.5 leading-none pt-1">
-                  <span>🛡️</span>
-                  <span>{isHi ? "आपकी जानकारी पूर्णतः सुरक्षित है" : "Your profile is safe & secure"}</span>
-                </p>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <ProfileSetupModal
+        isOpen={showSetupSheet}
+        onClose={() => setShowSetupSheet(false)}
+        isDark={isDark}
+        isHi={isHi}
+        tempPhoto={tempPhoto}
+        setTempPhoto={setTempPhoto}
+        tempName={tempName}
+        setTempName={setTempName}
+        setUserName={setUserName}
+        setUserPhoto={setUserPhoto}
+        fileInputRef={fileInputRef}
+        setCropImageSrc={setCropImageSrc}
+        setCropTarget={setCropTarget}
+        setCropModalOpen={setCropModalOpen}
+        onSaveSuccess={() => {
+          const finalName = tempName.trim();
+          if (!finalName) {
+            toast.error(isHi ? "कृपया अपना नाम दर्ज करें!" : "Please enter your name!");
+            return;
+          }
+          setUserName(finalName);
+          setUserPhoto(tempPhoto);
+          try {
+            localStorage.setItem("hk_profile_name", finalName);
+            if (tempPhoto) {
+              localStorage.setItem("hk_profile_photo", tempPhoto);
+            } else {
+              localStorage.removeItem("hk_profile_photo");
+            }
+          } catch (err) {
+            console.error("Failed to save profile details to localStorage", err);
+          }
+          setShowSetupSheet(false);
+          toast.success(isHi ? "प्रोफ़ाइल सफलतापूर्वक सहेज ली गई!" : "Profile details saved successfully!");
+        }}
+      />
 
       {/* ─── POSTER STUDIO MODAL ─── */}
       <AnimatePresence>
@@ -4957,7 +3194,7 @@ export default function BlessingsPage() {
             />
 
             {/* Modal */}
-            <div className="fixed inset-x-0 top-0 bottom-[4.2rem] md:bottom-0 z-[35] flex items-center justify-center pointer-events-none">
+            <div className="fixed inset-0 z-[35] flex items-center justify-center pointer-events-none">
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -4972,7 +3209,7 @@ export default function BlessingsPage() {
                 {/* ── TOP: Close button + Share button + Poster card ── */}
                 <div
                   className="flex-1 min-h-0 flex flex-col items-center justify-end relative"
-                  style={{ padding: "14px 12px 6px" }}
+                  style={{ padding: "14px 12px 6px", overflow: "hidden" }}
                 >
                   {/* Close button — top left */}
                   <button
@@ -5018,22 +3255,24 @@ export default function BlessingsPage() {
                       maxHeight: "calc(100% - 10px)",
                       opacity: hasScrolledPosterToInitial ? 1 : 0,
                       transition: "opacity 0.12s ease-in-out",
+                      WebkitOverflowScrolling: "touch",
+                      scrollBehavior: "smooth",
+                      overscrollBehavior: "contain",
                     }}
                   >
                     {filteredPosterTemplates.map((tpl) => {
                       const isActive = selectedPoster.id === tpl.id;
                       
                       // Calculate relative coordinate percentages matching 1080x1920 canvas
-                      const isFlexible = tpl.allowShapeChange;
-                      const CX_tpl = isFlexible ? (tpl.photoPosition.x + (isActive ? posterOffsetX : 0)) : tpl.photoPosition.x;
-                      const CY_tpl = isFlexible ? (tpl.photoPosition.y + (isActive ? posterOffsetY : 0)) : tpl.photoPosition.y;
-                      const R_tpl = isFlexible ? (tpl.photoPosition.radius * (isActive ? posterFrameScale : 1.0)) : tpl.photoPosition.radius;
+                      const CX_tpl = tpl.photoPosition.x + posterOffsetX;
+                      const CY_tpl = tpl.photoPosition.y + posterOffsetY;
+                      const R_tpl = tpl.photoPosition.radius * posterFrameScale;
 
                       const photoLeft = `${(CX_tpl / 1080) * 100}%`;
                       const photoTop = `${(CY_tpl / 1920) * 100}%`;
                       const avatarWidthPercent = `${((R_tpl * 2) / 1080) * 100}%`;
-                      const nameLeft = `${((tpl.namePosition.x + (isActive ? posterNameOffsetX : 0)) / 1080) * 100}%`;
-                      const nameTop = `${((tpl.namePosition.y + (isActive ? posterNameOffsetY : 0)) / 1920) * 100}%`;
+                      const nameLeft = `${((tpl.namePosition.x + posterNameOffsetX) / 1080) * 100}%`;
+                      const nameTop = `${((tpl.namePosition.y + posterNameOffsetY) / 1920) * 100}%`;
 
                       return (
                         <div
@@ -5043,6 +3282,7 @@ export default function BlessingsPage() {
                           style={{ scrollSnapStop: "always", height: "100%" }}
                         >
                           <div
+                            ref={isActive ? posterCardRef : undefined}
                             className="relative overflow-hidden"
                             style={{
                               aspectRatio: "9/16",
@@ -5072,10 +3312,10 @@ export default function BlessingsPage() {
                             {(() => {
                               if (hidePhotoFrame) return null;
 
-                              const shapeForTpl = isActive ? posterShape : (tpl.defaultShape || "circle");
-                              const zoomForTpl = isActive ? posterZoom : 1.0;
-                              const offsetXForTpl = isActive ? posterOffsetX : 0;
-                              const offsetYForTpl = isActive ? posterOffsetY : 0;
+                              const shapeForTpl = posterShape;
+                              const zoomForTpl = posterZoom;
+                              const offsetXForTpl = posterOffsetX;
+                              const offsetYForTpl = posterOffsetY;
 
                               const computedBorderRadius = 
                                 shapeForTpl === "circle" || shapeForTpl === "oval"
@@ -5089,6 +3329,7 @@ export default function BlessingsPage() {
 
                               return (
                                 <div
+                                  ref={photoLayerRef}
                                   className={`absolute overflow-hidden flex items-center justify-center cursor-pointer ${isEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : 'z-[100]'}`}
                                   onClick={() => {
                                     if (!isEditable) {
@@ -5108,17 +3349,18 @@ export default function BlessingsPage() {
                                     top: photoTop,
                                     width: avatarWidthPercent,
                                     aspectRatio: shapeForTpl === "oval" ? "3/4" : "1/1",
-                                    transform: `translate(-50%, -50%) rotate(${isActive ? posterRotation : 0}rad)`,
+                                    transform: `translate(-50%, -50%) rotate(${posterRotation}rad)`,
                                     borderRadius: computedBorderRadius,
                                     border: isPhotoSelected 
-                                      ? "2px dashed #fbbf24" 
+                                      ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
                                       : isEditable 
-                                      ? "1.5px dashed rgba(251, 191, 36, 0.4)" 
-                                      : "1.5px solid #fbbf24",
-                                    background: "#1b0a05",
+                                      ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.4)" : "1.5px dashed rgba(101, 19, 23, 0.5)"
+                                      : isDark ? "1.5px solid #fbbf24" : "1.5px solid #651317",
+                                    background: isDark ? "#1b0a05" : "#FFFDF8",
                                     boxShadow: isPhotoSelected 
-                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
-                                      : "0 4px 12px rgba(0,0,0,0.6)",
+                                      ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.4)"
+                                      : isDark ? "0 4px 12px rgba(0,0,0,0.6)" : "0 4px 14px rgba(101, 19, 23, 0.15)",
+                                    touchAction: "none"
                                   }}
                                   // Drag handlers for in-place frame movement
                                   onPointerDown={isEditable ? (e) => {
@@ -5137,10 +3379,10 @@ export default function BlessingsPage() {
                                     if (!data) return;
                                     const rect = e.currentTarget.parentElement?.getBoundingClientRect();
                                     if (!rect) return;
-                                    // Scale mouse/touch move delta values to match the 1080px canvas coordinates
-                                    const scale = 1080 / rect.width;
-                                    const dx = (e.clientX - data.x) * scale;
-                                    const dy = (e.clientY - data.y) * scale;
+                                    const scaleX = 1080 / rect.width;
+                                    const scaleY = 1920 / rect.height;
+                                    const dx = (e.clientX - data.x) * scaleX;
+                                    const dy = (e.clientY - data.y) * scaleY;
                                     setPosterOffsetX(data.ox + dx);
                                     setPosterOffsetY(data.oy + dy);
                                   } : undefined}
@@ -5171,26 +3413,20 @@ export default function BlessingsPage() {
                                         width: "100%",
                                         height: "100%",
                                         objectFit: "cover",
-                                        transform: isFlexible 
-                                          ? `scale(${zoomForTpl})` 
-                                          : `scale(${zoomForTpl}) translate(${(offsetXForTpl / (tpl.photoPosition.radius * 2)) * 100}%, ${(offsetYForTpl / (tpl.photoPosition.radius * 2)) * 100}%)`,
+                                        transform: `scale(${zoomForTpl})`,
                                         transformOrigin: "center center",
                                       }} 
                                       className="pointer-events-none"
                                     />
                                   ) : (
-                                    <span style={{ fontSize: "min(3.5vw, 22px)", fontFamily: "serif", color: "#fbbf24", fontWeight: "bold" }}>ॐ</span>
+                                    <img 
+                                      src={omSvg} 
+                                      alt="Om" 
+                                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain pointer-events-none drop-shadow" 
+                                    />
                                   )}
 
-                                  {/* White handle dots on the frame edges matching image-1782636742188.png */}
-                                  {isEditable && (
-                                    <>
-                                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                      <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white border-2 border-amber-500 rounded-full shadow-lg pointer-events-none z-50 animate-pulse" />
-                                    </>
-                                  )}
+                                  {/* Clean selected frame without handle dots */}
                                 </div>
                               );
                             })()}
@@ -5201,91 +3437,172 @@ export default function BlessingsPage() {
                               const isNameSelected = isNameEditable && editingElement === "name";
 
                               const computedNameBorderRadius = 
-                                (isActive ? posterNameShape : "rounded-square") === "circle" || (isActive ? posterNameShape : "rounded-square") === "oval"
+                                posterNameShape === "circle" || posterNameShape === "oval"
                                   ? "999px"
-                                  : (isActive ? posterNameShape : "rounded-square") === "square"
+                                  : posterNameShape === "square"
                                   ? "0px"
                                   : "12px";
 
                               return (
-                                <div
-                                  className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
-                                  style={{
-                                    left: nameLeft,
-                                    top: nameTop,
-                                    transform: `translate(-50%, -50%) scale(${isActive ? posterNameScale : 1.0}) rotate(${isActive ? posterNameRotation : 0}rad)`,
-                                    background: "rgba(12, 5, 2, 0.85)",
-                                    border: isNameSelected 
-                                      ? "2px dashed #fbbf24" 
-                                      : isNameEditable
-                                      ? "1.5px dashed rgba(251, 191, 36, 0.5)"
-                                      : "1.5px solid rgba(251, 191, 36, 0.5)",
-                                    borderRadius: computedNameBorderRadius,
-                                    padding: "4px min(4vw, 16px)",
-                                    boxShadow: isNameSelected
-                                      ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)"
-                                      : "0 6px 16px rgba(0,0,0,0.7)",
-                                    transition: "border 0.2s, box-shadow 0.2s",
-                                  }}
-                                  onPointerDown={isNameEditable ? (e) => {
-                                    e.stopPropagation();
-                                    setEditingElement("name");
-                                    e.currentTarget.setPointerCapture(e.pointerId);
-                                    (e.currentTarget as any)._dragStart = {
-                                      x: e.clientX,
-                                      y: e.clientY,
-                                      ox: posterNameOffsetX,
-                                      oy: posterNameOffsetY
-                                    };
-                                  } : undefined}
-                                  onPointerMove={isNameEditable ? (e) => {
-                                    const data = (e.currentTarget as any)._dragStart;
-                                    if (!data) return;
-                                    const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                    if (!rect) return;
-                                    const scale = 1080 / rect.width;
-                                    const dx = (e.clientX - data.x) * scale;
-                                    const dy = (e.clientY - data.y) * scale;
-                                    setPosterNameOffsetX(data.ox + dx);
-                                    setPosterNameOffsetY(data.oy + dy);
-                                  } : undefined}
-                                  onPointerUp={isNameEditable ? (e) => {
-                                    delete (e.currentTarget as any)._dragStart;
-                                    e.currentTarget.releasePointerCapture(e.pointerId);
-                                  } : undefined}
-                                  onPointerCancel={isNameEditable ? (e) => {
-                                    delete (e.currentTarget as any)._dragStart;
-                                    e.currentTarget.releasePointerCapture(e.pointerId);
-                                  } : undefined}
-                                  onWheel={isNameSelected ? (e) => {
-                                    e.preventDefault();
-                                    const delta = -e.deltaY * 0.001;
-                                    setPosterNameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
-                                  } : undefined}
-                                >
-                                  <span
+                                <>
+                                  <div
+                                    ref={nameLayerRef}
+                                    className={`absolute flex items-center justify-center whitespace-nowrap ${isNameEditable ? 'cursor-grab select-none active:cursor-grabbing touch-none z-[120]' : ''}`}
                                     style={{
-                                      fontFamily: "serif",
-                                      fontWeight: 800,
-                                      color: "#fbbf24",
-                                      fontSize: "min(3.2vw, 16px)",
-                                      letterSpacing: isHi ? "normal" : "0.02em",
+                                      left: nameLeft,
+                                      top: nameTop,
+                                      transform: `translate(-50%, -50%) scale(${posterNameScale}) rotate(${posterNameRotation}rad)`,
+                                      background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
+                                      border: isNameSelected 
+                                        ? isDark ? "2px dashed #fbbf24" : "2px dashed #651317"
+                                        : isNameEditable
+                                        ? isDark ? "1.5px dashed rgba(251, 191, 36, 0.5)" : "1.5px dashed rgba(101, 19, 23, 0.6)"
+                                        : isDark ? "1.5px solid rgba(251, 191, 36, 0.5)" : "1.5px solid #651317",
+                                      borderRadius: computedNameBorderRadius,
+                                      padding: "4px min(4vw, 16px)",
+                                      boxShadow: isNameSelected
+                                        ? isDark ? "0 0 0 2px rgba(251, 191, 36, 0.4), 0 0 24px rgba(251, 191, 36, 0.95)" : "0 0 0 2px rgba(101, 19, 23, 0.3), 0 0 20px rgba(101, 19, 23, 0.3)"
+                                        : isDark ? "0 6px 16px rgba(0,0,0,0.7)" : "0 4px 14px rgba(101, 19, 23, 0.18)",
+                                      transition: "border 0.2s, box-shadow 0.2s",
+                                      touchAction: "none"
                                     }}
+                                    onPointerDown={isNameEditable ? (e) => {
+                                      e.stopPropagation();
+                                      setEditingElement("name");
+                                      e.currentTarget.setPointerCapture(e.pointerId);
+                                      (e.currentTarget as any)._dragStart = {
+                                        x: e.clientX,
+                                        y: e.clientY,
+                                        ox: posterNameOffsetX,
+                                        oy: posterNameOffsetY
+                                      };
+                                    } : undefined}
+                                    onPointerMove={isNameEditable ? (e) => {
+                                      const data = (e.currentTarget as any)._dragStart;
+                                      if (!data) return;
+                                      const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                      if (!rect) return;
+                                      const scaleX = 1080 / rect.width;
+                                      const scaleY = 1920 / rect.height;
+                                      const dx = (e.clientX - data.x) * scaleX;
+                                      const dy = (e.clientY - data.y) * scaleY;
+                                      setPosterNameOffsetX(data.ox + dx);
+                                      setPosterNameOffsetY(data.oy + dy);
+                                    } : undefined}
+                                    onPointerUp={isNameEditable ? (e) => {
+                                      delete (e.currentTarget as any)._dragStart;
+                                      e.currentTarget.releasePointerCapture(e.pointerId);
+                                    } : undefined}
+                                    onPointerCancel={isNameEditable ? (e) => {
+                                      delete (e.currentTarget as any)._dragStart;
+                                      e.currentTarget.releasePointerCapture(e.pointerId);
+                                    } : undefined}
+                                    onWheel={isNameSelected ? (e) => {
+                                      e.preventDefault();
+                                      const delta = -e.deltaY * 0.001;
+                                      setPosterNameScale(prev => Math.max(0.5, Math.min(2.5, prev + delta)));
+                                    } : undefined}
                                   >
-                                    {userName.trim() ? userName : (isHi ? "भक्त" : "Devotee")}
-                                  </span>
+                                    <span
+                                      style={{
+                                        fontFamily: "serif",
+                                        fontWeight: 800,
+                                        color: isDark ? "#fbbf24" : "#651317",
+                                        fontSize: "min(3.2vw, 16px)",
+                                        letterSpacing: isHi ? "normal" : "0.02em",
+                                      }}
+                                    >
+                                      {userName.trim() ? userName : (isHi ? "आपका नाम..." : "Your Name...")}
+                                    </span>
+                                  </div>
 
-                                  {isNameSelected && (
-                                    <>
-                                      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                      <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-2 h-2 bg-white border border-amber-500 rounded-full shadow-md pointer-events-none z-50" />
-                                    </>
-                                  )}
-                                </div>
+                                  {/* Render Extra Custom Text Boxes */}
+                                  {isActive && extraTextBoxes.map((box) => {
+                                    if (!isEditingPhoto && !box.text.trim()) return null;
+                                    const isBoxEditable = isActive && isEditingPhoto;
+                                    const isBoxSelected = isBoxEditable && editingElement === box.id;
+                                    const computedBoxBorderRadius = 
+                                      box.shape === "circle" || box.shape === "oval" ? "999px" : box.shape === "square" ? "0px" : "12px";
+
+                                    const boxLeft = `${((tpl.namePosition.x + posterNameOffsetX + box.offsetX) / 1080) * 100}%`;
+                                    const boxTop = `${((tpl.namePosition.y + posterNameOffsetY + box.offsetY) / 1920) * 100}%`;
+
+                                    const displayText = box.text.trim() ? box.text : (isBoxEditable ? (isHi ? "नया पाठ..." : "New Text...") : "");
+                                    if (!displayText) return null;
+
+                                    return (
+                                      <div
+                                        key={box.id}
+                                        className={`absolute flex items-center justify-center touch-none z-[130] ${isBoxEditable ? "cursor-grab active:cursor-grabbing select-none" : "pointer-events-none"}`}
+                                        style={{
+                                          left: boxLeft,
+                                          top: boxTop,
+                                          transform: `translate(-50%, -50%) scale(${box.scale}) rotate(${box.rotation}rad)`,
+                                          background: isDark ? "rgba(12, 5, 2, 0.88)" : "rgba(255, 253, 248, 0.95)",
+                                          border: isBoxSelected
+                                            ? isDark ? "2px solid #fbbf24" : "2px solid #651317"
+                                            : isDark ? "1.5px solid rgba(251, 191, 36, 0.5)" : "1.5px solid #651317",
+                                          borderRadius: computedBoxBorderRadius,
+                                          padding: "4px min(4vw, 16px)",
+                                          boxShadow: isBoxSelected
+                                            ? isDark ? "0 0 0 3px rgba(251,191,36,0.25)" : "0 0 0 3px rgba(101,19,23,0.18)"
+                                            : isDark ? "0 6px 16px rgba(0,0,0,0.7)" : "0 4px 14px rgba(101, 19, 23, 0.18)",
+                                          touchAction: "none",
+                                        }}
+                                        onPointerDown={isBoxEditable ? (e) => {
+                                          e.stopPropagation();
+                                          setEditingElement(box.id);
+                                          e.currentTarget.setPointerCapture(e.pointerId);
+                                          (e.currentTarget as any)._dragStart = {
+                                            x: e.clientX,
+                                            y: e.clientY,
+                                            ox: box.offsetX,
+                                            oy: box.offsetY
+                                          };
+                                        } : undefined}
+                                        onPointerMove={isBoxEditable ? (e) => {
+                                          const data = (e.currentTarget as any)._dragStart;
+                                          if (!data) return;
+                                          const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                          if (!rect) return;
+                                          const scale = 1080 / rect.width;
+                                          const dx = (e.clientX - data.x) * scale;
+                                          const dy = (e.clientY - data.y) * (1920 / rect.height);
+                                          handleUpdateCustomTextBox(box.id, {
+                                            offsetX: data.ox + dx,
+                                            offsetY: data.oy + dy
+                                          });
+                                        } : undefined}
+                                        onPointerUp={isBoxEditable ? (e) => {
+                                          delete (e.currentTarget as any)._dragStart;
+                                          e.currentTarget.releasePointerCapture(e.pointerId);
+                                        } : undefined}
+                                        onPointerCancel={isBoxEditable ? (e) => {
+                                          delete (e.currentTarget as any)._dragStart;
+                                          e.currentTarget.releasePointerCapture(e.pointerId);
+                                        } : undefined}
+                                      >
+                                        <span
+                                          style={{
+                                            fontFamily: "serif",
+                                            fontWeight: 800,
+                                            color: isDark ? "#fbbf24" : "#651317",
+                                            fontSize: "min(3.0vw, 15px)",
+                                            opacity: !box.text.trim() && isBoxEditable ? 0.55 : 1.0,
+                                            userSelect: "none",
+                                            pointerEvents: "none",
+                                          }}
+                                        >
+                                          {displayText}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                                </>
                               );
                             })()}
+
+
                           </div>
                         </div>
                       );
@@ -5355,8 +3672,8 @@ export default function BlessingsPage() {
 
                 {/* ── BOTTOM: Control panel ── */}
                 <div
-                  className="shrink-0 w-full flex flex-col"
-                  style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0 }}
+                  className="shrink-0 w-full flex flex-col pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
+                  style={{ background: isDark ? "#0c0300" : "#FCF6E8", paddingTop: 0, maxHeight: "52vh", overflowY: "auto", WebkitOverflowScrolling: "touch" as any }}
                 >
                   {isEditingPhoto ? (
                     <div className={cn("flex flex-col w-full", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")} style={{ paddingTop: 0 }}>
@@ -5365,9 +3682,9 @@ export default function BlessingsPage() {
                       <div className={cn("flex justify-between items-center px-4 py-2.5 border-b", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                         <div className="flex flex-col text-left">
                           <span style={{ fontSize: 13, fontFamily: "serif", fontWeight: 800, color: isDark ? "#fbbf24" : "#3A2418", letterSpacing: "0.02em" }}>
-                            {isHi ? "तस्वीर और नाम एडजस्ट करें" : "Adjust Photo & Name"}
+                            {isHi ? "तस्वीर और नाम समायोजन" : "Adjust Photo & Name"}
                           </span>
-                          <span style={{ fontSize: 9, fontFamily: "sans-serif", color: isDark ? "rgba(255,255,255,0.4)" : "#786252" }}>
+                          <span style={{ fontSize: 10, fontFamily: "sans-serif", color: isDark ? "rgba(255,255,255,0.4)" : "#786252" }}>
                             {isHi ? "लेयर चुनें और उंगली से ड्रैग करें" : "Select layer and drag directly"}
                           </span>
                         </div>
@@ -5386,46 +3703,81 @@ export default function BlessingsPage() {
                             setPosterNameShape("rounded-square");
                             setHidePhotoFrame(false);
                           }}
-                          className={cn("px-2.5 py-1 rounded-lg text-[10px] font-sans font-bold uppercase tracking-wider active:scale-95 transition-all cursor-pointer", isDark ? "bg-white/5 text-amber-300 hover:bg-white/10" : "bg-[#651317]/10 text-[#651317] hover:bg-[#651317]/20")}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border border-[#651317] dark:border-amber-500/40 bg-white dark:bg-stone-900 text-[#651317] dark:text-amber-300 select-none active:scale-95 shadow-sm hover:bg-stone-50"
+                          )}
                         >
-                          🔄 {isHi ? "रीसेट" : "Reset"}
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>{isHi ? "पुनः सेट" : "Reset"}</span>
                         </button>
                       </div>
 
-                      {/* 2. LAYER SELECTOR (Photo vs Name toggle) */}
-                      <div className={cn("grid grid-cols-2 gap-1.5 px-4 py-2 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                      {/* 2. LAYER SELECTOR (Photo, Name, Custom Textboxes + Add Text Button) */}
+                      <div className={cn("flex items-center gap-2 px-4 py-2.5 border-b overflow-x-auto no-scrollbar", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                        {/* Photo Layer button */}
                         <button
                           onClick={() => setEditingElement("photo")}
                           className={cn(
-                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
                             editingElement === "photo"
-                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
-                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
+                              ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
                           )}
                         >
-                          📷 {isHi ? "तस्वीर (Photo)" : "Photo Layer"}
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>{isHi ? "तस्वीर" : "Photo"}</span>
                         </button>
+
+                        {/* Primary Name Layer button */}
                         <button
                           onClick={() => setEditingElement("name")}
                           className={cn(
-                            "py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
                             editingElement === "name"
-                              ? isDark ? "bg-amber-500 text-stone-950 shadow-lg shadow-amber-500/10" : "bg-[#651317] text-white shadow-md"
-                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300" : "bg-white hover:bg-white/80 text-[#543D2B] border border-[#EAD7C3]"
+                              ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                              : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
                           )}
                         >
-                          ✍️ {isHi ? "नाम (Name)" : "Name Layer"}
+                          <UserIcon className="w-3.5 h-3.5" />
+                          <span>{isHi ? "नाम" : "Name"}</span>
+                        </button>
+
+                        {/* Custom Text Box buttons */}
+                        {extraTextBoxes.map((box, idx) => (
+                          <button
+                            key={box.id}
+                            onClick={() => setEditingElement(box.id)}
+                            className={cn(
+                              "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0",
+                              editingElement === box.id
+                                ? isDark ? "bg-amber-500 text-stone-950 font-extrabold border-amber-400" : "bg-[#651317] text-white font-extrabold border-[#651317]"
+                                : isDark ? "bg-white/5 hover:bg-white/10 text-stone-300 border-white/20" : "bg-white hover:bg-stone-50 text-[#651317] border-[#651317]"
+                            )}
+                          >
+                            <Type className="w-3.5 h-3.5" />
+                            <span>{box.text.substring(0, 10) || `${isHi ? 'पाठ' : 'Text'} ${idx + 1}`}</span>
+                          </button>
+                        ))}
+
+                        {/* Add Textbox Button */}
+                        <button
+                          onClick={handleAddTextBox}
+                          className={cn(
+                            "py-2 px-3 rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer select-none flex items-center gap-1.5 border border-[#651317] shrink-0 bg-white text-[#651317] dark:bg-stone-900 dark:text-amber-300 hover:bg-stone-50 shadow-sm"
+                          )}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>{isHi ? "नया टेक्स्ट" : "Add Text"}</span>
                         </button>
                       </div>
 
-                      {/* 3. TAB LIST BAR */}
-                      <div className={cn("grid grid-cols-5 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
+                      {/* 3. TAB LIST BAR (Simplified without Move tab) */}
+                      <div className={cn("grid grid-cols-4 border-b", isDark ? "border-white/5 bg-[#0a0200]" : "border-[#EAD7C3] bg-[#FCF6E8]")}>
                         {[
-                          { id: "shape", label: isHi ? "शेप" : "Shape", icon: <CircleIcon /> },
-                          { id: "move", label: isHi ? "ड्रैग" : "Move", icon: <Move className="w-3.5 h-3.5" /> },
-                          { id: "resize", label: isHi ? "रीसाइज" : "Resize", icon: <Maximize2 className="w-3.5 h-3.5" /> },
-                          { id: "rotate", label: isHi ? "रोटेट" : "Rotate", icon: <RotateCw className="w-3.5 h-3.5" /> },
-                          { id: "reset", label: isHi ? "रीसेट" : "Reset", icon: <RotateCcw className="w-3.5 h-3.5" /> }
+                          { id: "shape", label: isHi ? "आकार" : "Shape", icon: <Circle className="w-4 h-4" /> },
+                          { id: "resize", label: isHi ? "आकार बदलें" : "Resize", icon: <Maximize2 className="w-4 h-4" /> },
+                          { id: "rotate", label: isHi ? "घुमाएं" : "Rotate", icon: <RotateCw className="w-4 h-4" /> },
+                          { id: "reset", label: isHi ? "पुनः सेट" : "Reset", icon: <RotateCcw className="w-4 h-4" /> }
                         ].map(tab => {
                           const isTabActive = posterActiveTab === tab.id;
                           return (
@@ -5440,21 +3792,29 @@ export default function BlessingsPage() {
                                     setPosterOffsetY(0);
                                     setPosterShape(selectedPoster.defaultShape || "circle");
                                     setPosterRotation(0);
-                                  } else {
+                                  } else if (editingElement === "name") {
                                     setPosterNameOffsetX(0);
                                     setPosterNameOffsetY(0);
                                     setPosterNameScale(1.0);
                                     setPosterNameRotation(0);
                                     setPosterNameShape("rounded-square");
+                                  } else {
+                                    handleUpdateCustomTextBox(editingElement, {
+                                      offsetX: 0,
+                                      offsetY: 0,
+                                      scale: 1.0,
+                                      rotation: 0,
+                                      shape: "rounded-square"
+                                    });
                                   }
                                 } else {
                                   setPosterActiveTab(tab.id as any);
                                 }
                               }}
                               className={cn(
-                                "flex flex-col items-center justify-center gap-1 py-2 border-b-2 text-[9px] font-sans font-black uppercase tracking-wider transition-all cursor-pointer",
+                                "flex flex-col items-center justify-center gap-1 py-2.5 border-b-2 text-xs font-semibold tracking-wide transition-all cursor-pointer select-none",
                                 isTabActive
-                                  ? isDark ? "border-amber-500 bg-amber-500/10 text-amber-400" : "border-[#651317] bg-[#651317]/10 text-[#651317]"
+                                  ? isDark ? "border-amber-500 bg-amber-500/10 text-amber-400 font-bold" : "border-[#651317] bg-[#651317]/10 text-[#651317] font-bold"
                                   : isDark ? "border-transparent text-stone-400 hover:text-stone-200" : "border-transparent text-[#786252] hover:text-[#3A2418]"
                               )}
                             >
@@ -5466,12 +3826,12 @@ export default function BlessingsPage() {
                       </div>
 
                       {/* 4. ACTIVE PANEL CONTENT */}
-                      <div className={cn("p-3 space-y-3", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")}>
+                      <div className={cn("p-3.5 space-y-3.5", isDark ? "bg-[#0c0300]" : "bg-[#FCF6E8]")}>
                         
-                        {/* Real-time name text editor */}
+                        {/* Edit Primary Name Text */}
                         {editingElement === "name" && (
-                          <div className={cn("space-y-1 text-left border-b pb-2.5", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
-                            <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                          <div className={cn("space-y-1.5 text-left border-b pb-3", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                            <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
                               {isHi ? "नाम बदलें" : "Edit Name Text"}
                             </span>
                             <div className="relative">
@@ -5482,152 +3842,226 @@ export default function BlessingsPage() {
                                 value={userName}
                                 onChange={(e) => setUserName(e.target.value)}
                                 className={cn(
-                                  "w-full rounded-xl py-2 px-3 text-xs focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                                  "w-full rounded-xl py-2 px-3 text-xs sm:text-sm focus:outline-none tracking-wide font-sans font-medium border transition-colors",
                                   isDark 
                                     ? "bg-black/45 border-amber-500/20 text-amber-100 placeholder:text-amber-200/40"
-                                    : "bg-white border-[#EAD7C3] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
+                                    : "bg-white border-[#651317] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
                                 )}
                               />
-                              <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
+                              <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-xs font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
                                 {userName.length}/30
                               </span>
                             </div>
                           </div>
                         )}
+
+                        {/* Edit Custom Textbox Content & Delete Option */}
+                        {editingElement.startsWith("text_") && (() => {
+                          const currentBox = extraTextBoxes.find(b => b.id === editingElement);
+                          if (!currentBox) return null;
+                          return (
+                            <div className={cn("space-y-2 text-left border-b pb-3", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                              <div className="flex items-center justify-between">
+                                <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  {isHi ? "पाठ बदलें" : "Edit Custom Text"}
+                                </span>
+                                <button
+                                  onClick={() => handleRemoveTextBox(currentBox.id)}
+                                  className="px-2.5 py-1 rounded-lg text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950/40 dark:text-red-400 border border-red-300 dark:border-red-800/40 hover:bg-red-200 transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>{isHi ? "हटाएं" : "Remove"}</span>
+                                </button>
+                              </div>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  maxLength={40}
+                                  placeholder={isHi ? "नया पाठ लिखें..." : "Type text..."}
+                                  value={currentBox.text}
+                                  onChange={(e) => handleUpdateCustomTextBox(currentBox.id, { text: e.target.value })}
+                                  className={cn(
+                                    "w-full rounded-xl py-2 px-3 text-xs sm:text-sm focus:outline-none tracking-wide font-sans font-medium border transition-colors",
+                                    isDark 
+                                      ? "bg-black/45 border-amber-500/20 text-amber-100 placeholder:text-amber-200/40"
+                                      : "bg-white border-[#651317] text-[#3A2418] placeholder:text-[#786252]/50 focus:border-[#651317]"
+                                  )}
+                                />
+                                <span className={cn("absolute right-3 top-1/2 -translate-y-1/2 text-xs font-sans font-bold", isDark ? "text-amber-500/80" : "text-[#786252]")}>
+                                  {currentBox.text.length}/40
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })()}
                         
                         {/* shape panel */}
                         {posterActiveTab === "shape" && (
-                          <div className="space-y-2.5">
+                          <div className="space-y-3">
                             {editingElement === "photo" ? (
-                              <div className="space-y-2 text-left">
+                              <div className="space-y-2.5 text-left">
                                 <div className="flex items-center justify-between">
-                                  <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    {isHi ? "फोटो का आकार और दृश्यता" : "Photo Shape & Visibility"}
+                                  <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    {isHi ? "तस्वीर का आकार एवं फ़्रेम" : "Photo Shape & Visibility"}
                                   </span>
                                   {/* Hide/Show Photo Frame Toggle */}
                                   <button
                                     onClick={() => setHidePhotoFrame(prev => !prev)}
                                     className={cn(
-                                      "px-2.5 py-1 rounded-lg text-[9.5px] font-sans font-bold transition-all cursor-pointer border select-none",
+                                      "px-3 py-1.5 rounded-xl text-xs font-sans font-bold transition-all cursor-pointer border border-[#651317] flex items-center gap-1.5 select-none bg-white text-[#651317]",
                                       hidePhotoFrame
                                         ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                        : isDark ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10" : "bg-white border-[#EAD7C3] text-[#651317] hover:bg-[#FFFDF8]"
+                                        : isDark ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
                                     )}
                                   >
-                                    {hidePhotoFrame ? "👁️ " + (isHi ? "फ़्रेम दिखाएं" : "Show Frame") : "🙈 " + (isHi ? "फ़्रेम छिपाएं" : "Hide Frame")}
+                                    {hidePhotoFrame ? (
+                                      <>
+                                        <Eye className="w-3.5 h-3.5" />
+                                        <span>{isHi ? "फ़्रेम दिखाएं" : "Show Frame"}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <EyeOff className="w-3.5 h-3.5" />
+                                        <span>{isHi ? "फ़्रेम छिपाएं" : "Hide Frame"}</span>
+                                      </>
+                                    )}
                                   </button>
                                 </div>
-                                <div className="grid grid-cols-4 gap-1.5">
+                                <div className="grid grid-cols-4 gap-2">
                                   {[
-                                    { id: "circle", label: isHi ? "गोल" : "Circle" },
-                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
-                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                                    { id: "oval", label: isHi ? "ओवल" : "Oval" },
+                                    { id: "circle", label: isHi ? "वृत्ताकार" : "Circle" },
+                                    { id: "square", label: isHi ? "वर्गाकार" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "मुड़ा हुआ" : "Rounded" },
+                                    { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval" },
                                   ].map((s) => (
                                     <button
                                       key={s.id}
                                       onClick={() => { setPosterShape(s.id as any); setHidePhotoFrame(false); }}
                                       className={cn(
-                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
+                                        "py-2.5 px-2 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center text-center",
                                         posterShape === s.id && !hidePhotoFrame
-                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
+                                          ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300 font-extrabold shadow-sm" : "bg-[#651317] border-[#651317] text-white font-extrabold shadow"
+                                          : isDark ? "bg-transparent border-white/10 text-stone-400 hover:text-stone-200" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
                                       )}
                                     >
-                                      {s.label}
+                                      <span>{s.label}</span>
                                     </button>
                                   ))}
                                 </div>
                               </div>
-                            ) : (
-                              <div className="space-y-1.5 text-left">
-                                <span className={cn("text-[10px] font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                  {isHi ? "नाम पट्टी का आकार चुनें" : "Select Name Plate Shape"}
+                            ) : editingElement.startsWith("text_") ? (
+                              <div className="space-y-2 text-left">
+                                <span className={cn("text-xs font-bold uppercase tracking-wider block", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  {isHi ? "पाठ पट्टी का आकार चुनें" : "Select Text Plate Shape"}
                                 </span>
-                                <div className="grid grid-cols-4 gap-1.5">
+                                <div className="grid grid-cols-4 gap-2">
                                   {[
                                     { id: "circle", label: isHi ? "कैप्सूल" : "Capsule" },
-                                    { id: "square", label: isHi ? "चौकोर" : "Square" },
-                                    { id: "rounded-square", label: isHi ? "सॉफ्ट" : "Rounded" },
-                                    { id: "oval", label: isHi ? "अंडाकार" : "Oval" },
-                                  ].map((s) => (
-                                    <button
-                                      key={s.id}
-                                      onClick={() => setPosterNameShape(s.id as any)}
-                                      className={cn(
-                                        "py-1.5 rounded-lg border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer select-none",
-                                        posterNameShape === s.id
-                                          ? isDark ? "bg-amber-500/15 border-amber-500 text-amber-300" : "bg-[#651317] border-[#651317] text-white shadow"
-                                          : isDark ? "bg-transparent border-white/5 text-stone-400 hover:text-stone-200" : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
-                                      )}
-                                    >
-                                      {s.label}
-                                    </button>
-                                  ))}
+                                    { id: "square", label: isHi ? "वर्गाकार" : "Square" },
+                                    { id: "rounded-square", label: isHi ? "मुड़ा हुआ" : "Rounded" },
+                                    { id: "oval", label: isHi ? "दीर्घवृत्ताकार" : "Oval" },
+                                  ].map((s) => {
+                                    const currentShape = extraTextBoxes.find(x => x.id === editingElement)?.shape || "rounded-square";
+                                    return (
+                                      <button
+                                        key={s.id}
+                                        onClick={() => handleUpdateCustomTextBox(editingElement, { shape: s.id as any })}
+                                        className={cn(
+                                          "py-2.5 px-2 rounded-xl border border-[#651317] text-xs font-bold transition-all cursor-pointer select-none flex items-center justify-center text-center",
+                                          currentShape === s.id
+                                            ? isDark ? "bg-amber-500/20 border-amber-500 text-amber-300 font-extrabold shadow-sm" : "bg-[#651317] border-[#651317] text-white font-extrabold shadow"
+                                            : isDark ? "bg-transparent border-white/10 text-stone-400 hover:text-stone-200" : "bg-white border-[#651317] text-[#651317] hover:bg-stone-50"
+                                        )}
+                                      >
+                                        <span>{s.label}</span>
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         )}
 
                         {/* move panel (fine nudge arrows) */}
                         {posterActiveTab === "move" && (
-                          <div className="flex flex-col items-center gap-1.5">
-                            <span className={cn("text-[9px] font-bold uppercase tracking-wider block text-center mb-0.5", isDark ? "text-stone-400" : "text-[#786252]")}>
-                              {isHi ? `${editingElement === "photo" ? "फोटो" : "नाम"} पोजीशन फाइन-ट्यूनिंग` : `Fine-Tune ${editingElement === "photo" ? "Photo" : "Name"} Position`}
+                          <div className="flex flex-col items-center gap-2">
+                            <span className={cn("text-xs font-bold uppercase tracking-wider block text-center mb-0.5", isDark ? "text-stone-400" : "text-[#786252]")}>
+                              {isHi 
+                                ? `${editingElement === "photo" ? "तस्वीर" : editingElement === "name" ? "नाम" : "पाठ"} स्थान सूक्ष्म समायोजन` 
+                                : `Fine-Tune ${editingElement === "photo" ? "Photo" : editingElement === "name" ? "Name" : "Text"} Position`}
                             </span>
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-1.5">
                               <button 
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev - 2);
-                                  else setPosterNameOffsetY(prev => prev - 2);
+                                  else if (editingElement === "name") setPosterNameOffsetY(prev => prev - 2);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { offsetY: b.offsetY - 2 });
+                                  }
                                 }}
-                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ▲
+                                <ChevronUp className="w-4 h-4" />
                               </button>
                               <div className="flex gap-3">
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev - 2);
-                                    else setPosterNameOffsetX(prev => prev - 2);
+                                    else if (editingElement === "name") setPosterNameOffsetX(prev => prev - 2);
+                                    else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: b.offsetX - 2 });
+                                    }
                                   }}
-                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                  className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                 >
-                                  ◀
+                                  <ChevronLeft className="w-4 h-4" />
                                 </button>
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") {
                                       setPosterOffsetX(0);
                                       setPosterOffsetY(0);
-                                    } else {
+                                    } else if (editingElement === "name") {
                                       setPosterNameOffsetX(0);
                                       setPosterNameOffsetY(0);
+                                    } else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: 0, offsetY: 0 });
                                     }
                                   }}
-                                  className={cn("px-2 h-7 rounded-lg flex items-center justify-center text-[9px] font-black uppercase tracking-wider border cursor-pointer", isDark ? "bg-white/5 text-stone-300 border-white/5" : "bg-white text-[#543D2B] border-[#EAD7C3]")}
+                                  className={cn("px-3 h-8 rounded-lg flex items-center justify-center text-xs font-bold uppercase tracking-wider border border-[#651317] cursor-pointer", isDark ? "bg-white/5 text-stone-300 border-white/10" : "bg-white text-[#543D2B] border-[#651317]")}
                                 >
-                                  Center
+                                  {isHi ? "मध्य में" : "Center"}
                                 </button>
                                 <button 
                                   onClick={() => {
                                     if (editingElement === "photo") setPosterOffsetX(prev => prev + 2);
-                                    else setPosterNameOffsetX(prev => prev + 2);
+                                    else if (editingElement === "name") setPosterNameOffsetX(prev => prev + 2);
+                                    else {
+                                      const b = extraTextBoxes.find(x => x.id === editingElement);
+                                      if (b) handleUpdateCustomTextBox(b.id, { offsetX: b.offsetX + 2 });
+                                    }
                                   }}
-                                  className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                  className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                 >
-                                  ▶
+                                  <ChevronRight className="w-4 h-4" />
                                 </button>
                               </div>
                               <button 
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterOffsetY(prev => prev + 2);
-                                  else setPosterNameOffsetY(prev => prev + 2);
+                                  else if (editingElement === "name") setPosterNameOffsetY(prev => prev + 2);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { offsetY: b.offsetY + 2 });
+                                  }
                                 }}
-                                className={cn("w-9 h-7 rounded-lg flex items-center justify-center border cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-10 h-8 rounded-lg flex items-center justify-center border border-[#651317] cursor-pointer active:scale-90 transition-all", isDark ? "bg-white/5 text-amber-400 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ▼
+                                <ChevronDown className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
@@ -5639,14 +4073,14 @@ export default function BlessingsPage() {
                             {editingElement === "photo" ? (
                               <>
                                 <div className="space-y-1 text-left">
-                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    <span>{isHi ? "फ्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
+                                  <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    <span>{isHi ? "फ़्रेम का आकार बदलें" : "Adjust Circle Size"}</span>
                                     <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterFrameScale.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.max(0.5, prev - 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5657,11 +4091,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterFrameScale}
                                       onChange={(e) => setPosterFrameScale(parseFloat(e.target.value))}
-                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                      className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterFrameScale(prev => Math.min(2.5, prev + 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5669,14 +4103,14 @@ export default function BlessingsPage() {
                                 </div>
 
                                 <div className="space-y-1 text-left">
-                                  <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                    <span>{isHi ? "फोटो ज़ूम बदलें" : "Zoom Photo"}</span>
+                                  <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                    <span>{isHi ? "तस्वीर का ज़ूम" : "Zoom Photo"}</span>
                                     <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterZoom.toFixed(2)}x</span>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.max(0.8, prev - 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       -
                                     </button>
@@ -5687,11 +4121,11 @@ export default function BlessingsPage() {
                                       step="0.05"
                                       value={posterZoom}
                                       onChange={(e) => setPosterZoom(parseFloat(e.target.value))}
-                                      className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                      className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                     />
                                     <button
                                       onClick={() => setPosterZoom(prev => Math.min(3.0, prev + 0.05))}
-                                      className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                      className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                     >
                                       +
                                     </button>
@@ -5700,14 +4134,25 @@ export default function BlessingsPage() {
                               </>
                             ) : (
                               <div className="space-y-1 text-left">
-                                <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                                  <span>{isHi ? "नाम का आकार बदलें" : "Adjust Name Scale"}</span>
-                                  <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>{posterNameScale.toFixed(2)}x</span>
+                                <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                                  <span>{isHi ? "पाठ का आकार बदलें" : "Adjust Text Scale"}</span>
+                                  <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>
+                                    {(editingElement === "name" 
+                                      ? posterNameScale 
+                                      : (extraTextBoxes.find(x => x.id === editingElement)?.scale || 1.0)
+                                    ).toFixed(2)}x
+                                  </span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <button
-                                    onClick={() => setPosterNameScale(prev => Math.max(0.5, prev - 0.05))}
-                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                    onClick={() => {
+                                      if (editingElement === "name") setPosterNameScale(prev => Math.max(0.5, prev - 0.05));
+                                      else {
+                                        const b = extraTextBoxes.find(x => x.id === editingElement);
+                                        if (b) handleUpdateCustomTextBox(b.id, { scale: Math.max(0.5, b.scale - 0.05) });
+                                      }
+                                    }}
+                                    className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                   >
                                     -
                                   </button>
@@ -5716,13 +4161,25 @@ export default function BlessingsPage() {
                                     min="0.5"
                                     max="2.5"
                                     step="0.05"
-                                    value={posterNameScale}
-                                    onChange={(e) => setPosterNameScale(parseFloat(e.target.value))}
-                                    className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                    value={editingElement === "name" 
+                                      ? posterNameScale 
+                                      : (extraTextBoxes.find(x => x.id === editingElement)?.scale || 1.0)}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.target.value);
+                                      if (editingElement === "name") setPosterNameScale(val);
+                                      else handleUpdateCustomTextBox(editingElement, { scale: val });
+                                    }}
+                                    className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                                   />
                                   <button
-                                    onClick={() => setPosterNameScale(prev => Math.min(2.5, prev + 0.05))}
-                                    className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                    onClick={() => {
+                                      if (editingElement === "name") setPosterNameScale(prev => Math.min(2.5, prev + 0.05));
+                                      else {
+                                        const b = extraTextBoxes.find(x => x.id === editingElement);
+                                        if (b) handleUpdateCustomTextBox(b.id, { scale: Math.min(2.5, b.scale + 0.05) });
+                                      }
+                                    }}
+                                    className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                                   >
                                     +
                                   </button>
@@ -5735,61 +4192,83 @@ export default function BlessingsPage() {
                         {/* rotate panel */}
                         {posterActiveTab === "rotate" && (
                           <div className="space-y-2.5 text-left">
-                            <div className={cn("flex justify-between text-[10px] font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
-                              <span>{isHi ? `${editingElement === "photo" ? "फ्रेम" : "नाम"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Name"} Rotation`}</span>
+                            <div className={cn("flex justify-between text-xs font-bold uppercase tracking-wider", isDark ? "text-stone-400" : "text-[#786252]")}>
+                              <span>
+                                {isHi ? `${editingElement === "photo" ? "तस्वीर" : "पाठ"} रोटेशन` : `${editingElement === "photo" ? "Frame" : "Text"} Rotation`}
+                              </span>
                               <span className={cn("font-sans font-bold", isDark ? "text-amber-400" : "text-[#651317]")}>
-                                {Math.round(((editingElement === "photo" ? posterRotation : posterNameRotation) * 180) / Math.PI)}°
+                                {Math.round(((
+                                  editingElement === "photo" 
+                                    ? posterRotation 
+                                    : editingElement === "name" 
+                                    ? posterNameRotation 
+                                    : (extraTextBoxes.find(x => x.id === editingElement)?.rotation || 0)
+                                ) * 180) / Math.PI)}°
                               </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <button
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterRotation(prev => prev - (5 * Math.PI) / 180);
-                                  else setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
+                                  else if (editingElement === "name") setPosterNameRotation(prev => prev - (5 * Math.PI) / 180);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { rotation: b.rotation - (5 * Math.PI) / 180 });
+                                  }
                                 }}
-                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ↺
+                                <RotateCcw className="w-3.5 h-3.5" />
                               </button>
                               <input
                                 type="range"
                                 min={-Math.PI}
                                 max={Math.PI}
                                 step={0.05}
-                                value={editingElement === "photo" ? posterRotation : posterNameRotation}
+                                value={
+                                  editingElement === "photo" 
+                                    ? posterRotation 
+                                    : editingElement === "name" 
+                                    ? posterNameRotation 
+                                    : (extraTextBoxes.find(x => x.id === editingElement)?.rotation || 0)
+                                }
                                 onChange={(e) => {
-                                  if (editingElement === "photo") setPosterRotation(parseFloat(e.target.value));
-                                  else setPosterNameRotation(parseFloat(e.target.value));
+                                  const val = parseFloat(e.target.value);
+                                  if (editingElement === "photo") setPosterRotation(val);
+                                  else if (editingElement === "name") setPosterNameRotation(val);
+                                  else handleUpdateCustomTextBox(editingElement, { rotation: val });
                                 }}
-                                className={cn("flex-1 cursor-pointer h-1 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
+                                className={cn("flex-1 cursor-pointer h-1.5 rounded-lg appearance-none", isDark ? "accent-amber-500 bg-stone-900" : "accent-[#651317] bg-[#EAD7C3]")}
                               />
                               <button
                                 onClick={() => {
                                   if (editingElement === "photo") setPosterRotation(prev => prev + (5 * Math.PI) / 180);
-                                  else setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
+                                  else if (editingElement === "name") setPosterNameRotation(prev => prev + (5 * Math.PI) / 180);
+                                  else {
+                                    const b = extraTextBoxes.find(x => x.id === editingElement);
+                                    if (b) handleUpdateCustomTextBox(b.id, { rotation: b.rotation + (5 * Math.PI) / 180 });
+                                  }
                                 }}
-                                className={cn("w-6 h-6 rounded flex items-center justify-center text-xs font-bold cursor-pointer border", isDark ? "bg-white/5 text-amber-300 border-white/5 hover:bg-white/10" : "bg-white text-[#651317] border-[#EAD7C3] hover:bg-white/80")}
+                                className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer border border-[#651317]", isDark ? "bg-white/5 text-amber-300 border-white/10 hover:bg-white/10" : "bg-white text-[#651317] border-[#651317] hover:bg-white/80")}
                               >
-                                ↻
+                                <RotateCw className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
                         )}
 
-                        {/* Action buttons done / cancel — elevated slightly for clear footer space */}
-                        <div className={cn("flex gap-2 pt-2 pb-2 border-t", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
+                        {/* Action buttons done / cancel */}
+                        <div className={cn("flex gap-3 pt-3 pb-1 border-t", isDark ? "border-white/5" : "border-[#EAD7C3]")}>
                           <button
                             onClick={() => {
                               setIsEditingPhoto(false);
                             }}
                             className={cn(
-                              "flex-1 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all",
-                              isDark
-                                ? "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10"
-                                : "bg-white border-[#EAD7C3] text-[#543D2B] hover:bg-white/80"
+                              "flex-1 py-3 rounded-xl border border-[#651317] text-xs sm:text-sm font-bold uppercase tracking-wider cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-2 bg-white text-[#651317] dark:bg-stone-900 dark:text-stone-300 dark:border-white/10 hover:bg-stone-50 shadow-sm"
                             )}
                           >
-                            {isHi ? "रद्द करें" : "Cancel"}
+                            <X className="w-4 h-4" />
+                            <span>{isHi ? "रद्द करें" : "Cancel"}</span>
                           </button>
                           <button
                             onClick={async () => {
@@ -5804,13 +4283,14 @@ export default function BlessingsPage() {
                               }
                             }}
                             className={cn(
-                              "flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-md",
+                              "flex-1 py-3 rounded-xl font-extrabold text-xs sm:text-sm uppercase tracking-wider cursor-pointer active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 border border-[#651317]",
                               isDark
-                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/10"
-                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20"
+                                ? "bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-amber-500/10 border-amber-400"
+                                : "bg-gradient-to-r from-[#651317] to-[#8B1E24] text-white shadow-red-900/20 border-[#651317]"
                             )}
                           >
-                            {isHi ? "पूर्ण (Done)" : "Done"}
+                            <Check className="w-4 h-4" />
+                            <span>{isHi ? "संपन्न" : "Done"}</span>
                           </button>
                         </div>
 
@@ -6289,3 +4769,5 @@ export default function BlessingsPage() {
     </div>
   );
 }
+
+

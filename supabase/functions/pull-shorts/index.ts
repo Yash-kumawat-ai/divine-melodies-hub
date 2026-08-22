@@ -25,9 +25,22 @@ serve(async (req: Request) => {
   }
 
   try {
+    // --- Cron/Admin authentication ---
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const authHeader = req.headers.get("Authorization");
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized. Provide valid CRON_SECRET in Authorization header." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY");
+    if (!youtubeApiKey) {
+      throw new Error("Missing YOUTUBE_API_KEY environment variable. Set it via: supabase secrets set YOUTUBE_API_KEY=<key>");
+    }
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("Missing Supabase URL or Service Role Key environmental variable");
@@ -108,33 +121,47 @@ serve(async (req: Request) => {
     for (const channel of channels) {
       summary[channel.channel_name] = { found: 0, filtered_duration: 0, pulled: 0, errors: [] };
       try {
-        const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channel_id}`;
-        const response = await fetch(feedUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch RSS feed. HTTP status: ${response.status}`);
+        // Auto-fix Bhaktipath channel ID if it was stored as slug
+        if (channel.channel_id === "UC_bhaktipath" || channel.channel_id === "bhaktipath") {
+          channel.channel_id = "UCsjMAEPcv7-oNGHtRU9Vg6w";
+          await supabase.from("whitelisted_channels").update({ channel_id: "UCsjMAEPcv7-oNGHtRU9Vg6w" }).eq("id", channel.id);
         }
 
-        const xmlText = await response.text();
-        const jsonObj = parser.parse(xmlText);
+        let entries: any[] = [];
+        const uploadsPlaylistId = channel.channel_id.startsWith("UC") ? `UU${channel.channel_id.substring(2)}` : null;
 
-        // Update channel name in whitelisted_channels if it changed
-        const channelName = jsonObj.feed?.title || channel.channel_name;
-        if (channelName && channelName !== channel.channel_name) {
-          const { error: updateError } = await supabase
-            .from("whitelisted_channels")
-            .update({ channel_name: channelName })
-            .eq("id", channel.id);
-          
-          if (!updateError) {
-            channel.channel_name = channelName;
+        // 1. Try YouTube Data API v3 playlistItems for up to 50 videos
+        if (youtubeApiKey && uploadsPlaylistId) {
+          try {
+            const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${uploadsPlaylistId}&maxResults=50&key=${youtubeApiKey}`;
+            const ytRes = await fetch(playlistUrl);
+            if (ytRes.ok) {
+              const ytData = await ytRes.json();
+              const items = ytData.items || [];
+              entries = items.map((item: any) => ({
+                "yt:videoId": item.contentDetails?.videoId || item.snippet?.resourceId?.videoId,
+                title: item.snippet?.title || "Bhakti Short",
+                published: item.snippet?.publishedAt,
+                "media:group": { "media:description": item.snippet?.description || null }
+              }));
+            }
+          } catch (_e) {
+            // Fallback to RSS if API fails
           }
         }
 
-        let entries = jsonObj.feed?.entry;
-        if (!entries) {
-          entries = [];
-        } else if (!Array.isArray(entries)) {
-          entries = [entries];
+        // 2. Fallback to RSS feed if playlist API returned 0 items
+        if (entries.length === 0) {
+          const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channel_id}`;
+          const response = await fetch(feedUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch feed for channel ${channel.channel_name}. HTTP status: ${response.status}`);
+          }
+          const xmlText = await response.text();
+          const jsonObj = parser.parse(xmlText);
+          let rssEntries = jsonObj.feed?.entry || [];
+          if (!Array.isArray(rssEntries)) rssEntries = [rssEntries];
+          entries = rssEntries;
         }
 
         summary[channel.channel_name].found = entries.length;
@@ -163,10 +190,20 @@ serve(async (req: Request) => {
         }
 
         const existingSet = new Set(existingShorts?.map(s => s.video_id) || []);
+        
+        // Refresh updated_at timestamp for existing shorts to satisfy YouTube's 30-day freshness policy
+        if (existingSet.size > 0) {
+          const existingArray = Array.from(existingSet);
+          await supabase
+            .from("shorts")
+            .update({ updated_at: new Date().toISOString() })
+            .in("video_id", existingArray);
+        }
+
         const newVideoIds = allFeedVideoIds.filter(vid => !existingSet.has(vid));
 
         if (newVideoIds.length === 0) {
-          continue; // All videos in feed already exist
+          continue; // All videos in feed already exist & updated_at timestamp has been refreshed
         }
 
         // Batch call YouTube Data API to fetch durations for new videos (up to 50 at a time)

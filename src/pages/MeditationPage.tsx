@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import MeditationPracticeHome from "@/components/meditation/MeditationPracticeHome";
 import MeditationSession from "@/components/meditation/MeditationSession";
 import MantraJapHome from "@/components/meditation/MantraJapHome";
@@ -7,12 +7,12 @@ import {
   getPracticeById,
   type MeditationPractice,
 } from "@/lib/meditation/meditationTypes";
-import { loadPreferences } from "@/lib/meditation/meditationStorage";
 import PremiumJapaCounter from "@/components/meditation/PremiumJapaCounter";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 
 export default function MeditationPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const practiceId = searchParams.get("practice");
   const practice = practiceId ? getPracticeById(practiceId) || null : null;
 
@@ -34,14 +34,21 @@ export default function MeditationPage() {
   };
 
   const handleExit = () => {
+    const returnUrl = searchParams.get("returnUrl");
+    if (returnUrl) {
+      navigate(returnUrl);
+      return;
+    }
+    const groupId = searchParams.get("groupId");
+    if (groupId) {
+      navigate(-1);
+      return;
+    }
     setSearchParams({});
   };
 
   const handleQuickStart = () => {
-    const prefs = loadPreferences();
-    const last = prefs.lastPracticeId ? getPracticeById(prefs.lastPracticeId) : null;
-    const targetPractice = last ?? getPracticeById("mantra_shiva")!;
-    setSearchParams({ practice: targetPractice.id });
+    setSearchParams({ practice: "mantra_jap_home" });
   };
 
   const handlePracticeChange = (newPractice: MeditationPractice) => {
@@ -77,11 +84,13 @@ export default function MeditationPage() {
 
 function MantraJapaCounterView() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const mantraId = searchParams.get("mantraId");
   const targetCount = Number(searchParams.get("targetCount") || "108");
   const practiceMode = (searchParams.get("practiceMode") || "mala") as "mala" | "tap" | "voice" | "guided";
   const sankalpText = searchParams.get("sankalp") || "";
   const groupId = searchParams.get("groupId") || null;
+  const returnUrl = searchParams.get("returnUrl");
 
   const { mantras, completeSession, refresh, mantrasLoading } = useMantraJapa();
 
@@ -100,7 +109,17 @@ function MantraJapaCounterView() {
       <div className="min-h-screen bg-[#090506] flex flex-col items-center justify-center text-amber-500 gap-4">
         <p>Mantra not found.</p>
         <button
-          onClick={() => setSearchParams({ practice: "mantra_jap_home" })}
+          onClick={() => {
+            if (returnUrl) {
+              navigate(returnUrl);
+              return;
+            }
+            if (groupId) {
+              navigate(-1);
+              return;
+            }
+            setSearchParams({ practice: "mantra_jap_home" });
+          }}
           className="px-4 py-2 bg-amber-500 text-black rounded-lg"
         >
           Go Back
@@ -121,6 +140,8 @@ function MantraJapaCounterView() {
           practice: "mantra_jap_home",
           mantraId: finalMantra.id,
           showSetup: "true",
+          ...(groupId ? { groupId } : {}),
+          ...(returnUrl ? { returnUrl } : {}),
         });
       }}
       onComplete={async (actualCount, durationSeconds, finalMantraId) => {
@@ -139,9 +160,14 @@ function MantraJapaCounterView() {
           console.error("Error saving Japa session:", err);
         }
         refresh();
+        if (returnUrl) {
+          navigate(returnUrl);
+          return;
+        }
         setSearchParams({
           practice: "mantra_jap_home",
           mantraId: finalMantra.id,
+          ...(groupId ? { groupId } : {}),
         });
       }}
     />

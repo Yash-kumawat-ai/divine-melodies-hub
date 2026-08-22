@@ -1,155 +1,54 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft,
-  Share2,
-  Activity,
-  Flame,
-  Check,
-  Play,
-  Pause,
-  Clock,
-  Volume2,
-  Calendar,
-  Sparkles,
-  TrendingUp,
-  Compass,
-  ArrowRight,
-  ShieldAlert,
-  Sun,
-  Moon,
-  Flower2,
-  BookOpen,
-  Headphones,
-  Target,
-  Wind,
-  ChevronRight,
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Share2, Check, Play, Pause, Headphones } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
+import { cn } from "@/lib/utils";
 import type { Mantra, JapTotal } from "@/lib/mantraJapa/mantraJapaApi";
-import devotionalBackground from "@/pages/images/devotional_background.webp";
-import devotionalBackground1 from "@/pages/images/devotional_background(1).webp";
-
-// ─── CUSTOM ICONS ───────────────────────────────────────────────
-const YogiIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="5.5" r="2.5" />
-    <path d="M12 8v8" />
-    <path d="M5 12c2 1 4 1.5 7 1.5s5-.5 7-1.5" />
-    <path d="M5 12L8 15c2.5 1 5.5 1 8 0l3-3" />
-    <path d="M6 19c2-1 4-1.5 6-1.5s4 .5 6 1.5" />
-    <path d="M3 20.5h18" />
-  </svg>
-);
-
-const MalaIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="10" r="6" strokeDasharray="3 3" />
-    <circle cx="12" cy="17" r="1.5" fill="currentColor" />
-    <path d="M11 18.5l1 1.5 1-1.5" />
-  </svg>
-);
-
-const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-  </svg>
-);
-
-const ShieldCrossIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    <path d="M12 8v8M9 12h6" />
-  </svg>
-);
-
-const ConcentricCirclesIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" {...props}>
-    <circle cx="12" cy="12" r="9" strokeOpacity="0.3" />
-    <circle cx="12" cy="12" r="6" strokeOpacity="0.6" />
-    <circle cx="12" cy="12" r="3" fill="currentColor" />
-  </svg>
-);
 
 const japaStepsData = [
   {
     num: 1,
     titleHi: "आराम से बैठें",
     titleEn: "Sit Comfortably",
-    descHi: "रीढ़ की हड्डी सीधी और शरीर को ढीला रखें। शांत वातावरण चुनें।",
-    descEn: "Keep your spine straight and body relaxed. Choose a quiet spot.",
-    img: "/src/pages/images/meditation_high_quality.webp",
+    descHi: "रीढ़ सीधी रखें, शरीर ढीला छोड़ें, और शांत स्थान चुनें।",
+    descEn: "Keep your spine straight, relax the body, and choose a quiet spot.",
   },
   {
     num: 2,
-    titleHi: "3 गहरी साँसें लें",
-    titleEn: "Take 3 Deep Breaths",
-    descHi: "अपने मन और शरीर को शांत करने के लिए गहरी और धीमी साँस लें।",
-    descEn: "Inhale deeply and exhale slowly to calm your mind and body.",
-    isSvg: true,
+    titleHi: "मन को स्थिर करें",
+    titleEn: "Settle Your Focus",
+    descHi: "कुछ क्षण मौन रहें और ध्यान को मंत्र पर लाएँ।",
+    descEn: "Pause briefly in silence and bring your attention to the mantra.",
   },
   {
     num: 3,
     titleHi: "अर्थ पर ध्यान दें",
     titleEn: "Focus On The Meaning",
-    descHi: "मंत्र के दिव्य अर्थ को समझें और अपने हृदय में महसूस करें।",
-    descEn: "Understand and feel the sacred meaning of the mantra in your heart.",
-    img: "/src/pages/images/red_lotus_lossless.webp",
+    descHi: "मंत्र के दिव्य अर्थ को समझें और हृदय में महसूस करें।",
+    descEn: "Understand the sacred meaning and feel it in your heart.",
   },
   {
     num: 4,
     titleHi: "धीरे-धीरे जप करें",
     titleEn: "Chant Slowly",
-    descHi: "स्पष्ट उच्चारण करें, प्रत्येक शब्द को शुद्धता और भक्ति से जपें।",
-    descEn: "Pronounce clearly and chant each syllable with pure devotion.",
-    img: "/src/pages/images/om.webp",
-    hasAudio: true,
+    descHi: "स्पष्ट उच्चारण करें और माला या काउंटर से गिनती रखें।",
+    descEn: "Pronounce clearly and count with a mala or the digital counter.",
   },
-  {
-    num: 5,
-    titleHi: "माला से जाप गिनें",
-    titleEn: "Count With Mala",
-    descHi: "मंत्रों की संख्या गिनने के लिए रुद्राक्ष माला या डिजिटल काउंटर का उपयोग करें।",
-    descEn: "Use a rudraksha mala or digital counter to count your chants.",
-    img: "/images/mala.png",
-  }
 ];
 
-const MandalaBg = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 100 100" fill="currentColor" {...props}>
-    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" />
-    <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="0.3" />
-    <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" strokeWidth="0.3" strokeDasharray="1 1" />
-    <circle cx="50" cy="50" r="15" fill="none" stroke="currentColor" strokeWidth="0.5" />
-    <path d="M50 5 L50 95 M5 50 L95 50 M18 18 L82 82 M18 82 L82 18" stroke="currentColor" strokeWidth="0.2" />
-    {Array.from({ length: 8 }).map((_, i) => {
-      const angle = (i * 45 * Math.PI) / 180;
-      const x = 50 + 35 * Math.cos(angle);
-      const y = 50 + 35 * Math.sin(angle);
-      return <circle key={i} cx={x} cy={y} r="2" fill="currentColor" />;
-    })}
-  </svg>
-);
+const commonMistakes = [
+  { hi: "बहुत तेज़ी से जप करना", en: "Chanting too fast" },
+  { hi: "काम या अन्य बातों के बारे में सोचना", en: "Thinking about work or other things" },
+  { hi: "जप करते समय फोन का उपयोग करना", en: "Using phone while chanting" },
+  { hi: "बिना समझे यंत्रवत् जप करना", en: "Chanting without understanding" },
+];
 
-// ─── DETAILED MANTRA DATA MAP ────────────────────────────────────
 type MantraDetail = {
   meaningHindi: string;
   meaningEnglish: string;
   whyChantHindi: string[];
   whyChantEnglish: string[];
-  benefitsHindi: string[];
-  benefitsEnglish: string[];
-  recommendedCounts: {
-    beginner: string;
-    advanced: string;
-    beginnerTimeHindi: string;
-    beginnerTimeEnglish: string;
-    advancedTimeHindi: string;
-    advancedTimeEnglish: string;
-  };
-  howToStepsHindi: string[];
-  howToStepsEnglish: string[];
   mantraTextHindi?: string;
   transliteration?: string;
 };
@@ -159,39 +58,20 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
     mantraTextHindi: "ॐ",
     transliteration: "Om / Aum",
     meaningHindi: "ॐ सृष्टि की मूल ध्वनि है, जो ब्रह्मांड की चेतना और परम सत्य का प्रतीक है।",
-    meaningEnglish: "Om is the primordial sound of the universe, representing cosmic consciousness and absolute truth.",
+    meaningEnglish:
+      "Om is the primordial sound of the universe, representing cosmic consciousness and absolute truth.",
     whyChantHindi: [
       "मन को स्थिर और शांत किया जा सकता है",
       "एकाग्रता और फोकस बढ़ता है",
       "आत्मा और परमात्मा से जुड़ाव गहरा होता है",
-      "शरीर की ऊर्जा संतुलित होती है"
+      "शरीर की ऊर्जा संतुलित होती है",
     ],
     whyChantEnglish: [
       "Stabilizes and calms the mind",
       "Increases focus and concentration",
       "Deepens connection with the soul and Divine",
-      "Balances bodily energies"
+      "Balances bodily energies",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~12 मिनट",
-      beginnerTimeEnglish: "~12 mins",
-      advancedTimeHindi: "~90 मिनट",
-      advancedTimeEnglish: "~90 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – शांत स्थान पर बैठें और मन को केंद्रित करें",
-      "लय में जप करें – 'ॐ' का दीर्घ उच्चारण करते हुए नाभि से ध्वनि निकालें",
-      "श्वास पर ध्यान दें – हर उच्चारण के साथ गहरी सांस लें और छोड़ें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Sit in a quiet place and focus your mind.",
-      "Chant in rhythm – Recite 'Om' deeply, drawing sound from the navel.",
-      "Focus on breath – Breathe in and out deeply with each chant."
-    ]
   },
   om_namah_shivaya: {
     mantraTextHindi: "ॐ नमः शिवाय",
@@ -202,186 +82,97 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
       "मन को शांति मिलती है",
       "तनाव और मानसिक थकान कम होती है",
       "आत्मविश्वास और साहस बढ़ता है",
-      "आध्यात्मिक विकास होता है"
+      "आध्यात्मिक विकास होता है",
     ],
     whyChantEnglish: [
       "Calms the mind and releases stress",
       "Reduces anxiety and mental fatigue",
       "Boosts confidence and inner courage",
-      "Promotes spiritual advancement"
+      "Promotes spiritual advancement",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~12 मिनट",
-      beginnerTimeEnglish: "~12 mins",
-      advancedTimeHindi: "~90 मिनट",
-      advancedTimeEnglish: "~90 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – शिवलिंग या शिव की प्रतिमा के सामने बैठें",
-      "लय में जप करें – स्पष्ट और शांत स्वर में 'ॐ नमः शिवाय' बोलें",
-      "जप ट्रैक करें – माला या काउंटर से गिनती रखें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Sit in front of a Shiva Lingam or deity image.",
-      "Chant in rhythm – Recite 'Om Namah Shivaya' in a clear, calm voice.",
-      "Track your chants – Keep count using a mala or digital counter."
-    ]
   },
   mahamrityunjaya: {
-    mantraTextHindi: "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्।\nउर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय मामृतात्॥",
-    transliteration: "Om Tryambakam Yajamahe Sugandhim Pushti-Vardhanam\nUrvarukamiva Bandhanan Mrityor Mukshiya Maamritat",
-    meaningHindi: "हम त्रिनेत्रधारी भगवान शिव की आराधना करते हैं, जो सुगंधमय हैं और सबका पोषण करते हैं। जैसे ककड़ी अपनी बेल से अलग होकर मुक्त होती है, वैसे ही वे हमें मृत्यु के बंधन से मुक्त करें और अमरता प्रदान करें।",
-    meaningEnglish: "We worship the three-eyed Lord Shiva, who is fragrant and nourishes all. Just as a cucumber is freed from its bond to the vine, may He liberate us from death and grant us immortality.",
+    mantraTextHindi:
+      "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्।\nउर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय मामृतात्॥",
+    transliteration:
+      "Om Tryambakam Yajamahe Sugandhim Pushti-Vardhanam\nUrvarukamiva Bandhanan Mrityor Mukshiya Maamritat",
+    meaningHindi:
+      "हम त्रिनेत्रधारी भगवान शिव की आराधना करते हैं, जो सुगंधमय हैं और सबका पोषण करते हैं। जैसे ककड़ी अपनी बेल से अलग होकर मुक्त होती है, वैसे ही वे हमें मृत्यु के बंधन से मुक्त करें और अमरता प्रदान करें।",
+    meaningEnglish:
+      "We worship the three-eyed Lord Shiva, who is fragrant and nourishes all. Just as a cucumber is freed from its bond to the vine, may He liberate us from death and grant us immortality.",
     whyChantHindi: [
       "रोग और भय से मुक्ति मिलती है",
       "दीर्घायु और स्वास्थ्य की प्राप्ति होती है",
       "मृत्यु के भय से मुक्ति मिलती है",
-      "कठिन समस्याओं से रक्षा होती है"
+      "कठिन समस्याओं से रक्षा होती है",
     ],
     whyChantEnglish: [
       "Provides relief from ailments and fears",
       "Bestows long life and good health",
       "Removes the deep fear of death",
-      "Shields you from severe calamities"
+      "Shields you from severe calamities",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "11 जप",
-      advanced: "108 जप",
-      beginnerTimeHindi: "~10 मिनट",
-      beginnerTimeEnglish: "~10 mins",
-      advancedTimeHindi: "~45 मिनट",
-      advancedTimeEnglish: "~45 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – स्वास्थ्य या किसी की रक्षा हेतु संकल्प के साथ बैठें",
-      "शुद्ध उच्चारण करें – प्रत्येक शब्द स्पष्ट और सही उच्चारण के साथ बोलें",
-      "एकाग्रता बनाएं – मंत्र के अर्थ पर ध्यान केंद्रित रखें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Sit with a dedication for health or protection.",
-      "Pronounce correctly – Chant each Sanskrit word clearly and precisely.",
-      "Stay focused – Keep your mind fully centered on the meaning of the mantra."
-    ]
   },
   hare_krishna: {
     mantraTextHindi: "हरे कृष्ण हरे कृष्ण, कृष्ण कृष्ण हरे हरे।\nहरे राम हरे राम, राम राम हरे हरे॥",
-    transliteration: "Hare Krishna Hare Krishna, Krishna Krishna Hare Hare\nHare Rama Hare Rama, Rama Rama Hare Hare",
-    meaningHindi: "हे भगवान कृष्ण और राम, मैं आपकी शरण लेता हूं। यह मंत्र भगवान को प्रेमपूर्वक पुकारने और उनकी कृपा प्राप्त करने का माध्यम है।",
-    meaningEnglish: "O Lord Krishna and Lord Rama, I take shelter in you. This mahamantra is a way to lovingly call upon the Divine and receive grace.",
+    transliteration:
+      "Hare Krishna Hare Krishna, Krishna Krishna Hare Hare\nHare Rama Hare Rama, Rama Rama Hare Hare",
+    meaningHindi:
+      "हे भगवान कृष्ण और राम, मैं आपकी शरण लेता हूं। यह मंत्र भगवान को प्रेमपूर्वक पुकारने और उनकी कृपा प्राप्त करने का माध्यम है।",
+    meaningEnglish:
+      "O Lord Krishna and Lord Rama, I take shelter in you. This mahamantra is a way to lovingly call upon the Divine and receive grace.",
     whyChantHindi: [
       "मन में आनंद और प्रेम का संचार होता है",
       "नकारात्मक विचारों से मुक्ति मिलती है",
       "भक्ति भाव और श्रद्धा बढ़ती है",
-      "आत्मा को शुद्धि और शांति मिलती है"
+      "आत्मा को शुद्धि और शांति मिलती है",
     ],
     whyChantEnglish: [
       "Infuses joy and love into the heart",
       "Frees the mind from negative thinking",
       "Enhances devotional feelings and faith",
-      "Purifies the soul and brings inner peace"
+      "Purifies the soul and brings inner peace",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~15 मिनट",
-      beginnerTimeEnglish: "~15 mins",
-      advancedTimeHindi: "~90 मिनट",
-      advancedTimeEnglish: "~90 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – मन में भगवान कृष्ण की छवि का स्मरण करें",
-      "भाव सहित जप करें – प्रेम और भक्ति के भाव से उच्चारण करें",
-      "लय बनाएं – कीर्तन या भजन की तरह स्वर में जप करें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Visualize the beautiful form of Lord Krishna.",
-      "Chant with emotion – Recite with deep love and devotion.",
-      "Establish a rhythm – Chant in a melodious, song-like flow."
-    ]
   },
   radhe_radhe: {
     mantraTextHindi: "राधे राधे",
     transliteration: "Radhe Radhe",
-    meaningHindi: "राधा रानी का नाम जप, प्रेम, समर्पण और भक्ति की पराकाष्ठा का प्रतीक है। यह जप कृष्ण-प्रेम और निःस्वार्थ भक्ति की भावना जगाता है।",
-    meaningEnglish: "Chanting Radha Rani's name symbolizes the peak of divine love and surrender. It awakens selfless devotion and love for Lord Krishna.",
+    meaningHindi:
+      "राधा रानी का नाम जप, प्रेम, समर्पण और भक्ति की पराकाष्ठा का प्रतीक है। यह जप कृष्ण-प्रेम और निःस्वार्थ भक्ति की भावना जगाता है।",
+    meaningEnglish:
+      "Chanting Radha Rani's name symbolizes the peak of divine love and surrender. It awakens selfless devotion and love for Lord Krishna.",
     whyChantHindi: [
       "हृदय में प्रेम और करुणा बढ़ती है",
       "रिश्तों में मधुरता आती है",
       "मन की कठोरता दूर होती है",
-      "भक्ति भाव गहरा होता है"
+      "भक्ति भाव गहरा होता है",
     ],
     whyChantEnglish: [
       "Awakens love and compassion in the heart",
       "Brings sweetness and harmony to relationships",
       "Softens the mind's rigidness",
-      "Deepens the mood of devotion"
+      "Deepens the mood of devotion",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~10 मिनट",
-      beginnerTimeEnglish: "~10 mins",
-      advancedTimeHindi: "~80 मिनट",
-      advancedTimeEnglish: "~80 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – मन में राधा-कृष्ण की युगल छवि का ध्यान करें",
-      "भावपूर्ण उच्चारण करें – कोमल स्वर में 'राधे राधे' बोलें",
-      "आनंद के साथ जप करें – जप को बोझ न बनाएं, इसे आनंदमय अनुभव बनाएं"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Meditate on the divine couple Radha-Krishna.",
-      "Chant lovingly – Speak 'Radhe Radhe' in a soft, sweet voice.",
-      "Chant with joy – Let it be an ecstatic, light-hearted experience."
-    ]
   },
   jai_shree_ram: {
     mantraTextHindi: "जय श्री राम",
     transliteration: "Jai Shree Ram",
-    meaningHindi: "भगवान राम की जय हो — यह मंत्र मर्यादा, धर्म, सत्य और साहस के आदर्श पुरुष श्री राम के प्रति श्रद्धा और विजय भाव का उच्चारण है।",
-    meaningEnglish: "Victory to Lord Rama — this mantra honors श्री राम as the embodiment of righteousness, truth, and courage.",
+    meaningHindi:
+      "भगवान राम की जय हो — यह मंत्र मर्यादा, धर्म, सत्य और साहस के आदर्श पुरुष श्री राम के प्रति श्रद्धा और विजय भाव का उच्चारण है।",
+    meaningEnglish:
+      "Victory to Lord Rama — this mantra honors श्री राम as the embodiment of righteousness, truth, and courage.",
     whyChantHindi: [
       "आत्मबल और साहस बढ़ता है",
       "धर्म और सत्य के मार्ग पर चलने की प्रेरणा मिलती है",
       "बाधाओं और भय से मुक्ति मिलती है",
-      "मन में अनुशासन और संयम आता है"
+      "मन में अनुशासन और संयम आता है",
     ],
     whyChantEnglish: [
       "Enhances willpower and inner courage",
       "Inspires walking the path of truth and righteousness",
       "Provides relief from obstacles and fears",
-      "Brings discipline and self-restraint to the mind"
+      "Brings discipline and self-restraint to the mind",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~10 मिनट",
-      beginnerTimeEnglish: "~10 mins",
-      advancedTimeHindi: "~75 मिनट",
-      advancedTimeEnglish: "~75 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – मन में दृढ़ता और साहस का भाव रखें",
-      "ओजपूर्ण उच्चारण करें – उत्साह और श्रद्धा के साथ बोलें",
-      "नियमितता बनाएं – रोज़ निश्चित संख्या में जप करें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Hold a feeling of strength and courage in the mind.",
-      "Chant energetically – Recite with enthusiasm and deep reverence.",
-      "Be consistent – Practice a fixed count of chants every day."
-    ]
   },
   om_namo_narayanaya: {
     mantraTextHindi: "ॐ नमो नारायणाय",
@@ -392,73 +183,36 @@ const MANTRA_DETAILS: Record<string, MantraDetail> = {
       "जीवन में स्थिरता और संतुलन आता है",
       "आर्थिक और मानसिक सुरक्षा का भाव बढ़ता है",
       "बाधाओं का निवारण होता है",
-      "शांति और संतोष की अनुभूति होती है"
+      "शांति और संतोष की अनुभूति होती है",
     ],
     whyChantEnglish: [
       "Brings stability and balance to life",
       "Enhances feelings of security and mental peace",
       "Helps clear life's obstacles",
-      "Grants deep satisfaction and contentment"
+      "Grants deep satisfaction and contentment",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "108 जप",
-      advanced: "1008 जप",
-      beginnerTimeHindi: "~12 मिनट",
-      beginnerTimeEnglish: "~12 mins",
-      advancedTimeHindi: "~85 मिनट",
-      advancedTimeEnglish: "~85 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – शांत मन से विष्णु जी का ध्यान करें",
-      "स्पष्ट उच्चारण करें – प्रत्येक अक्षर को स्पष्टता से बोलें",
-      "श्रद्धा बनाएं – मंत्र को सुरक्षा कवच के रूप में अनुभव करें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Meditate on Lord Vishnu with a quiet mind.",
-      "Chant clearly – Pronounce every syllable distinctly.",
-      "Feel protected – Experience the mantra as a shield of divine protection."
-    ]
   },
   gayatri: {
     mantraTextHindi: "ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं।\nभर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्॥",
-    transliteration: "Om Bhur Bhuvah Svah Tat Savitur Varenyam\nBhargo Devasya Dhimahi Dhiyo Yo Nah Pracodayat",
-    meaningHindi: "हम उस तेजस्वी, दिव्य सूर्य देवता (सविता) का ध्यान करते हैं, जो पृथ्वी, अंतरिक्ष और स्वर्ग में व्याप्त हैं। वे हमारी बुद्धि को प्रकाशित और प्रेरित करें।",
-    meaningEnglish: "We meditate on the glowing solar deity (Savitr) who pervades the earth, sky, and heavens. May He illumine and inspire our intellect.",
+    transliteration:
+      "Om Bhur Bhuvah Svah Tat Savitur Varenyam\nBhargo Devasya Dhimahi Dhiyo Yo Nah Pracodayat",
+    meaningHindi:
+      "हम उस तेजस्वी, दिव्य सूर्य देवता (सविता) का ध्यान करते हैं, जो पृथ्वी, अंतरिक्ष और स्वर्ग में व्याप्त हैं। वे हमारी बुद्धि को प्रकाशित और प्रेरित करें।",
+    meaningEnglish:
+      "We meditate on the glowing solar deity (Savitr) who pervades the earth, sky, and heavens. May He illumine and inspire our intellect.",
     whyChantHindi: [
       "बुद्धि और एकाग्रता तेज होती है",
       "ज्ञान और विवेक की प्राप्ति होती है",
       "नकारात्मकता का नाश होता है",
-      "आत्मिक प्रकाश और स्पष्टता मिलती है"
+      "आत्मिक प्रकाश और स्पष्टता मिलती है",
     ],
     whyChantEnglish: [
       "Sharpens intellect and concentration",
       "Brings wisdom and discernment",
       "Destroys negativity",
-      "Grants spiritual light and mental clarity"
+      "Grants spiritual light and mental clarity",
     ],
-    benefitsHindi: ["मानसिक शांति", "भावनात्मक संतुलन", "आध्यात्मिक विकास", "रक्षा और शक्ति"],
-    benefitsEnglish: ["Mental Peace", "Emotional Balance", "Spiritual Growth", "Protection & Power"],
-    recommendedCounts: {
-      beginner: "11 जप",
-      advanced: "108 जप",
-      beginnerTimeHindi: "~10 मिनट",
-      beginnerTimeEnglish: "~10 mins",
-      advancedTimeHindi: "~45 मिनट",
-      advancedTimeEnglish: "~45 mins"
-    },
-    howToStepsHindi: [
-      "संकल्प लें – सूर्य की ओर मुख करके बैठें (विशेषतः सुबह)",
-      "शुद्ध संस्कृत उच्चारण करें – मंत्र के सही उच्चारण का अभ्यास करें",
-      "ध्यानपूर्वक जप करें – अर्थ पर मनन करते हुए जप करें"
-    ],
-    howToStepsEnglish: [
-      "Take a resolve – Sit facing the sun (especially during morning hours).",
-      "Chant Sanskrit correctly – Pay close attention to Vedic pronunciation.",
-      "Chant mindfully – Recite while reflecting deeply on the meaning."
-    ]
-  }
+  },
 };
 
 function getMantraDetailsKey(mantra: Mantra): string {
@@ -472,7 +226,6 @@ function getMantraDetailsKey(mantra: Mantra): string {
   if (name === "Om Namo Narayanaya") return "om_namo_narayanaya";
   if (name === "Gayatri Mantra") return "gayatri";
 
-  // Fallback checks
   const nameLower = name.toLowerCase();
   if (nameLower.includes("shiva") || nameLower.includes("shivaya")) return "om_namah_shivaya";
   if (nameLower.includes("mrityunjaya")) return "mahamrityunjaya";
@@ -505,83 +258,17 @@ export default function MantraDetailView({
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
-  // State for Audio Player Demo
   const [isPlaying, setIsPlaying] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
 
-  // Get details
   const detailsKey = getMantraDetailsKey(mantra);
-  const detail = MANTRA_DETAILS[detailsKey] || MANTRA_DETAILS["om"];
+  const detail = MANTRA_DETAILS[detailsKey] || MANTRA_DETAILS.om;
 
-  // Total and streak
   const totalChants = stats?.total_chants ?? 0;
   const currentStreak = stats?.current_streak ?? 0;
-
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      stopAudio();
-    };
-  }, []);
-
-  const startAudio = () => {
-    try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      
-      const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-
-      // Create main carrier oscillator for a deep cosmic "Aum" hum
-      const osc = ctx.createOscillator();
-      // 136.1 Hz is the frequency of the Earth's year (Cosmic Octave), traditionally associated with Om/Pranava
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(136.1, ctx.currentTime);
-
-      // Create a second harmonizing oscillator for a richer singing bowl texture (third harmonic)
-      const osc2 = ctx.createOscillator();
-      osc2.type = "sine";
-      osc2.frequency.setValueAtTime(136.1 * 1.5, ctx.currentTime); // Perfect fifth harmonic (204.15 Hz)
-
-      // Create gain nodes
-      const gainNode = ctx.createGain();
-      const gainNode2 = ctx.createGain();
-      const masterGain = ctx.createGain();
-
-      gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
-      gainNode2.gain.setValueAtTime(0.15, ctx.currentTime);
-
-      // Slow fading envelope
-      masterGain.gain.setValueAtTime(0.01, ctx.currentTime);
-      masterGain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.5); // fade in
-
-      // Connect nodes
-      osc.connect(gainNode);
-      osc2.connect(gainNode2);
-      gainNode.connect(masterGain);
-      gainNode2.connect(masterGain);
-      masterGain.connect(ctx.destination);
-
-      // Start oscillators
-      osc.start();
-      osc2.start();
-
-      oscillatorRef.current = osc;
-      gainNodeRef.current = masterGain;
-      
-      // Keep track of the second osc to stop it as well
-      (osc as any).subOsc = osc2;
-
-      setIsPlaying(true);
-    } catch (err) {
-      console.error("Web Audio API not supported or failed:", err);
-    }
-  };
+  const totalSessions = stats?.total_sessions ?? 0;
 
   const stopAudio = () => {
     if (oscillatorRef.current && gainNodeRef.current && audioCtxRef.current) {
@@ -590,22 +277,25 @@ export default function MantraDetailView({
       const gain = gainNodeRef.current;
 
       try {
-        // Slow fade out
         gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
         gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-        
+
         setTimeout(() => {
           try {
             osc.stop();
             if ((osc as any).subOsc) {
               (osc as any).subOsc.stop();
             }
-          } catch (e) { /* ignore audio stop error */ }
+          } catch {
+            /* ignore */
+          }
         }, 350);
-      } catch (e) {
+      } catch {
         try {
           osc.stop();
-        } catch (x) { /* ignore fallback stop error */ }
+        } catch {
+          /* ignore */
+        }
       }
 
       oscillatorRef.current = null;
@@ -614,622 +304,299 @@ export default function MantraDetailView({
     setIsPlaying(false);
   };
 
-  const handlePlayToggle = () => {
-    if (isPlaying) {
+  useEffect(() => {
+    return () => {
       stopAudio();
-    } else {
-      startAudio();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startAudio = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(136.1, ctx.currentTime);
+
+      const osc2 = ctx.createOscillator();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(136.1 * 1.5, ctx.currentTime);
+
+      const gainNode = ctx.createGain();
+      const gainNode2 = ctx.createGain();
+      const masterGain = ctx.createGain();
+
+      gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+      gainNode2.gain.setValueAtTime(0.15, ctx.currentTime);
+      masterGain.gain.setValueAtTime(0.01, ctx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.5);
+
+      osc.connect(gainNode);
+      osc2.connect(gainNode2);
+      gainNode.connect(masterGain);
+      gainNode2.connect(masterGain);
+      masterGain.connect(ctx.destination);
+
+      osc.start();
+      osc2.start();
+
+      oscillatorRef.current = osc;
+      gainNodeRef.current = masterGain;
+      (osc as any).subOsc = osc2;
+
+      setIsPlaying(true);
+    } catch (err) {
+      console.error("Web Audio API not supported or failed:", err);
     }
+  };
+
+  const handlePlayToggle = () => {
+    if (isPlaying) stopAudio();
+    else startAudio();
   };
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: isHi ? mantra.name_hindi : mantra.name_english,
-        text: isHi 
-          ? `चेक करें: ${mantra.name_hindi} - मंत्र साधना विवरण`
-          : `Check out: ${mantra.name_english} - Mantra Sadhana Details`,
-        url: window.location.href,
-      }).catch(console.error);
+      navigator
+        .share({
+          title: isHi ? mantra.name_hindi : mantra.name_english,
+          text: isHi
+            ? `चेक करें: ${mantra.name_hindi} - मंत्र साधना विवरण`
+            : `Check out: ${mantra.name_english} - Mantra Sadhana Details`,
+          url: window.location.href,
+        })
+        .catch(console.error);
     } else {
-      // Fallback
-      alert(isHi ? "लिंक कॉपी किया गया!" : "Link copied to clipboard!");
       navigator.clipboard.writeText(window.location.href);
+      alert(isHi ? "लिंक कॉपी किया गया!" : "Link copied to clipboard!");
     }
   };
 
-  // Theme-aware tokens
-  const bg          = isDark ? "bg-gradient-to-b from-[#0a0503] via-[#0d0705] to-[#040202]" : "bg-gradient-to-b from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0]";
-  const textMain    = isDark ? "text-amber-50" : "text-stone-900";
-  const headerBg    = isDark ? "bg-[#1a1008]/95 backdrop-blur-md border-amber-900/20 shadow-[0_2px_12px_rgba(0,0,0,0.4)]" : "bg-[#FDF3E3]/95 backdrop-blur-md border-amber-300/40 shadow-[0_2px_8px_rgba(214,152,74,0.12)]";
-  const headerBtn   = isDark ? "hover:bg-amber-900/30 text-amber-200" : "hover:bg-amber-200/60 text-amber-800";
-  const headerText  = isDark ? "text-amber-100" : "text-amber-900";
-  const sectionBg   = isDark ? "border-amber-500/15 bg-gradient-to-r from-[#170e0a]/40 to-[#0d0705]/45" : "border-stone-200 bg-white shadow-md shadow-orange-100/10";
-  const avatarBg    = isDark ? "bg-[#120a06]/40 border-amber-500/20" : "bg-stone-100 border-stone-200";
-  const badgeBg     = isDark ? "bg-amber-500/[0.03] border-amber-500/10" : "bg-orange-50 border-orange-200";
-  const badgeText   = isDark ? "text-white/30" : "text-stone-500";
-  const cardBg      = isDark ? "bg-[#130d0a]/30 border-amber-500/10" : "bg-white border-stone-200";
-  const subCardBg   = isDark ? "bg-amber-950/10 border-amber-500/15 hover:border-amber-500/30" : "bg-orange-50/50 border-orange-200 hover:border-orange-300";
-  const subCardBg2  = isDark ? "bg-black/20 border-white/5 hover:border-amber-500/20" : "bg-stone-50 border-stone-200 hover:border-stone-300";
-  const subCardText = isDark ? "text-brand-cream/30" : "text-stone-400";
-  const romanText   = isDark ? "text-brand-cream/80" : "text-stone-700";
-  const checkCard   = isDark ? "bg-white/[0.01] border-white/5 hover:bg-white/[0.02]" : "bg-stone-50 border-stone-200 hover:bg-stone-100";
-  const checkIcon   = isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-orange-50 border-orange-200 text-orange-600";
-  const reasonText  = isDark ? "text-amber-100/70" : "text-stone-700";
-  const benefitIcon = isDark ? "bg-amber-500/5 border-amber-500/20 text-amber-400" : "bg-orange-50 border-orange-200 text-orange-600";
-  const stepCard    = isDark ? "bg-black/35 border-white/5 hover:border-amber-500/25" : "bg-stone-50/60 border-stone-200 hover:border-orange-300/40";
-  const stepImgBox  = isDark ? "border-amber-500/10 bg-black/40" : "border-stone-200 bg-stone-100";
-  const stepTitle   = isDark ? "text-amber-400 group-hover:text-amber-300" : "text-orange-800";
-  const stepDesc    = isDark ? "text-brand-cream/65 group-hover:text-brand-cream/85" : "text-stone-600";
-  const mistakesCard = isDark ? "bg-black/20 border-white/5" : "bg-stone-50 border-stone-200";
-  const mistakesText = isDark ? "text-brand-cream/70" : "text-stone-700";
-  const bottomText  = isDark ? "text-white/35" : "text-stone-500";
+  const whyItems = isHi ? detail.whyChantHindi : detail.whyChantEnglish;
+  const sacredText = detail.mantraTextHindi || (isHi ? mantra.name_hindi : mantra.name_english);
+  const transliteration = detail.transliteration || mantra.name_english;
 
   return (
-    <div className={`relative flex flex-col h-full overflow-hidden ${textMain}`}>
-      {/* Full-screen Absolute Background Image Layer */}
-      <div className="absolute inset-0 -z-10 select-none pointer-events-none">
-        {/* Upper Background Image */}
-        <div className="absolute top-0 left-0 right-0 h-[48vh] overflow-hidden">
-          <img 
-            src={devotionalBackground} 
-            alt="Page Background Upper" 
-            className={`w-full h-full object-cover object-center ${isDark ? "opacity-[0.38]" : "opacity-[0.04]"}`} 
-          />
-        </div>
-        
-        {/* Lower Background Image */}
-        <div className="absolute top-[48vh] bottom-0 left-0 right-0 overflow-hidden">
-          <img 
-            src={devotionalBackground1} 
-            alt="Page Background Lower" 
-            className={`w-full h-full object-cover object-center ${isDark ? "opacity-[0.28]" : "opacity-[0.03]"}`} 
-          />
-        </div>
+    <div
+      className={cn(
+        "relative flex flex-col h-full min-h-0 overflow-hidden transition-colors duration-300",
+        isDark ? "text-amber-50 bg-[#0c0a08]" : "text-[#3A2418] bg-[#FAF6EE]"
+      )}
+    >
+      {!isDark && (
+        <div
+          className="absolute inset-0 -z-20 pointer-events-none"
+          style={{
+            background: "linear-gradient(180deg, #FFFDF8 0%, #FAF6EE 45%, #F5EDE0 100%)",
+          }}
+        />
+      )}
 
-        {/* Ambient gradient overlays */}
-        <div className={`absolute inset-0 bg-gradient-to-b ${isDark ? "from-[#0a0503] via-[#0d0705] to-[#040202] opacity-80" : "from-[#fdf6ec] via-[#fef3e2] to-[#fff8f0] opacity-90"}`} />
-        <div className={`absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(217,119,6,${isDark ? "0.08" : "0.04"}),transparent)]`} />
-      </div>
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-[#E8D8C4] dark:border-stone-800">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center justify-center h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 active:scale-95 transition-all shrink-0"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
 
-      {/* ─── HEADER ───────────────────────────────────────────────── */}
-      <div className={`sticky top-0 z-40 border-b px-4 py-3.5 flex items-center justify-between w-full ${headerBg}`}>
-        <button
-          onClick={onBack}
-          className={`flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all ${headerBtn}`}
-          aria-label="Back"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        <h1 className={`text-base md:text-lg font-bold font-display truncate max-w-[60%] ${headerText}`}>
-          {isHi ? mantra.name_hindi : mantra.name_english}
-        </h1>
-
-        <button
-          onClick={handleShare}
-          className={`flex h-10 w-10 items-center justify-center rounded-full active:scale-95 transition-all ${headerBtn}`}
-          aria-label="Share"
-        >
-          <Share2 className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* ─── SCROLLABLE CONTENT ────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto max-w-4xl px-4 pt-6 pb-4 space-y-6">
-
-        {/* ─── DEITY COVER HEADER SECTION ─────────────────────────── */}
-        <section className={`relative overflow-hidden rounded-[2.5rem] border backdrop-blur-md p-5 sm:p-6 shadow-2xl ${sectionBg}`}>
-          <div className="grid grid-cols-12 gap-6 items-center">
-            {/* Left: Rounded Deity Image */}
-            <div className="col-span-12 sm:col-span-5 flex justify-center">
-              <div className={`relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border shadow-[0_10px_35px_rgba(0,0,0,0.5)] group ${isDark ? "border-amber-500/20 shadow-black" : "border-stone-200 shadow-orange-100"}`}>
-                {image ? (
-                  <img
-                    src={image}
-                    alt=""
-                    className="h-full w-full object-cover object-center group-hover:scale-105 transition duration-700"
-                  />
-                ) : (
-                  <div className={`h-full w-full flex items-center justify-center ${avatarBg}`}>
-                    <span className="text-5xl text-orange-400 font-display">ॐ</span>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Right: Mantra Titles & Badges */}
-            <div className="col-span-12 sm:col-span-7 flex flex-col items-center sm:items-start text-center sm:text-left space-y-3 sm:space-y-4">
-              <div>
-                <h2 className={`text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-wide leading-tight ${isDark ? "text-white" : "text-stone-900"}`}>
-                  {isHi ? mantra.name_hindi : mantra.name_english}
-                </h2>
-                <p className={`text-[11px] sm:text-xs font-bold uppercase tracking-wider mt-1 ${isDark ? "text-amber-400/80" : "text-amber-600"}`}>
-                  {isHi ? `← ${mantra.name_english} →` : `← ${mantra.name_english} →`}
-                </p>
-                <p className={`text-xs font-medium mt-1 ${isDark ? "text-white/40" : "text-stone-500"}`}>
-                  {isHi ? "मंत्र साधना" : "Mantra Sadhana"}
-                </p>
-              </div>
-
-              {/* Stats Badges */}
-              <div className="flex items-center gap-3 pt-1">
-                {/* Total Jap */}
-                <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 ${badgeBg}`}>
-                  <Activity className="w-4 h-4 text-amber-500 shrink-0" />
-                  <div className="text-left">
-                    <p className={`text-xs sm:text-sm font-bold leading-none ${isDark ? "text-white" : "text-stone-900"}`}>
-                      {totalChants.toLocaleString()}
-                    </p>
-                    <p className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide mt-1 ${badgeText}`}>
-                      {isHi ? "कुल जाप" : "Total Jap"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Day Streak */}
-                <div className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 ${badgeBg}`}>
-                  <Flame className="w-4 h-4 text-amber-500 shrink-0" />
-                  <div className="text-left">
-                    <p className={`text-xs sm:text-sm font-bold leading-none ${isDark ? "text-white" : "text-stone-900"}`}>
-                      {currentStreak}
-                    </p>
-                    <p className={`text-[8px] sm:text-[9px] font-bold uppercase tracking-wide mt-1 ${badgeText}`}>
-                      {isHi ? "सिलसिला" : "Day Streak"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex-1 min-w-0 flex justify-center items-center px-2">
+            <h1 className="text-base sm:text-lg font-bold font-display tracking-tight text-[#651317] dark:text-amber-100 truncate text-center leading-normal py-1">
+              {isHi ? mantra.name_hindi : mantra.name_english}
+            </h1>
           </div>
-        </section>
 
-        {/* ─── CARD 0: MANTRA TEXT ────────────────────────────────── */}
-        <section className={`backdrop-blur-md border rounded-[2rem] p-6 md:p-8 relative overflow-hidden shadow-lg text-center ${cardBg}`}>
-          {/* Background Mandalas */}
-          <MandalaBg className="absolute -left-16 -bottom-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
-          <MandalaBg className="absolute -right-16 -top-16 w-40 h-40 text-amber-500/[0.02] pointer-events-none" />
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center justify-center h-9 w-9 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 active:scale-95 transition-all shrink-0"
+            aria-label="Share"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
 
-          <div className="flex flex-col items-center space-y-5 relative z-10">
-            <h3 className={`text-xs md:text-sm font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <span className="text-xl font-display text-amber-500 leading-none">🕉️</span>
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6 mt-4 md:mt-5 pb-6 md:pb-8 space-y-4 md:space-y-5">
+          {/* Hero — Compact balanced height matching MantraJapHome */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="relative min-h-[190px] sm:min-h-[220px] md:min-h-[240px] max-h-[260px] sm:max-h-[280px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 py-5 sm:py-6 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+          >
+            <div className="absolute inset-0 z-0">
+              {image ? (
+                <img
+                  src={image}
+                  alt=""
+                  className="w-full h-full object-cover object-[center_25%] md:object-[center_30%]"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#2a1210] flex items-center justify-center">
+                  <span className="text-6xl md:text-7xl font-display text-[#F5C15C]/80">ॐ</span>
+                </div>
+              )}
+              {/* Clean gradient scrim for great text contrast */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
+            </div>
+
+            <div className="relative z-10 max-w-xl md:max-w-2xl text-left">
+              <p className="text-[#F5C15C] font-bold tracking-[0.18em] text-[10.5px] sm:text-xs uppercase mb-1">
+                {isHi ? "मंत्र साधना" : "Mantra Sadhana"}
+              </p>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white leading-tight drop-shadow-sm">
+                {isHi ? mantra.name_hindi : mantra.name_english}
+              </h2>
+              <p className="text-white/85 text-xs sm:text-sm mt-0.5 font-medium drop-shadow-xs">
+                {isHi ? mantra.name_english : mantra.name_hindi}
+              </p>
+              <p className="mt-2 text-xs text-white/80 font-medium tabular-nums flex flex-wrap items-center gap-x-0 gap-y-0.5">
+                <span>
+                  <span className="text-[#F5C15C] font-bold">{totalChants.toLocaleString()}</span>
+                  {isHi ? " कुल जाप" : " total"}
+                </span>
+                <span className="mx-2 text-white/35">·</span>
+                <span>
+                  <span className="text-[#F5C15C] font-bold">{currentStreak}</span>
+                  {isHi ? " दिन स्ट्रीक" : "-day streak"}
+                </span>
+                <span className="mx-2 text-white/35">·</span>
+                <span>
+                  <span className="text-[#F5C15C] font-bold">{totalSessions}</span>
+                  {isHi ? " सत्र" : " sessions"}
+                </span>
+              </p>
+            </div>
+          </motion.section>
+
+          {/* Sacred text */}
+          <section className="bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-5 sm:p-6 md:p-8 text-center space-y-3 md:space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
               {isHi ? "मूल मंत्र एवं लिप्यांतरण" : "Sacred Text & Transliteration"}
             </h3>
-
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              {/* Devanagari Card */}
-              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group transition-all duration-300 ${subCardBg}`}>
-                <div className={`absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider ${isDark ? "text-amber-500/50" : "text-orange-600/60"}`}>
-                  {isHi ? "देवनागरी (संस्कृत)" : "Devanagari (Sanskrit)"}
-                </div>
-                <p className={`font-serif text-2xl md:text-3xl lg:text-4xl font-bold leading-normal tracking-wide whitespace-pre-line mt-3 select-all ${isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-orange-950"}`}>
-                  {detail.mantraTextHindi || mantra.full_text_hindi}
-                </p>
-              </div>
-
-              {/* Transliteration Card */}
-              <div className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-center items-center relative group transition-all duration-300 ${subCardBg2}`}>
-                <div className={`absolute top-2 left-3 text-[9px] font-black uppercase tracking-wider ${subCardText}`}>
-                  {isHi ? "रोमन लिप्यांतरण (रोमन लिपि)" : "Roman Transliteration (English)"}
-                </div>
-                <p className={`text-base md:text-lg tracking-wider font-sans italic whitespace-pre-line mt-3 select-all ${romanText}`}>
-                  {detail.transliteration || mantra.transliteration}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── CARD 1: MEANING OF MANTRA ─────────────────────────── */}
-        <section className={`backdrop-blur-md border rounded-[2rem] p-6 relative overflow-hidden shadow-lg ${cardBg}`}>
-          {/* Background Mandalas */}
-          <MandalaBg className="absolute -left-12 -top-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
-          <MandalaBg className="absolute -right-12 -bottom-12 w-36 h-36 text-amber-500/[0.02] pointer-events-none" />
-
-          <div className="flex flex-col items-center text-center space-y-4 relative z-10">
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <BookOpen className="w-4 h-4 text-amber-500" />
-              {isHi ? "इस मंत्र का अर्थ" : "Meaning of this Mantra"}
-            </h3>
-            
-            <p className={`font-serif text-lg md:text-xl font-semibold max-w-2xl leading-relaxed italic px-4 ${isDark ? "text-white" : "text-stone-850"}`}>
-              “ {isHi 
-                ? (mantra.id.startsWith("custom-") ? "यह आपका स्वयं जोड़ा गया मंत्र है। श्रद्धा भाव से इसका जाप करें और अपने मन को परमात्मा में विलीन करें।" : detail.meaningHindi) 
-                : (mantra.id.startsWith("custom-") ? "This is your custom added mantra. Chant with devotion and merge your mind in divine consciousness." : detail.meaningEnglish)} ”
+            <p className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#3A2418] dark:text-amber-50 leading-relaxed whitespace-pre-line">
+              {sacredText}
             </p>
-          </div>
-        </section>
-
-        {/* ─── CARD 2: WHY CHANT THIS MANTRA ──────────────────────── */}
-        <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg ${cardBg}`}>
-          <div className="space-y-5">
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <Flower2 className="w-4.5 h-4.5 text-amber-500" />
-              {isHi ? "क्यों करें इस मंत्र का जाप?" : "Why Chant this Mantra?"}
-            </h3>
-
-            {/* Grid of Reasons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-              {(isHi ? detail.whyChantHindi : detail.whyChantEnglish).map((reason, idx) => (
-                <div
-                  key={idx}
-                  className={`flex items-start gap-3 border rounded-2xl p-4 transition-all ${checkCard}`}
-                >
-                  <div className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full border mt-0.5 shadow-sm ${checkIcon}`}>
-                    <Check className="w-3.5 h-3.5 stroke-[3px]" />
-                  </div>
-                  <span className={`text-sm font-medium leading-snug ${reasonText}`}>
-                    {reason}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ─── ROW: BENEFITS AND AUDIO LISTEN ────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-          {/* Card 3: Benefits (इस मंत्र के लाभ) */}
-          <section className={`backdrop-blur-md border rounded-[2rem] p-6 flex flex-col justify-between shadow-lg ${cardBg}`}>
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <Sparkles className="w-4.5 h-4.5 text-amber-500" />
-              {isHi ? "इस मंत्र के लाभ" : "Benefits of this Mantra"}
-            </h3>
-
-            <div className="grid grid-cols-2 gap-6 max-w-xs mx-auto w-full">
-              {/* Yogi / Mental Peace */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
-                  <YogiIcon className="w-7 h-7" />
-                </div>
-                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
-                  {isHi ? detail.benefitsHindi[0] : detail.benefitsEnglish[0]}
-                </span>
-              </div>
-
-              {/* Heart / Emotional Balance */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
-                  <HeartIcon className="w-6 h-6" />
-                </div>
-                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
-                  {isHi ? detail.benefitsHindi[1] : detail.benefitsEnglish[1]}
-                </span>
-              </div>
-
-              {/* Lotus / Spiritual Dev */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
-                  <Flower2 className="w-7 h-7" />
-                </div>
-                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
-                  {isHi ? detail.benefitsHindi[2] : detail.benefitsEnglish[2]}
-                </span>
-              </div>
-
-              {/* Shield / Protection */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-inner transition-all ${benefitIcon}`}>
-                  <ShieldCrossIcon className="w-6 h-6" />
-                </div>
-                <span className={`text-xs font-bold ${isDark ? "text-white/80" : "text-stone-850"}`}>
-                  {isHi ? detail.benefitsHindi[3] : detail.benefitsEnglish[3]}
-                </span>
-              </div>
-            </div>
+            <p className="text-sm md:text-base font-medium text-[#786252] dark:text-stone-400 italic whitespace-pre-line">
+              {transliteration}
+            </p>
+            <p className="text-sm md:text-[15px] leading-relaxed text-[#3A2418]/90 dark:text-stone-300 max-w-3xl mx-auto pt-1">
+              {isHi ? detail.meaningHindi : detail.meaningEnglish}
+            </p>
           </section>
 
-          {/* Card 4: Audio listen (मंत्र सुनें) */}
-          <section className={`backdrop-blur-md border rounded-[2rem] p-6 flex flex-col justify-between items-center shadow-lg text-center ${cardBg}`}>
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <Headphones className="w-4 h-4 text-amber-500" />
-              {isHi ? "मंत्र सुनें" : "Listen to Mantra"}
-            </h3>
-            <p className={`text-[11px] sm:text-xs mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
-              {isHi ? "शुद्ध उच्चारण सुनें" : "Listen to pure pronunciation"}
-            </p>
-
-            {/* Audio Wave & Play Button */}
-            <div className="flex items-center justify-center gap-6 my-4 w-full px-4">
-              {/* Left Wave */}
-              <div className="flex items-end gap-1 h-8 w-14 overflow-hidden">
-                {[0.4, 0.7, 0.3, 0.9, 0.5, 0.8, 0.2].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    animate={isPlaying ? { height: ["10%", "90%", "10%"] } : { height: `${h * 100}%` }}
-                    transition={isPlaying ? { duration: 1.2, repeat: Infinity, delay: i * 0.15 } : {}}
-                    className="w-1.5 rounded-full bg-amber-500/20"
-                    style={{ height: `${h * 100}%` }}
-                  />
+          {/* Why + Listen — stacked mobile, side-by-side desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 items-stretch">
+            <section className="md:col-span-3 bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-5 sm:p-6 md:p-7 space-y-4 h-full">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
+                {isHi ? "क्यों जप करें" : "Why Chant"}
+              </h3>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 md:gap-3.5">
+                {whyItems.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FAF0E4] dark:bg-amber-500/15 border border-[#E8D8C4] dark:border-amber-500/30 text-[#651317] dark:text-amber-300">
+                      <Check className="w-3 h-3 stroke-[3px]" />
+                    </span>
+                    <span className="text-sm font-medium leading-relaxed text-[#3A2418] dark:text-stone-200">
+                      {item}
+                    </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+            </section>
 
-              {/* Play / Pause Trigger */}
+            <section className="md:col-span-2 bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-5 sm:p-6 md:p-7 flex flex-col items-center justify-center text-center space-y-3 min-h-[180px] md:min-h-0 h-full">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300 flex items-center gap-2">
+                <Headphones className="w-3.5 h-3.5" />
+                {isHi ? "मंत्र सुनें" : "Listen to Mantra"}
+              </h3>
+              <p className="text-xs text-[#786252] dark:text-stone-400 font-medium">
+                {isHi ? "शुद्ध उच्चारण सुनें" : "Listen to pure pronunciation"}
+              </p>
               <button
+                type="button"
                 onClick={handlePlayToggle}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] active:scale-95 transition-all"
+                className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white shadow-[0_8px_24px_rgba(101,19,23,0.35)] active:scale-95 transition-all"
                 aria-label={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? (
-                  <Pause className="w-7 h-7 fill-current" />
+                  <Pause className="w-6 h-6 fill-current" />
                 ) : (
-                  <Play className="w-7 h-7 fill-current translate-x-[1px]" />
+                  <Play className="w-6 h-6 fill-current translate-x-[1px]" />
                 )}
               </button>
-
-              {/* Right Wave */}
-              <div className="flex items-end gap-1 h-8 w-14 overflow-hidden">
-                {[0.2, 0.8, 0.5, 0.9, 0.3, 0.7, 0.4].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    animate={isPlaying ? { height: ["10%", "90%", "10%"] } : { height: `${h * 100}%` }}
-                    transition={isPlaying ? { duration: 1.2, repeat: Infinity, delay: i * 0.12 } : {}}
-                    className="w-1.5 rounded-full bg-amber-500/20"
-                    style={{ height: `${h * 100}%` }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <span className="text-xs font-bold text-amber-500/70 tracking-widest mt-1">
-              {isHi ? `← ${mantra.name_hindi} →` : `← ${mantra.name_english} →`}
-            </span>
-          </section>
-        </div>
-
-        {/* ─── ROW: BEST TIMES AND RECOMMENDED COUNTS ────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-          {/* Card 5: Best Times (सर्वश्रेष्ठ समय) */}
-          <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg flex flex-col justify-between ${cardBg}`}>
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <Clock className="w-4 h-4 text-amber-500" />
-              {isHi ? "सर्वश्रेष्ठ समय" : "Best Time to Chant"}
-            </h3>
-
-            <div className="grid grid-cols-3 gap-3 w-full">
-              {/* Brahm Muhurat */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400">
-                  <Sun className="w-5.5 h-5.5" />
-                </div>
-                <div>
-                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
-                    {isHi ? "ब्रह्म मुहूर्त" : "Brahm Muhurat"}
-                  </p>
-                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
-                    4:00 AM - 6:00 AM
-                  </p>
-                  <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
-                    {isHi ? "सबसे उत्तम" : "Best"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Sunrise */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400">
-                  <Sun className="w-5.5 h-5.5 animate-pulse" />
-                </div>
-                <div>
-                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
-                    {isHi ? "सूर्योदय" : "Sunrise"}
-                  </p>
-                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
-                    6:00 AM - 8:00 AM
-                  </p>
-                  <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
-                    {isHi ? "बहुत शुभ" : "Auspicious"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Sunset */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/5 border border-amber-500/20 text-amber-400">
-                  <Moon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className={`text-[11px] font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
-                    {isHi ? "संध्या समय" : "Sunset"}
-                  </p>
-                  <p className={`text-[10px] mt-0.5 leading-none ${isDark ? "text-white/50" : "text-stone-500"}`}>
-                    5:00 PM - 9:00 PM
-                  </p>
-                  <span className="inline-block text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full px-2 py-0.5 mt-1 font-bold">
-                    {isHi ? "शुभ समय" : "Good Time"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Card 6: Recommended Chants (अनुशंसित जप संख्या) */}
-          <section className={`backdrop-blur-md border rounded-[2rem] p-6 shadow-lg flex flex-col justify-between ${cardBg}`}>
-            <h3 className={`text-sm md:text-base font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-              <Compass className="w-4.5 h-4.5 text-amber-500" />
-              {isHi ? "अनुशंसित जप संख्या" : "Recommended Chants"}
-            </h3>
-
-            <div className={`grid grid-cols-2 gap-4 divide-x w-full items-center ${isDark ? "divide-white/5" : "divide-stone-200"}`}>
-              {/* Beginner */}
-              <div className="flex flex-col items-center text-center space-y-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/5 border border-amber-500/20 text-amber-500">
-                  <span className="text-xs font-bold font-display">108</span>
-                </div>
-                <div>
-                  <p className={`text-xs font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
-                    {isHi ? "Beginner" : "Beginner"}
-                  </p>
-                  <p className="text-lg font-bold text-amber-500 mt-1 leading-none">
-                    {detail.recommendedCounts.beginner}
-                  </p>
-                  <p className={`text-[10px] mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
-                    {isHi ? detail.recommendedCounts.beginnerTimeHindi : detail.recommendedCounts.beginnerTimeEnglish}
-                  </p>
-                </div>
-              </div>
-
-              {/* Advanced */}
-              <div className="flex flex-col items-center text-center space-y-2 pl-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/5 border border-amber-500/20 text-amber-500">
-                  <span className="text-xs font-bold font-display">1008</span>
-                </div>
-                <div>
-                  <p className={`text-xs font-bold ${isDark ? "text-white" : "text-stone-900"}`}>
-                    {isHi ? "Advanced" : "Advanced"}
-                  </p>
-                  <p className="text-lg font-bold text-amber-500 mt-1 leading-none">
-                    {detail.recommendedCounts.advanced}
-                  </p>
-                  <p className={`text-[10px] mt-1 font-medium ${isDark ? "text-white/40" : "text-stone-500"}`}>
-                    {isHi ? detail.recommendedCounts.advancedTimeHindi : detail.recommendedCounts.advancedTimeEnglish}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* ─── CARD 7: HOW TO JAPA STEPS FLOW ──────────────────────── */}
-        <section className={`relative overflow-hidden border rounded-[2.5rem] p-6 md:p-8 shadow-2xl ${isDark ? "bg-[#130d0a]/30 border-amber-500/15" : "bg-white border-stone-200"}`}>
-          
-          {/* Section Background Image Layer - devotional_background(1).webp */}
-          <div className="absolute inset-0 z-0 select-none pointer-events-none">
-            <img 
-              src={devotionalBackground1} 
-              alt="Practice Background" 
-              className={`w-full h-full object-cover object-center ${isDark ? "opacity-30" : "opacity-[0.03]"}`} 
-            />
-            {/* Ambient filter to maintain high legibility */}
-            <div className={`absolute inset-0 ${isDark ? "bg-[#0c0705]/85" : "bg-white/90"}`} />
+              <span className="text-xs font-semibold text-[#786252] dark:text-stone-400">
+                {isHi ? mantra.name_hindi : mantra.name_english}
+              </span>
+            </section>
           </div>
 
-          <div className="relative z-10 space-y-8">
-            {/* Guide Header */}
-            <div className="text-center space-y-2.5">
-              <h3 className={`text-2xl md:text-3xl font-display font-bold flex items-center justify-center gap-3 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-                <span className="text-amber-600/60 font-light">✦</span>
+          {/* How to practice */}
+          <section className="bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-5 sm:p-6 md:p-8 space-y-5 md:space-y-6">
+            <div className="text-center space-y-1">
+              <h3 className="text-base sm:text-lg md:text-xl font-display font-bold text-[#651317] dark:text-amber-300">
                 {isHi ? "अभ्यास कैसे करें" : "How To Practice"}
-                <span className="text-amber-600/60 font-light">✦</span>
               </h3>
-              <p className={`text-xs md:text-sm font-medium tracking-wider flex items-center justify-center gap-2 uppercase ${isDark ? "text-brand-cream/50" : "text-stone-500"}`}>
-                <span className="text-amber-500/40">◆</span>
-                {isHi ? "सर्वश्रेष्ठ अनुभव के लिए इन चरणों का पालन करें" : "Follow these steps for the best experience"}
-                <span className="text-amber-500/40">◆</span>
+              <p className="text-xs md:text-sm text-[#786252] dark:text-stone-400 font-medium">
+                {isHi
+                  ? "सर्वश्रेष्ठ अनुभव के लिए इन चरणों का पालन करें"
+                  : "Follow these steps for the best experience"}
               </p>
             </div>
 
-            {/* Steps Container */}
-            <div className="grid grid-cols-1 gap-5">
+            <ol className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
               {japaStepsData.map((step) => (
-                <div
-                  key={step.num}
-                  className={`border rounded-2xl p-4 md:p-5 flex items-center gap-5 transition-all duration-300 group text-left ${stepCard}`}
-                >
-                  {/* Left: Illustration */}
-                  <div className={`shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border flex items-center justify-center transition-colors relative ${stepImgBox}`}>
-                    {step.isSvg ? (
-                      <div className="w-full h-full flex items-center justify-center bg-teal-950/10 relative rounded-xl">
-                        <div className="absolute inset-0 bg-teal-500/[0.03] rounded-xl" />
-                        <svg className="w-12 h-12 text-teal-400/80 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M2 8h10a4 4 0 0 1 0 8H8" strokeLinecap="round" />
-                          <path d="M4 12h14a3 3 0 0 0 0-6H14" strokeLinecap="round" />
-                          <path d="M1 16h18a2 2 0 0 0 0-4H16" strokeLinecap="round" />
-                        </svg>
-                      </div>
-                    ) : (
-                      <img src={step.img} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-                  </div>
-
-                  {/* Right: Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="w-6 h-6 rounded-full border border-amber-500/30 flex items-center justify-center text-amber-500 font-display font-bold text-xs shrink-0 bg-amber-500/5">
-                        {step.num}
-                      </span>
-                      <h4 className={`font-display font-bold text-base md:text-lg transition-colors ${stepTitle}`}>
-                        {isHi ? step.titleHi : step.titleEn}
-                      </h4>
-                    </div>
-                    <p className={`text-sm transition-colors ${stepDesc}`}>
+                <li key={step.num} className="flex items-start gap-3.5 text-left">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E8D8C4] dark:border-amber-500/30 bg-[#FAF0E4] dark:bg-amber-500/10 text-[#651317] dark:text-amber-300 font-display font-bold text-xs">
+                    {step.num}
+                  </span>
+                  <div className="min-w-0 pt-0.5">
+                    <h4 className="font-display font-bold text-sm sm:text-base text-[#3A2418] dark:text-amber-50">
+                      {isHi ? step.titleHi : step.titleEn}
+                    </h4>
+                    <p className="text-sm mt-0.5 leading-relaxed text-[#786252] dark:text-stone-400">
                       {isHi ? step.descHi : step.descEn}
                     </p>
-                    {step.hasAudio && (
-                      <button 
-                        onClick={handlePlayToggle}
-                        className="mt-2 inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors select-none"
-                      >
-                        {isPlaying ? (
-                          <>
-                            <span className="relative flex h-2 w-2 mr-1">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                              <span className="relative rounded-full h-2 w-2 bg-amber-500"></span>
-                            </span>
-                            {isHi ? "रोकें" : "Stop Pronunciation"}
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3 h-3 fill-current" />
-                            {isHi ? "उच्चारण सुनें" : "Play Pronunciation"}
-                          </>
-                        )}
-                      </button>
-                    )}
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ol>
 
-            {/* ─── COMMON MISTAKES SECTION ──────────────────────── */}
-            <div className={`border-t pt-8 mt-4 ${isDark ? "border-amber-500/10" : "border-stone-200"}`}>
-              <h4 className={`text-center font-display font-bold text-lg md:text-xl flex items-center justify-center gap-3 mb-6 ${isDark ? "text-amber-400" : "text-orange-700"}`}>
-                <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
+            <div className="border-t border-[#E8D8C4]/80 dark:border-stone-800 pt-5 md:pt-6 space-y-3">
+              <h4 className="text-sm md:text-base font-display font-bold text-[#651317] dark:text-amber-300">
                 {isHi ? "सामान्य गलतियाँ" : "Common Mistakes"}
-                <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
               </h4>
-
-              <div className={`flex flex-col md:flex-row items-center justify-between gap-6 border rounded-2xl p-5 md:p-6 ${mistakesCard}`}>
-                {/* Left side: list of mistakes */}
-                <div className="flex-1 space-y-3 w-full text-left">
-                  {[
-                    { hi: "बहुत तेज़ी से जप करना", en: "Chanting too fast" },
-                    { hi: "काम या अन्य बातों के बारे में सोचना", en: "Thinking about work or other things" },
-                    { hi: "जप करते समय फोन का उपयोग करना", en: "Using phone while chanting" },
-                    { hi: "बिना समझे यंत्रवत् जप करना", en: "Chanting without understanding" }
-                  ].map((mistake, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0 text-xs font-bold mt-0.5">
-                        ✕
-                      </span>
-                      <p className={`text-sm font-medium ${mistakesText}`}>
-                        {isHi ? mistake.hi : mistake.en}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Right side: incense smoke illustration */}
-                <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
-                  {/* Rising smoke wisps */}
-                  <div className="absolute bottom-[3.5rem] w-8 h-20 overflow-visible pointer-events-none flex justify-center z-10">
-                    <div className="smoke-wisp absolute bottom-0 w-2 h-16" style={{ animationDelay: '0s' }} />
-                    <div className="smoke-wisp absolute bottom-0 w-3 h-14" style={{ animationDelay: '1.5s' }} />
-                    <div className="smoke-wisp absolute bottom-0 w-1.5 h-18" style={{ animationDelay: '3s' }} />
-                  </div>
-                  {/* Brass Diya Image */}
-                  <img 
-                    src="/images/diya-brass.png" 
-                    alt="Incense burner" 
-                    className="w-24 h-24 object-contain filter drop-shadow-[0_0_12px_rgba(245,158,11,0.25)] relative z-20" 
-                  />
-                </div>
-              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-3">
+                {commonMistakes.map((mistake, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 text-[#651317] dark:text-amber-400 text-xs font-bold">✕</span>
+                    <span className="text-sm font-medium text-[#3A2418] dark:text-stone-300">
+                      {isHi ? mistake.hi : mistake.en}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
+          </section>
+        </div>
+      </div>
 
+<<<<<<< HEAD
           </div>
         </section>
 
@@ -1257,8 +624,21 @@ export default function MantraDetailView({
           <ShieldCrossIcon className="w-3.5 h-3.5 text-amber-500/70" />
           {isHi ? "आपकी साधना सुरक्षित और निजी है" : "Your Sadhana is Secure & Private"}
         </p>
+=======
+      {/* Sticky CTA */}
+      <section className="shrink-0 z-30 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6 pt-3 pb-4 md:pt-4 md:pb-5">
+          <button
+            type="button"
+            onClick={onStartJapa}
+            className="flex w-full md:max-w-md md:mx-auto items-center justify-center gap-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-8 py-3.5 text-sm sm:text-base active:scale-95 transition-all shadow-[0_8px_24px_rgba(101,19,23,0.35)]"
+          >
+            <span className="font-display text-lg leading-none">ॐ</span>
+            <span>{isHi ? "जप प्रारंभ करें" : "Start Japa"}</span>
+          </button>
+        </div>
+>>>>>>> 204ef2c9e68891bf2462ec61d56da7fe76d72670
       </section>
-
     </div>
   );
 }

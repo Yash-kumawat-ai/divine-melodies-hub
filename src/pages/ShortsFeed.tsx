@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Loader2, Film, ArrowLeft } from 'lucide-react';
@@ -8,9 +9,11 @@ import { toast } from 'sonner';
 import ShortsPlayer from '@/components/shorts/ShortsPlayer';
 import { cn } from '@/lib/utils';
 import { SEO } from '@/components/SEO';
+import omWhiteSvg from '@/pages/images/svg/om white.svg';
 
 interface ShortItem {
   id: string;
+  original_id?: string;
   video_id: string;
   channel_id: string;
   title: string;
@@ -25,6 +28,7 @@ interface ShortItem {
 
 export default function ShortsFeed() {
   const { user } = useAuth();
+  const { language } = useLanguage();
   const { videoId } = useParams<{ videoId?: string }>();
   const navigate = useNavigate();
   
@@ -41,8 +45,9 @@ export default function ShortsFeed() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(0);
+  const isWheelScrolling = useRef(false);
 
-  // Callback ref: fires as soon as the scroll div mounts (works after loading state resolves)
+  // Callback ref: fires as soon as the scroll div mounts
   const scrollRefCallback = useCallback((node: HTMLDivElement | null) => {
     (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
     if (!node) return;
@@ -50,7 +55,6 @@ export default function ShortsFeed() {
       setContainerHeight(entry.contentRect.height);
     });
     ro.observe(node);
-    // Initial measurement
     setContainerHeight(node.clientHeight);
   }, []);
 
@@ -58,7 +62,6 @@ export default function ShortsFeed() {
   const loadShorts = useCallback(async (catFilter = selectedCategory) => {
     setLoading(true);
     try {
-      // Query shorts from active channels
       let query = supabase
         .from('shorts')
         .select('id, video_id, title, description, thumbnail_url, whitelisted_channels!inner(channel_name, status, handle, category)')
@@ -78,8 +81,8 @@ export default function ShortsFeed() {
       if (error) throw error;
 
       const formattedShorts = (data || []).map((s: any) => ({
-        id: s.id, // Database UUID (used for internal relationships)
-        video_id: s.video_id, // YouTube Video ID (used for player embed)
+        id: s.id,
+        video_id: s.video_id,
         channel_id: s.channel_id,
         title: s.title,
         description: s.description,
@@ -92,10 +95,6 @@ export default function ShortsFeed() {
       }));
 
       setShorts(formattedShorts);
-      setActiveIndex(0);
-      if (containerRef.current) {
-        containerRef.current.scrollTop = 0;
-      }
 
       // Fetch interactions (Likes & Comments Count) using short_id
       const { data: counts, error: countsError } = await supabase
@@ -120,7 +119,7 @@ export default function ShortsFeed() {
       setLikesCountMap(likesMap);
       setCommentsCountMap(commentsMap);
 
-      // Fetch current user's liked and saved states using short_id
+      // Fetch current user's liked and saved states
       if (user) {
         const { data: userInteracts, error: userInteractsError } = await supabase
           .from('shorts_interactions')
@@ -156,16 +155,126 @@ export default function ShortsFeed() {
     loadShorts();
   }, [loadShorts]);
 
+  // Resume last watched short position on feed load (Instant positioning, no fast-scrolling animation)
+  useEffect(() => {
+    if (shorts.length === 0 || videoId) return;
+
+    let targetTarget = 0;
+    const lastWatchedVid = localStorage.getItem('raghavam_shorts_last_watched_id');
+
+    if (lastWatchedVid) {
+      const foundIdx = shorts.findIndex(s => s.video_id === lastWatchedVid);
+      if (foundIdx !== -1) {
+        targetTarget = Math.min(foundIdx + 1, shorts.length);
+      }
+    }
+
+    setActiveIndex(targetTarget);
+
+    const applyInstantScroll = () => {
+      if (containerRef.current) {
+        const h = containerRef.current.clientHeight || window.innerHeight;
+        containerRef.current.scrollTo({
+          top: targetTarget * h,
+          behavior: 'instant' as ScrollBehavior,
+        });
+      }
+    };
+
+    // Apply immediately and on next frame to ensure zero flash/scroll animation
+    applyInstantScroll();
+    requestAnimationFrame(applyInstantScroll);
+  }, [shorts, videoId]);
+
+  // Save last watched position to localStorage when activeIndex changes
+  useEffect(() => {
+    if (shorts.length > 0 && activeIndex < shorts.length) {
+      const currentShort = shorts[activeIndex];
+      if (currentShort?.video_id) {
+        localStorage.setItem('raghavam_shorts_last_watched_id', currentShort.video_id);
+      }
+    }
+  }, [activeIndex, shorts]);
+
+  // Unique Shorts array (no artificial infinite repetition of identical shorts)
+  const displayShorts = shorts;
+
   const handleCategoryChange = (cat: string) => {
     setSelectedCategory(cat);
     loadShorts(cat);
   };
 
-  // Scroll handler to snap active index
+  const isProgrammaticScrolling = useRef(false);
+  const scrollLockTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Instant restart to Short #1 (no fast upward scroll visual)
+  const jumpToStart = useCallback(() => {
+    isProgrammaticScrolling.current = true;
+    setActiveIndex(0);
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: 0,
+        behavior: 'instant' as ScrollBehavior,
+      });
+    }
+    setTimeout(() => {
+      isProgrammaticScrolling.current = false;
+    }, 100);
+  }, []);
+
+  const scrollToIndex = useCallback((targetIdx: number) => {
+    const maxLen = displayShorts.length;
+
+    // Seamless loop: scrolling down past end slide loops back to Short 1
+    if (targetIdx > maxLen) {
+      jumpToStart();
+      return;
+    }
+
+    const idx = Math.max(0, Math.min(targetIdx, maxLen));
+    isProgrammaticScrolling.current = true;
+    setActiveIndex(idx);
+
+    if (containerRef.current) {
+      const h = containerRef.current.clientHeight || window.innerHeight;
+      containerRef.current.scrollTo({
+        top: idx * h,
+        behavior: 'smooth',
+      });
+    }
+
+    if (scrollLockTimeoutRef.current) clearTimeout(scrollLockTimeoutRef.current);
+    scrollLockTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrolling.current = false;
+    }, 420);
+  }, [displayShorts.length, jumpToStart]);
+
+  // Strict 1-short scroll lock for wheel/trackpad gestures
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    if (isWheelScrolling.current || isProgrammaticScrolling.current) return;
+    if (Math.abs(e.deltaY) < 15) return;
+
+    isWheelScrolling.current = true;
+    setTimeout(() => {
+      isWheelScrolling.current = false;
+    }, 380);
+
+    if (e.deltaY > 0) {
+      scrollToIndex(activeIndex + 1);
+    } else if (e.deltaY < 0) {
+      if (activeIndex > 0) {
+        scrollToIndex(activeIndex - 1);
+      }
+    }
+  };
+
+  // Scroll handler to snap active index (locked during programmatic scroll to prevent double jumps)
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (isProgrammaticScrolling.current) return;
     const container = e.currentTarget;
-    const index = Math.round(container.scrollTop / container.clientHeight);
-    if (index !== activeIndex && index >= 0 && index < shorts.length) {
+    const h = container.clientHeight || 1;
+    const index = Math.round(container.scrollTop / h);
+    if (index !== activeIndex && index >= 0 && index <= displayShorts.length) {
       setActiveIndex(index);
     }
   };
@@ -279,12 +388,14 @@ export default function ShortsFeed() {
       navigate('/shorts');
     } else if (selectedCategory !== 'all') {
       handleCategoryChange('all');
-    } else {
+    } else if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
       navigate(-1);
+    } else {
+      navigate('/');
     }
   };
 
-  const activeShort = shorts[activeIndex];
+  const activeShort = displayShorts[activeIndex];
 
   return (
     <div className="relative w-full flex-1 flex flex-col bg-background dark:bg-[#070302] min-h-0">
@@ -310,15 +421,15 @@ export default function ShortsFeed() {
             <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
           </button>
           <h1 className="text-base font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] truncate leading-tight">
-            {shorts[activeIndex]?.whitelisted_channels?.channel_name ? `${shorts[activeIndex].whitelisted_channels.channel_name} की बातें` : 'Bhajan Marg की बातें'}
+            {displayShorts[activeIndex]?.whitelisted_channels?.channel_name ? `${displayShorts[activeIndex].whitelisted_channels.channel_name} की बातें` : 'Bhajan Marg की बातें'}
           </h1>
         </div>
 
         {/* Line 2: Static Subtitle Text fixed vertically under the Title */}
-        {shorts.length > 0 && (
+        {displayShorts.length > 0 && (
           <div className="w-full pl-[58px] pr-4 -mt-0.5 pointer-events-auto">
             <p className="text-xs font-normal text-white/85 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] truncate">
-              {(shorts[activeIndex]?.title || 'प्रेमानंद जी महाराज के अमृत वचन और दिव्य प्रवचन').replace(/#[A-Za-z0-9_\u0900-\u097F]+/g, '').trim()}
+              {(displayShorts[activeIndex]?.title || 'प्रेमानंद जी महाराज के अमृत वचन और दिव्य प्रवचन').replace(/#[A-Za-z0-9_\u0900-\u097F]+/g, '').trim()}
             </p>
           </div>
         )}
@@ -368,12 +479,12 @@ export default function ShortsFeed() {
       </div>
 
       {/* Loading state */}
-      {loading && shorts.length === 0 ? (
+      {loading && displayShorts.length === 0 ? (
         <div className="w-full flex-1 flex flex-col items-center justify-center gap-3 bg-background dark:bg-[#070302]">
           <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
           <p className="text-sm text-stone-500 dark:text-stone-400">Loading Bhakti Shorts...</p>
         </div>
-      ) : shorts.length === 0 ? (
+      ) : displayShorts.length === 0 ? (
         <div className="w-full flex-1 flex flex-col items-center justify-center p-6 text-center bg-background dark:bg-[#070302]">
           <Film className="w-12 h-12 text-stone-400 dark:text-stone-600 mb-4" />
           <h2 className="text-lg font-bold text-stone-700 dark:text-stone-300">No Shorts Available</h2>
@@ -398,32 +509,79 @@ export default function ShortsFeed() {
         <div
           ref={scrollRefCallback}
           onScroll={handleScroll}
+          onWheel={handleWheel}
           className="flex-1 min-h-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide bg-black"
-          style={{ scrollBehavior: 'smooth' }}
         >
-          {shorts.map((item, idx) => (
+          {displayShorts.map((item, idx) => {
+            const realId = item.original_id || item.id;
+            const isPreload = idx === activeIndex + 1 || idx === activeIndex + 2;
+            return (
+              <div
+                key={item.id}
+                className="w-full shrink-0 snap-start snap-always relative overflow-hidden"
+                style={{ height: containerHeight > 0 ? containerHeight : '100svh' }}
+              >
+                <ShortsPlayer
+                  videoId={item.video_id}
+                  title={item.title}
+                  description={item.description}
+                  channelName={item.whitelisted_channels?.channel_name || 'Creator'}
+                  channelHandle={item.whitelisted_channels?.handle || '@creator'}
+                  isActive={idx === activeIndex}
+                  isPreload={isPreload}
+                  liked={likedVideoIds.has(realId)}
+                  saved={savedVideoIds.has(realId)}
+                  likesCount={likesCountMap[realId] || 0}
+                  commentsCount={commentsCountMap[realId] || 0}
+                  onLike={() => handleLikeToggle(realId)}
+                  onSave={() => handleSaveToggle(realId)}
+                  onShare={() => handleShare(item.video_id)}
+                />
+              </div>
+            );
+          })}
+
+          {/* Redesigned Sacred Om "You're All Caught Up" Card Slide */}
+          {displayShorts.length > 0 && !videoId && (
             <div
-              key={item.id}
-              className="w-full shrink-0 snap-start snap-always relative overflow-hidden"
+              key="caught-up-slide"
+              className="w-full shrink-0 snap-start snap-always relative overflow-hidden flex flex-col items-center justify-center p-6 text-center bg-gradient-to-b from-[#160A06] via-[#0D0604] to-[#1A0C07] text-white"
               style={{ height: containerHeight > 0 ? containerHeight : '100svh' }}
             >
-              <ShortsPlayer
-                videoId={item.video_id}
-                title={item.title}
-                description={item.description}
-                channelName={item.whitelisted_channels?.channel_name || 'Creator'}
-                channelHandle={item.whitelisted_channels?.handle || '@creator'}
-                isActive={idx === activeIndex}
-                liked={likedVideoIds.has(item.id)}
-                saved={savedVideoIds.has(item.id)}
-                likesCount={likesCountMap[item.id] || 0}
-                commentsCount={commentsCountMap[item.id] || 0}
-                onLike={() => handleLikeToggle(item.id)}
-                onSave={() => handleSaveToggle(item.id)}
-                onShare={() => handleShare(item.video_id)}
-              />
+              {/* Divine Glowing Halo with Om SVG */}
+              <div className="relative mb-6 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-[#7A2D28]/40 blur-2xl animate-pulse" />
+                <div className="w-24 h-24 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#4A1815] border-2 border-[#D4A44A]/60 flex items-center justify-center p-4 shadow-[0_0_40px_rgba(212,164,74,0.4)] relative z-10">
+                  <img src={omWhiteSvg} alt="Divine Om" className="w-full h-full object-contain filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.6)]" />
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-bold font-serif text-[#FFFDF8] mb-2 tracking-wide drop-shadow-md">
+                {language === 'hi' ? 'आज के सभी दिव्य शॉर्ट्स समाप्त!' : "You're All Caught Up!"}
+              </h2>
+              <p className="text-xs text-[#E5D7C5]/90 max-w-xs mb-8 leading-relaxed font-sans">
+                {language === 'hi'
+                  ? 'आपने आज के सभी भक्ति एवं सत्संग शॉर्ट्स देख लिए हैं। प्रतिदिन नए दिव्य वीडियो जोड़े जाते हैं।'
+                  : 'You have watched all available Bhakti Shorts for today. New divine shorts are added daily.'}
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3.5 w-full max-w-xs z-10">
+                <Button
+                  onClick={jumpToStart}
+                  className="w-full rounded-2xl bg-gradient-to-r from-[#7A2D28] via-[#8C342F] to-[#5A1F1A] hover:brightness-110 text-white font-bold text-xs h-12 shadow-[0_4px_15px_rgba(122,45,40,0.5)] border border-[#D4A44A]/40"
+                >
+                  🔄 {language === 'hi' ? 'फिर से देखें' : 'Re-watch from Start'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="w-full rounded-2xl border border-[#D4A44A]/50 bg-[#25130C]/60 text-[#F5E6D3] hover:bg-[#7A2D28]/30 font-bold text-xs h-12 backdrop-blur-md"
+                >
+                  🏠 {language === 'hi' ? 'मुख्य पृष्ठ' : 'Go to Home'}
+                </Button>
+              </div>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

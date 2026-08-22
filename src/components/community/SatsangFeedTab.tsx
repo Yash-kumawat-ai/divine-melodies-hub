@@ -30,7 +30,7 @@ export interface SatsangFeedTabProps {
   handleToggleSavePost: (postId: string) => void;
   loadPosts: () => void;
   setPostType: (
-    type: "bhajan_share" | "bhajan_request" | "question" | "thought" | "event"
+    type: "bhajan_share" | "bhajan_request" | "question" | "thought" | "event" | "shloka"
   ) => void;
   setCreatePostOpen: (open: boolean) => void;
   setDismissedAnnouncements: React.Dispatch<React.SetStateAction<string[]>>;
@@ -188,17 +188,14 @@ export function SatsangFeedTab({
               isPostSaved={isSaved(post.id)}
               onToggleSavePost={handleToggleSavePost}
               onDeletePost={async (id) => {
-                if (
-                  confirm(
-                    isHi
-                      ? "क्या आप इस पोस्ट को हटाना चाहते हैं?"
-                      : "Delete this post?"
-                  )
-                ) {
+                try {
                   await communityApi.softRemovePost(id);
                   loadPosts();
+                } catch (err) {
+                  console.error("Delete post error:", err);
                 }
               }}
+              onPostUpdated={loadPosts}
             />
           ))}
         </div>

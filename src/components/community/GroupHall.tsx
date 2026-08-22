@@ -14,10 +14,12 @@ import { useNavigate } from "react-router-dom";
 import { 
   ChevronLeft, ChevronRight, Plus, Users, MessageSquare, 
   Calendar, Copy, Trash2, Globe, Lock, Bell, Share2, 
-  MoreVertical, Search, Music, Sparkles, Image, Smile, Mic, Bookmark, Flame, Trophy
+  MoreVertical, Search, Music, Sparkles, Image, Smile, Mic, Bookmark, Flame, Trophy,
+  Shield, Check, ArrowRight, HeartHandshake, BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember } from "@/lib/community/communityApi";
 import { SatsangFeedTab } from "@/components/community/SatsangFeedTab";
 import { EventsTab } from "@/components/community/EventsTab";
@@ -112,8 +114,9 @@ export interface GroupHallProps {
   handleRemoveMember: (groupId: string, userId: string) => void;
   // Modal openers
   setCreatePostOpen: (open: boolean) => void;
-  setPostType: (type: 'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event') => void;
+  setPostType: (type: 'bhajan_share' | 'bhajan_request' | 'question' | 'thought' | 'event' | 'shloka') => void;
   setLogChantsOpen: (open: boolean) => void;
+  onStartJapa?: () => void;
 }
 
 export function GroupHall({
@@ -159,6 +162,7 @@ export function GroupHall({
   setCreatePostOpen,
   setPostType,
   setLogChantsOpen,
+  onStartJapa,
 }: GroupHallProps) {
   const navigate = useNavigate();
 
@@ -194,11 +198,15 @@ export function GroupHall({
     filteredBhajans = [...filteredBhajans].sort((a, b) => ((b as any).comment_count || 0) - ((a as any).comment_count || 0));
   }
 
-  // Delete post handler
+  // Delete post handler (confirmed via PostCard in-app modal)
   const handleDeletePost = async (id: string) => {
-    if (confirm(isHi ? "क्या आप इस पोस्ट को हटाना चाहते हैं?" : "Delete this post?")) {
+    try {
       await communityApi.softRemovePost(id);
+      toast.success(isHi ? "पोस्ट हटा दी गई!" : "Post deleted!");
       loadPosts();
+    } catch (err) {
+      console.error("Delete post error:", err);
+      toast.error(isHi ? "हटाने में असमर्थ" : "Failed to delete post");
     }
   };
 
@@ -210,6 +218,24 @@ export function GroupHall({
     ? groupRankings[0].profile?.display_name || (isHi ? "अग्रणी भक्त" : "Top Devotee")
     : (isHi ? "प्रतीक्षारत" : "Pending");
 
+  // Leave Group Confirmation Modal State
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+  const [feedFilter, setFeedFilter] = useState<'all' | 'thought' | 'bhajan_share' | 'shloka' | 'event' | 'requests'>('all');
+
+  const handleConfirmLeave = async () => {
+    try {
+      setIsLeaving(true);
+      await handleToggleGroupJoin(group);
+      setLeaveConfirmOpen(false);
+      navigate("/join-community");
+    } catch (err) {
+      console.error("Error leaving group:", err);
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto min-h-screen bg-background dark:bg-background pb-24 shadow-none flex flex-col justify-between text-foreground font-sans relative overflow-hidden px-4 md:px-6">
       
@@ -218,17 +244,18 @@ export function GroupHall({
         <img src={mandalaGold} className="w-full h-full object-contain" alt="" />
       </div>
 
-      {/* 1. STICKY NAVIGATION BAR */}
-      <div className="sticky top-0 z-40 w-full bg-background/95 dark:bg-background/95 backdrop-blur-md border-b border-[hsl(var(--brand-gold-border))] py-4 flex items-center justify-between h-[64px] select-none">
+      {/* 1. STICKY NAVIGATION BAR (Matching Website Nav Bar standard h-14) */}
+      <header className="sticky top-0 z-40 w-full bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/40 py-2 flex items-center justify-between h-14 select-none px-1">
         <div className="flex items-center gap-3 min-w-0 flex-1 text-left">
           <button
             onClick={() => navigate("/join-community")}
-            className="btn-icon shrink-0"
+            className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+            aria-label={isHi ? "वापस" : "Back"}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 text-foreground" />
           </button>
           
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#C89B3C]/35 shrink-0 bg-white p-0.5 shadow-2xs">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-[#E8D8C4] dark:border-amber-400/30 shrink-0 bg-white p-0.5 shadow-2xs">
             <img 
               src={avatarSrc} 
               alt={group.name} 
@@ -237,10 +264,10 @@ export function GroupHall({
           </div>
 
           <div className="flex flex-col text-left min-w-0">
-            <span className="font-serif font-extrabold text-base text-[#2E2A27] dark:text-amber-50 truncate leading-tight">
+            <span className="font-display font-black text-base sm:text-lg text-[#651317] dark:text-amber-100 truncate leading-tight">
               {group.name}
             </span>
-            <span className="text-xs text-gold font-extrabold tracking-wider uppercase mt-0.5 flex items-center gap-1">
+            <span className="text-[10px] sm:text-[11px] text-[#8C7A6B] dark:text-stone-400 font-bold uppercase tracking-wider mt-0.5 flex items-center gap-1">
               {group.is_public ? (isHi ? "सार्वजनिक समूह" : "Public Group") : (isHi ? "निजी समूह" : "Private Group")}
             </span>
           </div>
@@ -248,479 +275,591 @@ export function GroupHall({
 
         <div className="flex items-center gap-2 shrink-0 ml-2">
           <button 
-            className="btn-icon"
+            onClick={() => navigate("/notifications")}
+            className="relative w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
             title={isHi ? "सूचनाएं" : "Notifications"}
           >
-            <Bell className="w-4 h-4 text-[#7A1F1F] dark:text-[#C89B3C]" />
+            <Bell className="w-4.5 h-4.5 text-foreground" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-stone-900" />
           </button>
           <button 
             onClick={() => handleWhatsAppInvite(group)}
-            className="btn-icon"
-            title={isHi ? "साझा करें" : "Share"}
+            className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+            title={isHi ? "व्हाट्सएप साझा करें" : "Share on WhatsApp"}
           >
-            <Share2 className="w-4 h-4 text-[#7A1F1F] dark:text-[#C89B3C]" />
+            <Share2 className="w-4.5 h-4.5 text-foreground" />
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* 2. HERO BANNER */}
-      <div className="mt-6">
-        <div className="relative rounded-[22px] overflow-hidden h-[180px] bg-stone-100 dark:bg-stone-955 border border-[#C89B3C]/20 shadow-xs">
-          <img
-            src={coverSrc}
-            alt={group.name}
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent flex flex-col justify-end p-5 text-left">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-xs uppercase font-extrabold tracking-wider bg-emerald-600/90 text-white px-2.5 py-0.5 rounded-md flex items-center gap-0.5">
-                {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
-              </span>
-              <span className="text-xs uppercase font-extrabold tracking-wider bg-[#C89B3C] text-[#2D2D2D] px-2.5 py-0.5 rounded-md font-bold flex items-center gap-0.5">
-                🌸 {group.deity?.toUpperCase()}
-              </span>
+      {/* 2. HERO / GROUP DETAILS CARD (Image on Left, Details & Description on Right for both Mobile & Desktop) */}
+      <div className="mt-5 sm:mt-6">
+        <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 sm:p-4.5 shadow-xs flex flex-row items-start gap-3.5 sm:gap-5">
+          
+          {/* Left Side: Group Image (maintains uploaded quality and fixed aspect ratio) */}
+          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl overflow-hidden border border-[#E8D8C4] dark:border-stone-800 bg-[#FAF6EE] dark:bg-stone-900 shrink-0 shadow-2xs">
+            <img
+              src={coverSrc}
+              alt={group.name}
+              className="w-full h-full object-cover object-center"
+              loading="lazy"
+            />
+          </div>
+
+          {/* Right Side: Group Information */}
+          <div className="flex-1 flex flex-col justify-between text-left min-w-0">
+            <div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className={cn(
+                  "text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs",
+                  group.is_public 
+                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50" 
+                    : "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50"
+                )}>
+                  {group.is_public ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+                  {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-200 border border-[#E8D8C4] dark:border-amber-400/30 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  🌸 {group.deity?.toUpperCase()}
+                </span>
+              </div>
+
+              <h2 className="font-display font-bold text-base sm:text-lg md:text-xl text-[#651317] dark:text-amber-100 leading-tight truncate mt-1">
+                {group.name}
+              </h2>
+              <p className="text-[#8C7A6B] dark:text-stone-400 text-[11px] sm:text-xs mt-1 font-normal line-clamp-2 leading-relaxed">
+                {group.description || (isHi ? "परस्पर भक्ति साधना और सामूहिक नाम संकीर्तन।" : "Collective devotional practice and chanting.")}
+              </p>
             </div>
 
-            <h2 className="font-serif font-black text-3xl text-white leading-tight drop-shadow-sm truncate">
-              {group.name}
-            </h2>
-            <p className="text-amber-100/90 text-xs mt-1 font-bold italic tracking-wide truncate">
-              ✦ {isHi ? "परस्पर भक्ति साधना और नाम संकीर्तन यज्ञ" : "Collective devotional practice and chanting"} ✦
-            </p>
-
-            {/* Bottom Statistics Row inside Banner */}
-            <div className="flex items-center gap-3 text-xs text-amber-100/80 font-semibold mt-3 pt-2.5 border-t border-white/10">
-              <span>👥 {group.member_count} {isHi ? "श्रद्धालु" : "Devotees"}</span>
+            {/* Bottom Statistics Row inside Card */}
+            <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-[#8C7A6B] dark:text-stone-400 font-medium mt-2.5 pt-2 border-t border-[#E8D8C4]/60 dark:border-stone-800/80 flex-wrap">
+              <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" /> {group.member_count} {isHi ? "श्रद्धालु" : "Devotees"}</span>
               <span>•</span>
-              <span>📿 {(group.total_chants || 0).toLocaleString()} {isHi ? "नाम जाप" : "Chants"}</span>
+              <span className="flex items-center gap-1"><Flame className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" /> {(group.total_chants || 0).toLocaleString()} {isHi ? "नाम जाप" : "Chants"}</span>
               <span>•</span>
-              <span>📅 {isHi ? "प्रारंभ" : "Created"} {new Date(group.created_at || Date.now()).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { day: 'numeric', month: 'short' })}</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" /> {new Date(group.created_at || Date.now()).toLocaleDateString(isHi ? 'hi-IN' : 'en-US', { day: 'numeric', month: 'short' })}</span>
             </div>
           </div>
+
         </div>
       </div>
 
       {/* 2.5 QUICK HIGHLIGHTS STRIP */}
-      <div className="mt-6">
-        <div className="bg-[#FAF6EE] dark:bg-stone-900/60 border border-[#C89B3C]/15 rounded-xl p-3 flex justify-between items-center text-left text-xs text-stone-600 dark:text-stone-300">
-          <div className="flex items-center gap-1.5">
-            <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
-            <div>
-              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "दैनिक जाप" : "Daily Jap"}</span>
-              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100">{isHi ? "1.2K आज" : "1.2K today"}</span>
+      <div className="mt-4 sm:mt-5">
+        <div className="w-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl py-2.5 px-2.5 sm:px-4 shadow-xs grid grid-cols-3 divide-x divide-[#E8D8C4]/60 dark:divide-stone-800/80 text-left text-xs">
+          <div className="flex items-center gap-2 sm:gap-2.5 px-1 sm:px-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] flex items-center justify-center shrink-0">
+              <Flame className="w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-semibold block text-[9px] sm:text-[10px] text-[#8C7A6B] dark:text-stone-400 uppercase tracking-wider truncate">{isHi ? "दैनिक जाप" : "Daily Jap"}</span>
+              <span className="font-semibold text-xs text-[#651317] dark:text-amber-100 truncate block">{isHi ? "1.2K आज" : "1.2K today"}</span>
             </div>
           </div>
-          <div className="h-6 w-px bg-[#C89B3C]/20" />
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-[#C89B3C]" />
-            <div>
-              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "अगला सत्संग" : "Next Satsang"}</span>
-              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100">{isHi ? "रविवार 5 PM" : "Sunday 5 PM"}</span>
+          <div className="flex items-center gap-2 sm:gap-2.5 px-2 sm:px-3 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] flex items-center justify-center shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-semibold block text-[9px] sm:text-[10px] text-[#8C7A6B] dark:text-stone-400 uppercase tracking-wider truncate">{isHi ? "अगला सत्संग" : "Next Satsang"}</span>
+              <span className="font-semibold text-xs text-[#651317] dark:text-amber-100 truncate block">{isHi ? "रविवार 5 PM" : "Sunday 5 PM"}</span>
             </div>
           </div>
-          <div className="h-6 w-px bg-[#C89B3C]/20" />
-          <div className="flex items-center gap-1.5">
-            <Trophy className="w-4 h-4 text-amber-500" />
-            <div>
-              <span className="font-bold block text-stone-505 uppercase text-[10px] tracking-wider">{isHi ? "शीर्ष भक्त" : "Top Devotee"}</span>
-              <span className="font-extrabold text-[#5c1d0c] dark:text-amber-100 truncate max-w-[90px] block">{topDevoteeName}</span>
+          <div className="flex items-center gap-2 sm:gap-2.5 px-2 sm:px-3 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] flex items-center justify-center shrink-0">
+              <Trophy className="w-3.5 h-3.5 text-[#651317] dark:text-amber-300" />
+            </div>
+            <div className="min-w-0">
+              <span className="font-semibold block text-[9px] sm:text-[10px] text-[#8C7A6B] dark:text-stone-400 uppercase tracking-wider truncate">{isHi ? "शीर्ष भक्त" : "Top Devotee"}</span>
+              <span className="font-semibold text-xs text-[#651317] dark:text-amber-100 truncate block">{topDevoteeName}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. QUICK STATS (Beige background, custom inline SVGs, larger labels) */}
-      <div className="mt-5">
-        <div className="bg-[#FAF6EE] dark:bg-stone-900 border border-[#C89B3C]/20 rounded-[22px] p-1.5 shadow-2xs grid grid-cols-4 gap-1.5 text-center text-stone-600 relative overflow-hidden">
-          
-          {/* Column 1: Members */}
-          <div className="bg-[#FCF8F3] dark:bg-stone-950/60 rounded-[16px] p-3 flex flex-col items-center justify-between min-h-[90px] relative overflow-hidden border border-[#C89B3C]/10">
-            <svg className="w-5 h-5 text-[#C89B3C] relative z-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
+      {/* 3. QUICK STATS PANEL (Icon and text in the same line) */}
+      <div className="mt-4 sm:mt-5">
+        <div className="w-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl py-2.5 px-2 sm:px-4 shadow-xs">
+          <div className="grid grid-cols-4 divide-x divide-[#E8D8C4]/60 dark:divide-stone-800/80 text-left">
             
-            <span className="text-lg font-bold text-[#7A1F1F] dark:text-amber-100 leading-none mt-1.5 relative z-10">{group.member_count}</span>
-            <span className="text-[11px] text-stone-500 font-extrabold uppercase tracking-wider mt-1 relative z-10">{isHi ? "सदस्य" : "Members"}</span>
-          </div>
+            {/* Stat 1: Members */}
+            <div className="flex items-center justify-center gap-2 px-1 sm:px-2 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center shadow-inner shrink-0">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight block truncate">
+                  {group.member_count}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-medium text-[#8C7A6B] dark:text-stone-400 leading-tight block truncate">
+                  {isHi ? "सदस्य" : "Members"}
+                </span>
+              </div>
+            </div>
 
-          {/* Column 2: Naam Jap */}
-          <div className="bg-[#FCF8F3] dark:bg-stone-955 rounded-[16px] p-3 flex flex-col items-center justify-between min-h-[90px] relative overflow-hidden border border-[#C89B3C]/10">
-            <svg className="w-5 h-5 text-[#C89B3C] relative z-10" fill="currentColor" viewBox="0 0 24 24">
-              <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2a8 8 0 1 0 0 16 8 8 0 1 0 0-16z" strokeDasharray="1.5,2.5" />
-              <circle cx="12" cy="18" r="2" fill="currentColor" />
-              <path stroke="currentColor" strokeWidth="1.5" d="M12 20v3M10 23h4" />
-            </svg>
-            
-            <span className="text-lg font-bold text-[#7A1F1F] dark:text-amber-100 leading-none mt-1.5 relative z-10">
-              {group.total_chants && group.total_chants >= 100000 
-                ? `${(group.total_chants / 100000).toFixed(1)}L` 
-                : (group.total_chants || 0).toLocaleString()}
-            </span>
-            <span className="text-[11px] text-stone-500 font-extrabold uppercase tracking-wider mt-1 relative z-10">{isHi ? "नाम जाप" : "Naam Jap"}</span>
-          </div>
+            {/* Stat 2: Naam Jap */}
+            <div className="flex items-center justify-center gap-2 px-1 sm:px-2 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center shadow-inner shrink-0">
+                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight block truncate">
+                  {group.total_chants && group.total_chants >= 100000 
+                    ? `${(group.total_chants / 100000).toFixed(1)}L` 
+                    : (group.total_chants || 0).toLocaleString()}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-medium text-[#8C7A6B] dark:text-stone-400 leading-tight block truncate">
+                  {isHi ? "नाम जाप" : "Naam Jap"}
+                </span>
+              </div>
+            </div>
 
-          {/* Column 3: Bhajans */}
-          <div className="bg-[#FCF8F3] dark:bg-stone-955 rounded-[16px] p-3 flex flex-col items-center justify-between min-h-[90px] relative overflow-hidden border border-[#C89B3C]/10">
-            <svg className="w-5 h-5 text-[#C89B3C] relative z-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18V5l12-2v13" />
-              <circle cx="6" cy="18" r="3" />
-              <circle cx="18" cy="16" r="3" />
-            </svg>
-            
-            <span className="text-lg font-bold text-[#7A1F1F] dark:text-amber-100 leading-none mt-1.5 relative z-10">{groupPosts.filter(p => p.type === 'bhajan_share').length}</span>
-            <span className="text-[11px] text-stone-500 font-extrabold uppercase tracking-wider mt-1 relative z-10">{isHi ? "भजन" : "Bhajans"}</span>
-          </div>
+            {/* Stat 3: Bhajans */}
+            <div className="flex items-center justify-center gap-2 px-1 sm:px-2 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center shadow-inner shrink-0">
+                <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight block truncate">
+                  {groupPosts.filter(p => p.type === 'bhajan_share').length}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-medium text-[#8C7A6B] dark:text-stone-400 leading-tight block truncate">
+                  {isHi ? "भजन" : "Bhajans"}
+                </span>
+              </div>
+            </div>
 
-          {/* Column 4: Events */}
-          <div className="bg-[#FCF8F3] dark:bg-stone-955 rounded-[16px] p-3 flex flex-col items-center justify-between min-h-[90px] relative overflow-hidden border border-[#C89B3C]/10">
-            <svg className="w-5 h-5 text-[#C89B3C] relative z-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            
-            <span className="text-lg font-bold text-[#7A1F1F] dark:text-amber-100 leading-none mt-1.5 relative z-10">{groupPosts.filter(p => p.type === 'event').length}</span>
-            <span className="text-[11px] text-stone-500 font-extrabold uppercase tracking-wider mt-1 relative z-10">{isHi ? "कार्यक्रम" : "Events"}</span>
-          </div>
+            {/* Stat 4: Events */}
+            <div className="flex items-center justify-center gap-2 px-1 sm:px-2 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center shadow-inner shrink-0">
+                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#651317] dark:text-amber-300 stroke-[2.2]" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-100 leading-tight block truncate">
+                  {groupPosts.filter(p => p.type === 'event').length}
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-medium text-[#8C7A6B] dark:text-stone-400 leading-tight block truncate">
+                  {isHi ? "कार्यक्रम" : "Events"}
+                </span>
+              </div>
+            </div>
 
+          </div>
         </div>
       </div>
 
-      {/* 4. PRIMARY ACTION (Invite Members text, decreased height) */}
-      <div className="mt-6">
-        <button
-          onClick={() => handleWhatsAppInvite(group)}
-          className="btn-primary btn-full"
-        >
-          <Plus className="w-4 h-4 text-white" />
-          <span>{isHi ? "सदस्य आमंत्रित करें" : "Invite Members"}</span>
-        </button>
-      </div>
-
-      {/* 5. SECONDARY ACTIONS (Individual bordered buttons with clear gaps) */}
-      <div className="mt-6">
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleCopyGroupLink(group)}
-            className="btn-secondary flex-1"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>{isHi ? "लिंक कॉपी" : "Copy Link"}</span>
-          </button>
-
-          <button
-            onClick={() => setActiveGroupTab('members')}
-            className="btn-secondary flex-1"
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>{isHi ? "लीडरबोर्ड" : "Leaderboard"}</span>
-          </button>
-
-          {group.created_by === user?.id ? (
-            <button
-              onClick={() => handleDeleteGroupAction(group.id)}
-              className="btn-danger flex-1"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{isHi ? "हटाएं" : "Delete"}</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => handleToggleGroupJoin(group)}
-              className="btn-danger flex-1"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{isHi ? "छोड़ें" : "Leave"}</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* 6. ABOUT CARD (Fixed heading, scrollable description, mandala corner decoration) */}
-      <div className="mt-6">
-        <div className="bg-white dark:bg-stone-900 border border-[#C89B3C]/20 rounded-[22px] p-4 shadow-sm text-left w-full relative overflow-hidden flex flex-col" style={{minHeight: '120px'}}>
+      {/* 4. ABOUT CARD (Directly below group stats header) */}
+      <div className="mt-5 sm:mt-6">
+        <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-4 sm:p-5 shadow-xs text-left w-full relative overflow-hidden flex flex-col min-h-[90px]">
           {/* Mandala decorative corner */}
           <img
             src={mandalaGold}
             alt="mandala"
-            className="absolute bottom-0 right-0 w-24 h-24 opacity-15 pointer-events-none select-none"
-            style={{transform: 'translate(25%, 25%)'}}
+            className="absolute bottom-0 right-0 w-20 h-20 opacity-10 pointer-events-none select-none"
+            style={{transform: 'translate(20%, 20%)'}}
           />
-          {/* Fixed heading — never scrolls away */}
-          <h4 className="font-serif font-extrabold text-sm text-[#7A1F1F] dark:text-amber-100 flex items-center gap-1.5 shrink-0 mb-1.5">
+          {/* Heading */}
+          <h4 className="font-display font-bold text-xs sm:text-sm text-[#651317] dark:text-amber-100 flex items-center gap-1.5 shrink-0 mb-1.5">
             🌿 {isHi ? "विवरण" : "About"}
           </h4>
-          {/* Scrollable description */}
-          <div className="relative z-10 overflow-y-auto scrollbar-none flex-1" style={{maxHeight: '56px'}}>
-            <p className="text-[11px] text-stone-500 dark:text-stone-400 font-medium leading-relaxed">
+          {/* Description */}
+          <div className="relative z-10 overflow-y-auto scrollbar-none flex-1 max-h-16">
+            <p className="text-xs text-[#7A6B60] dark:text-stone-300 font-normal leading-relaxed">
               {group.description || (isHi ? "यह समूह सत्संग चर्चा और सामूहिक नाम जाप के लिए बनाया गया है।" : "This community is dedicated to sharing bhajans and chanting.")}
             </p>
           </div>
-          <span className="text-[8px] text-[#C89B3C] font-extrabold uppercase mt-2 block truncate shrink-0 relative z-10">
+          <span className="text-[11px] text-[#8C7A6B] dark:text-stone-400 font-medium mt-2 block truncate shrink-0 relative z-10">
             🕉️ {creatorName ? (isHi ? `प्रशासक: ${creatorName}` : `Admin: ${creatorName}`) : ""}
           </span>
         </div>
       </div>
 
-      {/* 7. COMMUNITY FEATURES */}
-      <div className="mt-6 text-left">
-        <h4 className="font-serif font-extrabold text-sm text-[#7A1F1F] dark:text-amber-100 uppercase tracking-wider mb-3">
-          🎛️ {isHi ? "सामुदायिक सुविधाएँ" : "Community Features"}
-        </h4>
-        <div className="bg-white dark:bg-stone-900 border border-[#C89B3C]/15 rounded-[22px] p-4 shadow-2xs">
-          {/* Mockup matching 4-column layout */}
-          <div className="grid grid-cols-4 gap-2.5">
-            {[
-              { id: 'feed', iconKey: 'satsang', label: isHi ? 'सत्संग' : 'Satsang' },
-              { id: 'bhajans', iconKey: 'bhajan', label: isHi ? 'भजन' : 'Bhajan' },
-              { id: 'events', iconKey: 'events', label: isHi ? 'कार्यक्रम' : 'Events' },
-              { id: 'members', iconKey: 'leaderboard', label: isHi ? 'रैंकिंग' : 'Leaderboard' },
-              { id: 'gallery', iconKey: 'gallery', label: isHi ? 'गैलरी' : 'Gallery' },
-              { id: 'requests', iconKey: 'prayer', label: isHi ? 'अनुरोध' : 'Requests' },
-              { id: 'naam_jap', iconKey: 'naam_jap', label: isHi ? 'नाम जाप' : 'Naam Jap' },
-              { id: 'add_bhajan', iconKey: 'add_bhajan', label: isHi ? 'भजन जोड़ें' : 'Add Bhajan' }
-            ].map(item => {
-              const isActive = activeGroupTab === item.id;
-              
-              // Custom inline SVGs for V3 features
-              let svgIcon;
-              if (item.iconKey === 'satsang') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'bhajan') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 18V5l12-2v13" />
-                    <circle cx="6" cy="18" r="3" />
-                    <circle cx="18" cy="16" r="3" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'events') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'leaderboard') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                    <path d="M4 22h16" />
-                    <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
-                    <path d="M12 2a6 6 0 0 1 6 6v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'gallery') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'prayer') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto transition-colors" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22a7 7 0 0 0 5-2l-3-8h-4l-3 8a7 7 0 0 0 5 2z" />
-                    <path d="M12 12V3" />
-                    <path d="M10 6c0-1.1.9-2 2-2s2 .9 2 2" />
-                    <path d="M14 12c1.5 0 2.5 1 2.5 2.5" />
-                    <path d="M10 12c-1.5 0-2.5 1-2.5 2.5" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'naam_jap') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto text-[#7A1F1F] dark:text-[#C89B3C]" fill="currentColor" viewBox="0 0 24 24">
-                    <path fill="none" stroke="currentColor" strokeWidth="1.5" d="M12 2a8 8 0 1 0 0 16 8 8 0 1 0 0-16z" strokeDasharray="1.5,2.5" />
-                    <circle cx="12" cy="18" r="2" fill="currentColor" />
-                    <path stroke="currentColor" strokeWidth="1.5" d="M12 20v3M10 23h4" />
-                  </svg>
-                );
-              } else if (item.iconKey === 'add_bhajan') {
-                svgIcon = (
-                  <svg className="w-5 h-5 mx-auto text-[#7A1F1F] dark:text-[#C89B3C]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="16" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                  </svg>
-                );
-              }
+      {/* 5. UNIFIED ACTION BUTTON SYSTEM (Below group description) */}
+      <div className="mt-4 sm:mt-5 space-y-2.5">
+        {/* Row 1: Primary Action (Invite Members) */}
+        <button
+          onClick={() => handleWhatsAppInvite(group)}
+          className="w-full inline-flex items-center justify-center gap-2 h-10 sm:h-10.5 px-5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs sm:text-sm active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap"
+        >
+          <Plus className="w-4 h-4 text-white" />
+          <span>{isHi ? "सदस्य आमंत्रित करें" : "Invite Members"}</span>
+        </button>
 
-              // Click handler mapping
-              const handleCardClick = () => {
-                if (item.id === 'naam_jap') {
-                  setLogChantsOpen(true);
-                } else if (item.id === 'add_bhajan') {
-                  navigate("/upload-bhajan");
-                } else {
-                  setActiveGroupTab(item.id as any);
+        {/* Row 2: Secondary Actions (3 Equal Uniform Roomy Pill Buttons) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+          <button
+            onClick={() => handleCopyGroupLink(group)}
+            className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-10.5 px-2.5 sm:px-4 rounded-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-amber-100 hover:border-[#651317]/50 font-semibold text-xs sm:text-sm active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
+          >
+            <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">{isHi ? "लिंक कॉपी" : "Copy Link"}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveGroupTab('members')}
+            className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-10.5 px-2.5 sm:px-4 rounded-full bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-amber-100 hover:border-[#651317]/50 font-semibold text-xs sm:text-sm active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
+          >
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">{isHi ? "लीडरबोर्ड" : "Leaderboard"}</span>
+          </button>
+
+          {group.created_by === user?.id ? (
+            <button
+              onClick={() => handleDeleteGroupAction(group.id)}
+              className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-10.5 px-2.5 sm:px-4 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-100 font-semibold text-xs sm:text-sm active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
+            >
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="truncate">{isHi ? "हटाएं" : "Delete"}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setLeaveConfirmOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 h-10 sm:h-10.5 px-2.5 sm:px-4 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-300 hover:bg-rose-100 font-semibold text-xs sm:text-sm active:scale-95 transition-all shadow-xs cursor-pointer whitespace-nowrap"
+            >
+              <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="truncate">{isHi ? "छोड़ें" : "Leave"}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Leave Group Confirmation Modal */}
+      {leaveConfirmOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-5 max-w-sm w-full shadow-lg text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-11 h-11 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-base text-[#651317] dark:text-amber-100">
+                {isHi ? "समूह छोड़ें?" : "Leave Group?"}
+              </h3>
+              <p className="text-xs text-[#7A6B60] dark:text-stone-300 mt-1.5 leading-relaxed">
+                {isHi 
+                  ? `क्या आप वाकई "${group.name}" समूह को छोड़ना चाहते हैं?` 
+                  : `Are you sure you want to leave "${group.name}"?`}
+              </p>
+            </div>
+            <div className="flex gap-2 justify-center pt-1">
+              <button
+                onClick={() => setLeaveConfirmOpen(false)}
+                disabled={isLeaving}
+                className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-[#FAF6EE] dark:bg-stone-800 border border-[#E8D8C4] text-[#8C7A6B] dark:text-stone-300 hover:text-[#651317] font-semibold text-xs active:scale-95 transition-all shadow-xs cursor-pointer flex-1"
+              >
+                {isHi ? "रद्द करें" : "Cancel"}
+              </button>
+              <button
+                onClick={handleConfirmLeave}
+                disabled={isLeaving}
+                className="inline-flex items-center justify-center h-9 px-4 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs active:scale-95 transition-all shadow-xs cursor-pointer flex-1"
+              >
+                {isLeaving ? (isHi ? "छोड़ रहे हैं..." : "Leaving...") : (isHi ? "हाँ, छोड़ें" : "Leave")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. COMMUNITY FEATURES / QUICK POST ACTIONS (8 Tiles that launch dedicated actions) */}
+      <div className="mt-5 sm:mt-6 text-left">
+        <h4 className="font-display font-bold text-xs sm:text-sm md:text-base text-[#651317] dark:text-amber-100 flex items-center gap-1.5 mb-3">
+          ✨ {isHi ? "त्वरित पोस्ट व सामुदायिक क्रियाएँ" : "Quick Actions & Posts"}
+        </h4>
+        
+        {/* Fixed 4-Column x 2-Row Non-Scrolling Grid with Action Launchers */}
+        <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3 sm:p-4 shadow-xs">
+          <div className="grid grid-cols-4 gap-2.5 sm:gap-3.5">
+            {[
+              { 
+                id: 'satsang', 
+                icon: MessageSquare, 
+                title: isHi ? 'सत्संग' : 'Satsang', 
+                desc: isHi ? 'विचार लिखें' : 'Post thought',
+                action: () => { setPostType('thought'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'bhajans', 
+                icon: Music, 
+                title: isHi ? 'भजन' : 'Bhajans', 
+                desc: isHi ? 'भजन साझा करें' : 'Share bhajan',
+                action: () => { setPostType('bhajan_share'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'shloka', 
+                icon: BookOpen, 
+                title: isHi ? 'श्लोक' : 'Shloka', 
+                desc: isHi ? 'श्लोक साझा करें' : 'Post shloka',
+                action: () => { setPostType('shloka'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'events', 
+                icon: Calendar, 
+                title: isHi ? 'कार्यक्रम' : 'Events', 
+                desc: isHi ? 'सत्संग जोड़ें' : 'Host event',
+                action: () => { setPostType('event'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'naam_jap', 
+                icon: Flame, 
+                title: isHi ? 'नाम जाप' : 'Start Japa', 
+                desc: isHi ? 'साधना प्रारंभ करें' : 'Start Sadhana',
+                action: () => {
+                  if (onStartJapa) {
+                    onStartJapa();
+                  } else {
+                    navigate(`/meditation?practice=mantra_jap_home&showSetup=true&groupId=${group.id}`);
+                  }
                 }
-              };
+              },
+              { 
+                id: 'requests', 
+                icon: Sparkles, 
+                title: isHi ? 'प्रार्थना' : 'Requests', 
+                desc: isHi ? 'अनुरोध पूछें' : 'Ask request',
+                action: () => { setPostType('question'); setCreatePostOpen(true); }
+              },
+              { 
+                id: 'members', 
+                icon: Trophy, 
+                title: isHi ? 'लीडरबोर्ड' : 'Leaderboard', 
+                desc: isHi ? 'जप रैंकिंग' : 'Top devotees',
+                action: () => setActiveGroupTab('members')
+              },
+              { 
+                id: 'upload', 
+                icon: Plus, 
+                title: isHi ? 'नई पोस्ट' : 'New Post', 
+                desc: isHi ? 'सभी विकल्प' : 'Create post',
+                action: () => setCreatePostOpen(true)
+              }
+            ].map(item => {
+              const IconComp = item.icon;
 
               return (
-                <button
+                <div
                   key={item.id}
-                  onClick={handleCardClick}
-                  className={`p-2.5 rounded-xl border text-center transition-all duration-200 active:scale-[0.98] flex flex-col justify-between items-center h-[76px] ${
-                    isActive
-                      ? "bg-[#FAF6EE] dark:bg-stone-850 border-y border-r border-amber-500/10 border-l-4 border-l-[#7A1F1F] text-[#7A1F1F] shadow-2xs font-extrabold"
-                      : "bg-[#FCF8F3] dark:bg-stone-955 border border-amber-500/5 hover:border-amber-500/10 text-[#2D2D2D] dark:text-stone-250"
-                  }`}
+                  onClick={item.action}
+                  className="rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] min-h-[92px] sm:min-h-[108px] bg-[#FFFDF8] dark:bg-[#16110B] border border-[#E8D8C4] dark:border-stone-800/80 hover:border-[#651317]/50 shadow-2xs group select-none"
                 >
-                  <div className={`shrink-0 ${isActive ? 'text-[#7A1F1F]' : 'text-[#7A1F1F]'}`}>
-                    {svgIcon}
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-1.5 shadow-inner shrink-0 bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 group-hover:bg-[#651317] group-hover:text-white transition-colors">
+                    <IconComp className="w-5 h-5 stroke-[1.5]" />
                   </div>
-                  <span className="text-[10px] font-extrabold block leading-tight mt-1 truncate w-full text-center">
-                    {item.label}
-                  </span>
-                </button>
+                  <div className="w-full">
+                    <h3 className="font-display font-semibold text-[11px] sm:text-xs text-[#651317] dark:text-amber-100 text-center leading-tight truncate">
+                      {item.title}
+                    </h3>
+                    <p className="text-[9px] sm:text-[10px] font-normal text-[#8C7A6B] dark:text-stone-400 text-center leading-tight mt-0.5 truncate hidden sm:block">
+                      {item.desc}
+                    </p>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
       </div>
 
-      {/* 8. SECTION TABS (Restored horizontal x-scrollable tab switcher with larger text) */}
-      <div className="mt-6">
-        <div 
-          className="flex border-b border-[#C89B3C]/15 pb-2.5 gap-4 overflow-x-auto whitespace-nowrap scrollbar-none [&::-webkit-scrollbar]:hidden text-left"
-          style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
-        >
-          {[
-            { id: 'feed', label: isHi ? 'सत्संग' : 'Satsang' },
-            { id: 'bhajans', label: isHi ? 'भजन' : 'Bhajan' },
-            { id: 'requests', label: isHi ? 'प्रार्थना/अनुरोध' : 'Requests' },
-            { id: 'events', label: isHi ? 'कार्यक्रम' : 'Events' },
-            { id: 'gallery', label: isHi ? 'गैलरी' : 'Gallery' },
-            { id: 'members', label: isHi ? 'सदस्य' : 'Members' },
-          ].map(tab => {
-            const isActive = activeGroupTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveGroupTab(tab.id as any)}
-                className={`tab-item ${isActive ? "tab-active" : ""} text-sm font-bold transition-all duration-200`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ─── TAB CONTENT (Feed, Bhajans, Requests, Events, Members, Gallery) ─── */}
-      <div className="mt-6">
-        
-        {/* 9. POST COMPOSER & 10. FEED */}
-        {activeGroupTab === 'feed' && (
+      {/* ─── TAB CONTENT (Feed & Members) ─── */}
+      <div className="mt-5 space-y-4">
+        {/* If Active Tab is Members/Leaderboard */}
+        {activeGroupTab === 'members' ? (
           <div className="space-y-4">
-            {/* Post Composer card */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setActiveGroupTab('feed')}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#651317] dark:text-amber-300 hover:underline cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>{isHi ? "फीड पर वापस जाएं" : "Back to Feed"}</span>
+              </button>
+            </div>
+            <DevoteesTab groupMembers={groupMembers} groupRankings={groupRankings} isHi={isHi} />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* 8. POST COMPOSER CARD (Placed above the Filter Bar) */}
             {user && (
-              <div className="bg-white dark:bg-stone-900 border border-stone-150 dark:border-stone-850 rounded-[22px] p-4 shadow-2xs space-y-3.5 text-left">
+              <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 sm:p-4 shadow-xs space-y-3 text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0 bg-stone-100">
-                    <img
-                      src={memberProfile?.avatar_url || "/placeholder-avatar.jpg"}
-                      alt="User"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-[#E8D8C4] shrink-0 bg-[#FAF0E4] dark:bg-[#2B1F14] flex items-center justify-center">
+                    {memberProfile?.avatar_url ? (
+                      <img
+                        src={memberProfile.avatar_url}
+                        alt="User"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="font-bold text-xs text-[#651317] dark:text-amber-300 uppercase">
+                        {(user?.user_metadata?.display_name || user?.email || "D")[0]}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                    className="flex-1 text-left text-muted-foreground text-sm font-semibold py-2 transition-all"
+                    className="flex-1 text-left text-[#8C7A6B] dark:text-stone-400 text-xs sm:text-sm font-medium py-1.5 px-3 rounded-xl bg-[#FAF6EE] dark:bg-stone-900 border border-[#E8D8C4]/60 hover:border-[#651317]/30 transition-all cursor-pointer"
                   >
                     😊 {isHi ? "विचार साझा करें..." : "Share your thoughts..."}
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between border-t border-stone-100/50 pt-3">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between border-t border-[#E8D8C4]/50 dark:border-stone-800 pt-2.5">
+                  <div className="flex items-center gap-2">
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="btn-ghost btn-sm flex items-center gap-1"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
-                      <Image className="w-3.5 h-3.5 text-[#C89B3C]" />
+                      <Image className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "चित्र" : "Media"}</span>
                     </button>
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="btn-ghost btn-sm flex items-center gap-1"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
-                      <Smile className="w-3.5 h-3.5 text-[#C89B3C]" />
+                      <Smile className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "इमोजी" : "Emoji"}</span>
                     </button>
                     <button 
                       onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                      className="btn-ghost btn-sm flex items-center gap-1"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-[#8C7A6B] hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-colors cursor-pointer"
                     >
-                      <Mic className="w-3.5 h-3.5 text-[#C89B3C]" />
+                      <Mic className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400" />
                       <span>{isHi ? "आवाज" : "Voice"}</span>
                     </button>
                   </div>
 
-                  <Button
-                    variant="default" size="sm"
+                  <button
                     onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
+                    className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
                   >
-                    {isHi ? "पोस्ट" : "Post"}
-                  </Button>
+                    {isHi ? "पोस्ट करें" : "Post"}
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Posts Lists / Empty state */}
-            {groupPosts.length === 0 ? (
-              <div className="text-center py-10 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-[22px] px-6 relative overflow-hidden shadow-2xs">
-                <span className="text-3xl block select-none mb-2">🌸</span>
-                <h4 className="font-serif font-extrabold text-sm text-[#7A1F1F] dark:text-amber-100">
-                  {isHi ? "सत्संग पोस्ट नहीं है" : "No Satsang Posts Yet"}
-                </h4>
-                <p className="text-stone-400 font-medium text-[10px] mt-1 max-w-xs mx-auto leading-relaxed">
-                  {isHi 
-                    ? "पहला भक्तिमय पोस्ट साझा करें और सत्संग शुरू करें!" 
-                    : "Share today's spiritual thoughts."}
-                </p>
-                <Button
-                  size="sm"
-                  onClick={() => { setPostType('thought'); setCreatePostOpen(true); }}
-                >
-                  {isHi ? "पहला सत्संग पोस्ट लिखें" : "Write First Post"}
-                </Button>
+            {/* 9. MODERN FILTER SECTION (Placed directly below Post Composer and above feed) */}
+            <div className="pt-1">
+              <div 
+                className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden text-left scroll-smooth"
+                style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+              >
+                {[
+                  { id: 'all', label: isHi ? '🌟 सभी' : '🌟 All', count: groupPosts.length },
+                  { id: 'thought', label: isHi ? '💬 सत्संग' : '💬 Satsang', count: groupPosts.filter(p => p.type === 'thought' || !p.type).length },
+                  { id: 'bhajan_share', label: isHi ? '🎵 भजन' : '🎵 Bhajan', count: groupPosts.filter(p => p.type === 'bhajan_share').length },
+                  { id: 'shloka', label: isHi ? '📖 श्लोक' : '📖 Shloka', count: groupPosts.filter(p => p.type === 'shloka' || p.content?.startsWith('[SHLOKA]') || p.content?.includes('📖 भावार्थ') || p.content?.includes('📖 अर्थ')).length },
+                  { id: 'event', label: isHi ? '📅 कार्यक्रम' : '📅 Events', count: groupPosts.filter(p => p.type === 'event').length },
+                  { id: 'requests', label: isHi ? '✨ प्रार्थना' : '✨ Requests', count: groupPosts.filter(p => p.type === 'bhajan_request' || p.type === 'question').length },
+                  { id: 'leaderboard', label: isHi ? '🏆 लीडरबोर्ड' : '🏆 Leaderboard', isTab: true },
+                ].map(tab => {
+                  const isTab = (tab as any).isTab;
+                  const isActive = isTab 
+                    ? activeGroupTab === 'members' 
+                    : (activeGroupTab === 'feed' && feedFilter === tab.id);
+
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        if (isTab) {
+                          setActiveGroupTab('members');
+                        } else {
+                          setActiveGroupTab('feed');
+                          setFeedFilter(tab.id as any);
+                        }
+                      }}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-3.5 sm:px-4 rounded-full font-bold text-xs active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer whitespace-nowrap border",
+                        isActive
+                          ? "bg-[#651317] text-white border-[#651317] shadow-xs"
+                          : "bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4] dark:border-stone-800 text-[#651317] dark:text-stone-300 hover:border-[#651317]/50"
+                      )}
+                    >
+                      <span>{tab.label}</span>
+                      {typeof tab.count === 'number' && (
+                        <span className={cn(
+                          "text-[10px] px-1.5 py-0.2 rounded-full tabular-nums font-extrabold",
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300"
+                        )}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
-              <div className="space-y-4">
-                {groupPosts.map(post => (
-                  <PostCard
-                    key={post.id} post={post} user={user} isHi={isHi}
-                    comments={commentsMap[post.id] || []}
-                    isCommentsExpanded={expandedCommentsPostId === post.id}
-                    onToggleComments={handleToggleComments} onToggleReaction={handleToggleReaction}
-                    onToggleRsvp={handleToggleRsvp} onVoteOption={handleVoteOption}
-                    onDeleteComment={handleDeleteComment} onAddComment={handleAddComment}
-                    newCommentText={newCommentText} setNewCommentText={setNewCommentText}
-                    commentIsLyricsSubmit={commentIsLyricsSubmit} setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                    isLoadingComments={loadingCommentsPostIds[post.id]}
-                    isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
-                    onDeletePost={handleDeletePost}
-                  />
-                ))}
-              </div>
-            )}
+            </div>
+
+            {/* 10. POST FEED (Filtered by selected filter) */}
+            {(() => {
+              const displayedPosts = groupPosts.filter((p) => {
+                if (feedFilter === 'all') return true;
+                if (feedFilter === 'thought') return p.type === 'thought' || !p.type;
+                if (feedFilter === 'bhajan_share') return p.type === 'bhajan_share';
+                if (feedFilter === 'shloka') {
+                  return p.type === 'shloka' || (p.content && (p.content.startsWith('[SHLOKA]') || p.content.includes('📖 भावार्थ') || p.content.includes('📖 अर्थ') || p.content.includes('भावार्थ:')));
+                }
+                if (feedFilter === 'event') return p.type === 'event';
+                if (feedFilter === 'requests') return p.type === 'bhajan_request' || p.type === 'question';
+                return true;
+              });
+
+              if (displayedPosts.length === 0) {
+                return (
+                  <div className="text-center py-8 bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl px-5 relative overflow-hidden shadow-xs">
+                    <span className="text-2xl block select-none mb-1.5">🌸</span>
+                    <h4 className="font-display font-bold text-sm text-[#651317] dark:text-amber-100">
+                      {isHi ? "इस श्रेणी में कोई पोस्ट नहीं है" : "No Posts in this category"}
+                    </h4>
+                    <p className="text-[#8C7A6B] dark:text-stone-400 font-normal text-xs mt-1 max-w-xs mx-auto leading-relaxed">
+                      {isHi 
+                        ? "पहला भक्तिमय पोस्ट साझा करें और सत्संग शुरू करें!" 
+                        : "Share a spiritual post and start the discussion."}
+                    </p>
+                    <div className="mt-3 flex justify-center">
+                      <button
+                        onClick={() => { 
+                          if (feedFilter === 'bhajan_share') setPostType('bhajan_share');
+                          else if (feedFilter === 'shloka') setPostType('shloka');
+                          else if (feedFilter === 'event') setPostType('event');
+                          else if (feedFilter === 'requests') setPostType('question');
+                          else setPostType('thought');
+                          setCreatePostOpen(true); 
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 h-8 sm:h-8.5 px-4 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-semibold text-xs active:scale-95 transition-all shadow-xs cursor-pointer leading-none whitespace-nowrap"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-white" />
+                        <span>{isHi ? "पहली पोस्ट लिखें" : "Write First Post"}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-4">
+                  {displayedPosts.map(post => (
+                    <PostCard
+                      key={post.id} post={post} user={user} isHi={isHi}
+                      comments={commentsMap[post.id] || []}
+                      isCommentsExpanded={expandedCommentsPostId === post.id}
+                      onToggleComments={handleToggleComments} onToggleReaction={handleToggleReaction}
+                      onToggleRsvp={handleToggleRsvp} onVoteOption={handleVoteOption}
+                      onDeleteComment={handleDeleteComment} onAddComment={handleAddComment}
+                      newCommentText={newCommentText} setNewCommentText={setNewCommentText}
+                      commentIsLyricsSubmit={commentIsLyricsSubmit} setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
+                      isLoadingComments={loadingCommentsPostIds[post.id]}
+                      isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
+                      onDeletePost={handleDeletePost}
+                      onPostUpdated={loadPosts}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -728,7 +867,7 @@ export function GroupHall({
         {activeGroupTab === 'bhajans' && (
           <div className="space-y-4">
             {/* Search & Sort Panel */}
-            <div className="flex flex-col gap-2.5 bg-white dark:bg-stone-900 border border-orange-500/10 p-3.5 rounded-2xl shadow-xs">
+            <div className="flex flex-col sm:flex-row gap-2.5 bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 p-3 rounded-2xl shadow-xs">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-stone-400" />
                 <Input
@@ -736,13 +875,13 @@ export function GroupHall({
                   placeholder={isHi ? "भजन खोजें..." : "Search shared bhajans..."}
                   value={bhajanSearch}
                   onChange={(e) => setBhajanSearch(e.target.value)}
-                  className="pl-9 h-9 border-orange-500/10 rounded-xl text-xs"
+                  className="pl-9 h-9 border-[#E8D8C4] dark:border-stone-800 rounded-xl text-xs"
                 />
               </div>
               <select
                 value={bhajanSort}
                 onChange={(e) => setBhajanSort(e.target.value)}
-                className="h-9 rounded-xl border border-orange-500/10 bg-[#FCF8F3] dark:bg-stone-955 px-3 py-1 text-xs font-bold text-stone-700 dark:text-stone-300 w-full"
+                className="h-9 rounded-xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FCF8F3] dark:bg-stone-955 px-3 py-1 text-xs font-bold text-stone-700 dark:text-stone-300 w-full sm:w-auto"
               >
                 <option value="newest">{isHi ? "नवीनतम" : "Newest"}</option>
                 <option value="popular">{isHi ? "लोकप्रिय" : "Popular"}</option>
@@ -753,21 +892,21 @@ export function GroupHall({
             {/* Bhajan Composer CTA */}
             <div
               onClick={() => { setPostType('bhajan_share'); setCreatePostOpen(true); }}
-              className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-3.5 flex items-center justify-between shadow-xs hover:border-orange-500/30 hover:shadow-sm cursor-pointer select-none transition-all"
+              className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 flex items-center justify-between shadow-xs hover:border-[#651317]/40 cursor-pointer select-none transition-all"
               role="button"
             >
-              <span className="text-stone-400 text-xs font-medium text-left">
+              <span className="text-[#8C7A6B] dark:text-stone-400 text-xs font-medium text-left">
                 {isHi ? "समूह में कोई भजन साझा करें..." : "Share a bhajan lyrics link or video..."}
               </span>
-              <button className="btn-primary w-7 h-7 rounded-full flex items-center justify-center" aria-label="Share bhajan">
-                <Plus className="w-3.5 h-3.5" />
+              <button className="w-8 h-8 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center shadow-xs shrink-0 cursor-pointer" aria-label="Share bhajan">
+                <Plus className="w-4 h-4 text-white" />
               </button>
             </div>
 
             {filteredBhajans.length === 0 ? (
-              <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl px-6">
+              <div className="text-center py-16 bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl px-6 shadow-xs">
                 <span className="text-3xl block select-none">🎵</span>
-                <p className="text-stone-500 dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
+                <p className="text-[#8C7A6B] dark:text-stone-400 font-medium text-xs mt-3 leading-relaxed">
                   {isHi ? "कोई भजन नहीं मिला। भजन साझा करने वाले पहले व्यक्ति बनें!" : "No shared bhajans found. Be the first to share a devotional melody!"}
                 </p>
               </div>
@@ -786,6 +925,7 @@ export function GroupHall({
                     isLoadingComments={loadingCommentsPostIds[post.id]}
                     isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
                     onDeletePost={handleDeletePost}
+                    onPostUpdated={loadPosts}
                   />
                 ))}
               </div>
@@ -797,15 +937,15 @@ export function GroupHall({
         {activeGroupTab === 'requests' && (
           <div className="space-y-4">
             <div
-              onClick={() => { setPostType('bhajan_request'); setCreateOpen => { setPostType('bhajan_request'); setCreatePostOpen(true); } }}
-              className="bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl p-3.5 flex items-center justify-between shadow-xs hover:border-orange-500/30 hover:shadow-sm cursor-pointer select-none transition-all"
+              onClick={() => { setPostType('bhajan_request'); setCreatePostOpen(true); }}
+              className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-2xl p-3.5 flex items-center justify-between shadow-xs hover:border-[#651317]/40 cursor-pointer select-none transition-all"
               role="button"
             >
-              <span className="text-stone-400 text-xs font-medium text-left">
+              <span className="text-[#8C7A6B] dark:text-stone-400 text-xs font-medium text-left">
                 {isHi ? "दुर्लभ भजन के बोल या जानकारी का अनुरोध करें..." : "Request a bhajan's lyrics or chords..."}
               </span>
-              <button className="btn-primary w-7 h-7 rounded-full flex items-center justify-center" aria-label="Request bhajan">
-                <Plus className="w-3.5 h-3.5" />
+              <button className="w-8 h-8 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center shadow-xs shrink-0 cursor-pointer" aria-label="Request bhajan">
+                <Plus className="w-4 h-4 text-white" />
               </button>
             </div>
 
@@ -836,6 +976,7 @@ export function GroupHall({
                       isLoadingComments={loadingCommentsPostIds[post.id]}
                       isPostSaved={isSaved(post.id)} onToggleSavePost={handleToggleSavePost}
                       onDeletePost={handleDeletePost}
+                    onPostUpdated={loadPosts}
                     />
                   ))}
                 </div>

@@ -24,6 +24,7 @@ const buttonVariants = cva(
         outline:     "btn-secondary",   /* alias — outline maps to secondary */
         ghost:       "btn-ghost",
         destructive: "btn-danger",
+        action:      "btn-primary bg-gradient-to-r from-amber-500 to-amber-600 border-amber-400 text-stone-950 font-black shadow-amber-500/20",
         link: "text-brand-primary underline-offset-4 hover:underline bg-transparent border-none shadow-none h-auto p-0",
       },
       size: {

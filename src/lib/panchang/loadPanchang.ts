@@ -8,81 +8,116 @@ export type PanchangLoadResult = {
 
 const CACHE_PREFIX = 'panchang_cache_';
 
-function readSessionCache(zoneName: string): PanchangLoadResult | null {
+function readSessionCache(zoneName: string, targetDate: string): PanchangLoadResult | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = window.sessionStorage.getItem(`${CACHE_PREFIX}${zoneName}`);
+    const raw = window.sessionStorage.getItem(`${CACHE_PREFIX}${zoneName}_${targetDate}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PanchangLoadResult;
-    if (parsed.data?.date === todayInIndia()) return parsed;
+    if (parsed.data?.date === targetDate) return parsed;
   } catch {
     // ignore malformed cache
   }
   return null;
 }
 
-function writeSessionCache(zoneName: string, result: PanchangLoadResult): void {
+function writeSessionCache(zoneName: string, targetDate: string, result: PanchangLoadResult): void {
   if (typeof window === 'undefined') return;
   try {
-    window.sessionStorage.setItem(`${CACHE_PREFIX}${zoneName}`, JSON.stringify(result));
+    window.sessionStorage.setItem(`${CACHE_PREFIX}${zoneName}_${targetDate}`, JSON.stringify(result));
   } catch {
     // ignore storage errors
   }
 }
 
-async function fetchStatic(zoneName: string, signal?: AbortSignal): Promise<PanchangData | null> {
-  const response = await fetch(`/data/panchang-${zoneName}.json?v=${todayInIndia()}`, {
-    signal,
-  });
+async function safeFetchJson<T>(response: Response): Promise<T | null> {
   if (!response.ok) return null;
-  const json: unknown = await response.json();
-  return isPanchangData(json) ? json : null;
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json') && !contentType.includes('text/json')) {
+    return null;
+  }
+  try {
+    const text = await response.text();
+    if (!text || text.trim().startsWith('<')) return null;
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
 }
 
-async function fetchLive(zoneName: string, signal?: AbortSignal): Promise<PanchangData> {
-  const response = await fetch(`/api/panchang/${zoneName}`, {
-    cache: 'no-store',
-    signal,
-  });
-  if (!response.ok) {
-    throw new Error(`Live Panchang unavailable (${response.status}).`);
+async function fetchStatic(zoneName: string, targetDate: string, signal?: AbortSignal): Promise<PanchangData | null> {
+  try {
+    // Try date-specific JSON file first
+    let response = await fetch(`/data/panchang-${zoneName}-${targetDate}.json?v=${targetDate}`, {
+      signal,
+    });
+    let json = await safeFetchJson<unknown>(response);
+
+    if (!json && targetDate === todayInIndia()) {
+      // Fall back to default panchang-{zone}.json for today
+      response = await fetch(`/data/panchang-${zoneName}.json?v=${targetDate}`, {
+        signal,
+      });
+      json = await safeFetchJson<unknown>(response);
+    }
+
+    if (!json) return null;
+    return isPanchangData(json) ? json : null;
+  } catch {
+    return null;
   }
-  const json: unknown = await response.json();
-  if (!isPanchangData(json)) {
-    throw new Error('Invalid live Panchang response.');
+}
+
+async function fetchLive(zoneName: string, targetDate: string, signal?: AbortSignal): Promise<PanchangData | null> {
+  try {
+    const response = await fetch(`/api/panchang/${zoneName}?date=${targetDate}`, {
+      cache: 'no-store',
+      signal,
+    });
+    if (!response.ok) return null;
+    const json = await safeFetchJson<unknown>(response);
+    if (!json || !isPanchangData(json)) return null;
+    return json;
+  } catch {
+    return null;
   }
-  return json;
 }
 
 /**
- * Prefer today's static JSON (fast). If missing or stale, compute via /api/panchang.
+ * Prefer target date's static JSON (fast). If missing or stale, compute via /api/panchang.
  * Falls back to stale static only when live fetch fails.
  */
-export async function loadPanchang(zoneName: string, signal?: AbortSignal): Promise<PanchangLoadResult> {
-  const today = todayInIndia();
-  
-  const sessionCached = readSessionCache(zoneName);
+export async function loadPanchang(
+  zoneName: string,
+  targetDate?: string,
+  signal?: AbortSignal
+): Promise<PanchangLoadResult> {
+  const dateToLoad = targetDate || todayInIndia();
+
+  const sessionCached = readSessionCache(zoneName, dateToLoad);
   if (sessionCached) return sessionCached;
 
-  const cached = await fetchStatic(zoneName, signal);
+  const cached = await fetchStatic(zoneName, dateToLoad, signal);
 
-  if (cached?.date === today) {
+  if (cached?.date === dateToLoad) {
     const result: PanchangLoadResult = { data: cached, stale: false, source: 'static' };
-    writeSessionCache(zoneName, result);
+    writeSessionCache(zoneName, dateToLoad, result);
     return result;
   }
 
-  try {
-    const live = await fetchLive(zoneName, signal);
+  const live = await fetchLive(zoneName, dateToLoad, signal);
+  if (live) {
     const result: PanchangLoadResult = { data: live, stale: false, source: 'live' };
-    writeSessionCache(zoneName, result);
+    writeSessionCache(zoneName, dateToLoad, result);
     return result;
-  } catch (error) {
-    if (cached) {
-      const result: PanchangLoadResult = { data: cached, stale: true, source: 'static-fallback' };
-      writeSessionCache(zoneName, result);
-      return result;
-    }
-    throw error instanceof Error ? error : new Error('Unable to load Panchang.');
   }
+
+  if (cached) {
+    const adjustedCached: PanchangData = { ...cached, date: dateToLoad };
+    const result: PanchangLoadResult = { data: adjustedCached, stale: true, source: 'static-fallback' };
+    writeSessionCache(zoneName, dateToLoad, result);
+    return result;
+  }
+
+  throw new Error('Panchang data for this date is currently unavailable.');
 }

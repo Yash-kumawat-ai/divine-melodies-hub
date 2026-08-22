@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Camera,
   ChevronDown,
+  ChevronRight,
   Clock3,
   Film,
   Flower2,
@@ -69,7 +70,26 @@ const MeditationIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const NaradNavIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M4 20L18 6" />
+    <circle cx="6" cy="18" r="3" />
+    <circle cx="16" cy="8" r="1.8" />
+    <path d="M6 15L15 6" strokeWidth="1" opacity="0.75" />
+    <path d="M19 3v4m-2-2h4" strokeWidth="1.5" />
+  </svg>
+);
+
 export default function Header() {
+  const { isBhajanModalOpen } = useBhajanModalOpen();
   const [profileHubOpen, setProfileHubOpen] = useState(false);
   const [mobileLanguageOpen, setMobileLanguageOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -86,11 +106,27 @@ export default function Header() {
     return cn(
       "inline-flex items-center gap-1.5 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium",
       active 
-        ? "text-brand border-brand rounded-none" 
-        : "text-foreground/80 hover:text-brand hover:bg-brand/5 border-transparent rounded-md"
+        ? "text-[#651317] dark:text-amber-400 border-[#651317] dark:border-amber-400 font-extrabold rounded-none" 
+        : "text-foreground/80 hover:text-[#651317] dark:hover:text-amber-400 hover:bg-[#651317]/5 border-transparent rounded-md"
     );
   };
-  const { isBhajanModalOpen } = useBhajanModalOpen();
+  const getDropdownTriggerClass = (active: boolean) => {
+    return cn(
+      "inline-flex items-center gap-1 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium focus:outline-none cursor-pointer",
+      active 
+        ? "text-[#651317] dark:text-amber-400 border-[#651317] dark:border-amber-400 font-extrabold rounded-none" 
+        : "text-foreground/80 hover:text-[#651317] dark:hover:text-amber-400 hover:bg-[#651317]/5 border-transparent rounded-md"
+    );
+  };
+  const getMoreDropdownItemClass = (path: string) => {
+    const active = location.pathname === path;
+    return cn(
+      "flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border border-[#E8D8C4]/60 dark:border-stone-800/80 bg-white/70 dark:bg-stone-900/60 my-0.5",
+      active
+        ? "bg-[#FAF0E4] dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 border-l-4 border-[#651317] dark:border-amber-400 shadow-xs"
+        : "text-stone-800 dark:text-stone-100 hover:bg-[#EBDBCB] dark:hover:bg-amber-500/25 hover:text-[#651317] dark:hover:text-amber-300 hover:border-[#E8D8C4] dark:hover:border-stone-700"
+    );
+  };
   const primaryRoutes = [
     "/",
     "/all-bhajans",
@@ -292,70 +328,88 @@ export default function Header() {
             {language === 'hi' ? 'समूह' : 'Community'}
           </Link>
 
-          {/* More ▼ dropdown */}
+          {/* Narad AI link — styled matching standard nav items */}
+          <Link to="/kirtan-ai" className={getLinkClass('/kirtan-ai')}>
+            <NaradNavIcon className="w-3.5 h-3.5" />
+            {t('kirtanAi')}
+          </Link>
+
+          {/* More ▼ dropdown — styled matching standard nav items */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 transition-all text-[14px] border-b-2 font-medium",
-                  (location.pathname === '/pricing' || location.pathname === '/about' || location.pathname === '/wallpaper' || location.pathname === '/shorts' || location.pathname === '/recent-bhajans')
-                    ? "text-brand border-brand rounded-none"
-                    : "text-foreground/80 hover:text-brand hover:bg-brand/5 border-transparent rounded-md"
+                className={getDropdownTriggerClass(
+                  ['/pricing', '/about', '/wallpaper', '/shorts', '/recent-bhajans', '/upload-bhajan'].some(path => location.pathname.startsWith(path))
                 )}
               >
-                {language === 'hi' ? 'और' : 'More'}
-                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                <span>{language === 'hi' ? 'और' : 'More'}</span>
+                <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-75" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-44 rounded-xl">
+            <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">
               <DropdownMenuItem asChild>
-                <Link to="/pricing" className="flex items-center gap-2">
-                  <Tags className="h-4 w-4 opacity-60" />{t('pricing')}
+                <Link to="/pricing" className={getMoreDropdownItemClass('/pricing')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Tags className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{t('pricing')}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/about" className="flex items-center gap-2">
-                  <Info className="h-4 w-4 opacity-60" />{t('about')}
+                <Link to="/about" className={getMoreDropdownItemClass('/about')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Info className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{t('about')}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/wallpaper" className="flex items-center gap-2">
-                  <Image className="h-4 w-4 opacity-60" />{language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}
+                <Link to="/wallpaper" className={getMoreDropdownItemClass('/wallpaper')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Image className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{language === 'hi' ? 'वॉलपेपर' : 'Wallpapers'}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/shorts" className="flex items-center gap-2">
-                  <Film className="h-4 w-4 opacity-60" />{language === 'hi' ? 'शॉर्ट्स' : 'Shorts'}
+                <Link to="/shorts" className={getMoreDropdownItemClass('/shorts')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Film className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{language === 'hi' ? 'शॉर्ट्स' : 'Shorts'}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/recent-bhajans" className="flex items-center gap-2">
-                  <Clock3 className="h-4 w-4 opacity-60" />{t('recent')}
+                <Link to="/recent-bhajans" className={getMoreDropdownItemClass('/recent-bhajans')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Clock3 className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{t('recent')}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-[#E8D8C4] dark:bg-stone-800 my-1" />
               <DropdownMenuItem asChild>
-                <Link to="/upload-bhajan" className="flex items-center gap-2 text-primary">
-                  <Upload className="h-4 w-4" />{t('upload')}
+                <Link to="/upload-bhajan" className={getMoreDropdownItemClass('/upload-bhajan')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Upload className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{t('upload')}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Kirtan AI pill */}
-          <Link
-            to="/kirtan-ai"
-            className="flex items-center justify-center gap-1.5 rounded-full bg-brand text-[11px] font-semibold text-white hover:bg-brand/90 transition-all h-8 px-4 ml-1.5 whitespace-nowrap shadow-sm hover:shadow leading-none py-0"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {t('kirtanAi')}
-          </Link>
-
           {/* Search */}
           <Link 
             to="/search" 
-            className="flex items-center justify-center rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 w-8 shrink-0 ml-1.5 p-0"
+            className="flex items-center justify-center rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 w-8 shrink-0 p-0"
           >
             <Search className="w-4 h-4" />
           </Link>
@@ -373,61 +427,66 @@ export default function Header() {
           {/* Notification bell */}
           {user && <UserNotificationBell userId={user.id} />}
 
-          {/* Language dropdown (Desktop Custom Dropdown) */}
+          {/* Language dropdown (Desktop Custom Dropdown with Border) */}
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-background/50 text-[13px] font-medium text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 px-4 py-0 leading-none focus:outline-none"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 transition-all text-[13.5px] font-bold text-stone-800 dark:text-stone-200 hover:text-[#651317] dark:hover:text-amber-300 bg-white/80 dark:bg-stone-900/80 hover:bg-[#FAF0E4] dark:hover:bg-amber-950/30 border border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-400/40 rounded-full shadow-2xs focus:outline-none cursor-pointer shrink-0"
               >
+                <Languages className="w-3.5 h-3.5 text-[#651317] dark:text-amber-400 shrink-0" />
                 <span>{languageOptions.find(option => option.code === language)?.label || 'Language'}</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 rounded-xl">
+            <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">
               {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.code}
                   onClick={() => handleLanguageChange(option.code)}
                   className={cn(
-                    'cursor-pointer font-medium text-xs',
-                    language === option.code && 'bg-brand/10 text-brand',
+                    'flex items-center gap-3 w-full px-3 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer border border-[#E8D8C4]/60 dark:border-stone-800/80 bg-white/70 dark:bg-stone-900/60 my-0.5',
+                    language === option.code
+                      ? 'bg-[#FAF0E4] dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 border-l-4 border-[#651317] dark:border-amber-400 shadow-xs'
+                      : 'text-stone-800 dark:text-stone-100 hover:bg-[#EBDBCB] dark:hover:bg-amber-500/25 hover:text-[#651317] dark:hover:text-amber-300 hover:border-[#E8D8C4] dark:hover:border-stone-700'
                   )}
                 >
-                  {option.label}
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 text-[10px] font-black flex items-center justify-center shrink-0 uppercase">
+                    {option.code}
+                  </div>
+                  <span className="font-bold text-[13px]">{option.label}</span>
                   {language === option.code ? (
-                    <span className="ml-auto text-xs text-brand">✓</span>
-                  ) : null}
+                    <span className="ml-auto text-xs font-black text-[#651317] dark:text-amber-300">✓</span>
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
+                  )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           {/* Avatar + name dropdown */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {staffRole && <AdminRoleBadge role={staffRole} className="hidden sm:inline-flex" />}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="relative flex items-center gap-1.5 rounded-full pl-0.5 pr-2 py-0.5 hover:bg-brand/5 hover:text-brand transition-colors focus:outline-none focus:ring-2 focus:ring-brand"
+                  className="flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 pl-1 pr-2.5 focus:outline-none shrink-0"
                   aria-label={t('accountMenu')}
                 >
-                  <Avatar className="border border-brand/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm h-8 w-8">
+                  <Avatar className="border border-brand/25 bg-gradient-to-br from-amber-100 to-orange-100 shadow-xs h-6 w-6">
                     <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                    <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                    <AvatarFallback className="text-[10px] font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   {user && (
-                    <div className="hidden sm:flex flex-col items-start leading-none text-left select-none mr-0.5">
-                      <span className="text-[13px] font-bold text-foreground">
+                    <div className="hidden sm:flex flex-col items-start leading-none text-left select-none">
+                      <span className="text-[12px] font-bold text-foreground">
                         {displayName.split(' ')[0]}
-                      </span>
-                      <span className="text-[10px] font-medium text-orange-600 dark:text-orange-400 mt-0.5">
-                        {language === 'hi' ? 'भक्त' : 'Devotee'}
                       </span>
                     </div>
                   )}
-                  <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground" />
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
                 </button>
               </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">

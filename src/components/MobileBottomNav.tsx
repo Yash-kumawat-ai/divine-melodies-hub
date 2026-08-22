@@ -150,18 +150,19 @@ export default function MobileBottomNav() {
 
   const handleLogout = async () => {
     await signOut();
-    setFeaturesOpen(false);
+    handleFeaturesOpenChange(false);
     navigate("/");
   };
 
   useEffect(() => {
-    if (!featuresOpen) {
-      clearRadixBodyLocks();
-    }
-  }, [featuresOpen]);
+    const handleClose = () => handleFeaturesOpenChange(false);
+    window.addEventListener('close-more-drawer', handleClose);
+    return () => window.removeEventListener('close-more-drawer', handleClose);
+  }, []);
 
   const handleFeaturesOpenChange = (open: boolean) => {
     setFeaturesOpen(open);
+    window.dispatchEvent(new CustomEvent('more-drawer-change', { detail: { open } }));
     if (!open) {
       clearRadixBodyLocks();
     }
@@ -169,7 +170,7 @@ export default function MobileBottomNav() {
 
   const handleLanguageChange = (nextLanguage: typeof language) => {
     setLanguage(nextLanguage);
-    setFeaturesOpen(false);
+    handleFeaturesOpenChange(false);
     clearRadixBodyLocks();
   };
 
@@ -215,8 +216,9 @@ export default function MobileBottomNav() {
                 key={item.labelKey}
                 type="button"
                 onClick={() => {
-                  window.dispatchEvent(new Event('close-temple-pickers'))
-                  setFeaturesOpen(true)
+                  window.dispatchEvent(new Event('close-temple-pickers'));
+                  window.dispatchEvent(new Event('close-hamburger-drawer'));
+                  handleFeaturesOpenChange(true);
                 }}
                 className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
                 aria-label={t("features")}
@@ -232,8 +234,8 @@ export default function MobileBottomNav() {
               key={item.labelKey}
               to={item.path || "/"}
               onClick={() => {
-                window.dispatchEvent(new Event('close-temple-pickers'))
-                setFeaturesOpen(false)
+                window.dispatchEvent(new Event('close-temple-pickers'));
+                handleFeaturesOpenChange(false);
               }}
               className="flex min-w-0 flex-col items-center justify-end rounded-2xl px-1 pb-0.5 text-center transition-transform active:scale-95"
               aria-current={active ? "page" : undefined}
@@ -247,7 +249,7 @@ export default function MobileBottomNav() {
       <Sheet modal={false} open={featuresOpen} onOpenChange={handleFeaturesOpenChange}>
         <SheetContent
           side="bottom"
-          className="mx-auto max-h-[82dvh] w-full max-w-[32rem] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 shadow-dialog backdrop-blur-2xl dark:border-white/10 dark:bg-background/95"
+          className="mx-auto max-h-[85dvh] w-full max-w-[32rem] overflow-y-auto overscroll-contain rounded-t-[1.75rem] border-border/80 bg-background/95 px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-4 shadow-dialog backdrop-blur-2xl dark:border-white/10 dark:bg-background/95"
         >
           <SheetHeader className="mb-4 text-left">
             <SheetTitle className="text-base">{t("features")}</SheetTitle>
@@ -387,6 +389,29 @@ export default function MobileBottomNav() {
             >
               {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-border/60">
+            {user ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/80 dark:bg-red-950/30 text-[#B42318] dark:text-red-300 text-xs font-bold shadow-sm transition-colors active:scale-[0.98]"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>{language === 'hi' ? 'लॉग आउट' : 'Log Out'}</span>
+              </button>
+            ) : (
+              <SheetClose asChild>
+                <Link
+                  to="/auth/login"
+                  className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-bold shadow-sm transition-colors active:scale-[0.98]"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>{language === 'hi' ? 'लॉग इन करें' : 'Log In'}</span>
+                </Link>
+              </SheetClose>
+            )}
           </div>
         </SheetContent>
       </Sheet>

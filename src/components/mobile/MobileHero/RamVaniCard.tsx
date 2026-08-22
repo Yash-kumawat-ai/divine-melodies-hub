@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Copy, Check, BookOpen } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -77,6 +76,7 @@ export function RamVaniCard() {
         const { data } = await supabase
           .from('daily_dohas')
           .select('*');
+
         if (data && data.length > 0) {
           const formatted: DohaItem[] = data.map((item: any) => ({
             id: Number(item.id),
@@ -244,3 +244,5 @@ export function RamVaniCard() {
     </div>
   );
 }
+
+export default RamVaniCard;

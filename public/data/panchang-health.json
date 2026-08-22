@@ -1,9 +1,118 @@
 {
-  "date": "2026-07-16",
-  "status": "ok",
+  "date": "2026-08-16",
+  "status": "failed",
   "total_zones": 6,
-  "successful_zones": 6,
-  "failed_zones": [],
-  "updated_at": "2026-07-16T11:28:46+05:30",
-  "message": "All 6 Panchang zones updated successfully"
+  "successful_zones": 0,
+  "failed_zones": [
+    {
+      "zone": "north",
+      "city": "Delhi",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "northwest",
+      "city": "Jaipur",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "west",
+      "city": "Mumbai",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "central",
+      "city": "Nagpur",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "northeast",
+      "city": "Kolkata",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "south",
+      "city": "Bengaluru",
+      "date": "2026-08-16",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "north",
+      "city": "Delhi",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "northwest",
+      "city": "Jaipur",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "west",
+      "city": "Mumbai",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "central",
+      "city": "Nagpur",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "northeast",
+      "city": "Kolkata",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "south",
+      "city": "Bengaluru",
+      "date": "2026-08-15",
+      "error": "403 Client Error: Site Disabled for url: https://api.vedastro.org/api/Calculate/LunarDay"
+    },
+    {
+      "zone": "north",
+      "city": "Delhi",
+      "date": "2026-08-14",
+      "error": "VedAstro API error: Free tier rate limit exceeded (5 calls/minute).\n\nTo unlock premium access (200 calls/minute):\n1. Get API key from: https://vedastro.org/Account.html\n2. Add to request header: x-api-key: YOUR_KEY\n3. Or add to URL: /APIKey/YOUR_KEY/Calculate/...\n4. For MCP server: Add to config headers: { \"x-api-key\": \"YOUR_KEY\" }\n\nAlready have a key? Check:\n• Key is in request header or URL\n• Subscription is active (https://vedastro.org/Account.html)\n• Key format: sk_live_... (48 characters)\n\nBuy premium ($1/month): https://vedastro.org/API.html"
+    },
+    {
+      "zone": "northwest",
+      "city": "Jaipur",
+      "date": "2026-08-14",
+      "error": "VedAstro API error: Free tier rate limit exceeded (5 calls/minute).\n\nTo unlock premium access (200 calls/minute):\n1. Get API key from: https://vedastro.org/Account.html\n2. Add to request header: x-api-key: YOUR_KEY\n3. Or add to URL: /APIKey/YOUR_KEY/Calculate/...\n4. For MCP server: Add to config headers: { \"x-api-key\": \"YOUR_KEY\" }\n\nAlready have a key? Check:\n• Key is in request header or URL\n• Subscription is active (https://vedastro.org/Account.html)\n• Key format: sk_live_... (48 characters)\n\nBuy premium ($1/month): https://vedastro.org/API.html"
+    },
+    {
+      "zone": "west",
+      "city": "Mumbai",
+      "date": "2026-08-14",
+      "error": "HTTPSConnectionPool(host='api.vedastro.org', port=443): Max retries exceeded with url: /api/Calculate/LunarDay (Caused by ConnectTimeoutError(<HTTPSConnection(host='api.vedastro.org', port=443) at 0x1c5c6506350>, 'Connection to api.vedastro.org timed out. (connect timeout=120)'))"
+    },
+    {
+      "zone": "central",
+      "city": "Nagpur",
+      "date": "2026-08-14",
+      "error": "('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))"
+    },
+    {
+      "zone": "northeast",
+      "city": "Kolkata",
+      "date": "2026-08-14",
+      "error": "VedAstro API error: Free tier rate limit exceeded (5 calls/minute).\n\nTo unlock premium access (200 calls/minute):\n1. Get API key from: https://vedastro.org/Account.html\n2. Add to request header: x-api-key: YOUR_KEY\n3. Or add to URL: /APIKey/YOUR_KEY/Calculate/...\n4. For MCP server: Add to config headers: { \"x-api-key\": \"YOUR_KEY\" }\n\nAlready have a key? Check:\n• Key is in request header or URL\n• Subscription is active (https://vedastro.org/Account.html)\n• Key format: sk_live_... (48 characters)\n\nBuy premium ($1/month): https://vedastro.org/API.html"
+    },
+    {
+      "zone": "south",
+      "city": "Bengaluru",
+      "date": "2026-08-14",
+      "error": "VedAstro API error: Free tier rate limit exceeded (5 calls/minute).\n\nTo unlock premium access (200 calls/minute):\n1. Get API key from: https://vedastro.org/Account.html\n2. Add to request header: x-api-key: YOUR_KEY\n3. Or add to URL: /APIKey/YOUR_KEY/Calculate/...\n4. For MCP server: Add to config headers: { \"x-api-key\": \"YOUR_KEY\" }\n\nAlready have a key? Check:\n• Key is in request header or URL\n• Subscription is active (https://vedastro.org/Account.html)\n• Key format: sk_live_... (48 characters)\n\nBuy premium ($1/month): https://vedastro.org/API.html"
+    }
+  ],
+  "updated_at": "2026-08-16T17:36:17+05:30",
+  "message": "Panchang updated for 0/6 zones"
 }

@@ -22,10 +22,9 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
-import { bhajans as staticBhajans } from '@/data/bhajans';
-import { supabase } from '@/lib/supabaseClient';
+import { useHomePublicStats } from '@/hooks/useHomeDashboardQueries';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
 
 // Local translation dictionary to support Hindi and English beautifully
@@ -108,62 +107,37 @@ export default function Footer() {
   const sadhanaOpen = activeSection === 'sadhana';
 
   const { totalCount: totalBhajanCount } = useBhajanCounts();
-  const [artistCount, setArtistCount] = useState(() => {
-    return new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean)).size;
-  });
-
-  useEffect(() => {
-    let active = true;
-    const fetchArtistCount = async () => {
-      try {
-        const { data: uploadSingers } = await (supabase as any)
-          .from('user_uploads')
-          .select('singer_name')
-          .or('status.eq.approved,status.is.null');
-
-        if (!active) return;
-
-        const uniqueSingers = new Set(staticBhajans.map(b => b.singerName.trim()).filter(Boolean));
-        if (uploadSingers) {
-          uploadSingers.forEach((row: any) => {
-            if (row.singer_name) {
-              uniqueSingers.add(row.singer_name.trim());
-            }
-          });
-        }
-        setArtistCount(uniqueSingers.size);
-      } catch (err) {
-        console.error('Error fetching artist count in footer:', err);
-      }
-    };
-
-    void fetchArtistCount();
-    return () => {
-      active = false;
-    };
-  }, [totalBhajanCount]);
+  const { data: publicStats } = useHomePublicStats();
+  const artistCount = publicStats?.artists ?? 0;
 
   // Safely get local translations
   const l = footerDict[language === 'hi' ? 'hi' : 'en'];
 
   useEffect(() => {
+    let ticking = false;
     const checkScroll = () => {
-      if (!showScroll && window.scrollY > 400) {
-        setShowScroll(true);
-      } else if (showScroll && window.scrollY <= 400) {
-        setShowScroll(false);
-      }
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        setShowScroll((prev) => {
+          if (!prev && y > 400) return true;
+          if (prev && y <= 400) return false;
+          return prev;
+        });
+        ticking = false;
+      });
     };
-    window.addEventListener('scroll', checkScroll);
+    window.addEventListener('scroll', checkScroll, { passive: true });
     return () => window.removeEventListener('scroll', checkScroll);
-  }, [showScroll]);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    // ── Matching exact page background (#FFFDF8 / bg-background) ──
+    <LazyMotion features={domAnimation}>
     <footer className="bg-[#FFFDF8] dark:bg-background text-foreground border-t border-[#EFE4D7] dark:border-zinc-800 mt-0 pt-10 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-12 relative overflow-hidden transition-colors duration-300">
       {/* Decorative background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -175,6 +149,10 @@ export default function Footer() {
           <img
             src={devotionalBg}
             alt="Raghavam Devotional Background"
+            width={1600}
+            height={400}
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-bottom"
           />
           {/* Natural soft overlay */}
@@ -282,7 +260,7 @@ export default function Footer() {
 
             <AnimatePresence initial={false}>
               {exploreOpen && (
-                <motion.div
+                <m.div
                   key="explore-content"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -317,7 +295,7 @@ export default function Footer() {
                       ))}
                     </ul>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -342,7 +320,7 @@ export default function Footer() {
 
             <AnimatePresence initial={false}>
               {communityOpen && (
-                <motion.div
+                <m.div
                   key="community-content"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -376,7 +354,7 @@ export default function Footer() {
                       ))}
                     </ul>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -401,7 +379,7 @@ export default function Footer() {
 
             <AnimatePresence initial={false}>
               {sadhanaOpen && (
-                <motion.div
+                <m.div
                   key="sadhana-content"
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -435,7 +413,7 @@ export default function Footer() {
                       ))}
                     </ul>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
           </div>
@@ -509,5 +487,6 @@ export default function Footer() {
       </div>
 
      </footer>
+    </LazyMotion>
   );
 }

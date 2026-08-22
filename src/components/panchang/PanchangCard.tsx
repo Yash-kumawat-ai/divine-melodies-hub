@@ -121,20 +121,20 @@ export default function PanchangCard() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.45 }}
-      className="relative overflow-hidden rounded-[1.75rem] border border-amber-300/30 bg-card/90 p-4 shadow-[0_24px_80px_-42px_rgba(245,158,11,0.75)] backdrop-blur-md sm:p-5"
+      className="temple-panel relative overflow-hidden p-4 backdrop-blur-md sm:p-5"
     >
-      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 left-4 h-36 w-36 rounded-full bg-orange-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-brand-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 left-4 h-36 w-36 rounded-full bg-brand-gold/10 blur-3xl" />
 
       <div className="relative flex flex-col gap-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600 dark:text-amber-300">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-brand-primary dark:text-brand-gold">
                 Panchang
               </p>
               {isStale && (
-                <span className="rounded-full border border-amber-300/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-200">
+                <span className="rounded-full border border-brand-gold-border bg-brand-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary dark:text-brand-gold">
                   Updating
                 </span>
               )}
@@ -146,8 +146,8 @@ export default function PanchangCard() {
               Zone: {currentZone.label} ({currentZone.city})
             </p>
           </div>
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-300/30 bg-amber-400/15 font-display text-lg font-bold text-amber-600 shadow-inner dark:text-amber-200">
-            Om
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-brand-gold-border bg-brand-primary/10 font-display text-lg font-bold text-brand-primary dark:text-brand-gold shadow-inner">
+            ॐ
           </div>
         </div>
 
@@ -156,7 +156,7 @@ export default function PanchangCard() {
           <select
             value={currentZone.name}
             onChange={(event) => handleZoneChange(event.target.value)}
-            className="h-10 w-full rounded-2xl border border-amber-300/35 bg-background/80 px-3 text-sm font-semibold text-foreground outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+            className="input-base h-10 w-full rounded-2xl px-3 text-sm font-semibold focus:border-brand-primary"
           >
             {ZONES.map((item) => (
               <option key={item.name} value={item.name}>

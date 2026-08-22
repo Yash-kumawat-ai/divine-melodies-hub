@@ -148,7 +148,12 @@ export function varaForWeekday(weekday: number): string {
   return VARA_BY_WEEKDAY[weekday] ?? VARA_BY_WEEKDAY[0];
 }
 
-export function nowInIndia(): { date: string; weekday: number; stdTime: string } {
+export function nowInIndia(targetDateStr?: string): { date: string; weekday: number; stdTime: string } {
+  let targetDate = new Date();
+  if (targetDateStr && /^\d{4}-\d{2}-\d{2}$/.test(targetDateStr)) {
+    targetDate = new Date(`${targetDateStr}T05:00:00+05:30`);
+  }
+
   const parts = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
@@ -158,7 +163,7 @@ export function nowInIndia(): { date: string; weekday: number; stdTime: string }
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  }).formatToParts(new Date());
+  }).formatToParts(targetDate);
 
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? '';
@@ -166,8 +171,6 @@ export function nowInIndia(): { date: string; weekday: number; stdTime: string }
   const day = get('day');
   const month = get('month');
   const year = get('year');
-  const hour = get('hour');
-  const minute = get('minute');
   const weekdayMap: Record<string, number> = {
     Sun: 6,
     Mon: 0,

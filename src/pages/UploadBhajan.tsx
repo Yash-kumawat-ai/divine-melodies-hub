@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import CategorySelector, { ContentCategory } from '@/components/Upload/CategorySelector';
@@ -8,10 +8,11 @@ import LyricsUpload from '@/components/Upload/FileUpload';
 import BhajanForm from '@/components/Upload/BhajanForm';
 import LoginForm from '@/components/Auth/LoginForm';
 import { motion } from 'framer-motion';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Deity } from '@/hooks/useDeities';
 import { SEO } from '@/components/SEO';
+import { toast } from 'sonner';
 
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
 
@@ -25,11 +26,13 @@ interface SelectedDeity {
   imageUrl?: string;
 }
 
+const DRAFT_KEY = 'raghavam_upload_draft';
+
 export default function UploadBhajan() {
   const { user, loading: authLoading } = useAuth();
   const { t, language } = useLanguage();
   const isHi = language === 'hi';
-  
+
   const [step, setStep] = useState<Step>('category');
   const [selectedCategory, setSelectedCategory] = useState<ContentCategory | null>(null);
   const [customCategoryName, setCustomCategoryName] = useState<string>('');
@@ -37,7 +40,67 @@ export default function UploadBhajan() {
   const [lyricsUrl, setLyricsUrl] = useState('');
   const [lyricsType, setLyricsType] = useState<'image' | 'text'>('image');
   const [lyricsContent, setLyricsContent] = useState('');
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
   const navigate = useNavigate();
+
+  // Load draft from localStorage on initial render
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Date.now() - (parsed.timestamp || 0) < 24 * 60 * 60 * 1000) {
+          if (parsed.selectedCategory) setSelectedCategory(parsed.selectedCategory);
+          if (parsed.customCategoryName) setCustomCategoryName(parsed.customCategoryName);
+          if (parsed.selectedDeity) setSelectedDeity(parsed.selectedDeity);
+          if (parsed.lyricsUrl) setLyricsUrl(parsed.lyricsUrl);
+          if (parsed.lyricsType) setLyricsType(parsed.lyricsType);
+          if (parsed.lyricsContent) setLyricsContent(parsed.lyricsContent);
+          if (parsed.step) setStep(parsed.step);
+
+          setHasRestoredDraft(true);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore draft:', e);
+    }
+  }, []);
+
+  // Save draft whenever state changes
+  useEffect(() => {
+    if (selectedCategory || selectedDeity || lyricsUrl || lyricsContent) {
+      const draft = {
+        step,
+        selectedCategory,
+        customCategoryName,
+        selectedDeity,
+        lyricsUrl,
+        lyricsType,
+        lyricsContent,
+        timestamp: Date.now(),
+      };
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch (e) {
+        console.warn('Failed to save upload draft:', e);
+      }
+    }
+  }, [step, selectedCategory, customCategoryName, selectedDeity, lyricsUrl, lyricsType, lyricsContent]);
+
+  const handleClearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {}
+    setStep('category');
+    setSelectedCategory(null);
+    setCustomCategoryName('');
+    setSelectedDeity(null);
+    setLyricsUrl('');
+    setLyricsType('image');
+    setLyricsContent('');
+    setHasRestoredDraft(false);
+    toast.info(isHi ? 'ड्राफ्ट साफ़ कर दिया गया' : 'Draft cleared');
+  };
 
   if (authLoading) {
     return (
@@ -128,6 +191,9 @@ export default function UploadBhajan() {
   };
 
   const handleUploadSuccess = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {}
     navigate('/');
   };
 
@@ -161,19 +227,17 @@ export default function UploadBhajan() {
         description="Share bhajans, aartis, chalisas, and kathas with the Raghavam community."
       />
 
-      {/* ── LANDSCAPE HERO BANNER MATCHING image-1784960575476.png ── */}
+      {/* ── LANDSCAPE HERO BANNER ── */}
       <div className="p-2.5 sm:p-4 max-w-5xl mx-auto">
         <div className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-[#E8D8C4] dark:border-zinc-800 shadow-md bg-[#FAF2E8] dark:bg-[#1E1710] p-4 sm:p-6 min-h-[140px] sm:min-h-[170px] flex flex-col justify-between">
-          {/* Background Image showing bottom part in natural bright style */}
           <img
             src={devotionalBg}
             alt="Bhakti Background"
             className="absolute inset-0 w-full h-full object-cover object-bottom"
           />
-          {/* Subtle natural light/dark overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-white/15 to-[#FFFDF8]/80 dark:from-black/40 dark:via-black/60 dark:to-black/85" />
 
-          {/* Top Row: Circular White Back Button & Category Pill */}
+          {/* Top Row: Circular Back Button & Category Pill */}
           <div className="relative z-10 flex items-center justify-between w-full">
             <button
               type="button"
@@ -184,21 +248,34 @@ export default function UploadBhajan() {
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:w-5" />
             </button>
 
-            {selectedCategory && (
-              <div className="px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-zinc-900/90 border border-[#EFE4D7] dark:border-zinc-800 shadow-md text-xs font-bold text-[#5A1F1A] dark:text-[#E8B15C] flex items-center gap-1.5">
-                <span>{selectedCategory.emoji}</span>
-                <span>{customCategoryName || selectedCategory.nameHindi}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {hasRestoredDraft && (
+                <button
+                  type="button"
+                  onClick={handleClearDraft}
+                  className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-[11px] font-bold text-amber-900 dark:text-amber-300 flex items-center gap-1 hover:bg-amber-200 transition-colors shadow-sm"
+                  title="Clear draft & start over"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>{isHi ? "नया शुरू करें" : "Reset Draft"}</span>
+                </button>
+              )}
+
+              {selectedCategory && (
+                <div className="px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-zinc-900/90 border border-[#EFE4D7] dark:border-zinc-800 shadow-md text-xs font-bold text-[#5A1F1A] dark:text-[#E8B15C] flex items-center gap-1.5">
+                  <span>{selectedCategory.emoji}</span>
+                  <span>{customCategoryName || selectedCategory.nameHindi}</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Center Column: Title, Lotus Flourish line & Subtitle */}
+          {/* Center Title */}
           <div className="relative z-10 text-center py-2 sm:py-3 px-2">
             <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#4A1516] dark:text-[#FFFDF8] tracking-wide drop-shadow-sm">
               {isHi ? "भक्ति रचना जोड़ें" : "Upload Devotional Content"}
             </h1>
             
-            {/* Ornate Flourish Line */}
             <div className="flex items-center justify-center gap-2 my-1 opacity-80">
               <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#7A2D28] dark:to-[#E8B15C]" />
               <span className="text-[#7A2D28] dark:text-[#E8B15C] text-xs">🪷</span>
@@ -217,9 +294,20 @@ export default function UploadBhajan() {
       <div className="py-2 sm:py-4 px-3 sm:px-4">
         <div className="container mx-auto max-w-5xl">
 
-          {/* 4-Step Progress Indicator */}
-          <div className="mb-8 sm:mb-10 max-w-xl mx-auto px-1 sm:px-4">
-            <div className="flex items-center justify-between relative">
+          {/* 4-Step Progress Timeline (No text overlap with numbers) */}
+          <div className="mb-8 sm:mb-10 max-w-3xl mx-auto px-2 sm:px-6">
+            <div className="relative flex items-center justify-between">
+              {/* Background connector line */}
+              <div className="absolute top-4 sm:top-5 left-10 right-10 h-1 bg-[#EFE4D7] dark:bg-zinc-800 rounded-full z-0" />
+
+              {/* Active progress line */}
+              <div
+                className="absolute top-4 sm:top-5 left-10 h-1 bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] rounded-full z-0 transition-all duration-300"
+                style={{
+                  width: `${((getStepNumber() - 1) / (stepLabels.length - 1)) * 82}%`,
+                }}
+              />
+
               {stepLabels.map((label, idx) => {
                 const currentStepNum = getStepNumber();
                 const stepIdx = idx + 1;
@@ -227,29 +315,28 @@ export default function UploadBhajan() {
                 const isActive = currentStepNum === stepIdx;
 
                 return (
-                  <div key={label} className="flex flex-col items-center relative z-10 min-w-0">
+                  <div key={label} className="flex flex-col items-center relative z-10 min-w-0 flex-1">
                     <div
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all shadow-sm ${
+                      className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-extrabold text-xs sm:text-sm transition-all shadow-md ${
                         isCompleted
-                          ? 'bg-[#5A1F1A] dark:bg-[#E8B15C] text-white dark:text-zinc-950'
+                          ? 'bg-[#5A1F1A] dark:bg-[#E8B15C] text-white dark:text-zinc-950 ring-2 ring-white dark:ring-zinc-900'
                           : isActive
-                          ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 ring-4 ring-[#D4A44A]/20'
-                          : 'bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800 text-[#7A6B60] dark:text-[#D4C5B9]'
+                          ? 'bg-gradient-to-r from-[#7A2D28] to-[#5A1F1A] dark:from-[#D4A44A] dark:to-[#E8B15C] text-white dark:text-zinc-950 ring-4 ring-[#D4A44A]/30 scale-105'
+                          : 'bg-white dark:bg-[#1E1710] border-2 border-[#EFE4D7] dark:border-zinc-800 text-[#7A6B60] dark:text-[#D4C5B9]'
                       }`}
                     >
                       {isCompleted ? '✓' : stepIdx}
                     </div>
-                    <span className={`text-[10px] sm:text-xs font-bold mt-1 text-center truncate max-w-[70px] sm:max-w-none ${
-                      isActive ? 'text-[#32251E] dark:text-[#FFFDF8]' : 'text-[#7A6B60] dark:text-[#D4C5B9]'
-                    }`}>
+                    <span
+                      className={`text-[11px] sm:text-xs font-bold mt-2.5 text-center leading-snug whitespace-nowrap block w-full ${
+                        isActive ? 'text-[#32251E] dark:text-[#FFFDF8]' : 'text-[#7A6B60] dark:text-[#D4C5B9]'
+                      }`}
+                    >
                       {label}
                     </span>
                   </div>
                 );
               })}
-
-              {/* Connecting line */}
-              <div className="absolute top-4 sm:top-5 left-8 right-8 h-0.5 bg-[#EFE4D7] dark:bg-zinc-800 -z-0" />
             </div>
           </div>
 
@@ -282,15 +369,30 @@ export default function UploadBhajan() {
               </div>
             )}
 
-            {/* Step 3: Lyrics & Media Upload (Cloudinary support) */}
+            {/* Step 3: Lyrics & Media Upload */}
             {step === 'lyrics' && selectedDeity && (
-              <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="space-y-6 max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#EFE4D7] dark:border-amber-900/40 text-[#6A2C2A] dark:text-[#E8B15C] text-xs font-bold">
-                    <span>✨ Step 3 of 4</span>
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#EFE4D7] dark:border-amber-900/40 text-[#6A2C2A] dark:text-[#E8B15C] text-xs font-bold shadow-sm">
+                    <span>{isHi ? "✨ चरण 3 / 4" : "✨ Step 3 of 4"}</span>
                   </span>
-                  <div className="text-5xl my-2">{selectedDeity.emoji}</div>
-                  <h2 className="font-serif text-2xl font-bold text-[#32251E] dark:text-[#FFFDF8]">
+
+                  {/* High Quality Deity Graphic Avatar */}
+                  <div className="flex justify-center my-3">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-[#D4A44A] dark:border-[#E8B15C] shadow-md bg-[#FAF2E8] dark:bg-amber-950/40 flex items-center justify-center p-1">
+                      {selectedDeity.imageUrl ? (
+                        <img
+                          src={selectedDeity.imageUrl}
+                          alt={selectedDeity.name}
+                          className="w-full h-full object-cover object-top rounded-full"
+                        />
+                      ) : (
+                        <span className="text-4xl">{selectedDeity.emoji}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#32251E] dark:text-[#FFFDF8]">
                     {selectedDeity.name}
                   </h2>
                   <p className="text-[#7A6B60] dark:text-[#D4C5B9] text-xs sm:text-sm mt-1">
@@ -304,12 +406,12 @@ export default function UploadBhajan() {
 
             {/* Step 4: Details & Final Submit */}
             {step === 'details' && selectedDeity && (
-              <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="space-y-6 max-w-4xl mx-auto">
                 <div className="text-center mb-6">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#EFE4D7] dark:border-amber-900/40 text-[#6A2C2A] dark:text-[#E8B15C] text-xs font-bold">
-                    <span>✨ Step 4 of 4</span>
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FAF2E8] dark:bg-amber-950/40 border border-[#EFE4D7] dark:border-amber-900/40 text-[#6A2C2A] dark:text-[#E8B15C] text-xs font-bold shadow-sm">
+                    <span>{isHi ? "✨ चरण 4 / 4" : "✨ Step 4 of 4"}</span>
                   </span>
-                  <h2 className="font-serif text-2xl font-bold text-[#32251E] dark:text-[#FFFDF8] mt-2">
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#32251E] dark:text-[#FFFDF8] mt-2">
                     {isHi ? "अंतिम विवरण दर्ज करें" : "Final Details"}
                   </h2>
                 </div>

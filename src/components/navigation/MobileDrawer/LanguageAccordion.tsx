@@ -24,13 +24,13 @@ export const LanguageAccordion = memo(
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C67A2D]"
-          style={{ background: isOpen ? 'rgba(198,122,45,0.09)' : 'transparent' }}
+          className="flex w-full items-center gap-3 rounded-2xl min-h-[52px] px-3.5 py-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651317]/50"
+          style={{ background: isOpen ? 'rgba(101,19,23,0.08)' : 'transparent' }}
           aria-expanded={isOpen}
           aria-label="Change language"
         >
           <span
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl"
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl"
             style={{ background: iconBg, color: iconColor }}
           >
             <Globe size={18} />
@@ -65,7 +65,7 @@ export const LanguageAccordion = memo(
             >
               <div
                 className="mx-2 mb-1 mt-1 grid grid-cols-2 gap-1.5 rounded-xl p-2 transition-colors duration-300"
-                style={{ background: 'rgba(198,122,45,0.05)', border: `1px solid ${border}` }}
+                style={{ background: 'rgba(101,19,23,0.05)', border: `1px solid ${border}` }}
               >
                 {DRAWER_LANGUAGE_OPTIONS.map((option) => {
                   const selected = option.code === language;
@@ -76,10 +76,10 @@ export const LanguageAccordion = memo(
                       role="radio"
                       aria-checked={selected}
                       onClick={() => handleSelect(option.code)}
-                      className="flex flex-col items-center rounded-lg py-2.5 text-center transition-all active:scale-[0.97] duration-150"
+                      className="flex flex-col items-center rounded-xl py-2.5 text-center transition-all active:scale-[0.97] duration-150"
                       style={{
-                        background: selected ? 'rgba(198,122,45,0.14)' : 'transparent',
-                        border: selected ? `1px solid rgba(198,122,45,0.35)` : '1px solid transparent',
+                        background: selected ? 'rgba(101,19,23,0.12)' : 'transparent',
+                        border: selected ? `1px solid rgba(101,19,23,0.28)` : '1px solid transparent',
                         color: selected ? accent : primaryText,
                       }}
                     >

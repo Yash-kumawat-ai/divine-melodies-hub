@@ -20,12 +20,17 @@ import {
   Music,
   Flower2,
   Flame,
-  Trophy
+  Trophy,
+  Zap,
+  Sliders,
+  Edit3,
+  Clock,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
+import { transcriptMatchesActiveMantra } from "@/lib/meditation/japaVoice";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -36,6 +41,7 @@ import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
 import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
 import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
 import ramJiSvg from "@/pages/images/svg/ram ji.svg";
+import playCircleSvg from "@/pages/images/svg/play-circle-svgrepo-com.svg";
 
 // ─── SHANKH & BELL SYNTH SOUND GENERATOR ──────────────────────────
 const playBellSound = (volumeEnabled: boolean) => {
@@ -126,13 +132,112 @@ const playConchSound = (volumeEnabled: boolean) => {
   }
 };
 
+// ─── MALA THEMES (3 distinct looks, CSS-only) ───────────────────
+export type MalaTypeId = "rudraksha" | "tulsi" | "sandalwood";
+
+const MALA_STORAGE_KEY = "japa_mala_type";
+
+const MALA_TYPE_IDS: MalaTypeId[] = ["rudraksha", "tulsi", "sandalwood"];
+
+type MalaTheme = {
+  labelHi: string;
+  labelEn: string;
+  thread: string;
+  beadDone: string;
+  beadTodo: string;
+  beadShadow: string;
+  sumeru: string;
+  sumeruBorder: string;
+  sumeruGlow: string;
+  tasselCap: string;
+  tasselFringe: string;
+  activeRing: string;
+  activeGlow: string;
+  previewBeads: [string, string, string];
+};
+
+export const MALA_THEMES: Record<MalaTypeId, MalaTheme> = {
+  rudraksha: {
+    labelHi: "रुद्राक्ष",
+    labelEn: "Rudraksha",
+    thread: "rgba(62, 32, 16, 0.55)",
+    beadDone:
+      "radial-gradient(circle at 32% 28%, #8B5A2B 0%, #5C3310 45%, #3A1F0A 78%, #2A1508 100%)",
+    beadTodo:
+      "radial-gradient(circle at 32% 28%, #6B4423 0%, #4A2C12 50%, #2E1A0C 100%)",
+    beadShadow: "0 1px 3px rgba(42,21,8,0.55), inset 0 -2px 4px rgba(0,0,0,0.35)",
+    sumeru: "radial-gradient(circle at 35% 30%, #C4A35A 0%, #8B6914 40%, #5C4010 100%)",
+    sumeruBorder: "#D4AF37",
+    sumeruGlow: "0 0 12px rgba(139,105,20,0.55)",
+    tasselCap: "#B8860B",
+    tasselFringe: "linear-gradient(to bottom, #651317, #8B1E15, transparent)",
+    activeRing: "#651317",
+    activeGlow: "0 0 12px rgba(101,19,23,0.55)",
+    previewBeads: ["#5C3310", "#3A1F0A", "#8B5A2B"],
+  },
+  tulsi: {
+    labelHi: "तुलसी",
+    labelEn: "Tulsi",
+    thread: "rgba(74, 92, 48, 0.5)",
+    beadDone:
+      "radial-gradient(circle at 32% 28%, #A67C52 0%, #6B7F3B 42%, #4A5C30 75%, #3A4A24 100%)",
+    beadTodo:
+      "radial-gradient(circle at 32% 28%, #8B9A6B 0%, #5A6B40 55%, #3F4D2E 100%)",
+    beadShadow: "0 1px 3px rgba(58,74,36,0.4), inset 0 -2px 3px rgba(0,0,0,0.2)",
+    sumeru: "radial-gradient(circle at 35% 30%, #C4B896 0%, #8B9A5A 45%, #5A6B38 100%)",
+    sumeruBorder: "#A8B86A",
+    sumeruGlow: "0 0 10px rgba(107,127,59,0.45)",
+    tasselCap: "#6B7F3B",
+    tasselFringe: "linear-gradient(to bottom, #4A5C30, #6B7F3B, transparent)",
+    activeRing: "#4A5C30",
+    activeGlow: "0 0 12px rgba(74,92,48,0.5)",
+    previewBeads: ["#6B7F3B", "#4A5C30", "#A67C52"],
+  },
+  sandalwood: {
+    labelHi: "चंदन",
+    labelEn: "Sandalwood",
+    thread: "rgba(196, 163, 90, 0.55)",
+    beadDone:
+      "radial-gradient(circle at 32% 28%, #F5E6D3 0%, #E8D0A8 40%, #D4B896 72%, #C4A070 100%)",
+    beadTodo:
+      "radial-gradient(circle at 32% 28%, #EDE0CC 0%, #D9C4A0 55%, #C4AD88 100%)",
+    beadShadow: "0 1px 3px rgba(139,105,60,0.35), inset 0 -1px 3px rgba(255,255,255,0.35)",
+    sumeru: "radial-gradient(circle at 35% 30%, #F5C15C 0%, #D9A441 45%, #B8860B 100%)",
+    sumeruBorder: "#F5C15C",
+    sumeruGlow: "0 0 12px rgba(217,164,65,0.55)",
+    tasselCap: "#D9A441",
+    tasselFringe: "linear-gradient(to bottom, #651317, #A62419, transparent)",
+    activeRing: "#651317",
+    activeGlow: "0 0 12px rgba(101,19,23,0.45)",
+    previewBeads: ["#E8D0A8", "#D4B896", "#F5E6D3"],
+  },
+};
+
+function loadStoredMalaType(): MalaTypeId {
+  try {
+    const v = localStorage.getItem(MALA_STORAGE_KEY);
+    if (v === "rudraksha" || v === "tulsi" || v === "sandalwood") return v;
+  } catch {
+    /* ignore */
+  }
+  return "rudraksha";
+}
+
+function persistMalaType(type: MalaTypeId) {
+  try {
+    localStorage.setItem(MALA_STORAGE_KEY, type);
+  } catch {
+    /* ignore */
+  }
+}
+
 // ─── REUSABLE CIRCULAR MALA RING COMPONENT ──────────────────────
 interface CircularMalaRingProps {
   count: number;
   targetCount: number;
   isDark: boolean;
   isMobile: boolean;
-  malaType: "rudraksha" | "tulsi" | "sandalwood";
+  malaType: MalaTypeId;
   activeMantra: any;
   isHi: boolean;
   floatingTexts?: FloatingText[];
@@ -156,6 +261,7 @@ export const CircularMalaRing = memo(function CircularMalaRing({
   onTap,
   showCenterStats = true,
 }: CircularMalaRingProps) {
+  const theme = MALA_THEMES[malaType];
   const numBeads = 27;
   const beadIndices = useMemo(() => {
     const arr = [];
@@ -188,29 +294,25 @@ export const CircularMalaRing = memo(function CircularMalaRing({
         height: `${(R + 24) * 2}px`,
       }}
     >
-      {/* Floating animated mantras rising from the center */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible z-40">
         <AnimatePresence>
           {floatingTexts.map((f) => (
             <motion.div
               key={f.id}
-              initial={{ opacity: 0, scale: 0.75, y: 15, x: f.x }}
-              animate={{ 
-                opacity: [0, 1, 1, 0], 
-                scale: [0.75, 1.15, 1.25, 1], 
-                y: -110, 
-                x: f.x 
+              initial={{ opacity: 0, scale: 0.85, y: 15, x: f.x }}
+              animate={{
+                opacity: [0, 1, 1, 0],
+                scale: [0.85, 1.15, 1.2, 1],
+                y: -115,
+                x: f.x,
               }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.5, ease: "easeOut" }}
-              className={`absolute font-serif text-sm md:text-base font-bold text-center pointer-events-none whitespace-pre-line max-w-[240px] md:max-w-[320px] transition-colors duration-200 ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
+              className={`absolute font-display text-base sm:text-lg md:text-xl font-bold text-center pointer-events-none whitespace-pre-line max-w-[260px] md:max-w-[360px] z-50 ${
+                isDark
+                  ? "text-amber-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]"
+                  : "text-[#651317] drop-shadow-[0_2px_8px_rgba(255,253,248,0.9)]"
               }`}
-              style={{ 
-                textShadow: isDark 
-                  ? "0 0 12px rgba(245, 158, 11, 0.75)" 
-                  : "0 0 8px rgba(89, 26, 13, 0.2)" 
-              }}
             >
               {f.text}
             </motion.div>
@@ -218,18 +320,18 @@ export const CircularMalaRing = memo(function CircularMalaRing({
         </AnimatePresence>
       </div>
 
-      {/* Mala Thread (Connecting line/string between beads) */}
-      <div 
-        className="absolute rounded-full border-[2px] border-orange-700/40 pointer-events-none z-10 shadow-[0_0_4px_rgba(194,65,12,0.2)]"
+      {/* Mala Thread */}
+      <div
+        className="absolute rounded-full border-[2.5px] pointer-events-none z-10"
         style={{
           width: `${R * 2}px`,
           height: `${R * 2}px`,
           left: `calc(50% - ${R}px)`,
           top: `calc(50% - ${R}px)`,
+          borderColor: theme.thread,
         }}
       />
 
-      {/* 28 Beads layout loop */}
       {beadIndices.map((i) => {
         const isSumeru = i === 0;
         const isCompletedBead = !isSumeru && i <= currentCompletedCount;
@@ -238,7 +340,7 @@ export const CircularMalaRing = memo(function CircularMalaRing({
         const angleDeg = -90 + (i * 360) / (numBeads + 1);
         const angleRad = (angleDeg * Math.PI) / 180;
         const beadSize = isSumeru ? sumeruBeadSize : regularBeadSize;
-        
+
         const left = `calc(50% + ${R * Math.cos(angleRad)}px - ${beadSize / 2}px)`;
         const top = `calc(50% + ${R * Math.sin(angleRad)}px - ${beadSize / 2}px)`;
 
@@ -255,26 +357,37 @@ export const CircularMalaRing = memo(function CircularMalaRing({
             }}
           >
             {isSumeru ? (
-              // Sumeru Bead
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-amber-900 border border-amber-300 flex items-center justify-center shadow-[0_0_10px_rgba(245,158,11,0.5)] relative">
-                <span className="text-[9px] md:text-[11px] font-bold text-black font-serif select-none pointer-events-none">ॐ</span>
-                {/* Hanging Silk Tassel */}
-                <div 
+              <div
+                className="w-full h-full rounded-full flex items-center justify-center relative border"
+                style={{
+                  background: theme.sumeru,
+                  borderColor: theme.sumeruBorder,
+                  boxShadow: theme.sumeruGlow,
+                }}
+              >
+                <span className="text-[13px] md:text-[18px] font-bold text-[#1a1008] font-display select-none pointer-events-none leading-none">
+                  ॐ
+                </span>
+                <div
                   className="absolute left-1/2 -translate-x-1/2 w-3 h-10 flex flex-col items-center pointer-events-none z-30"
                   style={{ top: `${Math.round(sumeruBeadSize * 0.88)}px` }}
                 >
-                  {/* Tassel bead/cap */}
-                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-sm border border-amber-600 shadow-sm" />
-                  {/* Red silk fringe */}
-                  <div className="w-1 h-8 bg-gradient-to-b from-red-600 via-orange-600 to-transparent rounded-b-md shadow-sm origin-top animate-pulse" />
+                  <div
+                    className="w-1.5 h-1.5 rounded-sm border border-black/20 shadow-sm"
+                    style={{ background: theme.tasselCap }}
+                  />
+                  <div
+                    className="w-1 h-8 rounded-b-md shadow-sm origin-top"
+                    style={{ background: theme.tasselFringe }}
+                  />
                 </div>
               </div>
-            ) : (
-              // Regular Bead (Rudraksha / Tulsi / Sandalwood)
+            ) : malaType === "rudraksha" ? (
+              /* Previous textured rudraksha beads */
               <div
                 className={`w-full h-full rounded-full transition-all duration-300 ${
                   isActiveBead
-                    ? isDark 
+                    ? isDark
                       ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
                       : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
                     : isCompletedBead
@@ -282,29 +395,40 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                     : "opacity-45"
                 }`}
                 style={{
-                  backgroundImage: malaType === "rudraksha" ? "url('/images/rudraksha.webp')" : undefined,
+                  backgroundImage: "url('/images/rudraksha.webp')",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundColor:
-                    malaType === "rudraksha"
-                      ? isCompletedBead || isActiveBead
-                        ? "#D97706"
-                        : isDark ? "#5c2a13" : "#A14D16"
-                      : malaType === "tulsi"
-                      ? isCompletedBead 
-                        ? "#f59e0b" 
-                        : isDark ? "#4a2e1d" : "#e8d3c4"
-                      : isCompletedBead 
-                      ? "#facc15" 
-                      : isDark ? "#c19a6b" : "#f5e6d3",
+                    isCompletedBead || isActiveBead
+                      ? "#D97706"
+                      : isDark
+                      ? "#5c2a13"
+                      : "#A14D16",
                   filter:
-                    malaType === "rudraksha"
-                      ? isCompletedBead || isActiveBead
-                        ? "brightness(1.15) saturate(1.4) contrast(1.1)"
-                        : isDark
-                        ? "brightness(0.6) contrast(1.1) sepia(0.25)"
-                        : "brightness(0.95) contrast(1.1) sepia(0.2)"
-                      : undefined,
+                    isCompletedBead || isActiveBead
+                      ? "brightness(1.15) saturate(1.4) contrast(1.1)"
+                      : isDark
+                      ? "brightness(0.6) contrast(1.1) sepia(0.25)"
+                      : "brightness(0.95) contrast(1.1) sepia(0.2)",
+                }}
+              />
+            ) : (
+              <div
+                className={`w-full h-full rounded-full transition-all duration-300 ${
+                  isActiveBead ? "scale-[1.28]" : ""
+                }`}
+                style={{
+                  background: isCompletedBead || isActiveBead ? theme.beadDone : theme.beadTodo,
+                  boxShadow: isActiveBead
+                    ? theme.activeGlow
+                    : theme.beadShadow,
+                  opacity: isCompletedBead || isActiveBead ? 1 : 0.78,
+                  outline: isActiveBead ? `2.5px solid ${theme.activeRing}` : undefined,
+                  outlineOffset: isActiveBead ? 2 : undefined,
+                  border:
+                    malaType === "tulsi"
+                      ? "1px solid rgba(58,74,36,0.35)"
+                      : "1px solid rgba(196,160,112,0.45)",
                 }}
               />
             )}
@@ -312,33 +436,127 @@ export const CircularMalaRing = memo(function CircularMalaRing({
         );
       })}
 
-      {/* Center Content / Stats */}
       {centerContent ? (
         <div className="absolute inset-0 flex items-center justify-center text-center pointer-events-none select-none z-20">
           {centerContent}
         </div>
       ) : showCenterStats ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none z-20">
-          <span className="font-serif text-[54px] md:text-[66px] font-semibold text-[#f59e0b] leading-none tracking-tight transition-all tabular-nums drop-shadow-[0_0_12px_rgba(245,158,11,0.22)]">
+          <span
+            className={`font-display text-[54px] md:text-[66px] font-bold leading-none tracking-tight tabular-nums ${
+              isDark ? "text-[#F5C15C]" : "text-[#651317]"
+            }`}
+          >
             {count}
           </span>
-          <span className={`text-sm md:text-base font-semibold tracking-wider ${
-            isDark ? "text-amber-200/40" : "text-amber-800/60"
-          }`}>
+          <span
+            className={`text-sm md:text-base font-semibold tracking-wider ${
+              isDark ? "text-amber-200/50" : "text-[#786252]"
+            }`}
+          >
             /{targetCount}
           </span>
-          <div className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
-            isDark 
-              ? "bg-[#1b0d0a]/60 border-amber-500/20 text-amber-500" 
-              : "bg-amber-500/10 border-amber-500/30 text-amber-700"
-          }`}>
-            {isHi ? `माला ${Math.floor(count / numBeads) + 1}` : `ROUND ${Math.floor(count / numBeads) + 1}`}
+          <div
+            className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
+              isDark
+                ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
+                : "bg-[#FAF0E4] border-[#E8D8C4] text-[#651317]"
+            }`}
+          >
+            {isHi
+              ? `माला ${Math.floor(count / numBeads) + 1}`
+              : `ROUND ${Math.floor(count / numBeads) + 1}`}
           </div>
         </div>
       ) : null}
     </div>
   );
 });
+
+/** Compact 3-chip mala type picker */
+function MalaTypePicker({
+  malaType,
+  onChange,
+  isHi,
+  isDark,
+  stopPropagation,
+}: {
+  malaType: MalaTypeId;
+  onChange: (t: MalaTypeId) => void;
+  isHi: boolean;
+  isDark: boolean;
+  stopPropagation?: boolean;
+}) {
+  return (
+    <div
+      className="flex items-center justify-center gap-2 sm:gap-2.5 w-full"
+      onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
+    >
+      {MALA_TYPE_IDS.map((id) => {
+        const t = MALA_THEMES[id];
+        const selected = malaType === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            className={`flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-2xl border transition-all active:scale-95 min-w-[88px] sm:min-w-[100px] ${
+              selected
+                ? isDark
+                  ? "border-amber-500/60 bg-amber-500/10"
+                  : "border-[#651317] bg-[#651317]/08"
+                : isDark
+                ? "border-stone-700 bg-stone-900/60 hover:border-amber-500/30"
+                : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FAF0E4]/70"
+            }`}
+          >
+            <div className="flex items-center -space-x-1.5">
+              {id === "rudraksha"
+                ? [0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-4 h-4 rounded-full border border-black/15 shadow-sm"
+                      style={{
+                        backgroundImage: "url('/images/rudraksha.webp')",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundColor: "#A14D16",
+                        zIndex: 3 - i,
+                        filter: "brightness(1.05) saturate(1.2) contrast(1.05)",
+                      }}
+                    />
+                  ))
+                : t.previewBeads.map((c, i) => (
+                    <span
+                      key={i}
+                      className="w-4 h-4 rounded-full border border-black/15 shadow-sm"
+                      style={{
+                        background: c,
+                        zIndex: 3 - i,
+                        boxShadow: t.beadShadow,
+                      }}
+                    />
+                  ))}
+            </div>
+            <span
+              className={`text-[11px] font-bold leading-none ${
+                selected
+                  ? isDark
+                    ? "text-amber-300"
+                    : "text-[#651317]"
+                  : isDark
+                  ? "text-stone-400"
+                  : "text-[#786252]"
+              }`}
+            >
+              {isHi ? t.labelHi : t.labelEn}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // ─── PROPS TYPE ──────────────────────────────────────────────────
 type PremiumJapaCounterProps = {
@@ -449,7 +667,11 @@ export default function PremiumJapaCounter({
   const [autoLockDisabled, setAutoLockDisabled] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const [malaType, setMalaType] = useState<"rudraksha" | "tulsi" | "sandalwood">("rudraksha");
+  const [malaType, setMalaType] = useState<MalaTypeId>(() => loadStoredMalaType());
+
+  useEffect(() => {
+    persistMalaType(malaType);
+  }, [malaType]);
   
   const [liveRankings, setLiveRankings] = useState<any[]>([]);
   const [liveRankingsLoading, setLiveRankingsLoading] = useState(false);
@@ -508,19 +730,32 @@ export default function PremiumJapaCounter({
     }
   }, [searchParams, setSearchParams]);
   
-  // Timer tracking
+  // Timer tracking — voice mode stays paused until listening starts
   const [secondsElapsed, setSecondsElapsed] = useState(initialSeconds);
-  const [timerActive, setTimerActive] = useState(true);
+  const [timerActive, setTimerActive] = useState(() => initialPracticeMode !== "voice");
+
+  // Auto Jap (ऑटो जप) states
+  const [isAutoJapaActive, setIsAutoJapaActive] = useState(false);
+  const [autoJapaIntervalSec, setAutoJapaIntervalSec] = useState<number>(1.5);
+  const [autoJapaSpeedModalOpen, setAutoJapaSpeedModalOpen] = useState(false);
+  const autoJapaTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Guided Mode specific states
   const [guidedPlaying, setGuidedPlaying] = useState(false);
 
   // Voice Mode specific states
   const [voiceActive, setVoiceActive] = useState(false);
-  const [showVoiceInstructions, setShowVoiceInstructions] = useState(true);
+  const [voiceEverStarted, setVoiceEverStarted] = useState(false);
+  const [showVoiceInstructions, setShowVoiceInstructions] = useState(() => {
+    if (initialPracticeMode !== "voice") return false;
+    try {
+      return localStorage.getItem("voice_instructions_seen") !== "1";
+    } catch {
+      return true;
+    }
+  });
   const [dbLevel, setDbLevel] = useState(0);
   const [micDenied, setMicDenied] = useState(false);
-  const micWaveCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [lastRecognizedText, setLastRecognizedText] = useState("");
   const [recognitionSupported, setRecognitionSupported] = useState(true);
 
@@ -544,6 +779,7 @@ export default function PremiumJapaCounter({
   const animationFrameRef = useRef<number | null>(null);
   const lastVoiceCountTime = useRef<number>(0);
   const speechRecognitionRef = useRef<any>(null);
+  const voiceActiveRef = useRef(false);
   const guidedTimerRef = useRef<NodeJS.Timeout | null>(null);
   const wakeLockRef = useRef<any>(null);
 
@@ -677,6 +913,90 @@ export default function PremiumJapaCounter({
     playConchSound(soundEnabled);
   }, [soundEnabled]);
 
+  // ─── AUTO JAP INCREMENT (bypasses tap throttle) ──────────────────
+  const autoIncrementCount = useCallback(() => {
+    if (isCompleted || count >= targetCount) {
+      setIsAutoJapaActive(false);
+      return;
+    }
+    
+    lastTapTimeRef.current = Date.now();
+    
+    setCount((prev) => {
+      if (prev >= targetCount) {
+        setIsAutoJapaActive(false);
+        return targetCount;
+      }
+      const next = Math.min(prev + 1, targetCount);
+      
+      // Play bell
+      playBellSound(soundEnabled);
+      
+      // Vibrate
+      if (vibrationEnabled && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(40);
+        } catch (_) {}
+      }
+
+      // Add floating mantra text
+      const mantraText = isHi
+        ? activeMantra.full_text_hindi || activeMantra.name_hindi
+        : activeMantra.transliteration || activeMantra.name_english;
+      
+      const newFloat: FloatingText = {
+        id: floatingIdCounter.current++,
+        text: mantraText,
+        x: (Math.random() - 0.5) * 50,
+        y: (Math.random() - 0.5) * 50,
+      };
+
+      setFloatingTexts((f) => [...f.slice(-4), newFloat]);
+      
+      // Add falling flower particle
+      const currentIdx = flowerIdCounter.current++;
+      const selectedFlowerImage = SACRED_FLOWERS[currentIdx % SACRED_FLOWERS.length];
+      const newFlower: FallingFlower = {
+        id: currentIdx,
+        x: 10 + Math.random() * 80,
+        size: 24 + Math.random() * 20,
+        duration: 3.5 + Math.random() * 2,
+        delay: 0,
+        driftX: (Math.random() - 0.5) * 120,
+        rotationSpeed: (Math.random() - 0.5) * 360,
+        image: selectedFlowerImage,
+      };
+      
+      setFallingFlowers((fl) => [...fl.slice(-8), newFlower]);
+
+      if (next >= targetCount) {
+        handleCompletion();
+      }
+      return next;
+    });
+  }, [isCompleted, count, targetCount, soundEnabled, vibrationEnabled, isHi, activeMantra, handleCompletion]);
+
+  // ─── AUTO JAP INTERVAL EFFECT ───────────────────────────────────
+  useEffect(() => {
+    if (isAutoJapaActive && !isCompleted && timerActive) {
+      const intervalMs = Math.max(300, autoJapaIntervalSec * 1000);
+      autoJapaTimerRef.current = setInterval(() => {
+        autoIncrementCount();
+      }, intervalMs);
+    } else {
+      if (autoJapaTimerRef.current) {
+        clearInterval(autoJapaTimerRef.current);
+        autoJapaTimerRef.current = null;
+      }
+    }
+    return () => {
+      if (autoJapaTimerRef.current) {
+        clearInterval(autoJapaTimerRef.current);
+        autoJapaTimerRef.current = null;
+      }
+    };
+  }, [isAutoJapaActive, isCompleted, timerActive, autoJapaIntervalSec, autoIncrementCount]);
+
   // ─── INCREMENT ACTION ───────────────────────────────────────────
   const incrementCount = useCallback(() => {
     if (isCompleted || count >= targetCount) return;
@@ -782,42 +1102,51 @@ export default function PremiumJapaCounter({
 
   // ─── RESET HANDLER ──────────────────────────────────────────────
   const handleResetClick = useCallback(() => {
+    if (practiceMode === "voice") {
+      voiceActiveRef.current = false;
+      setVoiceActive(false);
+      setVoiceEverStarted(false);
+    }
     setCount(0);
     setSecondsElapsed(0);
     setIsCompleted(false);
     setTimerActive(false);
     setFloatingTexts([]);
-  }, []);
+  }, [practiceMode]);
 
   // ─── VOICE COUNTING (SPEECH RECOGNITION) ──────────────────────
+  useEffect(() => {
+    voiceActiveRef.current = voiceActive;
+  }, [voiceActive]);
+
+  const beginVoiceListening = useCallback(() => {
+    setShowVoiceInstructions(false);
+    setVoiceEverStarted(true);
+    setMicDenied(false);
+    setTimerActive(true);
+    setVoiceActive(true);
+  }, []);
+
+  const pauseVoiceListening = useCallback(() => {
+    voiceActiveRef.current = false;
+    setVoiceActive(false);
+    setTimerActive(false);
+  }, []);
+
   const startMicListening = async () => {
-    // ── Helper: extract key words from mantra text ──────────────
-    const getMantraKeywords = (): string[] => {
-      const hi = activeMantra.full_text_hindi || activeMantra.name_hindi || "";
-      const en = activeMantra.transliteration || activeMantra.name_english || "";
-      const combined = (hi + " " + en).toLowerCase();
-      // Split on spaces / punctuation, remove very short tokens
-      return combined
-        .replace(/[।|,!?॥.]/g, " ")
-        .split(/\s+/)
-        .map((w) => w.trim())
-        .filter((w) => w.length >= 2);
-    };
-
-    // ── Helper: fuzzy match — at least 1 keyword found in transcript ─
-    const transcriptMatchesMantra = (transcript: string): boolean => {
-      const lower = transcript.toLowerCase();
-      const keywords = getMantraKeywords();
-      if (keywords.length === 0) return false;
-      // Count how many keywords appear
-      const matchCount = keywords.filter((kw) => lower.includes(kw)).length;
-      // At least 1 keyword must match (lenient for long mantras)
-      return matchCount >= 1;
-    };
-
     const SpeechRecognitionAPI =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
+
+    const matchesTranscript = (transcript: string) =>
+      transcriptMatchesActiveMantra({
+        nameEn: activeMantra.name_english,
+        nameHi: activeMantra.name_hindi,
+        deity: activeMantra.deity,
+        mantraTextHi: activeMantra.full_text_hindi || activeMantra.name_hindi,
+        mantraTextEn: activeMantra.transliteration || activeMantra.name_english,
+        transcript,
+      });
 
     if (!SpeechRecognitionAPI) {
       // ── FALLBACK: volume-based counting (browser doesn't support SR) ──
@@ -842,7 +1171,7 @@ export default function PremiumJapaCounter({
         const dataArray = new Uint8Array(bufferLength);
 
         const processAudio = () => {
-          if (!analyserRef.current) return;
+          if (!analyserRef.current || !voiceActiveRef.current) return;
           analyser.getByteFrequencyData(dataArray);
           let total = 0;
           for (let i = 0; i < bufferLength; i++) total += dataArray[i];
@@ -855,27 +1184,6 @@ export default function PremiumJapaCounter({
             incrementCount();
           }
 
-          const canvas = micWaveCanvasRef.current;
-          if (canvas) {
-            const canvasCtx = canvas.getContext("2d");
-            if (canvasCtx) {
-              canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-              canvasCtx.lineWidth = 2.5;
-              canvasCtx.strokeStyle = "rgba(245, 158, 11, 0.75)";
-              canvasCtx.beginPath();
-              const sliceWidth = canvas.width / bufferLength;
-              let x = 0;
-              for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = (v * canvas.height) / 2;
-                if (i === 0) canvasCtx.moveTo(x, y);
-                else canvasCtx.lineTo(x, y);
-                x += sliceWidth;
-              }
-              canvasCtx.lineTo(canvas.width, canvas.height / 2);
-              canvasCtx.stroke();
-            }
-          }
           animationFrameRef.current = requestAnimationFrame(processAudio);
         };
         processAudio();
@@ -883,6 +1191,7 @@ export default function PremiumJapaCounter({
         console.warn("Microphone access denied:", err);
         setMicDenied(true);
         setVoiceActive(false);
+        setTimerActive(false);
       }
       return;
     }
@@ -890,7 +1199,6 @@ export default function PremiumJapaCounter({
     // ── PRIMARY: Web Speech Recognition ────────────────────────────
     setRecognitionSupported(true);
     try {
-      // Also start audio analyser for the waveform canvas visualization
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       micStreamRef.current = stream;
       setMicDenied(false);
@@ -909,46 +1217,24 @@ export default function PremiumJapaCounter({
       const dataArray = new Uint8Array(bufferLength);
 
       const drawWaveform = () => {
-        if (!analyserRef.current) return;
+        if (!analyserRef.current || !voiceActiveRef.current) return;
         analyser.getByteFrequencyData(dataArray);
         let total = 0;
         for (let i = 0; i < bufferLength; i++) total += dataArray[i];
         setDbLevel(Math.min(100, Math.round((total / bufferLength / 140) * 100)));
-        const canvas = micWaveCanvasRef.current;
-        if (canvas) {
-          const canvasCtx = canvas.getContext("2d");
-          if (canvasCtx) {
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-            canvasCtx.lineWidth = 2.5;
-            canvasCtx.strokeStyle = "rgba(245, 158, 11, 0.75)";
-            canvasCtx.beginPath();
-            const sliceWidth = canvas.width / bufferLength;
-            let x = 0;
-            for (let i = 0; i < bufferLength; i++) {
-              const v = dataArray[i] / 128.0;
-              const y = (v * canvas.height) / 2;
-              if (i === 0) canvasCtx.moveTo(x, y);
-              else canvasCtx.lineTo(x, y);
-              x += sliceWidth;
-            }
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
-          }
-        }
         animationFrameRef.current = requestAnimationFrame(drawWaveform);
       };
       drawWaveform();
 
-      // ── Speech Recognizer setup ──────────────────────────────────
       const recognition = new SpeechRecognitionAPI();
       recognition.lang = isHi ? "hi-IN" : "en-US";
-      recognition.continuous = true;       // keep listening non-stop
-      recognition.interimResults = true;   // get partial results too
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 3;
       speechRecognitionRef.current = recognition;
 
       let lastMatchTime = 0;
-      const COOLDOWN_MS = 1800; // min gap between two counts
+      const COOLDOWN_MS = 1800;
 
       recognition.onresult = (event: any) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -956,13 +1242,12 @@ export default function PremiumJapaCounter({
           const transcript = result[0].transcript;
           setLastRecognizedText(transcript);
 
-          // Only count on final results (or confident interim)
           const isFinal = result.isFinal;
           const confidence = result[0].confidence;
           if (!isFinal && confidence < 0.5) continue;
 
           const now = Date.now();
-          if (transcriptMatchesMantra(transcript) && now - lastMatchTime > COOLDOWN_MS) {
+          if (matchesTranscript(transcript) && now - lastMatchTime > COOLDOWN_MS) {
             lastMatchTime = now;
             incrementCount();
           }
@@ -973,14 +1258,17 @@ export default function PremiumJapaCounter({
         if (event.error === "not-allowed" || event.error === "service-not-allowed") {
           setMicDenied(true);
           setVoiceActive(false);
+          setTimerActive(false);
         }
-        // 'no-speech' and 'aborted' are harmless — recognition auto-restarts
       };
 
       recognition.onend = () => {
-        // Auto-restart if still active (browser stops recognition after silence)
-        if (speechRecognitionRef.current && voiceActive) {
-          try { speechRecognitionRef.current.start(); } catch (_) { /* already started */ }
+        if (speechRecognitionRef.current && voiceActiveRef.current) {
+          try {
+            speechRecognitionRef.current.start();
+          } catch (_) {
+            /* already started */
+          }
         }
       };
 
@@ -989,27 +1277,34 @@ export default function PremiumJapaCounter({
       console.warn("Microphone access denied:", err);
       setMicDenied(true);
       setVoiceActive(false);
+      setTimerActive(false);
     }
   };
 
-  const stopMicListening = () => {
-    setVoiceActive(false);
+  const stopMicListening = (opts?: { clearActive?: boolean }) => {
+    const clearActive = opts?.clearActive !== false;
+    if (clearActive) {
+      voiceActiveRef.current = false;
+      setVoiceActive(false);
+    }
     setDbLevel(0);
     setLastRecognizedText("");
-    // Stop speech recognition
     if (speechRecognitionRef.current) {
-      try { speechRecognitionRef.current.stop(); } catch (_) { /* already stopped */ }
+      try {
+        speechRecognitionRef.current.stop();
+      } catch (_) {
+        /* already stopped */
+      }
       speechRecognitionRef.current = null;
     }
-    // Stop waveform animation
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
-    // Stop mic stream
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((track) => track.stop());
+      micStreamRef.current = null;
     }
-    // Close audio context
     if (audioCtxRef.current) {
       audioCtxRef.current.close().catch(() => {});
       audioCtxRef.current = null;
@@ -1019,10 +1314,12 @@ export default function PremiumJapaCounter({
   useEffect(() => {
     if (practiceMode === "voice" && voiceActive) {
       startMicListening();
-    } else {
-      stopMicListening();
+      return () => stopMicListening({ clearActive: false });
     }
-    return () => stopMicListening();
+    if (practiceMode === "voice" && !voiceActive) {
+      stopMicListening({ clearActive: false });
+    }
+    return undefined;
   }, [practiceMode, voiceActive]);
 
   // ─── GUIDED MODE AUTO PLAY ──────────────────────────────────────
@@ -1601,6 +1898,152 @@ export default function PremiumJapaCounter({
     );
   };
 
+  // ─── AUTO JAP SPEED MODAL OVERLAY ──────────────────────────────
+  const renderAutoJapaSpeedModal = () => {
+    if (!autoJapaSpeedModalOpen) return null;
+    const presets = [0.5, 1.0, 1.5, 2.0, 3.0, 5.0];
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setAutoJapaSpeedModalOpen(false)}
+          className="fixed inset-0 z-[300] bg-black/75 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 select-none"
+        >
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 220 }}
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl border ${
+              isDark
+                ? "bg-[#140b07] border-amber-500/30 text-amber-100"
+                : "bg-[#FFFDF8] border-[#E8D8C4] text-[#33140A]"
+            }`}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5 border-b pb-3 border-amber-500/20">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-500">
+                  <Zap className="w-5 h-5 fill-current" />
+                </div>
+                <div>
+                  <h3 className={`font-serif text-lg font-bold ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                    {isHi ? "ऑटो जप गति सेटिंग" : "Auto Jap Speed Settings"}
+                  </h3>
+                  <p className="text-[11px] font-medium opacity-70">
+                    {isHi ? "वह समय अंतराल चुनें जिसमें अगला जप स्वतः बढ़ेगा" : "Set interval time between automatic chants"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAutoJapaSpeedModalOpen(false)}
+                className={`w-8 h-8 rounded-full border flex items-center justify-center ${
+                  isDark ? "border-amber-500/30 text-amber-400" : "border-[#E8D8C4] text-[#591A0D]"
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Current interval display card */}
+            <div className={`p-4 rounded-2xl text-center mb-5 border ${
+              isDark ? "bg-amber-950/30 border-amber-500/30" : "bg-[#FAF5E8] border-[#E8D8C4]"
+            }`}>
+              <span className="text-[11px] font-bold uppercase tracking-wider block opacity-75">
+                {isHi ? "वर्तमान गति (Current Rate)" : "Current Interval"}
+              </span>
+              <div className="flex items-center justify-center gap-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setAutoJapaIntervalSec((prev) => Math.max(0.5, Number((prev - 0.5).toFixed(1))))}
+                  className={`w-10 h-10 rounded-full font-black text-xl flex items-center justify-center active:scale-95 transition-all shadow-sm ${
+                    isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-[#591A0D]/15 text-[#591A0D] border border-[#591A0D]/30"
+                  }`}
+                >
+                  -
+                </button>
+                <span className={`text-3xl font-serif font-black ${isDark ? "text-amber-300" : "text-[#591A0D]"}`}>
+                  {autoJapaIntervalSec} <span className="text-sm font-sans font-semibold opacity-80">{isHi ? "सेकंड" : "sec"}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAutoJapaIntervalSec((prev) => Math.min(10, Number((prev + 0.5).toFixed(1))))}
+                  className={`w-10 h-10 rounded-full font-black text-xl flex items-center justify-center active:scale-95 transition-all shadow-sm ${
+                    isDark ? "bg-amber-500/20 text-amber-300 border border-amber-500/40" : "bg-[#591A0D]/15 text-[#591A0D] border border-[#591A0D]/30"
+                  }`}
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 mt-2">
+                ≈ {Math.round(60 / autoJapaIntervalSec)} {isHi ? "जाप प्रति मिनट" : "chants / min"}
+              </p>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="mb-6">
+              <label className="text-xs font-extrabold uppercase tracking-wider block mb-2 opacity-80">
+                {isHi ? "शीघ्र विकल्प (Quick Presets)" : "Quick Speed Presets"}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {presets.map((p) => {
+                  const isSelected = autoJapaIntervalSec === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setAutoJapaIntervalSec(p)}
+                      className={`py-2.5 px-2 rounded-xl text-xs font-black transition-all border ${
+                        isSelected
+                          ? isDark
+                            ? "bg-amber-500 text-black border-amber-400 shadow-md"
+                            : "bg-[#591A0D] text-[#FFFDF8] border-[#591A0D] shadow-md"
+                          : isDark
+                          ? "bg-stone-900/60 border-stone-800 text-amber-200/80 hover:bg-stone-800"
+                          : "bg-[#FFF9F2] border-[#E8D8C4] text-[#591A0D] hover:bg-orange-50"
+                      }`}
+                    >
+                      {p} {isHi ? "से." : "sec"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAutoJapaActive((prev) => !prev);
+                  setAutoJapaSpeedModalOpen(false);
+                }}
+                className={`flex-1 py-3.5 rounded-2xl font-black text-xs md:text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer ${
+                  isAutoJapaActive
+                    ? "bg-rose-600 hover:bg-rose-700 text-white"
+                    : isDark
+                    ? "bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                    : "bg-[#591A0D] hover:bg-[#451309] text-[#FFFDF8] shadow-[0_4px_12px_rgba(89,26,13,0.3)]"
+                }`}
+              >
+                <Zap className="w-4 h-4 fill-current" />
+                <span>
+                  {isAutoJapaActive
+                    ? (isHi ? "ऑटो जप रोकें" : "Stop Auto Jap")
+                    : (isHi ? "ऑटो जप चालू करें" : "Start Auto Jap")}
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  };
+
   // ─── VOICE COUNTER — full screen mode ────────────────────────────
   if (practiceMode === "voice" && showVoiceInstructions) {
     const mantraDisplayName = isHi ? activeMantra.name_hindi : activeMantra.name_english;
@@ -1797,11 +2240,11 @@ export default function PremiumJapaCounter({
           }`}>
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => setShowVoiceInstructions(false)}
-              className={`w-full py-3.5 md:py-4 rounded-2xl font-bold text-[15px] tracking-wide transition-all font-serif flex items-center justify-center gap-2 shadow-lg active:scale-98 ${
+              onClick={beginVoiceListening}
+              className={`w-full py-3.5 md:py-4 rounded-2xl font-bold text-[15px] tracking-wide transition-all font-display flex items-center justify-center gap-2 shadow-lg active:scale-98 ${
                 isDark
                   ? "bg-gradient-to-r from-amber-600 to-yellow-500 text-black shadow-[0_0_20px_rgba(212,165,58,0.35)]"
-                  : "bg-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] border border-[#591A0D] shadow-[0_4px_16px_rgba(89,26,13,0.2)]"
+                  : "bg-[#651317] hover:bg-[#4f0f12] text-[#FFFDF8] border border-amber-400/30 shadow-[0_4px_16px_rgba(101,19,23,0.35)]"
               }`}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -1809,17 +2252,28 @@ export default function PremiumJapaCounter({
             </motion.button>
 
             <button
+              type="button"
               onClick={() => {
-                try { localStorage.setItem("voice_instructions_seen", "1"); } catch { /* ignore */ }
-                setShowVoiceInstructions(false);
+                try {
+                  localStorage.setItem("voice_instructions_seen", "1");
+                } catch {
+                  /* ignore */
+                }
+                beginVoiceListening();
               }}
               className={`flex items-center justify-center gap-2 text-[11px] transition-colors select-none mx-auto pb-1 ${
-                isDark ? "text-amber-200/40 hover:text-amber-200/70" : "text-[#786252] hover:text-[#591A0D]"
+                isDark ? "text-amber-200/40 hover:text-amber-200/70" : "text-[#786252] hover:text-[#651317]"
               }`}
             >
-              <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
-                isDark ? "border-amber-500/30 bg-black/30 text-amber-400" : "border-[#E8D8C4] bg-[#FFFDF8] text-[#591A0D]"
-              }`}>✓</span>
+              <span
+                className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] ${
+                  isDark
+                    ? "border-amber-500/30 bg-black/30 text-amber-400"
+                    : "border-[#E8D8C4] bg-[#FFFDF8] text-[#651317]"
+                }`}
+              >
+                ✓
+              </span>
               {isHi ? "दोबारा न दिखाएं" : "Don't show again"}
             </button>
           </div>
@@ -1829,84 +2283,111 @@ export default function PremiumJapaCounter({
   }
 
   if (practiceMode === "voice") {
-    const deityImage =
-      activeMantra.id?.includes("shiv") || activeMantra.deity?.toLowerCase().includes("shiv")
-        ? shivWallpaper
-        : activeMantra.id?.includes("krishna") || activeMantra.id?.includes("radhe") || activeMantra.id?.includes("hare")
-        ? mayapurTvImg
-        : activeMantra.id?.includes("hanuman")
-        ? salangpurHanumanImg
-        : activeMantra.image_url || shivWallpaper;
-
-    const mantraDisplayName = isHi
-      ? activeMantra.name_hindi
-      : activeMantra.name_english;
-
-    // Build 20 waveform bars driven by real dbLevel (0–255)
-    const barCount = 20;
+    const mantraDisplayName = isHi ? activeMantra.name_hindi : activeMantra.name_english;
+    const barCount = 24;
     const normalizedLevel = Math.min(1, (dbLevel || 0) / 90);
+    const progressPct = Math.min(100, Math.round((count / Math.max(1, targetCount)) * 100));
+
+    const statusTitle = voiceActive
+      ? isHi
+        ? "सुन रहा है..."
+        : "Listening..."
+      : voiceEverStarted
+        ? isHi
+          ? "रुका हुआ है"
+          : "Paused"
+        : isHi
+          ? "शुरू करें दबाएँ, फिर मंत्र बोलें"
+          : "Press Start, then speak the mantra";
+
+    const statusHint = micDenied
+      ? isHi
+        ? "माइक एक्सेस अस्वीकार — सेटिंग्स में अनुमति दें"
+        : "Mic access denied — allow permission in settings"
+      : voiceActive && lastRecognizedText
+        ? `"${lastRecognizedText}"`
+        : recognitionSupported
+          ? isHi
+            ? "फ़ोन पास रखें — बोलते ही गिनती बढ़ेगी"
+            : "Keep the phone nearby — speaking increments the count"
+          : isHi
+            ? "आवाज़ से गिन रहे हैं (पहचान उपलब्ध नहीं)"
+            : "Counting by voice volume";
+
+    const primaryCtaLabel = voiceActive
+      ? isHi
+        ? "रोकें"
+        : "Pause"
+      : voiceEverStarted
+        ? isHi
+          ? "फिर से शुरू करें"
+          : "Resume"
+        : isHi
+          ? "शुरू करें"
+          : "Start";
 
     return (
-      <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-start md:justify-center overflow-hidden ${
-        isDark ? "bg-[#050305] text-[#fbf6f0]" : "bg-[#FAF5E8] text-[#33140A]"
-      }`}>
-        {/* Soft background light */}
-        <div className={`absolute inset-0 pointer-events-none ${
-          isDark ? "bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.04),transparent_70%)]" : "bg-[radial-gradient(circle_at_center,rgba(89,26,13,0.04),transparent_70%)]"
-        }`} />
-        
-        {/* Mobile Mockup Container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className={`relative w-full h-[calc(100dvh-4.25rem-env(safe-area-inset-bottom))] md:h-[92dvh] md:max-h-[820px] max-w-md flex flex-col select-none overflow-hidden md:rounded-[2.5rem] md:border ${
-            isDark 
-              ? "bg-[#080608] text-[#fbf6f0] border-amber-500/25 shadow-[0_0_50px_rgba(0,0,0,0.85)]" 
-              : "bg-[#FFFDF8] text-[#33140A] border-[#E8D8C4] shadow-[0_10px_40px_rgba(89,26,13,0.1)]"
+      <div
+        className={`fixed inset-0 z-[100] flex flex-col overflow-hidden ${
+          isDark ? "bg-[#0c0a08] text-amber-50" : "bg-[#FAF6EE] text-[#3A2418]"
+        }`}
+      >
+        {!isDark && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(180deg, #FFFDF8 0%, #FAF6EE 45%, #F5EDE0 100%)",
+            }}
+          />
+        )}
+
+        {/* Full-bleed Hanuman hero — same as mala mode */}
+        <div
+          className={`absolute top-0 left-0 right-0 pointer-events-none overflow-hidden z-0 select-none ${
+            isDark ? "opacity-[0.55]" : "opacity-[0.7]"
           }`}
-          style={{ 
-            background: isDark 
-              ? "radial-gradient(ellipse at 50% 0%, #1a0a04 0%, #080608 60%)" 
-              : "radial-gradient(ellipse at 50% 0%, #FFFDF8 0%, #FAF5E8 100%)",
-            transform: "translate3d(0, 0, 0)" // Establish local containing block for absolute overlays
-          }}
+          style={{ height: isMobile ? "48vh" : "55vh" }}
         >
-          {/* ── HEADER ─────────────────────────────────────────────────── */}
-          <div className={`relative z-20 flex items-center justify-between px-5 pt-[max(1.1rem,env(safe-area-inset-top))] pb-3 border-b ${
-            isDark ? "border-white/5 bg-black/10" : "border-[#E8D8C4] bg-[#FAF5E8]"
-          }`}>
+          <img
+            src={hanumanDevotionalImg}
+            className="w-full h-full object-cover object-top max-w-5xl mx-auto"
+            style={{
+              maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+            }}
+            alt=""
+          />
+        </div>
+
+        {/* Floating header */}
+        <div className="relative z-20 shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
+          <div className="mx-auto max-w-lg flex items-center justify-between gap-2">
             <button
+              type="button"
               onClick={() => {
-                stopMicListening();
+                pauseVoiceListening();
+                stopMicListening({ clearActive: false });
                 if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
                 else onClose(activeMantra.id);
               }}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                isDark 
-                  ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                  : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-              }`}
+              className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
               aria-label="Back"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
 
-            <div className="text-center flex flex-col items-center flex-1 mx-2">
-              <h1 className={`font-serif text-[18px] md:text-[20px] font-bold tracking-wide select-none ${
-                isDark ? "text-amber-400/90" : "text-[#591A0D]"
-              }`}>
+            <div className="min-w-0 text-center flex-1 px-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#786252] dark:text-amber-500/70">
                 {isHi ? "ध्वनि जाप" : "Voice Japa"}
-              </h1>
-              <span className={`text-[11px] font-semibold tracking-widest mt-0.5 select-none uppercase font-serif truncate max-w-[180px] ${
-                isDark ? "text-amber-500/80" : "text-amber-700"
-              }`}>
+              </p>
+              <h1 className="font-display text-sm sm:text-base font-bold text-[#651317] dark:text-amber-200 truncate">
                 {mantraDisplayName}
-              </span>
+              </h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
+                type="button"
                 onClick={() => {
                   const currentQuery = new URLSearchParams(window.location.search);
                   currentQuery.set("resumeCount", count.toString());
@@ -1914,543 +2395,344 @@ export default function PremiumJapaCounter({
                   const returnPath = `/meditation?${currentQuery.toString()}`;
                   navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
                 }}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                  isDark 
-                    ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                    : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-                }`}
+                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
                 aria-label="Leaderboard"
               >
-                <Trophy className="w-5 h-5" />
+                <Trophy className="w-4 h-4" />
               </button>
               <button
+                type="button"
                 onClick={() => setSettingsOpen((s) => !s)}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-                  isDark 
-                    ? "border-amber-500/20 bg-black/40 hover:bg-black/60 text-amber-300" 
-                    : "border-[#E8D8C4] bg-[#FFFDF8] hover:bg-[#FFF9F2] text-[#591A0D]"
-                }`}
+                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
                 aria-label="Settings"
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-4 h-4" />
               </button>
             </div>
           </div>
+        </div>
 
-          {/* ── BODY ───────────────────────────────────────────────────── */}
-          <div className="flex-1 flex flex-col items-center justify-between px-5 py-3 pb-28 md:pb-8 overflow-y-auto max-h-full gap-3 md:gap-4 scrollbar-none overscroll-contain">
-            {/* Circular Mala Ring with central Deity Image & Voice Mic Badge */}
-            <div className="relative flex-shrink-0 my-1">
-              <CircularMalaRing
-                count={count}
-                targetCount={targetCount}
-                isDark={isDark}
-                isMobile={isMobile}
-                malaType={malaType}
-                activeMantra={activeMantra}
-                isHi={isHi}
-                floatingTexts={floatingTexts}
-                radiusOverride={isMobile ? 100 : 130}
-                showCenterStats={false}
-                centerContent={
-                  <div className="relative flex items-center justify-center">
-                    {/* Outer glow ring animates when listening */}
-                    <div
-                      className={`absolute inset-0 rounded-full transition-all duration-700 ${
-                        voiceActive ? "shadow-[0_0_35px_8px_rgba(212,165,58,0.35)] scale-102" : "shadow-[0_0_15px_2px_rgba(212,165,58,0.15)]"
-                      }`}
-                    />
-                    <div
-                      className="rounded-full border-[3px] overflow-hidden"
-                      style={{
-                        width: isMobile ? "96px" : "130px",
-                        height: isMobile ? "96px" : "130px",
-                        borderColor: isDark ? "#d4a53a" : "#591A0D",
-                        boxShadow: voiceActive
-                          ? "0 0 24px 4px rgba(212,165,58,0.3), inset 0 0 10px rgba(212,165,58,0.06)"
-                          : "0 0 10px 2px rgba(212,165,58,0.12)",
-                      }}
-                    >
-                      <img
-                        src={typeof deityImage === "string" ? deityImage : (deityImage as { src: string }).src ?? ""}
-                        alt={mantraDisplayName}
-                        className="w-full h-full object-cover select-none pointer-events-none"
-                        draggable={false}
-                      />
-                    </div>
-                    {/* Mic active badge */}
-                    {voiceActive && (
-                      <motion.div
-                        animate={{ scale: [1, 1.15, 1] }}
-                        transition={{ repeat: Infinity, duration: 1.2 }}
-                        className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-green-500 border-2 border-black flex items-center justify-center shadow-lg"
-                      >
-                        <Mic className="w-3 h-3 text-white" />
-                      </motion.div>
-                    )}
-                  </div>
-                }
-              />
-            </div>
-
-            {/* Chants count big text */}
-            <div className="text-center flex-shrink-0">
-              <span className={`font-serif text-[44px] md:text-[68px] font-black leading-none tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.22)] tabular-nums ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
-              }`}>
-                {count}
-              </span>
-              <span className={`text-xs md:text-sm font-semibold ml-1 ${
-                isDark ? "text-amber-200/40" : "text-[#786252]/80"
-              }`}>
-                /{targetCount}
-              </span>
-              <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-1 leading-none ${
-                isDark ? "text-amber-500/70" : "text-[#786252]"
-              }`}>
-                {isHi ? `दौर ${Math.floor(count / 108) + 1}` : `Round ${Math.floor(count / 108) + 1}`}
-              </p>
-            </div>
-
-            {/* Listening / Status text info */}
-            <div className="text-center flex-shrink-0">
-              <motion.h2
-                key={voiceActive ? "listening" : "paused"}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`font-serif text-[18px] md:text-[24px] font-semibold tracking-tight leading-none ${
-                  isDark ? "text-white" : "text-[#591A0D]"
-                }`}
-              >
-                {voiceActive
-                  ? (isHi ? "सुन रहा है..." : "Listening...")
-                  : (isHi ? "रुका हुआ है..." : "Paused...")}
-              </motion.h2>
-              {/* Show what was last heard */}
-              {voiceActive && lastRecognizedText ? (
-                <motion.p
-                  key={lastRecognizedText}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className={`text-[11px] md:text-[12px] mt-1 leading-snug max-w-[220px] mx-auto italic truncate ${
-                    isDark ? "text-amber-300/80" : "text-[#591A0D]/80"
-                  }`}
-                >
-                  "{lastRecognizedText}"
-                </motion.p>
-              ) : (
-                <p className={`text-[10px] md:text-[11px] mt-1 leading-none ${
-                  isDark ? "text-white/45" : "text-[#786252]"
-                }`}>
-                  {recognitionSupported
-                    ? (isHi ? "मंत्र बोलें, हम पहचान रहे हैं" : "Speak the mantra, we'll recognize it")
-                    : (isHi ? "आवाज़ पहचान उपलब्ध नहीं, ध्वनि से गिन रहे हैं" : "Speak loudly — counting by voice volume")}
-                </p>
-              )}
-              {micDenied && (
-                <p className="text-[10px] md:text-[11px] text-red-400 mt-1 leading-none">
-                  {isHi ? "माइक एक्सेस अस्वीकार" : "Microphone access denied"}
-                </p>
-              )}
-              {/* Recognition mode badge */}
+        {/* Body — listening orb is the primary visual */}
+        <div className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4">
+          <div className="mx-auto max-w-lg h-full min-h-[320px] flex flex-col items-center justify-center gap-3 sm:gap-4 py-3">
+            {/* Listening orb + radial waveform bars */}
+            <div className="relative flex items-center justify-center w-[200px] h-[200px] sm:w-[240px] sm:h-[240px]">
+              {/* Pulse rings when listening */}
               {voiceActive && (
-                <span className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${recognitionSupported ? "bg-green-500/15 text-green-500" : "bg-amber-500/15 text-amber-600"}`}>
-                  {recognitionSupported ? (isHi ? "मंत्र पहचान चालू" : "Mantra Recognition") : (isHi ? "ध्वनि मोड" : "Volume Mode")}
-                </span>
+                <>
+                  <motion.div
+                    className="absolute inset-6 rounded-full border border-[#651317]/35 dark:border-amber-400/40"
+                    animate={{ scale: [1, 1.18, 1], opacity: [0.55, 0, 0.55] }}
+                    transition={{ repeat: Infinity, duration: 1.8, ease: "easeOut" }}
+                  />
+                  <motion.div
+                    className="absolute inset-2 rounded-full border border-[#651317]/20 dark:border-amber-400/25"
+                    animate={{ scale: [1, 1.12, 1], opacity: [0.4, 0, 0.4] }}
+                    transition={{ repeat: Infinity, duration: 1.8, delay: 0.35, ease: "easeOut" }}
+                  />
+                </>
               )}
-            </div>
 
-            {/* Active Sadhana Details Cards */}
-            <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm flex-shrink-0 select-none">
-              {/* Card 1: Sankalp */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>🌸 {isHi ? "संकल्प" : "Sankalp"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {sankalpText || (isHi ? "कोई नहीं" : "None")}
-                </span>
-              </div>
-
-              {/* Card 2: Method */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>📿 {isHi ? "विधि" : "Method"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {isHi ? "स्वर जप" : "Voice Japa"}
-                </span>
-              </div>
-
-              {/* Card 3: Goal */}
-              <div className={`flex flex-col items-center text-center p-2 rounded-2xl border min-w-0 ${
-                isDark ? "bg-black/45 border-white/5" : "bg-[#FAF5E8] border-[#E8D8C4]"
-              }`}>
-                <span className={`text-[8px] font-bold uppercase tracking-wider ${isDark ? "text-amber-500/60" : "text-[#786252]"}`}>🎯 {isHi ? "लक्ष्य" : "Goal"}</span>
-                <span className={`text-[10px] font-bold truncate w-full mt-1 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`}>
-                  {targetCount} {isHi ? "जाप" : "Chants"}
-                </span>
-              </div>
-            </div>
-
-            {/* Sacred Mantra Text Display */}
-            <div className="px-6 text-center max-w-sm select-none relative z-10 animate-fade-in flex-shrink-0">
-              <p className={`font-serif text-sm sm:text-base font-bold leading-normal tracking-wide whitespace-pre-line ${
-                isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-[#591A0D]"
-              }`}>
-                {isHi 
-                  ? activeMantra.full_text_hindi || activeMantra.name_hindi 
-                  : activeMantra.transliteration || activeMantra.name_english}
-              </p>
-            </div>
-
-            {/* Chant Instructions */}
-            <div className={`flex items-center gap-3.5 font-serif text-[11px] tracking-widest select-none w-full justify-center flex-shrink-0 ${
-              isDark ? "text-amber-400/80" : "text-amber-800"
-            }`}>
-              <span className={`w-6 h-[1px] ${isDark ? "bg-gradient-to-r from-transparent to-amber-500/40" : "bg-gradient-to-r from-transparent to-amber-600/30"}`} />
-              <span>
-                {isHi ? "जाप बोलने पर अपने आप गिना जाएगा" : "Speak to chant automatically"}
-              </span>
-              <span className={`w-6 h-[1px] ${isDark ? "bg-gradient-to-l from-transparent to-amber-500/40" : "bg-gradient-to-l from-transparent to-amber-600/30"}`} />
-            </div>
-
-            {/* Mantra card */}
-            <div className={`relative w-full max-w-sm rounded-2xl px-3 py-2.5 md:px-4 md:py-3.5 flex items-center gap-3 md:gap-4 backdrop-blur-md shadow-md overflow-hidden flex-shrink-0 border ${
-              isDark ? "bg-[#1a1008]/80 border-amber-500/20" : "bg-[#FAF5E8] border-[#E8D8C4]"
-            }`}>
-              {/* Pink Lotus Background Watermark */}
-              <div className="absolute -right-4 -bottom-6 w-20 h-20 md:w-24 md:h-24 opacity-[0.12] pointer-events-none">
-                <LotusFlowerSvg className="w-full h-full" color="#ec4899" />
-              </div>
-              
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-amber-500/40 bg-amber-950/60 flex items-center justify-center flex-shrink-0 shadow-[0_0_12px_rgba(212,165,58,0.2)] z-10">
-                <LotusFlowerSvg className="w-6 h-6 md:w-7 md:h-7" color="#ec4899" />
-              </div>
-              
-              <div className="flex-1 min-w-0 z-10">
-                <p className={`text-[13px] md:text-[15px] font-semibold truncate ${isDark ? "text-white" : "text-[#591A0D]"}`}>{mantraDisplayName}</p>
-                <p className={`text-[10px] md:text-[11px] mt-0.5 ${isDark ? "text-amber-400/70" : "text-[#786252]"}`}>
-                  {count} {isHi ? "बार पहचाना गया" : "repetitions detected"}
-                </p>
-              </div>
-            </div>
-
-            {/* 3-stat row: Duration | Chants | Goal */}
-            <div className={`relative w-full max-w-sm rounded-2xl backdrop-blur-md overflow-hidden flex-shrink-0 border ${
-              isDark ? "bg-[#110c06]/60 border-amber-500/15" : "bg-[#FAF5E8] border-[#E8D8C4]"
-            }`}>
-              {/* Pink Lotus Background Watermark */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 md:w-36 md:h-36 opacity-[0.035] pointer-events-none">
-                <LotusFlowerSvg className="w-full h-full" color="#ec4899" />
-              </div>
-
-              <div className={`relative z-10 flex divide-x ${isDark ? "divide-amber-500/15" : "divide-amber-500/20"}`}>
-                {/* Duration */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "समय" : "Duration"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {formatTime(secondsElapsed)}
-                  </span>
-                </div>
-
-                {/* Chants */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "जाप" : "Chants"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {count}
-                  </span>
-                </div>
-
-                {/* Goal */}
-                <div className="flex-1 flex flex-col items-center py-2 md:py-3.5 gap-0.5 md:gap-1">
-                  <svg className={`w-4 h-4 md:w-4.5 md:h-4.5 ${isDark ? "text-amber-400/60" : "text-amber-700"}`} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" strokeWidth="1.2" />
-                  </svg>
-                  <span className={`text-[7.5px] md:text-[8px] font-bold uppercase tracking-[0.16em] ${isDark ? "text-amber-200/35" : "text-[#786252]"}`}>
-                    {isHi ? "लक्ष्य" : "Goal"}
-                  </span>
-                  <span className={`font-mono text-[18px] md:text-[24px] font-bold leading-none tabular-nums ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>
-                    {targetCount}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Progress bar and Waveform */}
-            <div className="w-full max-w-sm flex flex-col items-center gap-2 md:gap-4 flex-shrink-0">
-              {/* Progress bar */}
-              <div className={`w-full h-1 rounded-full overflow-hidden ${isDark ? "bg-amber-900/30" : "bg-amber-200/50"}`}>
-                <motion.div
-                  className={`h-full rounded-full ${isDark ? "bg-gradient-to-r from-amber-500 to-yellow-400" : "bg-[#591A0D]"}`}
-                  animate={{ width: `${Math.min(100, Math.round((count / targetCount) * 100))}%` }}
-                  transition={{ duration: 0.4 }}
-                />
-              </div>
-
-              {/* Waveform / Visualizer */}
-              <div className="w-full flex items-end justify-center gap-[3px] h-6 md:h-9">
+              {/* Circular waveform ticks around orb */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 {Array.from({ length: barCount }).map((_, i) => {
-                  const center = barCount / 2;
-                  const distFromCenter = Math.abs(i - center) / center;
-                  const baseHeight = 0.15;
-                  const maxExtra = voiceActive ? normalizedLevel * (1 - distFromCenter * 0.5) : 0;
-                  const randomVariance = voiceActive ? Math.sin(i * 2.3 + Date.now() / 180) * 0.15 : 0;
-                  const heightFrac = Math.max(baseHeight, Math.min(1, baseHeight + maxExtra + randomVariance));
+                  const angle = (i / barCount) * 360;
+                  const distFromCenter = Math.abs(i - barCount / 2) / (barCount / 2);
+                  const base = 10;
+                  const boost = voiceActive
+                    ? normalizedLevel * (18 + (1 - distFromCenter) * 10)
+                    : 0;
+                  const h = base + boost + (voiceActive ? Math.sin(i * 1.7 + Date.now() / 200) * 4 : 0);
                   return (
-                    <motion.div
+                    <div
                       key={i}
-                      animate={{ scaleY: heightFrac }}
-                      transition={{ duration: 0.12, ease: "easeOut" }}
-                      className="rounded-full origin-bottom flex-1"
+                      className="absolute left-1/2 top-1/2 origin-bottom"
                       style={{
-                        height: "100%",
+                        width: 3,
+                        height: Math.max(8, h),
+                        marginLeft: -1.5,
+                        marginTop: -100,
+                        transform: `rotate(${angle}deg) translateY(-72px)`,
+                        borderRadius: 999,
                         background: voiceActive
-                          ? isDark ? `linear-gradient(to top, #d4a53a, #f59e0b88)` : `linear-gradient(to top, #591A0D, #8C2B18)`
-                          : isDark ? "rgba(212,165,58,0.18)" : "rgba(89,26,13,0.18)",
-                        minWidth: "2px",
-                        maxWidth: "6px",
+                          ? "linear-gradient(to top, #651317, #F5C15C)"
+                          : "rgba(101,19,23,0.22)",
                       }}
                     />
                   );
                 })}
               </div>
-            </div>
 
-            {/* Today Stats Card */}
-            <div className="w-full max-w-sm relative z-10 select-none flex-shrink-0">
-              <div className={`backdrop-blur-md border rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x ${
-                isDark 
-                  ? "bg-[#130d0a]/40 border-amber-500/15 divide-amber-500/10" 
-                  : "bg-[#FAF5E8] border-[#E8D8C4] divide-amber-500/20"
-              }`}>
-                {/* Left Col: Today Chants */}
-                <div className="flex items-center gap-3 flex-1 justify-center pr-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                    isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-                  }`}>
-                    <Flame className="w-5 h-5 fill-current" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "आज का" : "Today"}</span>
-                    <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>{displayTodayChants}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wide ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "मंत्र जाप" : "Chants"}</span>
-                  </div>
-                </div>
-
-                {/* Right Col: Rounds Completed */}
-                <div className="flex items-center gap-3 flex-1 justify-center pl-2">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                    isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-                  }`}>
-                    <Check className="w-5 h-5 stroke-[2.5]" />
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "माला चक्र" : "Rounds"}</span>
-                    <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${isDark ? "text-amber-400" : "text-[#591A0D]"}`}>{displayTodayMalas}</span>
-                    <span className={`text-[9px] font-semibold uppercase tracking-wide ${isDark ? "text-amber-200/40" : "text-[#786252]"}`}>{isHi ? "पूर्ण" : "Completed"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pause / Resume Button */}
-            <button
-              onClick={() => {
-                if (voiceActive) {
-                  stopMicListening();
-                  setTimerActive(false);
-                } else {
-                  setTimerActive(true);
-                  setVoiceActive(true);
+              {/* Mic orb */}
+              <motion.button
+                type="button"
+                onClick={() => {
+                  if (voiceActive) pauseVoiceListening();
+                  else beginVoiceListening();
+                }}
+                animate={
+                  voiceActive
+                    ? { scale: [1, 1.04, 1] }
+                    : { scale: 1 }
                 }
+                transition={
+                  voiceActive
+                    ? { repeat: Infinity, duration: 1.6, ease: "easeInOut" }
+                    : undefined
+                }
+                className={`relative z-10 w-[104px] h-[104px] sm:w-[120px] sm:h-[120px] rounded-full flex items-center justify-center border-2 transition-shadow active:scale-95 ${
+                  voiceActive
+                    ? "bg-[#651317] border-amber-400/50 shadow-[0_0_32px_rgba(101,19,23,0.45)] text-amber-300"
+                    : voiceEverStarted
+                    ? "bg-[#FFFDF8] border-[#E8D8C4] text-[#651317] dark:bg-stone-900 dark:border-stone-600 dark:text-amber-300 opacity-90"
+                    : "bg-[#FFFDF8] border-[#651317]/40 text-[#651317] dark:bg-stone-900 dark:border-amber-500/40 dark:text-amber-300 shadow-md"
+                }`}
+                aria-label={primaryCtaLabel}
+              >
+                {voiceActive ? (
+                  <Pause className="w-9 h-9 sm:w-10 sm:h-10 fill-current" />
+                ) : (
+                  <Mic className="w-9 h-9 sm:w-10 sm:h-10" />
+                )}
+              </motion.button>
+            </div>
+
+            {/* Progress */}
+            <div className="w-44 sm:w-52 h-1.5 rounded-full bg-[#E8D8C4]/80 dark:bg-stone-700 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-[#651317] dark:bg-amber-400"
+                animate={{ width: `${progressPct}%` }}
+                transition={{ duration: 0.35 }}
+              />
+            </div>
+
+            {/* One count */}
+            <div className="text-center">
+              <p className="font-display text-[52px] sm:text-[64px] font-bold leading-none tracking-tight tabular-nums text-[#651317] dark:text-amber-300">
+                {count}
+                <span className="text-xl sm:text-2xl font-semibold text-[#786252] dark:text-amber-200/50 ml-1.5">
+                  /{targetCount}
+                </span>
+              </p>
+              <span className="inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase border border-[#E8D8C4] bg-[#FFFDF8]/95 text-[#651317] dark:bg-stone-900 dark:border-stone-700 dark:text-amber-300">
+                {isHi
+                  ? `दौर ${Math.floor(count / 108) + 1}`
+                  : `Round ${Math.floor(count / 108) + 1}`}
+              </span>
+            </div>
+
+            {/* Status */}
+            <div className="text-center max-w-sm px-2">
+              <motion.h2
+                key={statusTitle}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="font-display text-base sm:text-lg font-semibold text-[#651317] dark:text-amber-100"
+              >
+                {statusTitle}
+              </motion.h2>
+              <p
+                className={`text-xs mt-1 leading-snug ${
+                  micDenied
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-[#786252] dark:text-stone-400"
+                }`}
+              >
+                {statusHint}
+              </p>
+            </div>
+
+            {/* Mantra once */}
+            <div className="text-center max-w-md px-3">
+              <p className="font-display text-sm sm:text-base font-bold leading-relaxed text-[#651317] dark:text-amber-200 whitespace-pre-line">
+                {isHi
+                  ? activeMantra.full_text_hindi || activeMantra.name_hindi
+                  : activeMantra.transliteration || activeMantra.name_english}
+              </p>
+              <p className="text-[11px] mt-1.5 text-[#786252] dark:text-stone-500 tracking-wide">
+                {isHi
+                  ? "फ़ोन पास रखें — बोलते ही गिनती बढ़ेगी"
+                  : "Keep the phone nearby — speaking increments the count"}
+              </p>
+            </div>
+
+            {/* Compact strip */}
+            <div className="w-full max-w-md rounded-full border border-[#E8D8C4] bg-[#FFFDF8]/95 dark:bg-stone-900/80 dark:border-stone-700 px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-[#786252] dark:text-stone-400 shadow-sm">
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                {formatTime(secondsElapsed)}
+              </span>
+              <span className="opacity-40">·</span>
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                {count}/{targetCount}
+              </span>
+              <span className="opacity-40">·</span>
+              <span>
+                {isHi ? "आज" : "Today"}{" "}
+                <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+                  {displayTodayChants}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Sticky Start / Pause / Resume — always in view */}
+        <div className="relative z-20 shrink-0 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/98 dark:bg-[#120a06]/98 backdrop-blur-sm px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-lg flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleResetClick}
+              className="w-12 h-12 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 flex items-center justify-center active:scale-95 transition-all shrink-0"
+              aria-label={isHi ? "रीसेट" : "Reset"}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (voiceActive) pauseVoiceListening();
+                else beginVoiceListening();
               }}
-              className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center active:scale-95 transition-all flex-shrink-0 ${
-                isDark 
-                  ? "border-[2px] border-amber-500 bg-transparent text-amber-400 shadow-[0_0_15px_rgba(212,165,58,0.2)] hover:shadow-[0_0_22px_rgba(212,165,58,0.35)]" 
-                  : "bg-[#591A0D] text-[#FFFDF8] border border-[#591A0D] shadow-[0_4px_16px_rgba(89,26,13,0.25)] hover:bg-[#4A0E12]"
-              }`}
-              aria-label={voiceActive ? "Pause" : "Start listening"}
+              className="flex-1 h-12 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-[0_6px_20px_rgba(101,19,23,0.4)] border border-amber-400/30"
             >
               {voiceActive ? (
-                <Pause className="w-5.5 h-5.5 md:w-7 md:h-7 fill-current" />
+                <Pause className="w-4 h-4 fill-current text-amber-300" />
               ) : (
-                <Mic className="w-5.5 h-5.5 md:w-7 md:h-7" />
+                <Mic className="w-4 h-4 text-amber-300" />
               )}
+              {primaryCtaLabel}
             </button>
           </div>
+        </div>
 
-          {/* Absolute Overlays Render */}
-          {/* 1. Settings Drawer */}
-          <AnimatePresence>
-            {settingsOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+        {/* Settings drawer */}
+        <AnimatePresence>
+          {settingsOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSettingsOpen(false)}
+                className="fixed inset-0 z-[80] bg-black/65 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 24, stiffness: 180 }}
+                className="fixed bottom-0 inset-x-0 z-[90] max-w-lg mx-auto rounded-t-[28px] px-6 pb-8 pt-4 border-t border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-[#130d0a] text-[#3A2418] dark:text-amber-100 shadow-2xl"
+              >
+                <div
                   onClick={() => setSettingsOpen(false)}
-                  className="absolute inset-0 z-[80] bg-black/65 backdrop-blur-xs select-none rounded-[2.5rem]"
+                  className="w-12 h-1.5 rounded-full mx-auto mb-6 cursor-pointer bg-[#E8D8C4] dark:bg-amber-500/20"
                 />
-                <motion.div
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  transition={{ type: "spring", damping: 24, stiffness: 180 }}
-                  className={`absolute bottom-0 inset-x-0 z-[90] rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl settings-panel select-none border-t ${
-                    isDark 
-                      ? "bg-gradient-to-b from-[#130d0a] to-[#0a0507] border-amber-500/20 text-amber-100" 
-                      : "bg-[#FFFDF8] border-[#E8D8C4] text-[#33140A]"
-                  }`}
-                >
-                  <div 
-                    onClick={() => setSettingsOpen(false)}
-                    className={`w-12 h-1.5 rounded-full mx-auto mb-6 cursor-pointer transition-colors ${
-                      isDark ? "bg-amber-500/20 hover:bg-amber-500/40" : "bg-[#591A0D]/20 hover:bg-[#591A0D]/40"
-                    }`}
-                  />
-                  <div className="space-y-4">
-                    {/* Mantra Dropdown */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Flower2 className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "मंत्र" : "Mantra"}</span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={activeMantra.id}
-                          onChange={(e) => handleMantraChange(e.target.value)}
-                          className={`rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer border ${
-                            isDark 
-                              ? "bg-black/40 border-amber-500/20 text-amber-300 focus:border-amber-500/50" 
-                              : "bg-[#FAF5E8] border-[#E8D8C4] text-[#591A0D] focus:border-[#591A0D]"
-                          }`}
-                        >
-                          {(mantras || []).map((m) => (
-                            <option key={m.id} value={m.id} className={isDark ? "bg-[#130d0a] text-amber-100" : "bg-[#FFFDF8] text-[#591A0D]"}>
-                              {isHi ? m.name_hindi : m.name_english}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className={`w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? "text-amber-500" : "text-[#591A0D]"}`} />
-                      </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Flower2 className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "मंत्र" : "Mantra"}
+                      </span>
                     </div>
-
-                    {/* Mala Type Dropdown */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-base ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`}>📿</span>
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "माला का प्रकार" : "Mala Type"}</span>
-                      </div>
-                      <div className="relative">
-                        <select
-                          value={malaType}
-                          onChange={(e) => setMalaType(e.target.value as any)}
-                          className={`rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer border ${
-                            isDark 
-                              ? "bg-black/40 border-amber-500/20 text-amber-300 focus:border-amber-500/50" 
-                              : "bg-[#FAF5E8] border-[#E8D8C4] text-[#591A0D] focus:border-[#591A0D]"
-                          }`}
-                        >
-                          <option value="rudraksha" className={isDark ? "bg-[#130d0a] text-amber-100" : "bg-[#FFFDF8] text-[#591A0D]"}>{isHi ? "रुद्राक्ष" : "Rudraksha"}</option>
-                          <option value="tulsi" className={isDark ? "bg-[#130d0a] text-amber-100" : "bg-[#FFFDF8] text-[#591A0D]"}>{isHi ? "तुलसी" : "Tulsi"}</option>
-                          <option value="sandalwood" className={isDark ? "bg-[#130d0a] text-amber-100" : "bg-[#FFFDF8] text-[#591A0D]"}>{isHi ? "चंदन" : "Sandalwood"}</option>
-                        </select>
-                        <ChevronDown className={`w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? "text-amber-500" : "text-[#591A0D]"}`} />
-                      </div>
-                    </div>
-
-                    {/* Sound Toggle */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Volume2 className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "ध्वनि (Sound)" : "Sound"}</span>
-                      </div>
-                      <button
-                        onClick={() => setSoundEnabled(!soundEnabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          soundEnabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
+                    <div className="relative">
+                      <select
+                        value={activeMantra.id}
+                        onChange={(e) => handleMantraChange(e.target.value)}
+                        className="rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer border border-[#E8D8C4] dark:border-amber-500/20 bg-[#FAF0E4] dark:bg-black/40 text-[#651317] dark:text-amber-300"
                       >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: soundEnabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Vibration Toggle */}
-                    <div className={`flex items-center justify-between py-2 border-b ${isDark ? "border-amber-500/5" : "border-[#E8D8C4]"}`}>
-                      <div className="flex items-center gap-3">
-                        <Smartphone className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "कंपन (Vibration)" : "Vibration"}</span>
-                      </div>
-                      <button
-                        onClick={() => setVibrationEnabled(!vibrationEnabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          vibrationEnabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
-                      >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: vibrationEnabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Screen Awake Toggle */}
-                    <div className="flex items-center justify-between py-2">
-                      <div className="flex items-center gap-3">
-                        <Lock className={`w-5 h-5 ${isDark ? "text-amber-500/70" : "text-[#591A0D]"}`} />
-                        <span className={`text-sm font-semibold ${isDark ? "text-amber-100/80" : "text-[#591A0D]"}`}>{isHi ? "स्क्रीन हमेशा चालू रखें" : "Auto-lock screen"}</span>
-                      </div>
-                      <button
-                        onClick={() => setAutoLockDisabled(!autoLockDisabled)}
-                        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                          autoLockDisabled ? (isDark ? "bg-amber-500" : "bg-[#591A0D]") : (isDark ? "bg-white/10" : "bg-black/10")
-                        }`}
-                      >
-                        <motion.div 
-                          layout 
-                          className="w-5 h-5 rounded-full bg-white shadow" 
-                          animate={{ x: autoLockDisabled ? 20 : 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      </button>
+                        {(mantras || []).map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {isHi ? m.name_hindi : m.name_english}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#651317] dark:text-amber-500" />
                     </div>
                   </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
 
-          {/* 2. Leaderboard Full-Screen Overlay */}
-          {renderLeaderboardOverlay()}
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Volume2 className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "ध्वनि" : "Sound"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSoundEnabled(!soundEnabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        soundEnabled ? "bg-[#651317] dark:bg-amber-500" : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: soundEnabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
 
-          {/* 3. Completed Overlay */}
-          {renderCompletedOverlay()}
+                  <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/10">
+                    <div className="flex items-center gap-3">
+                      <Smartphone className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "कंपन" : "Vibration"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setVibrationEnabled(!vibrationEnabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        vibrationEnabled
+                          ? "bg-[#651317] dark:bg-amber-500"
+                          : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: vibrationEnabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
 
-          {/* Too Fast Tap Toast Notification */}
-          {renderTooFastToast()}
-        </motion.div>
-        
-        {/* Fixed Mobile Bottom Navigation */}
-        <MobileBottomNav />
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center gap-3">
+                      <Lock className="w-5 h-5 text-[#651317] dark:text-amber-400" />
+                      <span className="text-sm font-semibold text-[#651317] dark:text-amber-100">
+                        {isHi ? "स्क्रीन चालू रखें" : "Keep screen on"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAutoLockDisabled(!autoLockDisabled)}
+                      className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                        autoLockDisabled
+                          ? "bg-[#651317] dark:bg-amber-500"
+                          : "bg-black/10 dark:bg-white/10"
+                      }`}
+                    >
+                      <motion.div
+                        layout
+                        className="w-5 h-5 rounded-full bg-white shadow"
+                        animate={{ x: autoLockDisabled ? 20 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {renderLeaderboardOverlay()}
+        {renderCompletedOverlay()}
+        {renderTooFastToast()}
       </div>
     );
   }
@@ -2461,22 +2743,21 @@ export default function PremiumJapaCounter({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleBackgroundTap}
-      className={`fixed inset-0 z-[100] flex flex-col justify-between select-none md:overflow-y-auto overflow-y-hidden cursor-pointer transition-colors duration-300 ${
-        isDark 
-          ? "bg-gradient-to-b from-[#0b0709] via-[#050203] to-[#0a0507] text-[#fbf6f0]" 
-          : "bg-gradient-to-b from-[#FFFDF8] via-[#FFFBF0] to-[#FAF5E6] text-[#3A2418]"
+      className={`fixed inset-0 z-[100] flex flex-col select-none overflow-hidden cursor-pointer transition-colors duration-300 ${
+        isDark
+          ? "bg-[#0c0a08] text-amber-50"
+          : "bg-[#FAF6EE] text-[#3A2418]"
       }`}
     >
-      {/* Background radial soft light */}
-      <div 
-        className={`absolute inset-0 pointer-events-none ${
-          isDark 
-            ? "bg-[radial-gradient(circle_at_50%_30%,#8e6a2340,transparent_55%)]" 
-            : "bg-[radial-gradient(circle_at_50%_30%,#D8A35A15,transparent_55%)]"
-        }`} 
-      />
+      {!isDark && (
+        <div
+          className="absolute inset-0 pointer-events-none -z-0"
+          style={{
+            background: "linear-gradient(180deg, #FFFDF8 0%, #FAF6EE 45%, #F5EDE0 100%)",
+          }}
+        />
+      )}
 
-      {/* Elegant Falling Ram Yellow Flowers on Tap (60FPS Zero-Lag Performance) */}
       <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
         {fallingFlowers.map((flower) => (
           <div
@@ -2488,8 +2769,8 @@ export default function PremiumJapaCounter({
               height: `${flower.size}px`,
               animationDuration: `${flower.duration}s`,
               animationDelay: `${flower.delay}s`,
-              '--drift-x': `${flower.driftX}px`,
-              '--rot-deg': `${flower.rotationSpeed}deg`,
+              "--drift-x": `${flower.driftX}px`,
+              "--rot-deg": `${flower.rotationSpeed}deg`,
             } as React.CSSProperties}
           >
             <img
@@ -2502,435 +2783,294 @@ export default function PremiumJapaCounter({
         ))}
       </div>
 
-      {/* Devotional Deity Background Image with Fade */}
-      <div 
-        className={`absolute top-0 pointer-events-none overflow-hidden z-0 select-none transition-opacity duration-300 ${
-          isDark ? "opacity-[0.45]" : "opacity-[0.65] mix-blend-multiply"
-        }`}
-        style={{
-          width: isMobile ? "100%" : "512px",
-          left: isMobile ? "0" : "calc(50% - 256px)",
-          height: isMobile ? "52vh" : "58vh",
-        }}
-      >
-        <img 
-          src={hanumanDevotionalImg} 
-          className="w-full h-full object-cover object-top" 
-          style={{
-            maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent 100%)"
-          }}
-          alt="Deity Background"
-        />
-        {/* Soft radial overlay on top of image to blend with black background */}
-        <div 
-          className={`absolute inset-0 transition-colors duration-300 ${
-            isDark 
-              ? "bg-gradient-to-b from-amber-500/5 via-transparent to-[#050203]/90" 
-              : "bg-gradient-to-b from-amber-500/5 via-transparent to-[#FFFDF8]/95"
-          }`} 
-        />
-      </div>
-
-      {/* ─── HEADER BAR ───────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 py-2.5 md:py-4 flex items-center justify-between">
-        <button
-          onClick={() => {
-            if (count >= targetCount) {
-              onComplete(count, secondsElapsed, activeMantra.id);
-            } else {
-              onClose(activeMantra.id);
-            }
-          }}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-            isDark 
-              ? "border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 text-amber-200/80 hover:text-amber-300" 
-              : "border-[#E8D8C4] hover:border-[#D8A35A] bg-[#FFFDF8]/85 hover:bg-[#FFF9F2] text-[#5C1D0C] hover:text-amber-600 shadow-sm"
-          }`}
-          aria-label="Back"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-
-        <div className="text-center flex flex-col items-center">
-          <h2 className={`font-serif text-[20px] md:text-[23px] font-bold tracking-wide select-none ${
-            isDark ? "text-amber-400/90" : "text-amber-700"
-          }`}>
-            {isHi ? "|| डिजिटल माला ||" : "|| Digital Mala ||"}
-          </h2>
-          <span className={`text-sm font-semibold tracking-widest mt-0.5 select-none uppercase font-serif ${
-            isDark ? "text-amber-500/80" : "text-amber-600"
-          }`}>
-            {isHi ? activeMantra.name_hindi : activeMantra.name_english}
-          </span>
-        </div>
-
-        <button
-          onClick={() => {
-            const currentQuery = new URLSearchParams(window.location.search);
-            currentQuery.set("resumeCount", count.toString());
-            currentQuery.set("resumeSeconds", secondsElapsed.toString());
-            const returnPath = `/meditation?${currentQuery.toString()}`;
-            navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
-          }}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center active:scale-95 transition-all ${
-            isDark 
-              ? "border-amber-500/20 hover:border-amber-500/50 bg-black/40 hover:bg-black/60 text-amber-200/80 hover:text-amber-300" 
-              : "border-[#E8D8C4] hover:border-[#D8A35A] bg-[#FFFDF8]/85 hover:bg-[#FFF9F2] text-[#5C1D0C] hover:text-amber-600 shadow-sm"
-          }`}
-          aria-label="Leaderboard"
-        >
-          <Trophy className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* ─── MAIN CONTENT ─────────────────────────────────────────── */}
-      <div className="flex-1 w-full max-w-lg mx-auto flex flex-col justify-center items-center px-4 relative z-10 py-2 md:py-4">
-        
-        {/* 1. MALA RING CONTAINER */}
-        <div 
-          className="relative flex items-center justify-center select-none"
-          style={{
-            width: isMobile ? "280px" : "470px",
-            height: isMobile ? "280px" : "470px",
-          }}
-        >
-          {/* Flanking Lotuses Removed */}
-
-          {/* Rotating Faint Mandala Background in Ring */}
-          <div className="absolute inset-6 opacity-[0.04] text-amber-400 pointer-events-none flex items-center justify-center">
-            <svg className="w-full h-full animate-[spin_180s_linear_infinite]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.6">
-              <circle cx="50" cy="50" r="45" strokeDasharray="1.5 1.5" />
-              <circle cx="50" cy="50" r="37" />
-              <circle cx="50" cy="50" r="30" strokeDasharray="2 2" />
-              <path d="M50 5 L50 95 M5 50 L95 50 M18 18 L82 82 M18 82 L82 18" strokeWidth="0.25" />
-              <path d="M50 8 C53 18, 47 18, 50 8 Z M50 92 C53 82, 47 82, 50 92 Z M8 50 C18 53, 18 47, 8 50 Z M92 50 C82 53, 82 47, 92 50 Z" />
-            </svg>
-          </div>
-
-          {/* Main Reusable Circular Mala Ring */}
-          <CircularMalaRing
-            count={count}
-            targetCount={targetCount}
-            isDark={isDark}
-            isMobile={isMobile}
-            malaType={malaType}
-            activeMantra={activeMantra}
-            isHi={isHi}
-            floatingTexts={floatingTexts}
-            onTap={incrementCount}
-          />
-        </div>
-
-        {/* Sacred Mantra Text Display */}
-        <div className="mt-1 px-6 text-center max-w-sm sm:max-w-md select-none relative z-10 animate-fade-in">
-          <p className={`font-serif text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-normal tracking-wide whitespace-pre-line ${
-            isDark ? "text-amber-300 drop-shadow-[0_2px_8px_rgba(245,158,11,0.25)]" : "text-[#5C1D0C]"
-          }`}>
-            {isHi 
-              ? activeMantra.full_text_hindi || activeMantra.name_hindi 
-              : activeMantra.transliteration || activeMantra.name_english}
-          </p>
-        </div>
-
-        {/* 2. CHANT INSTRUCTIONS */}
-        <div className={`flex items-center gap-3.5 mt-2 md:mt-3 font-serif select-none w-full justify-center transition-all duration-500 ${
-          count === 0
-            ? isDark 
-              ? "text-amber-400 font-bold text-base sm:text-lg md:text-xl drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]" 
-              : "text-[#591A0D] font-bold text-base sm:text-lg md:text-xl drop-shadow-[0_2px_4px_rgba(89,26,13,0.15)]"
-            : isDark 
-            ? "text-amber-400/80 font-normal text-[13px] md:text-sm tracking-widest" 
-            : "text-amber-800 font-normal text-[13px] md:text-sm tracking-widest"
-        }`}>
-          <span className={`w-8 h-[1px] transition-all duration-500 ${
-            isDark ? "bg-gradient-to-r from-transparent to-amber-500/40" : "bg-gradient-to-r from-transparent to-amber-600/30"
-          }`} />
-          <span className={count === 0 ? "animate-pulse tracking-wide" : ""}>
-            {(practiceMode as string) === "voice" 
-              ? (isHi ? "जाप बोलने पर अपने आप गिना जाएगा" : "Speak to chant automatically") 
-              : practiceMode === "guided" 
-              ? (isHi ? "स्वचालित चल रहा है" : "Auto chanting playing") 
-              : count === 0
-              ? (isHi ? "जाप शुरू करने के लिए कहीं भी टैप करें" : "Tap anywhere to start chanting")
-              : (isHi ? "जाप के लिए कहीं भी टैप करें" : "Tap anywhere to count")}
-          </span>
-          <span className={`w-8 h-[1px] transition-all duration-500 ${
-            isDark ? "bg-gradient-to-l from-transparent to-amber-500/40" : "bg-gradient-to-l from-transparent to-amber-600/30"
-          }`} />
-        </div>
-
-        {/* Voice frequency canvas visualization in Voice mode */}
-        {(practiceMode as string) === "voice" && (
-          <div className={`mt-3 w-72 h-8 border rounded-xl overflow-hidden px-2 py-0.5 flex items-center relative z-10 select-none ${
-            isDark ? "border-white/5 bg-black/45" : "border-[#E8D8C4] bg-white/70"
-          }`}>
-            <canvas ref={micWaveCanvasRef} width={280} height={32} className="w-full h-full" />
-            {!voiceActive && (
-              <div className={`absolute inset-0 flex items-center justify-center text-[9px] uppercase tracking-widest font-semibold ${
-                isDark ? "text-white/25" : "text-slate-400/70"
-              }`}>
-                {isHi ? "माइक निष्क्रिय है" : "Mic Inactive"}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 3. TODAY STATS GRID CARD */}
-        <div className="w-full max-w-sm mt-2 md:mt-4 relative z-10 select-none">
-          <div className={`backdrop-blur-md border rounded-2xl p-4 flex items-center justify-between w-full shadow-lg divide-x ${
-            isDark 
-              ? "bg-[#130d0a]/40 border-amber-500/15 divide-amber-500/10" 
-              : "bg-white/70 border-[#E8D8C4] divide-amber-500/20"
-          }`}>
-            {/* Left Col: Today Chants */}
-            <div className="flex items-center gap-3 flex-1 justify-center pr-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-              }`}>
-                <Flame className="w-5 h-5 fill-current" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                  isDark ? "text-amber-200/40" : "text-[#786252]"
-                }`}>{isHi ? "आज का" : "TODAY"}</span>
-                <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${
-                  isDark ? "text-amber-400" : "text-[#5C1D0C]"
-                }`}>{displayTodayChants}</span>
-                <span className={`text-[9px] font-semibold uppercase tracking-wide ${
-                  isDark ? "text-amber-200/40" : "text-[#786252]/80"
-                }`}>{isHi ? "मंत्र जाप" : "CHANTS"}</span>
-              </div>
-            </div>
-
-            {/* Right Col: Rounds Completed */}
-            <div className="flex items-center gap-3 flex-1 justify-center pl-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.1)] ${
-                isDark ? "bg-amber-500/10" : "bg-amber-500/15"
-              }`}>
-                <Check className="w-5 h-5 stroke-[2.5]" />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                  isDark ? "text-amber-200/40" : "text-[#786252]"
-                }`}>{isHi ? "माला चक्र" : "ROUNDS"}</span>
-                <span className={`text-xl font-bold font-serif leading-none mt-0.5 ${
-                  isDark ? "text-amber-400" : "text-[#5C1D0C]"
-                }`}>{displayTodayMalas}</span>
-                <span className={`text-[9px] font-semibold uppercase tracking-wide ${
-                  isDark ? "text-amber-200/40" : "text-[#786252]/80"
-                }`}>{isHi ? "पूर्ण" : "COMPLETED"}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. TIME CLOCK */}
-        <div className={`mt-1.5 md:mt-2 flex items-center gap-2 text-[11px] md:text-xs font-bold uppercase tracking-widest select-none ${
-          isDark ? "text-white/35" : "text-[#786252]/70"
-        }`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-          <span>{formatTime(secondsElapsed)}</span>
-          <span className={isDark ? "text-white/20" : "text-amber-600/35"}>|</span>
-          <span>{Math.min(100, Math.round((count / targetCount) * 100))}%</span>
-        </div>
-
-        {/* 5. CONTROL BUTTONS (Sitting inside to eliminate vertical layout gap) */}
-        <div className="flex items-center justify-center gap-3 mt-4 w-full select-none">
-          <button
-            onClick={handleResetClick}
-            disabled={count === 0}
-            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-sm text-xs font-bold tracking-wide ${
-              isDark 
-                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 disabled:opacity-40 text-amber-100" 
-                : "border-[#591A0D]/40 bg-[#FFFDF8] hover:bg-[#FFF5EB] disabled:opacity-50 text-[#591A0D]"
-            }`}
-          >
-            <RotateCcw className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-[#591A0D]"}`} />
-            <span>{isHi ? "पुनः सेट" : "Reset"}</span>
-          </button>
-
-          <button
-            onClick={() => setTimerActive(!timerActive)}
-            className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl border transition-all active:scale-95 shadow-md text-xs font-bold tracking-wide ${
-              isDark 
-                ? "border-amber-500/30 bg-black/40 hover:bg-black/60 text-amber-100" 
-                : "bg-[#591A0D] border-[#591A0D] hover:bg-[#4A0E12] text-[#FFFDF8] shadow-[0_4px_12px_rgba(89,26,13,0.15)]"
-            }`}
-          >
-            {timerActive ? (
-              <Pause className={`w-4 h-4 ${isDark ? "text-amber-100" : "text-white"}`} />
-            ) : (
-              <Play className={`w-4 h-4 fill-current ${isDark ? "text-amber-100" : "text-white"}`} />
-            )}
-            <span>{timerActive ? (isHi ? "रोकें" : "Pause") : (isHi ? "शुरू करें" : "Resume")}</span>
-          </button>
-        </div>
-
-      </div>
-
-      {/* ─── QUICK SETTINGS BAR (Premium Pill Design) ──────────────── */}
       <div
-        className="relative z-10 w-full px-3 py-2 pb-[calc(4.8rem+env(safe-area-inset-bottom))] md:pb-3 select-none"
-        onClick={(e) => e.stopPropagation()}
+        className={`absolute top-0 left-0 right-0 pointer-events-none overflow-hidden z-0 select-none ${
+          isDark ? "opacity-[0.55]" : "opacity-[0.7]"
+        }`}
+        style={{ height: isMobile ? "48vh" : "55vh" }}
       >
-        {/* Outer pill container */}
-        <div className={`max-w-lg mx-auto rounded-[2rem] border overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.08)] transition-colors duration-300 ${
-          isDark 
-            ? "bg-[#1a0f08]/80 border-[#3a2010]/60 shadow-[inset_0_1px_0_rgba(255,160,60,0.07)]" 
-            : "bg-[#FFFDF8]/95 border-[#E8D8C4]"
-        }`}>
-          <div className={`flex items-stretch divide-x ${
-            isDark ? "divide-[#3a2010]/50" : "divide-[#E8D8C4]"
-          }`}>
+        <img
+          src={hanumanDevotionalImg}
+          className="w-full h-full object-cover object-top max-w-5xl mx-auto"
+          style={{
+            maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+          }}
+          alt=""
+        />
+      </div>
 
-            {/* ── 1. MANTRA ──────────────────────────────────────── */}
-            <div className="flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3">
-              <MaskedIcon 
-                src="/icons/music-player.svg" 
-                alt="mantra" 
-                isDark={isDark} 
-                active={true} 
-                className="w-5 h-5 sm:w-6 sm:h-6"
-              />
-              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-amber-200/60" : "text-[#786252]"
-              }`}>
-                {isHi ? "मंत्र" : "Mantra"}
-              </span>
-              <span className={`text-[13px] font-bold leading-none text-center max-w-[58px] truncate ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
-              }`}>
-                {isHi ? activeMantra.name_hindi : activeMantra.name_english}
-              </span>
-            </div>
+      {/* Floating back + leaderboard (no sticky header bar) */}
+      <div className="absolute top-3 left-0 right-0 z-20 pointer-events-none">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (count >= targetCount) {
+                onComplete(count, secondsElapsed, activeMantra.id);
+              } else {
+                onClose(activeMantra.id);
+              }
+            }}
+            className="pointer-events-auto w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              const currentQuery = new URLSearchParams(window.location.search);
+              currentQuery.set("resumeCount", count.toString());
+              currentQuery.set("resumeSeconds", secondsElapsed.toString());
+              const returnPath = `/meditation?${currentQuery.toString()}`;
+              navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
+            }}
+            className="pointer-events-auto w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+            aria-label="Leaderboard"
+          >
+            <Trophy className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
 
-            {/* ── 2. MALA TYPE ───────────────────────────────────── */}
-            <button
-              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
-                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
-              }`}
-              onClick={() => {
-                const types: Array<"rudraksha" | "tulsi" | "sandalwood"> = ["rudraksha", "tulsi", "sandalwood"];
-                const nextIdx = (types.indexOf(malaType) + 1) % types.length;
-                setMalaType(types[nextIdx]);
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-14">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6 py-3 md:py-6 grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-8 items-center md:items-start">
+          <div className="md:col-span-3 flex flex-col items-center justify-center">
+            <div
+              className="relative flex items-center justify-center select-none"
+              style={{
+                width: isMobile ? "280px" : "min(100%, 470px)",
+                height: isMobile ? "280px" : "min(100%, 470px)",
+                maxWidth: isMobile ? 280 : 470,
+                maxHeight: isMobile ? 280 : 470,
               }}
             >
-              <MaskedIcon 
-                src="/icons/mala.svg" 
-                alt="mala" 
-                isDark={isDark} 
-                active={true} 
-                className="w-5 h-5 sm:w-6 sm:h-6"
+              <CircularMalaRing
+                count={count}
+                targetCount={targetCount}
+                isDark={isDark}
+                isMobile={isMobile}
+                malaType={malaType}
+                activeMantra={activeMantra}
+                isHi={isHi}
+                floatingTexts={floatingTexts}
+                onTap={incrementCount}
               />
-              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-amber-200/60" : "text-[#786252]"
-              }`}>
-                {isHi ? "माला" : "Mala Type"}
-              </span>
-              <span className={`text-[13px] font-bold leading-none ${
-                isDark ? "text-amber-400" : "text-[#591A0D]"
-              }`}>
-                {malaType === "rudraksha" ? (isHi ? "रुद्राक्ष" : "Rudraksha") : malaType === "tulsi" ? (isHi ? "तुलसी" : "Tulsi") : (isHi ? "चंदन" : "Sandal")}
-              </span>
-            </button>
+            </div>
 
-            {/* ── 3. SOUND ───────────────────────────────────────── */}
-            <button
-              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
-                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+            <p
+              className={`mt-3 md:mt-4 px-4 text-center font-display text-base sm:text-lg md:text-xl font-bold leading-snug whitespace-pre-line max-w-md ${
+                isDark ? "text-amber-100" : "text-[#651317]"
               }`}
-              onClick={() => setSoundEnabled(!soundEnabled)}
             >
-              <MaskedIcon 
-                src="/icons/sound.svg" 
-                alt="sound" 
-                isDark={isDark} 
-                active={soundEnabled} 
-                className="w-5 h-5 sm:w-6 sm:h-6"
-              />
-              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-amber-200/60" : "text-[#786252]"
-              }`}>
-                {isHi ? "ध्वनि" : "Sound"}
-              </span>
-              <span className={`text-[13px] font-bold leading-none tracking-wider ${
-                soundEnabled 
-                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
-                  : isDark ? "text-white/30" : "text-slate-400"
-              }`}>
-                {soundEnabled ? (isHi ? "चालू" : "On") : (isHi ? "बंद" : "Off")}
-              </span>
-            </button>
+              {isHi
+                ? activeMantra.full_text_hindi || activeMantra.name_hindi
+                : activeMantra.transliteration || activeMantra.name_english}
+            </p>
 
-            {/* ── 4. VIBRATION ───────────────────────────────────── */}
-            <button
-              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
-                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+            <p
+              className={`mt-2 text-xs md:text-sm font-medium ${
+                isDark ? "text-amber-200/70" : "text-[#786252]"
               }`}
-              onClick={() => setVibrationEnabled(!vibrationEnabled)}
             >
-              <MaskedIcon 
-                src="/icons/vibrator.svg" 
-                alt="vibration" 
-                isDark={isDark} 
-                active={vibrationEnabled} 
-                className="w-5 h-5 sm:w-6 sm:h-6"
-              />
-              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-amber-200/60" : "text-[#786252]"
-              }`}>
-                {isHi ? "कंपन" : "Vibration"}
-              </span>
-              <span className={`text-[13px] font-bold leading-none tracking-wider ${
-                vibrationEnabled 
-                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
-                  : isDark ? "text-white/30" : "text-slate-400"
-              }`}>
-                {vibrationEnabled ? (isHi ? "चालू" : "On") : (isHi ? "बंद" : "Off")}
-              </span>
-            </button>
+              {count === 0
+                ? isHi
+                  ? "जाप शुरू करने के लिए कहीं भी टैप करें"
+                  : "Tap anywhere to start chanting"
+                : isHi
+                ? "जाप के लिए कहीं भी टैप करें"
+                : "Tap anywhere to count"}
+            </p>
+          </div>
 
-            {/* ── 5. AUTO-LOCK ───────────────────────────────────── */}
-            <button
-              className={`flex-1 flex flex-col items-center justify-center gap-1 px-2 py-3 transition-colors ${
-                isDark ? "active:bg-amber-500/5" : "active:bg-amber-500/10"
+          <div
+            className="md:col-span-2 w-full max-w-md mx-auto md:mx-0 space-y-3 md:space-y-4 md:pt-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className={`flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium tabular-nums ${
+                isDark
+                  ? "bg-stone-900/80 border-stone-700 text-stone-300"
+                  : "bg-[#FFFDF8] border-[#E8D8C4] text-[#786252]"
               }`}
-              onClick={() => setAutoLockDisabled(!autoLockDisabled)}
             >
-              <MaskedIcon 
-                src="/icons/lock.svg" 
-                alt="auto-lock" 
-                isDark={isDark} 
-                active={autoLockDisabled} 
-                className="w-5 h-5 sm:w-6 sm:h-6"
-              />
-              <span className={`text-[9px] font-bold uppercase tracking-widest leading-none ${
-                isDark ? "text-amber-200/60" : "text-[#786252]"
-              }`}>
-                {isHi ? "स्क्रीन" : "Auto-Lock"}
+              <span>
+                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                  {count}
+                </span>
+                /{targetCount}
               </span>
-              <span className={`text-[13px] font-bold leading-none tracking-wider ${
-                autoLockDisabled 
-                  ? isDark ? "text-amber-400" : "text-[#591A0D]"
-                  : isDark ? "text-white/30" : "text-slate-400"
-              }`}>
-                {autoLockDisabled ? (isHi ? "चालू" : "On") : (isHi ? "बंद" : "Off")}
+              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+              <span>
+                {isHi ? "माला" : "Round"}{" "}
+                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                  {Math.floor(count / 27) + 1}
+                </span>
               </span>
-            </button>
+              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+              <span className="inline-flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                {formatTime(secondsElapsed)}
+              </span>
+              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+              <span>
+                {isHi ? "आज" : "Today"}{" "}
+                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                  {displayTodayChants}
+                </span>
+              </span>
+            </div>
 
+            <div
+              className={`rounded-2xl border p-3 sm:p-4 space-y-2.5 ${
+                isDark ? "bg-stone-900/80 border-stone-700" : "bg-[#FFFDF8] border-[#E8D8C4]"
+              }`}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-wider text-center text-[#651317] dark:text-amber-300">
+                {isHi ? "माला चुनें" : "Choose Mala"}
+              </p>
+              <MalaTypePicker
+                malaType={malaType}
+                onChange={setMalaType}
+                isHi={isHi}
+                isDark={isDark}
+              />
+            </div>
+
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={handleResetClick}
+                disabled={count === 0}
+                className={`inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-full border text-xs font-bold transition-all active:scale-95 disabled:opacity-40 ${
+                  isDark
+                    ? "border-amber-500/40 text-amber-200 bg-stone-900"
+                    : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+                }`}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {isHi ? "रीसेट" : "Reset"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTimerActive(!timerActive)}
+                className={`inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-full text-xs font-bold transition-all active:scale-95 ${
+                  !timerActive
+                    ? "bg-[#651317] text-white"
+                    : isDark
+                    ? "border border-amber-500/40 text-amber-200 bg-stone-900"
+                    : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+                }`}
+              >
+                {!timerActive ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
+                {!timerActive ? (isHi ? "जारी" : "Resume") : isHi ? "रोकें" : "Pause"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsAutoJapaActive((prev) => !prev)}
+                className={`inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-full text-xs font-bold transition-all active:scale-95 ${
+                  isAutoJapaActive
+                    ? "bg-[#651317] text-white"
+                    : isDark
+                    ? "border border-amber-500/40 text-amber-200 bg-stone-900"
+                    : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+                }`}
+              >
+                <img
+                  src={playCircleSvg}
+                  className="w-3.5 h-3.5 object-contain"
+                  style={{ filter: isAutoJapaActive ? "brightness(0) invert(1)" : undefined }}
+                  alt=""
+                />
+                {isAutoJapaActive
+                  ? isHi
+                    ? `ऑटो ${autoJapaIntervalSec}s`
+                    : `Auto ${autoJapaIntervalSec}s`
+                  : isHi
+                  ? "ऑटो"
+                  : "Auto"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAutoJapaSpeedModalOpen(true)}
+                className={`h-10 w-10 rounded-full border flex items-center justify-center active:scale-95 ${
+                  isDark
+                    ? "border-amber-500/40 text-amber-200 bg-stone-900"
+                    : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+                }`}
+                title={isHi ? "गति" : "Speed"}
+              >
+                <Sliders className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div
+              className={`flex items-stretch divide-x rounded-2xl border overflow-hidden ${
+                isDark
+                  ? "bg-stone-900/80 border-stone-700 divide-stone-700"
+                  : "bg-[#FFFDF8] border-[#E8D8C4] divide-[#E8D8C4]"
+              }`}
+            >
+              <button
+                type="button"
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+                onClick={() => setSoundEnabled(!soundEnabled)}
+              >
+                {soundEnabled ? (
+                  <Volume2 className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-[#786252]" />
+                )}
+                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                  {soundEnabled ? (isHi ? "ध्वनि चालू" : "Sound On") : isHi ? "ध्वनि बंद" : "Sound Off"}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+                onClick={() => setVibrationEnabled(!vibrationEnabled)}
+              >
+                <Smartphone
+                  className={`w-4 h-4 ${
+                    vibrationEnabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
+                  }`}
+                />
+                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                  {vibrationEnabled ? (isHi ? "कंपन चालू" : "Vibrate On") : isHi ? "कंपन बंद" : "Vibrate Off"}
+                </span>
+              </button>
+              <button
+                type="button"
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+                onClick={() => setAutoLockDisabled(!autoLockDisabled)}
+              >
+                <Lock
+                  className={`w-4 h-4 ${
+                    autoLockDisabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
+                  }`}
+                />
+                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                  {autoLockDisabled ? (isHi ? "स्क्रीन चालू" : "Stay Awake") : isHi ? "लॉक" : "Auto-lock"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ─── FIXED BOTTOM NAV BAR ─────────────────────────────────── */}
-      <MobileBottomNav />
+      <div className="md:hidden">
+        <MobileBottomNav />
+      </div>
 
-      {/* ─── SETTINGS DRAWER BOTTOM SHEET ────────────────────────── */}
       <AnimatePresence>
         {settingsOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -2938,121 +3078,119 @@ export default function PremiumJapaCounter({
               onClick={() => setSettingsOpen(false)}
               className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs select-none"
             />
-            
-            {/* Drawer */}
+
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 22, stiffness: 160 }}
-              className="fixed bottom-0 inset-x-0 z-[90] bg-gradient-to-b from-[#130d0a] to-[#0a0507] border-t border-amber-500/20 rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl max-w-md mx-auto settings-panel select-none"
+              className="fixed bottom-0 inset-x-0 z-[90] bg-[#FFFDF8] dark:bg-[#130d0a] border-t border-[#E8D8C4] dark:border-amber-500/20 rounded-t-[2.5rem] px-6 pb-8 pt-4 shadow-2xl max-w-lg mx-auto settings-panel select-none"
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Handle Bar */}
-              <div 
+              <div
                 onClick={() => setSettingsOpen(false)}
-                className="w-12 h-1.5 bg-amber-500/20 rounded-full mx-auto mb-6 cursor-pointer hover:bg-amber-500/40 transition-colors" 
+                className="w-12 h-1.5 bg-[#E8D8C4] dark:bg-amber-500/20 rounded-full mx-auto mb-6 cursor-pointer"
               />
-              
+
               <div className="space-y-4">
-                {/* Mantra Dropdown */}
-                <div className="flex items-center justify-between py-2 border-b border-amber-500/5">
+                <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/5">
                   <div className="flex items-center gap-3">
-                    <Flower2 className="w-5 h-5 text-amber-500/70" />
-                    <span className="text-sm font-semibold text-amber-100/80">{isHi ? "मंत्र" : "Mantra"}</span>
+                    <Flower2 className="w-5 h-5 text-[#651317] dark:text-amber-500/70" />
+                    <span className="text-sm font-semibold text-[#651317] dark:text-amber-100/80">
+                      {isHi ? "मंत्र" : "Mantra"}
+                    </span>
                   </div>
                   <div className="relative">
                     <select
                       value={activeMantra.id}
                       onChange={(e) => handleMantraChange(e.target.value)}
-                      className="bg-black/40 border border-amber-500/20 text-amber-300 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-amber-500/50 appearance-none pr-8 cursor-pointer"
+                      className="bg-[#FAF0E4] dark:bg-black/40 border border-[#E8D8C4] dark:border-amber-500/20 text-[#651317] dark:text-amber-300 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none appearance-none pr-8 cursor-pointer"
                     >
                       {(mantras || []).map((m) => (
-                        <option key={m.id} value={m.id} className="bg-[#130d0a] text-amber-100">
+                        <option key={m.id} value={m.id}>
                           {isHi ? m.name_hindi : m.name_english}
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-amber-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#786252] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Mala Type Dropdown */}
-                <div className="flex items-center justify-between py-2 border-b border-amber-500/5">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base text-amber-500/70">📿</span>
-                    <span className="text-sm font-semibold text-amber-100/80">{isHi ? "माला का प्रकार" : "Mala Type"}</span>
-                  </div>
-                  <div className="relative">
-                    <select
-                      value={malaType}
-                      onChange={(e) => setMalaType(e.target.value as any)}
-                      className="bg-black/40 border border-amber-500/20 text-amber-300 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none focus:border-amber-500/50 appearance-none pr-8 cursor-pointer"
-                    >
-                      <option value="rudraksha" className="bg-[#130d0a] text-amber-100">{isHi ? "रुद्राक्ष" : "Rudraksha"}</option>
-                      <option value="tulsi" className="bg-[#130d0a] text-amber-100">{isHi ? "तुलसी" : "Tulsi"}</option>
-                      <option value="sandalwood" className="bg-[#130d0a] text-amber-100">{isHi ? "चंदन" : "Sandalwood"}</option>
-                    </select>
-                    <ChevronDown className="w-3.5 h-3.5 text-amber-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
+                <div className="py-2 border-b border-[#E8D8C4] dark:border-amber-500/5 space-y-3">
+                  <span className="text-sm font-semibold text-[#651317] dark:text-amber-100/80">
+                    {isHi ? "माला का प्रकार" : "Mala Type"}
+                  </span>
+                  <MalaTypePicker
+                    malaType={malaType}
+                    onChange={setMalaType}
+                    isHi={isHi}
+                    isDark={isDark}
+                  />
                 </div>
 
-                {/* Sound Toggle */}
-                <div className="flex items-center justify-between py-2 border-b border-amber-500/5">
+                <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/5">
                   <div className="flex items-center gap-3">
-                    <Volume2 className="w-5 h-5 text-amber-500/70" />
-                    <span className="text-sm font-semibold text-amber-100/80">{isHi ? "ध्वनि (Sound)" : "Sound"}</span>
+                    <Volume2 className="w-5 h-5 text-[#651317] dark:text-amber-500/70" />
+                    <span className="text-sm font-semibold text-[#651317] dark:text-amber-100/80">
+                      {isHi ? "ध्वनि" : "Sound"}
+                    </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setSoundEnabled(!soundEnabled)}
-                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                      soundEnabled ? "bg-amber-500" : "bg-white/10"
+                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                      soundEnabled ? "bg-[#651317]" : "bg-[#E8D8C4] dark:bg-white/10"
                     }`}
                   >
-                    <motion.div 
-                      layout 
-                      className="w-5 h-5 rounded-full bg-black shadow" 
+                    <motion.div
+                      layout
+                      className="w-5 h-5 rounded-full bg-white shadow"
                       animate={{ x: soundEnabled ? 20 : 0 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   </button>
                 </div>
 
-                {/* Vibration Toggle */}
-                <div className="flex items-center justify-between py-2 border-b border-amber-500/5">
+                <div className="flex items-center justify-between py-2 border-b border-[#E8D8C4] dark:border-amber-500/5">
                   <div className="flex items-center gap-3">
-                    <Smartphone className="w-5 h-5 text-amber-500/70" />
-                    <span className="text-sm font-semibold text-amber-100/80">{isHi ? "कंपन (Vibration)" : "Vibration"}</span>
+                    <Smartphone className="w-5 h-5 text-[#651317] dark:text-amber-500/70" />
+                    <span className="text-sm font-semibold text-[#651317] dark:text-amber-100/80">
+                      {isHi ? "कंपन" : "Vibration"}
+                    </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setVibrationEnabled(!vibrationEnabled)}
-                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                      vibrationEnabled ? "bg-amber-500" : "bg-white/10"
+                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                      vibrationEnabled ? "bg-[#651317]" : "bg-[#E8D8C4] dark:bg-white/10"
                     }`}
                   >
-                    <motion.div 
-                      layout 
-                      className="w-5 h-5 rounded-full bg-black shadow" 
+                    <motion.div
+                      layout
+                      className="w-5 h-5 rounded-full bg-white shadow"
                       animate={{ x: vibrationEnabled ? 20 : 0 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   </button>
                 </div>
 
-                {/* Screen Awake Toggle */}
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center gap-3">
-                    <Lock className="w-5 h-5 text-amber-500/70" />
-                    <span className="text-sm font-semibold text-amber-100/80">{isHi ? "जाप के दौरान स्क्रीन चालू रखें" : "Auto-lock screen"}</span>
+                    <Lock className="w-5 h-5 text-[#651317] dark:text-amber-500/70" />
+                    <span className="text-sm font-semibold text-[#651317] dark:text-amber-100/80">
+                      {isHi ? "स्क्रीन चालू रखें" : "Keep screen awake"}
+                    </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setAutoLockDisabled(!autoLockDisabled)}
-                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 focus:outline-none ${
-                      autoLockDisabled ? "bg-amber-500" : "bg-white/10"
+                    className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-0.5 ${
+                      autoLockDisabled ? "bg-[#651317]" : "bg-[#E8D8C4] dark:bg-white/10"
                     }`}
                   >
-                    <motion.div 
-                      layout 
-                      className="w-5 h-5 rounded-full bg-black shadow" 
+                    <motion.div
+                      layout
+                      className="w-5 h-5 rounded-full bg-white shadow"
                       animate={{ x: autoLockDisabled ? 20 : 0 }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
@@ -3064,14 +3202,11 @@ export default function PremiumJapaCounter({
         )}
       </AnimatePresence>
 
-      {/* ─── LEADERBOARD FULL-SCREEN OVERLAY ─────────────────────── */}
       {renderLeaderboardOverlay()}
-
-      {/* ─── CELEBRATION COMPLETED SCREEN OVERLAY ─────────────────── */}
       {renderCompletedOverlay()}
-
-      {/* ─── TOO FAST TAP WARNING TOAST ───────────────────────────── */}
+      {renderAutoJapaSpeedModal()}
       {renderTooFastToast()}
     </motion.div>
   );
 }
+
