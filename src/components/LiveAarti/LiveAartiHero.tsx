@@ -11,6 +11,7 @@ interface LiveAartiHeroProps {
   liveTemples: Temple[];
   onSelectTemple: (temple: Temple) => void;
   onOpenDetails: (temple: Temple) => void;
+  isModalOpen?: boolean;
 }
 
 export default function LiveAartiHero({
@@ -18,6 +19,7 @@ export default function LiveAartiHero({
   liveTemples,
   onSelectTemple,
   onOpenDetails,
+  isModalOpen = false,
 }: LiveAartiHeroProps) {
   const { language } = useLanguage();
   const isHi = language === 'hi';
@@ -26,7 +28,13 @@ export default function LiveAartiHero({
   const embedUrl = getTempleEmbedUrl(temple);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Reset isPlaying when selected temple changes
+  // Stop background playback when modal opens or selected temple changes
+  useEffect(() => {
+    if (isModalOpen) {
+      setIsPlaying(false);
+    }
+  }, [isModalOpen]);
+
   useEffect(() => {
     setIsPlaying(false);
   }, [temple.id]);

@@ -74,32 +74,56 @@ interface VerificationState {
   lastVerifiedAt: string;
 }
 
+const HERO_CACHE_KEY = 'raghavam_live_aarti_hero_cache';
+
 export function computeInitialAartiData() {
   const now = getIST();
   const dayName = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
 
+  let cachedData: Record<string, { status: string; videoId?: string | null; liveTitle?: string | null }> = {};
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = localStorage.getItem(HERO_CACHE_KEY);
+      if (raw) cachedData = JSON.parse(raw);
+    }
+  } catch {}
+
   const initialStatuses: Record<string, VerificationState> = {};
   const templesWithStatus = (data.temples as Temple[]).map(temple => {
     let initialStatus: 'LIVE' | 'UPCOMING' | 'OFFLINE' | 'STREAM_UNAVAILABLE' = 'OFFLINE';
-    
-    // Check if an aarti is actively ongoing at current IST time
-    const activeAarti = temple.aartiSchedule.find(a => {
-      const start = parseISTTime(a.time);
-      const end = new Date(start.getTime() + a.durationMinutes * 60000);
-      return now >= start && now < end;
-    });
+    let videoId = temple.videoId || null;
+    let liveTitle: string | null = null;
 
-    if (activeAarti || temple.status === 'LIVE') {
-      initialStatus = 'LIVE';
-    } else if (temple.aartiSchedule.length > 0) {
-      initialStatus = 'UPCOMING';
+    if (cachedData[temple.id]) {
+      const c = cachedData[temple.id];
+      if (c.status === 'LIVE') {
+        initialStatus = 'LIVE';
+        if (c.videoId) videoId = c.videoId;
+        if (c.liveTitle) liveTitle = c.liveTitle;
+      } else if (c.status === 'UPCOMING' || c.status === 'OFFLINE') {
+        initialStatus = c.status as any;
+      }
+    } else {
+      // Check if an aarti is actively ongoing at current IST time
+      const activeAarti = temple.aartiSchedule.find(a => {
+        const start = parseISTTime(a.time);
+        const end = new Date(start.getTime() + a.durationMinutes * 60000);
+        return now >= start && now < end;
+      });
+
+      if (activeAarti || temple.status === 'LIVE') {
+        initialStatus = 'LIVE';
+        liveTitle = activeAarti ? (activeAarti.nameHindi || activeAarti.name) : null;
+      } else if (temple.aartiSchedule.length > 0) {
+        initialStatus = 'UPCOMING';
+      }
     }
 
     const state: VerificationState = {
       id: temple.id,
       status: initialStatus,
-      liveTitle: activeAarti ? (activeAarti.nameHindi || activeAarti.name) : null,
-      videoId: temple.videoId || null,
+      liveTitle,
+      videoId,
       lastVerifiedAt: new Date().toISOString()
     };
     initialStatuses[temple.id] = state;
@@ -383,17 +407,31 @@ export function useLiveAarti() {
     setLiveNow(live.sort(sortByReliability));
     setStartingSoon(soon.sort((a, b) => a.minutesUntilStart - b.minutesUntilStart));
     setUpcoming(up.sort((a, b) => a.minutesUntilStart - b.minutesUntilStart).slice(0, 8));
+
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const cacheToSave: Record<string, any> = {};
+        for (const [id, state] of Object.entries(newStatuses)) {
+          cacheToSave[id] = {
+            status: state.status,
+            videoId: state.videoId,
+            liveTitle: state.liveTitle
+          };
+        }
+        localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(cacheToSave));
+      }
+    } catch {}
   }
 
-  async function compute(options?: { background?: boolean }) {
-    if (!options?.background) setIsVerifying(true);
+  async function compute(options?: { background?: boolean }, isMounted?: () => boolean) {
+    if (!options?.background && isMounted?.() !== false) setIsVerifying(true);
 
     // Instant: DB cache → paint LIVE ASAP, then Edge Function may refine.
     try {
       const { data: rows } = await supabase
         .from('live_aarti_status')
         .select('temple_id, status, live_title, video_id, last_verified_at');
-      if (rows?.length) {
+      if (rows?.length && isMounted?.() !== false) {
         const quick: Record<string, VerificationState> = {};
         for (const temple of data.temples) quick[temple.id] = fallbackStatus(temple.id);
         for (const row of rows) {
@@ -413,35 +451,30 @@ export function useLiveAarti() {
       // ignore — Edge Function path below still runs
     }
 
+    if (isMounted?.() === false) return;
+
     const newStatuses = await fetchAllLiveStatuses();
-    applyStatuses(newStatuses);
-    setIsVerifying(false);
+    if (isMounted?.() !== false) {
+      applyStatuses(newStatuses);
+      setIsVerifying(false);
+    }
   }
 
   useEffect(() => {
-    // Paint schedule UI first, then verify live streams.
-    const bootstrap = () => {
-      const now = getIST();
-      const dayName = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
-      const seeded = (data.temples as Temple[]).map((temple) => ({
-        ...temple,
-        status: (temple.aartiSchedule.length > 0 ? 'UPCOMING' : 'OFFLINE') as Temple['status'],
-        videoId: null,
-        liveTitle: null,
-        lastVerifiedAt: undefined,
-      }));
-      setAllTemples(seeded);
-      const auspiciousIds = (data.weeklyAuspiciousMapping as Record<string, string[]>)[dayName] ?? [];
-      setTodaysTemples(
-        seeded
-          .filter((t) => auspiciousIds.includes(t.id) && !t.requiresTitleFilter)
-          .sort((a, b) => b.streamReliability - a.streamReliability),
-      );
+    let mounted = true;
+    const checkMounted = () => mounted;
+
+    void compute(undefined, checkMounted);
+    const interval = setInterval(() => {
+      if (mounted) {
+        void compute({ background: true }, checkMounted);
+      }
+    }, 60000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
     };
-    bootstrap();
-    void compute();
-    const interval = setInterval(() => void compute({ background: true }), 60000);
-    return () => clearInterval(interval);
   }, []);
 
   return { 

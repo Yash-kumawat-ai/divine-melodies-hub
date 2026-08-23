@@ -7,6 +7,7 @@ import { getNextAarti } from '@/hooks/useLiveAarti';
 import { getTempleEmbedUrl } from '@/lib/liveAartiEmbed';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { resolveTempleBanner } from './templeBanners';
+import { clearRadixBodyLocks } from '@/lib/clearRadixBodyLocks';
 
 export { resolveTempleBanner };
 
@@ -24,20 +25,28 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
   const [highlightSchedule, setHighlightSchedule] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
 
-  // Reset player when modal closes or temple changes to avoid hanging iframe threads
+  // Reset player and clear pointer-events locks when modal closes
   useEffect(() => {
     if (!isOpen) {
       setShowInAppPlayer(false);
       setForceShowPlayer(false);
       setHighlightSchedule(false);
+      clearRadixBodyLocks();
     }
   }, [isOpen]);
 
   const handleClose = useCallback(() => {
     setShowInAppPlayer(false);
     setForceShowPlayer(false);
+    clearRadixBodyLocks();
     onClose();
   }, [onClose]);
+
+  useEffect(() => {
+    return () => {
+      clearRadixBodyLocks();
+    };
+  }, []);
 
   if (!temple) return null;
 
@@ -149,7 +158,7 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
             type="button"
             onClick={handleClose}
             aria-label={isHi ? 'बंद करें' : 'Close'}
-            className="flex items-center justify-center h-8.5 w-8.5 sm:h-9 sm:w-9 rounded-full bg-[#FAF4EA] dark:bg-stone-800/80 border border-[#E8D8C4] dark:border-stone-700/80 text-[#786252] dark:text-stone-300 hover:bg-[#F2E8DA] dark:hover:bg-stone-700 hover:text-[#3A2418] dark:hover:text-white active:scale-90 transition-all shrink-0 cursor-pointer shadow-2xs"
+            className="flex items-center justify-center h-8 w-8 rounded-full bg-[#FAF4EA] dark:bg-stone-800/80 border border-[#E8D8C4]/60 dark:border-stone-700/60 text-[#786252] dark:text-stone-400 hover:bg-[#F2E8DA] dark:hover:bg-stone-700 hover:text-[#3A2418] dark:hover:text-white active:scale-90 transition-all shrink-0 cursor-pointer shadow-2xs"
           >
             <X className="w-4 h-4" />
           </button>

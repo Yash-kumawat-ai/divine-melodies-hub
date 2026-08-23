@@ -11,6 +11,7 @@ import TodaysTemples from '../components/LiveAarti/TodaysTemples';
 import LiveAartiHero from '../components/LiveAarti/LiveAartiHero';
 import type { Temple } from '../types/liveAarti';
 import { LIVE_AARTI_CANONICAL, LIVE_AARTI_OG_IMAGE } from '@/lib/liveAartiEmbed';
+import { clearRadixBodyLocks } from '@/lib/clearRadixBodyLocks';
 import { toast } from 'sonner';
 
 type CategoryFilter = 'all' | 'jyotirlinga' | 'hanuman' | 'krishna' | 'iskcon';
@@ -31,7 +32,7 @@ export default function LiveAartiPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = useLanguage();
   const isHi = language === 'hi';
-  const { liveNow, startingSoon, upcoming, todaysTemples, allTemples, isVerifying } = useLiveAarti();
+  const { liveNow, startingSoon, upcoming, todaysTemples, allTemples } = useLiveAarti();
   const [selectedTemple, setSelectedTemple] = useState<Temple | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [livePage, setLivePage] = useState(1);
@@ -70,10 +71,25 @@ export default function LiveAartiPage() {
     }
   };
 
-  const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate('/');
-  };
+  const closeModal = useCallback(() => {
+    setModalOpen(false);
+    setSelectedTemple(null);
+    clearRadixBodyLocks();
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('temple');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleBack = useCallback(() => {
+    clearRadixBodyLocks();
+    if (modalOpen) {
+      closeModal();
+      return;
+    }
+    navigate('/');
+  }, [modalOpen, closeModal, navigate]);
 
   const text = {
     title: isHi ? 'लाइव आरती दर्शन' : 'Live Aarti Darshan',
@@ -96,23 +112,39 @@ export default function LiveAartiPage() {
     }, { replace: true });
   }, [setSearchParams]);
 
-  const closeModal = useCallback(() => {
-    setModalOpen(false);
-    setSelectedTemple(null);
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('temple');
-      return next;
-    }, { replace: true });
-  }, [setSearchParams]);
-
-  // Ensure scroll is at the top on mount/refresh
+  // Ensure scroll is at the top on mount/refresh and prefetch Home page chunk
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    // Prefetch Home chunk during idle time for 0ms instantaneous back navigation
+    const prefetchHome = () => {
+      import('./Home');
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(prefetchHome);
+    } else {
+      setTimeout(prefetchHome, 100);
+    }
   }, []);
+
+  // Handle browser back gesture / popstate to cleanly release modal & body locks
+  useEffect(() => {
+    const handlePopState = () => {
+      if (modalOpen) {
+        setModalOpen(false);
+        setSelectedTemple(null);
+        clearRadixBodyLocks();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      clearRadixBodyLocks();
+    };
+  }, [modalOpen]);
 
   // Handle deep-link / initial URL search param only once on mount
   useEffect(() => {
@@ -145,8 +177,12 @@ export default function LiveAartiPage() {
 
   const heroTemple =
     liveTemples.find((t) => t.id === heroTempleId) ||
+    allTemples.find((t) => t.id === 'salasar-balaji' && matchesCategory(t, category)) ||
+    liveTemples.find((t) => t.id === 'salasar-balaji') ||
     liveTemples[0] ||
+    allTemples.find((t) => t.videoId && matchesCategory(t, category)) ||
     todaysTemples[0] ||
+    allTemples.find((t) => t.id === 'salasar-balaji') ||
     allTemples[0] ||
     null;
 
@@ -275,6 +311,7 @@ export default function LiveAartiPage() {
             liveTemples={liveTemples.length > 0 ? liveTemples : [heroTemple]}
             onSelectTemple={(t) => setHeroTempleId(t.id)}
             onOpenDetails={openTemple}
+            isModalOpen={modalOpen}
           />
         )}
 
