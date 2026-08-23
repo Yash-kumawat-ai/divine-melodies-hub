@@ -28,17 +28,15 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
-import { fetchLeaderboardRankings, type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
+import { type Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import { transcriptMatchesActiveMantra } from "@/lib/meditation/japaVoice";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { useAuth } from "@/hooks/useAuth";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { SEO } from "@/components/SEO";
+import JapaLeaderboardView from "./JapaLeaderboardView";
 
-// Deity images for leaderboard avatars
-import shivWallpaper from "@/pages/images/shiv_wallpaper.webp";
-import mayapurTvImg from "@/pages/images/radha_krishna_hd mayapur tv.webp";
-import salangpurHanumanImg from "@/pages/images/Hanumanji_HD_WebP.webp";
 import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
 import ramJiSvg from "@/pages/images/svg/ram ji.svg";
 import playCircleSvg from "@/pages/images/svg/play-circle-svgrepo-com.svg";
@@ -443,7 +441,7 @@ export const CircularMalaRing = memo(function CircularMalaRing({
       ) : showCenterStats ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none z-20">
           <span
-            className={`font-display text-[54px] md:text-[66px] font-bold leading-none tracking-tight tabular-nums ${
+            className={`font-sans lining-nums tabular-nums text-[54px] md:text-[66px] font-bold leading-none tracking-tight ${
               isDark ? "text-[#F5C15C]" : "text-[#651317]"
             }`}
           >
@@ -633,6 +631,41 @@ const MaskedIcon = ({
   );
 };
 
+function CounterHeroChrome({
+  onBack,
+  onTrophy,
+}: {
+  onBack: () => void;
+  onTrophy: () => void;
+}) {
+  return (
+    <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onBack();
+        }}
+        className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+        aria-label="Back"
+      >
+        <ArrowLeft className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onTrophy();
+        }}
+        className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+        aria-label="Leaderboard"
+      >
+        <Trophy className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 export default function PremiumJapaCounter({
   mantra,
   sankalpText,
@@ -647,7 +680,6 @@ export default function PremiumJapaCounter({
   const isDark = theme === "dark";
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   // Initialize count and secondsElapsed from URL search parameters if returning
   const initialCount = Number(searchParams.get("resumeCount") || "0");
@@ -673,36 +705,6 @@ export default function PremiumJapaCounter({
     persistMalaType(malaType);
   }, [malaType]);
   
-  const [liveRankings, setLiveRankings] = useState<any[]>([]);
-  const [liveRankingsLoading, setLiveRankingsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!leaderboardOpen) return;
-    
-    let active = true;
-    async function loadLiveRankings() {
-      setLiveRankingsLoading(true);
-      try {
-        const rankingsData = await fetchLeaderboardRankings(userId || undefined);
-        if (active) {
-          setLiveRankings(rankingsData);
-        }
-      } catch (err) {
-        console.error("Error fetching live rankings in overlay:", err);
-      } finally {
-        if (active) {
-          setLiveRankingsLoading(false);
-        }
-      }
-    }
-
-    loadLiveRankings();
-
-    return () => {
-      active = false;
-    };
-  }, [leaderboardOpen, userId]);
-
   // Warn user before reloading or leaving page with unsaved counts
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -786,49 +788,14 @@ export default function PremiumJapaCounter({
   // Responsiveness State
   const [isMobile, setIsMobile] = useState(false);
 
-  // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
-  // Filter devotees list dynamically based on chosen scope, timeframe, and mantra filters
-  const filteredDevotees = useMemo(() => {
-    const list = (liveRankings || []).map((r) => {
-      const isCurrentUser = userId && r.user_id === userId;
-      if (isCurrentUser) {
-        return {
-          ...r,
-          total_chants: Number(r.total_chants || 0) + count
-        };
-      }
-      return r;
-    });
+  useEffect(() => {
+    void import("@/components/meditation/MantraJapHome");
+  }, []);
 
-    // Re-sort the list if current user's count increased their rank
-    list.sort((a, b) => Number(b.total_chants) - Number(a.total_chants));
-    
-    // Re-assign ranks based on sorted order
-    let currentRank = 1;
-    let lastChants = -1;
-    return list.map((item, idx) => {
-      const chants = Number(item.total_chants);
-      if (idx > 0 && chants < lastChants) {
-        currentRank = idx + 1;
-      }
-      lastChants = chants;
-      return {
-        id: item.user_id,
-        name: item.display_name,
-        avatar: item.avatar_url || "user",
-        streak: item.max_streak || 0,
-        chants: chants,
-        rank: currentRank,
-        isCurrentUser: userId && item.user_id === userId,
-        username: item.username,
-        isFriend: false
-      };
-    });
-  }, [liveRankings, count, userId]);
-
-  const currentUserRankRow = useMemo(() => {
-    return filteredDevotees.find((d) => d.isCurrentUser);
-  }, [filteredDevotees]);
+  const japaSeoUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/meditation?practice=mantra_japa_counter&mantraId=${activeMantra.id}`
+      : `/meditation?practice=mantra_japa_counter&mantraId=${activeMantra.id}`;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -1599,307 +1566,22 @@ export default function PremiumJapaCounter({
   );
 
   const renderLeaderboardOverlay = () => {
+    if (!leaderboardOpen) return null;
     return (
-      <AnimatePresence>
-        {leaderboardOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
-            className="absolute inset-0 z-[120] bg-[#090503] flex flex-col justify-between text-[#fbf6f0] select-none overflow-y-auto cursor-default rounded-[2.5rem]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.06),transparent_80%)] pointer-events-none" />
-
-            {/* Header bar */}
-            <div className="w-full px-5 py-4 flex items-center justify-between border-b border-[#301a0e]/30 relative z-10">
-              <button
-                onClick={() => setLeaderboardOpen(false)}
-                className="w-10 h-10 rounded-full border border-amber-500/20 bg-black/40 flex items-center justify-center text-amber-200/80 active:scale-95 transition-all"
-                aria-label="Back"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-
-              <div className="text-center flex flex-col items-center">
-                <h2 className="font-serif text-[20px] font-bold text-amber-400 tracking-wide">
-                  {isHi ? "लीडरबोर्ड" : "Leaderboard"}
-                </h2>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="w-4 h-[1px] bg-amber-500/30" />
-                  <span className="text-[9px] font-semibold text-amber-500/60 uppercase tracking-widest font-serif">
-                    {isHi ? "जाप करें, प्रेरित करें" : "Chant more, inspire more"}
-                  </span>
-                  <span className="w-4 h-[1px] bg-amber-500/30" />
-                </div>
-              </div>
-
-              <div className="w-10" />
-            </div>
-
-            {/* Scrollable body content */}
-            <div className="flex-1 w-full px-4 py-4 space-y-4 overflow-y-auto relative z-10 scrollbar-none">
-              {/* Your Rank Card */}
-              <div className="bg-gradient-to-r from-[#21110a] to-[#150a06] border border-[#422212]/50 rounded-[1.75rem] p-4 flex items-center justify-between shadow-xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(245,158,11,0.04),transparent_60%)] pointer-events-none" />
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full border border-amber-500/20 bg-black/40 flex items-center justify-center p-1 relative">
-                    <div className="absolute inset-0 rounded-full border border-dashed border-amber-500/10 scale-110 animate-[spin_60s_linear_infinite]" />
-                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-amber-600/30 to-orange-700/30 flex items-center justify-center text-amber-200 text-sm font-black font-serif">
-                      {profile?.name ? profile.name.slice(0, 2).toUpperCase() : (isHi ? "YA" : "YA")}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-amber-200/40 font-bold uppercase tracking-wider block">Your Rank</span>
-                    <span className="text-xl font-serif font-black text-amber-400 tracking-wide block leading-tight">
-                      #{currentUserRankRow ? currentUserRankRow.rank : "1"}
-                    </span>
-                    <span className="text-[8px] font-bold text-green-400 flex items-center gap-1 mt-0.5">
-                      <span>✓</span>
-                      <span>{isHi ? "सक्रिय स्थान" : "Rank Active"}</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="h-8 w-[1px] bg-[#3e2516]/40" />
-
-                <div className="text-center">
-                  <span className="text-[8px] text-amber-200/40 font-bold uppercase tracking-wider flex items-center gap-1 justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    {isHi ? "कुल जाप" : "Total Chants"}
-                  </span>
-                  <span className="text-sm font-serif font-black text-amber-300 mt-0.5 block tabular-nums">
-                    {currentUserRankRow ? currentUserRankRow.chants.toLocaleString() : ((stats.totalChants || 0) + count).toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="h-8 w-[1px] bg-[#3e2516]/40" />
-
-                <div className="text-center pr-1">
-                  <span className="text-[8px] text-amber-200/40 font-bold uppercase tracking-wider flex items-center gap-1 justify-center">
-                    <span>🔥</span>
-                    {isHi ? "साधना स्ट्रीक" : "Streak"}
-                  </span>
-                  <span className="text-sm font-serif font-black text-amber-300 mt-0.5 block">
-                    {stats.currentStreak || 1} {isHi ? "दिन" : "Day"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Leaderboard content: Podium + Table List */}
-              {filteredDevotees.length === 0 ? (
-                <div className="w-full bg-[#100906]/65 border border-[#301a0e]/40 rounded-3xl p-6 flex flex-col items-center justify-center min-h-[200px] text-center shadow-lg relative overflow-hidden">
-                  <span className="text-4xl mb-3">🧘</span>
-                  <h4 className="font-serif text-base font-bold text-amber-400 mb-1">
-                    {isHi ? "लीडरबोर्ड खाली है" : "No Devotees Found"}
-                  </h4>
-                  <p className="text-[10px] text-amber-200/40 max-w-[240px] leading-relaxed">
-                    {isHi 
-                      ? "चयनित फिल्टर के लिए आज कोई प्रविष्टि नहीं है। पहले स्थान पर आने के लिए जाप प्रारंभ करें!" 
-                      : "No devotees match these filters currently. Be the first to start chanting and lead the board!"}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/* Top 3 Podium */}
-                  <div className="grid grid-cols-3 gap-2 items-end pt-4 pb-2 px-1 relative select-none">
-                    
-                    {/* Rank 2 (Left) */}
-                    {filteredDevotees[1] ? (
-                      <div className="flex flex-col items-center text-center group">
-                        <div className="w-16 h-16 rounded-full border-2 border-slate-400 bg-[#151515] flex items-center justify-center p-0.5 relative shadow-[0_0_10px_rgba(148,163,184,0.15)]">
-                          {/* Rank badge */}
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-r from-slate-400 to-slate-500 text-black text-[10px] font-black flex items-center justify-center shadow border border-slate-300">
-                            2
-                          </div>
-                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900 border border-slate-500/30 flex items-center justify-center">
-                            {filteredDevotees[1].avatar && (filteredDevotees[1].avatar.includes("http") || filteredDevotees[1].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[1].avatar} alt={filteredDevotees[1].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-slate-300 font-bold text-sm font-serif">{filteredDevotees[1].name.charAt(0).toLowerCase()}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <span className="text-[11px] font-bold text-amber-100/90 mt-2 truncate max-w-[90px]">
-                          {filteredDevotees[1].name}
-                        </span>
-                        <span className="text-[8px] font-bold text-orange-400/80 flex items-center gap-0.5 mt-0.5 justify-center">
-                          <span>🔥</span>
-                          <span>{filteredDevotees[1].streak || 0} {isHi ? "दिन" : "Days"}</span>
-                        </span>
-
-                        {/* Podium Stand */}
-                        <div className="w-full bg-gradient-to-b from-[#1b1a1a] to-[#0d0d0d] border border-slate-400/10 rounded-t-xl h-20 mt-3 flex flex-col justify-center items-center shadow-lg px-1">
-                          <span className="text-base font-serif font-black text-slate-300 tabular-nums">
-                            {filteredDevotees[1].chants.toLocaleString()}
-                          </span>
-                          <span className="text-[7px] text-slate-400/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-10" />
-                    )}
-
-                    {/* Rank 1 (Center) */}
-                    {filteredDevotees[0] && (
-                      <div className="flex flex-col items-center text-center group z-10">
-                        <div className="w-20 h-20 rounded-full border-2 border-yellow-500 bg-[#1c140e] flex items-center justify-center p-0.5 relative shadow-[0_0_16px_rgba(234,179,8,0.35)]">
-                          {/* Rank badge */}
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-black text-xs font-black flex items-center justify-center shadow border border-yellow-300">
-                            1
-                          </div>
-                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-700 to-orange-950 border border-yellow-500/30 flex items-center justify-center">
-                            {filteredDevotees[0].avatar && (filteredDevotees[0].avatar.includes("http") || filteredDevotees[0].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[0].avatar} alt={filteredDevotees[0].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-amber-200 font-bold text-lg font-serif">{filteredDevotees[0].name.charAt(0).toLowerCase()}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <span className="text-xs font-serif font-black text-amber-300 mt-2 truncate max-w-[105px] drop-shadow">
-                          {filteredDevotees[0].name}
-                        </span>
-                        <span className="text-[9px] font-bold text-orange-400 flex items-center gap-0.5 mt-0.5 justify-center">
-                          <span>🔥</span>
-                          <span>{filteredDevotees[0].streak || 0} {isHi ? "दिन" : "Days"}</span>
-                        </span>
-
-                        {/* Podium Stand */}
-                        <div className="w-full bg-gradient-to-b from-[#2a170b] to-[#120904] border border-yellow-500/20 rounded-t-2xl h-28 mt-3 flex flex-col justify-center items-center shadow-2xl relative overflow-hidden px-1">
-                          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
-                          <span className="text-lg font-serif font-black text-yellow-400 drop-shadow tabular-nums">
-                            {filteredDevotees[0].chants.toLocaleString()}
-                          </span>
-                          <span className="text-[8px] text-yellow-500/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Rank 3 (Right) */}
-                    {filteredDevotees[2] ? (
-                      <div className="flex flex-col items-center text-center group">
-                        <div className="w-14 h-14 rounded-full border-2 border-amber-700 bg-[#130f0d] flex items-center justify-center p-0.5 relative shadow-[0_0_10px_rgba(180,83,9,0.15)]">
-                          {/* Rank badge */}
-                          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-4.5 h-4.5 rounded-full bg-gradient-to-r from-amber-600 to-amber-800 text-white text-[9px] font-black flex items-center justify-center shadow border border-amber-600">
-                            3
-                          </div>
-                          <div className="w-full h-full rounded-full overflow-hidden bg-gradient-to-br from-amber-800 to-orange-955 border border-amber-700/30 flex items-center justify-center">
-                            {filteredDevotees[2].avatar && (filteredDevotees[2].avatar.includes("http") || filteredDevotees[2].avatar.includes("/")) ? (
-                              <img src={filteredDevotees[2].avatar} alt={filteredDevotees[2].name} width={96} height={96} decoding="async" className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-amber-500 font-bold text-sm font-serif">{filteredDevotees[2].name.charAt(0).toLowerCase()}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <span className="text-[11px] font-bold text-amber-100/90 mt-2 truncate max-w-[85px]">
-                          {filteredDevotees[2].name}
-                        </span>
-                        <span className="text-[8px] font-bold text-orange-400/80 flex items-center gap-0.5 mt-0.5 justify-center">
-                          <span>🔥</span>
-                          <span>{filteredDevotees[2].streak || 0} {isHi ? "दिन" : "Days"}</span>
-                        </span>
-
-                        {/* Podium Stand */}
-                        <div className="w-full bg-gradient-to-b from-[#18110e] to-[#0c0807] border border-amber-700/10 rounded-t-xl h-16 mt-3 flex flex-col justify-center items-center shadow-lg px-1">
-                          <span className="text-base font-serif font-black text-amber-600 tabular-nums">
-                            {filteredDevotees[2].chants.toLocaleString()}
-                          </span>
-                          <span className="text-[7px] text-amber-700/60 font-bold uppercase tracking-wider mt-0.5">Chants</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="h-10" />
-                    )}
-
-                  </div>
-
-                  {/* Devotees Table List (Ranks 4+) */}
-                  <div className="bg-[#100906]/65 border border-[#301a0e]/40 rounded-3xl overflow-hidden shadow-lg">
-                    {/* Table Header */}
-                    <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-[#170e0a]/80 text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-amber-200/50 border-b border-[#301a0e]/30 select-none">
-                      <div className="col-span-2 text-center">{isHi ? "रैंक" : "Rank"}</div>
-                      <div className="col-span-7 pl-2">{isHi ? "साधक" : "Devotee"}</div>
-                      <div className="col-span-3 text-right pr-2">{isHi ? "कुल जाप" : "Chants"}</div>
-                    </div>
-
-                    {/* Table Rows */}
-                    <div className="divide-y divide-[#301a0e]/20 max-h-[220px] overflow-y-auto scrollbar-none">
-                      {filteredDevotees.slice(3).map((devotee, idx) => {
-                        const rankNum = idx + 4;
-                        const isCurrentUser = devotee.id === (profile?.id || userId || "current_user");
-                        return (
-                          <div 
-                            key={devotee.id}
-                            className={`grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-amber-500/[0.02] transition-colors ${
-                              isCurrentUser ? "bg-amber-500/5" : ""
-                            }`}
-                          >
-                            {/* Rank */}
-                            <div className="col-span-2 text-center font-serif text-sm font-black text-amber-200/70">
-                              {rankNum}
-                            </div>
-
-                            <div className="col-span-7 flex items-center gap-2.5 min-w-0">
-                              {/* Small Avatar circle with initials/gradient */}
-                              <div className="w-8 h-8 rounded-full border border-amber-600/20 overflow-hidden bg-[#221221] flex items-center justify-center shrink-0">
-                                {devotee.avatar && (devotee.avatar.includes("http") || devotee.avatar.includes("/")) ? (
-                                  <img src={devotee.avatar} alt={devotee.name} width={64} height={64} decoding="async" className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-[10px] font-black text-amber-300 font-serif">
-                                    {devotee.name.charAt(0).toLowerCase()}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex flex-col">
-                                <span className={`text-[11px] font-bold truncate flex items-center gap-1 ${
-                                  isCurrentUser ? "text-amber-300" : "text-amber-100"
-                                }`}>
-                                  {devotee.name}
-                                </span>
-                                <span className="text-[8px] text-orange-400 font-bold flex items-center gap-0.5 mt-0.5">
-                                  <span>🔥</span>
-                                  <span>{devotee.streak || 0}d</span>
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Total Chants */}
-                            <div className="col-span-3 text-right pr-2 flex items-center gap-1.5 justify-end">
-                              <span className="font-serif text-[11px] font-bold text-amber-300 tabular-nums">
-                                {devotee.chants.toLocaleString()}
-                              </span>
-                              <svg className="w-3.5 h-3.5 text-amber-500/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                              </svg>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="w-full px-5 py-4 border-t border-[#301a0e]/30 bg-black/20 flex justify-center z-10 relative">
-              <button
-                onClick={() => setLeaderboardOpen(false)}
-                className="w-full bg-gradient-to-r from-amber-400 to-orange-600 hover:from-amber-500 hover:to-orange-700 text-black font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm uppercase tracking-widest active:scale-95"
-              >
-                {isHi ? "जाप साधना जारी रखें" : "Keep Chanting"}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div
+        className="fixed inset-0 z-[120] overflow-y-auto bg-[#FAF6EE]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <JapaLeaderboardView
+          onBack={() => setLeaderboardOpen(false)}
+          onContinue={() => setLeaderboardOpen(false)}
+          sessionChantBonus={count}
+          className="min-h-full"
+        />
+      </div>
     );
   };
+
 
   // ─── AUTO JAP SPEED MODAL OVERLAY ──────────────────────────────
   const renderAutoJapaSpeedModal = () => {
@@ -2344,78 +2026,40 @@ export default function PremiumJapaCounter({
           />
         )}
 
-        {/* Full-bleed Hanuman hero — same as mala mode */}
+        <SEO
+          title={mantraDisplayName}
+          description={sankalpText || (isHi ? "ध्वनि जाप काउंटर" : "Voice japa counter")}
+          image={hanumanDevotionalImg}
+          url={japaSeoUrl}
+          lang={isHi ? "hi" : "en"}
+        />
+
         <div
-          className={`absolute top-0 left-0 right-0 pointer-events-none overflow-hidden z-0 select-none ${
-            isDark ? "opacity-[0.55]" : "opacity-[0.7]"
-          }`}
-          style={{ height: isMobile ? "48vh" : "55vh" }}
+          className="relative shrink-0 w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px]"
         >
           <img
             src={hanumanDevotionalImg}
             width={1672}
             height={941}
             decoding="async"
-            className="w-full h-full object-cover object-top max-w-5xl mx-auto"
+            className={`pointer-events-none w-full h-full object-cover object-top max-w-5xl mx-auto ${
+              isDark ? "opacity-[0.55]" : "opacity-[0.7]"
+            }`}
             style={{
               maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
               WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
             }}
             alt=""
           />
-        </div>
-
-        {/* Floating header */}
-        <div className="relative z-20 shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
-          <div className="mx-auto max-w-lg flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                pauseVoiceListening();
-                stopMicListening({ clearActive: false });
-                if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
-                else onClose(activeMantra.id);
-              }}
-              className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
-              aria-label="Back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-
-            <div className="min-w-0 text-center flex-1 px-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#786252] dark:text-amber-500/70">
-                {isHi ? "ध्वनि जाप" : "Voice Japa"}
-              </p>
-              <h1 className="font-display text-sm sm:text-base font-bold text-[#651317] dark:text-amber-200 truncate">
-                {mantraDisplayName}
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  const currentQuery = new URLSearchParams(window.location.search);
-                  currentQuery.set("resumeCount", count.toString());
-                  currentQuery.set("resumeSeconds", secondsElapsed.toString());
-                  const returnPath = `/meditation?${currentQuery.toString()}`;
-                  navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
-                }}
-                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
-                aria-label="Leaderboard"
-              >
-                <Trophy className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setSettingsOpen((s) => !s)}
-                className="w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
-                aria-label="Settings"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <CounterHeroChrome
+            onBack={() => {
+              pauseVoiceListening();
+              stopMicListening({ clearActive: false });
+              if (count >= targetCount) onComplete(count, secondsElapsed, activeMantra.id);
+              else onClose(activeMantra.id);
+            }}
+            onTrophy={() => setLeaderboardOpen(true)}
+          />
         </div>
 
         {/* Body — listening orb is the primary visual */}
@@ -2514,7 +2158,7 @@ export default function PremiumJapaCounter({
 
             {/* One count */}
             <div className="text-center">
-              <p className="font-display text-[52px] sm:text-[64px] font-bold leading-none tracking-tight tabular-nums text-[#651317] dark:text-amber-300">
+              <p className="font-sans lining-nums tabular-nums text-[52px] sm:text-[64px] font-bold leading-none tracking-tight text-[#651317] dark:text-amber-300">
                 {count}
                 <span className="text-xl sm:text-2xl font-semibold text-[#786252] dark:text-amber-200/50 ml-1.5">
                   /{targetCount}
@@ -2564,11 +2208,11 @@ export default function PremiumJapaCounter({
 
             {/* Compact strip */}
             <div className="w-full max-w-md rounded-full border border-[#E8D8C4] bg-[#FFFDF8]/95 dark:bg-stone-900/80 dark:border-stone-700 px-4 py-2.5 flex items-center justify-between text-xs font-semibold text-[#786252] dark:text-stone-400 shadow-sm">
-              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums lining-nums font-sans">
                 {formatTime(secondsElapsed)}
               </span>
               <span className="opacity-40">·</span>
-              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums">
+              <span className="text-[#651317] dark:text-amber-300 font-bold tabular-nums lining-nums font-sans">
                 {count}/{targetCount}
               </span>
               <span className="opacity-40">·</span>
@@ -2585,6 +2229,15 @@ export default function PremiumJapaCounter({
         {/* Sticky Start / Pause / Resume — always in view */}
         <div className="relative z-20 shrink-0 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/98 dark:bg-[#120a06]/98 backdrop-blur-sm px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto max-w-lg flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="w-12 h-12 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#651317] dark:text-amber-300 flex items-center justify-center active:scale-95 transition-all shrink-0"
+              aria-label={isHi ? "सेटिंग्स" : "Settings"}
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
             <button
               type="button"
               onClick={handleResetClick}
@@ -2792,289 +2445,291 @@ export default function PremiumJapaCounter({
         ))}
       </div>
 
-      <div
-        className={`absolute top-0 left-0 right-0 pointer-events-none overflow-hidden z-0 select-none ${
-          isDark ? "opacity-[0.55]" : "opacity-[0.7]"
-        }`}
-        style={{ height: isMobile ? "48vh" : "55vh" }}
-      >
+      <SEO
+        title={isHi ? activeMantra.name_hindi : activeMantra.name_english}
+        description={sankalpText || (isHi ? "मंत्र जाप काउंटर" : "Mantra japa counter")}
+        image={hanumanDevotionalImg}
+        url={japaSeoUrl}
+        lang={isHi ? "hi" : "en"}
+      />
+
+      {/* Top Background Hanuman / Deity Backdrop */}
+      <div className="pointer-events-none absolute top-0 inset-x-0 z-0 px-4 lg:px-6">
+        <div className="mx-auto max-w-5xl w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px]">
         <img
           src={hanumanDevotionalImg}
           width={1672}
           height={941}
           decoding="async"
-          className="w-full h-full object-cover object-top max-w-5xl mx-auto"
+          className={`w-full h-full object-cover object-top ${
+            isDark ? "opacity-[0.45]" : "opacity-[0.65]"
+          }`}
           style={{
-            maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+            maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
           }}
           alt=""
         />
-      </div>
-
-      {/* Floating back + leaderboard (no sticky header bar) */}
-      <div className="absolute top-3 left-0 right-0 z-20 pointer-events-none">
-        <div className="mx-auto max-w-5xl px-4 lg:px-6 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (count >= targetCount) {
-                onComplete(count, secondsElapsed, activeMantra.id);
-              } else {
-                onClose(activeMantra.id);
-              }
-            }}
-            className="pointer-events-auto w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
-            aria-label="Back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              const currentQuery = new URLSearchParams(window.location.search);
-              currentQuery.set("resumeCount", count.toString());
-              currentQuery.set("resumeSeconds", secondsElapsed.toString());
-              const returnPath = `/meditation?${currentQuery.toString()}`;
-              navigate(`/leaderboard?returnPath=${encodeURIComponent(returnPath)}`);
-            }}
-            className="pointer-events-auto w-10 h-10 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
-            aria-label="Leaderboard"
-          >
-            <Trophy className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto overflow-x-hidden pt-14">
-        <div className="mx-auto max-w-5xl px-4 lg:px-6 py-3 md:py-6 grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-8 items-center md:items-start">
-          <div className="md:col-span-3 flex flex-col items-center justify-center">
-            <div
-              className="relative flex items-center justify-center select-none"
-              style={{
-                width: isMobile ? "280px" : "min(100%, 470px)",
-                height: isMobile ? "280px" : "min(100%, 470px)",
-                maxWidth: isMobile ? 280 : 470,
-                maxHeight: isMobile ? 280 : 470,
-              }}
-            >
-              <CircularMalaRing
-                count={count}
-                targetCount={targetCount}
-                isDark={isDark}
-                isMobile={isMobile}
-                malaType={malaType}
-                activeMantra={activeMantra}
-                isHi={isHi}
-                floatingTexts={floatingTexts}
-                onTap={incrementCount}
-              />
-            </div>
+      {/* Top Floating Chrome Bar */}
+      <div className="relative z-20 w-full max-w-5xl mx-auto px-4 pt-3 pb-1 flex items-center justify-between shrink-0">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (count >= targetCount) {
+              onComplete(count, secondsElapsed, activeMantra.id);
+            } else {
+              onClose(activeMantra.id);
+            }
+          }}
+          className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+          aria-label="Back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
 
-            <p
-              className={`mt-3 md:mt-4 px-4 text-center font-display text-base sm:text-lg md:text-xl font-bold leading-snug whitespace-pre-line max-w-md ${
-                isDark ? "text-amber-100" : "text-[#651317]"
-              }`}
-            >
-              {isHi
-                ? activeMantra.full_text_hindi || activeMantra.name_hindi
-                : activeMantra.transliteration || activeMantra.name_english}
-            </p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setLeaderboardOpen(true);
+          }}
+          className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+          aria-label="Leaderboard"
+        >
+          <Trophy className="w-4 h-4" />
+        </button>
+      </div>
 
-            <p
-              className={`mt-2 text-xs md:text-sm font-medium ${
-                isDark ? "text-amber-200/70" : "text-[#786252]"
-              }`}
-            >
-              {count === 0
-                ? isHi
-                  ? "जाप शुरू करने के लिए कहीं भी टैप करें"
-                  : "Tap anywhere to start chanting"
-                : isHi
-                ? "जाप के लिए कहीं भी टैप करें"
-                : "Tap anywhere to count"}
-            </p>
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row md:max-w-5xl md:mx-auto w-full px-4 pt-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-6">
+        <div className="flex flex-col items-center justify-center md:flex-1 min-h-0 py-1 sm:py-2">
+          <div
+            className="relative flex items-center justify-center select-none my-1"
+            style={{
+              width: isMobile ? "270px" : "min(100%, 360px)",
+              height: isMobile ? "270px" : "min(100%, 360px)",
+              maxWidth: isMobile ? 270 : 360,
+              maxHeight: isMobile ? 270 : 360,
+            }}
+          >
+            <CircularMalaRing
+              count={count}
+              targetCount={targetCount}
+              isDark={isDark}
+              isMobile={isMobile}
+              malaType={malaType}
+              activeMantra={activeMantra}
+              isHi={isHi}
+              floatingTexts={floatingTexts}
+              onTap={incrementCount}
+              radiusOverride={isMobile ? 115 : 145}
+            />
+          </div>
+
+          <p
+            className={`mt-1 px-4 text-center font-display text-sm sm:text-base md:text-lg font-bold leading-snug whitespace-pre-line max-w-md ${
+              isDark ? "text-amber-100" : "text-[#651317]"
+            }`}
+          >
+            {isHi
+              ? activeMantra.full_text_hindi || activeMantra.name_hindi
+              : activeMantra.transliteration || activeMantra.name_english}
+          </p>
+
+          <p
+            className={`mt-1 text-[11px] sm:text-xs font-medium ${
+              isDark ? "text-amber-200/70" : "text-[#786252]"
+            }`}
+          >
+            {count === 0
+              ? isHi
+                ? "जाप शुरू करने के लिए कहीं भी टैप करें"
+                : "Tap anywhere to start chanting"
+              : isHi
+              ? "जाप के लिए कहीं भी टैप करें"
+              : "Tap anywhere to count"}
+          </p>
+        </div>
+
+        <div
+          className="mt-2 md:mt-0 w-full md:w-[min(100%,380px)] shrink-0 space-y-2.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className={`flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border px-3.5 py-2 text-xs sm:text-sm font-medium tabular-nums lining-nums font-sans ${
+              isDark
+                ? "bg-stone-900/80 border-stone-700 text-stone-300"
+                : "bg-[#FFFDF8] border-[#E8D8C4] text-[#786252]"
+            }`}
+          >
+            <span>
+              <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                {count}
+              </span>
+              /{targetCount}
+            </span>
+            <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+            <span>
+              {isHi ? "माला" : "Round"}{" "}
+              <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                {Math.floor(count / 27) + 1}
+              </span>
+            </span>
+            <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              {formatTime(secondsElapsed)}
+            </span>
+            <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
+            <span>
+              {isHi ? "आज" : "Today"}{" "}
+              <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
+                {displayTodayChants}
+              </span>
+            </span>
           </div>
 
           <div
-            className="md:col-span-2 w-full max-w-md mx-auto md:mx-0 space-y-3 md:space-y-4 md:pt-4"
-            onClick={(e) => e.stopPropagation()}
+            className={`rounded-2xl border p-2.5 sm:p-3 space-y-1.5 ${
+              isDark ? "bg-stone-900/80 border-stone-700" : "bg-[#FFFDF8] border-[#E8D8C4]"
+            }`}
           >
-            <div
-              className={`flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border px-4 py-3 text-xs sm:text-sm font-medium tabular-nums ${
-                isDark
-                  ? "bg-stone-900/80 border-stone-700 text-stone-300"
-                  : "bg-[#FFFDF8] border-[#E8D8C4] text-[#786252]"
-              }`}
-            >
-              <span>
-                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
-                  {count}
-                </span>
-                /{targetCount}
-              </span>
-              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
-              <span>
-                {isHi ? "माला" : "Round"}{" "}
-                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
-                  {Math.floor(count / 27) + 1}
-                </span>
-              </span>
-              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
-              <span className="inline-flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                {formatTime(secondsElapsed)}
-              </span>
-              <span className="text-[#E8D8C4] dark:text-stone-600">·</span>
-              <span>
-                {isHi ? "आज" : "Today"}{" "}
-                <span className={isDark ? "text-amber-300 font-bold" : "text-[#651317] font-bold"}>
-                  {displayTodayChants}
-                </span>
-              </span>
-            </div>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-center text-[#651317] dark:text-amber-300">
+              {isHi ? "माला चुनें" : "Choose Mala"}
+            </p>
+            <MalaTypePicker
+              malaType={malaType}
+              onChange={setMalaType}
+              isHi={isHi}
+              isDark={isDark}
+            />
+          </div>
 
-            <div
-              className={`rounded-2xl border p-3 sm:p-4 space-y-2.5 ${
-                isDark ? "bg-stone-900/80 border-stone-700" : "bg-[#FFFDF8] border-[#E8D8C4]"
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleResetClick}
+              disabled={count === 0}
+              className={`inline-flex items-center justify-center gap-1.5 h-9 sm:h-10 px-3.5 rounded-full border text-xs font-bold transition-all active:scale-95 disabled:opacity-40 ${
+                isDark
+                  ? "border-amber-500/40 text-amber-200 bg-stone-900"
+                  : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
               }`}
             >
-              <p className="text-[10px] font-bold uppercase tracking-wider text-center text-[#651317] dark:text-amber-300">
-                {isHi ? "माला चुनें" : "Choose Mala"}
-              </p>
-              <MalaTypePicker
-                malaType={malaType}
-                onChange={setMalaType}
-                isHi={isHi}
-                isDark={isDark}
+              <RotateCcw className="w-3.5 h-3.5" />
+              {isHi ? "रीसेट" : "Reset"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTimerActive(!timerActive)}
+              className={`inline-flex items-center justify-center gap-1.5 h-9 sm:h-10 px-4 rounded-full text-xs font-bold transition-all active:scale-95 ${
+                !timerActive
+                  ? "bg-[#651317] text-white"
+                  : isDark
+                  ? "border border-amber-500/40 text-amber-200 bg-stone-900"
+                  : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+              }`}
+            >
+              {!timerActive ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
+              {!timerActive ? (isHi ? "जारी" : "Resume") : isHi ? "रोकें" : "Pause"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAutoJapaActive((prev) => !prev)}
+              className={`inline-flex items-center justify-center gap-1.5 h-9 sm:h-10 px-3 rounded-full text-xs font-bold transition-all active:scale-95 ${
+                isAutoJapaActive
+                  ? "bg-[#651317] text-white"
+                  : isDark
+                  ? "border border-amber-500/40 text-amber-200 bg-stone-900"
+                  : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
+              }`}
+            >
+              <img
+                src={playCircleSvg}
+                width={14}
+                height={14}
+                decoding="async"
+                className="w-3.5 h-3.5 object-contain"
+                style={{ filter: isAutoJapaActive ? "brightness(0) invert(1)" : undefined }}
+                alt=""
               />
-            </div>
+              {isAutoJapaActive
+                ? isHi
+                  ? `ऑटो ${autoJapaIntervalSec}s`
+                  : `Auto ${autoJapaIntervalSec}s`
+                : isHi
+                ? "ऑटो"
+                : "Auto"}
+            </button>
 
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={handleResetClick}
-                disabled={count === 0}
-                className={`inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-full border text-xs font-bold transition-all active:scale-95 disabled:opacity-40 ${
-                  isDark
-                    ? "border-amber-500/40 text-amber-200 bg-stone-900"
-                    : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
-                }`}
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                {isHi ? "रीसेट" : "Reset"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTimerActive(!timerActive)}
-                className={`inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-full text-xs font-bold transition-all active:scale-95 ${
-                  !timerActive
-                    ? "bg-[#651317] text-white"
-                    : isDark
-                    ? "border border-amber-500/40 text-amber-200 bg-stone-900"
-                    : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
-                }`}
-              >
-                {!timerActive ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5" />}
-                {!timerActive ? (isHi ? "जारी" : "Resume") : isHi ? "रोकें" : "Pause"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsAutoJapaActive((prev) => !prev)}
-                className={`inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-full text-xs font-bold transition-all active:scale-95 ${
-                  isAutoJapaActive
-                    ? "bg-[#651317] text-white"
-                    : isDark
-                    ? "border border-amber-500/40 text-amber-200 bg-stone-900"
-                    : "border border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
-                }`}
-              >
-                <img
-                  src={playCircleSvg}
-                  width={14}
-                  height={14}
-                  decoding="async"
-                  className="w-3.5 h-3.5 object-contain"
-                  style={{ filter: isAutoJapaActive ? "brightness(0) invert(1)" : undefined }}
-                  alt=""
-                />
-                {isAutoJapaActive
-                  ? isHi
-                    ? `ऑटो ${autoJapaIntervalSec}s`
-                    : `Auto ${autoJapaIntervalSec}s`
-                  : isHi
-                  ? "ऑटो"
-                  : "Auto"}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAutoJapaSpeedModalOpen(true)}
-                className={`h-10 w-10 rounded-full border flex items-center justify-center active:scale-95 ${
-                  isDark
-                    ? "border-amber-500/40 text-amber-200 bg-stone-900"
-                    : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
-                }`}
-                title={isHi ? "गति" : "Speed"}
-              >
-                <Sliders className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div
-              className={`flex items-stretch divide-x rounded-2xl border overflow-hidden ${
+            <button
+              type="button"
+              onClick={() => setAutoJapaSpeedModalOpen(true)}
+              className={`h-9 sm:h-10 w-9 sm:w-10 rounded-full border flex items-center justify-center active:scale-95 ${
                 isDark
-                  ? "bg-stone-900/80 border-stone-700 divide-stone-700"
-                  : "bg-[#FFFDF8] border-[#E8D8C4] divide-[#E8D8C4]"
+                  ? "border-amber-500/40 text-amber-200 bg-stone-900"
+                  : "border-[#E8D8C4] text-[#651317] bg-[#FFFDF8]"
               }`}
+              title={isHi ? "गति" : "Speed"}
             >
-              <button
-                type="button"
-                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
-                onClick={() => setSoundEnabled(!soundEnabled)}
-              >
-                {soundEnabled ? (
-                  <Volume2 className="w-4 h-4 text-[#651317] dark:text-amber-300" />
-                ) : (
-                  <VolumeX className="w-4 h-4 text-[#786252]" />
-                )}
-                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
-                  {soundEnabled ? (isHi ? "ध्वनि चालू" : "Sound On") : isHi ? "ध्वनि बंद" : "Sound Off"}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
-                onClick={() => setVibrationEnabled(!vibrationEnabled)}
-              >
-                <Smartphone
-                  className={`w-4 h-4 ${
-                    vibrationEnabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
-                  }`}
-                />
-                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
-                  {vibrationEnabled ? (isHi ? "कंपन चालू" : "Vibrate On") : isHi ? "कंपन बंद" : "Vibrate Off"}
-                </span>
-              </button>
-              <button
-                type="button"
-                className="flex-1 flex flex-col items-center gap-1 py-2.5 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
-                onClick={() => setAutoLockDisabled(!autoLockDisabled)}
-              >
-                <Lock
-                  className={`w-4 h-4 ${
-                    autoLockDisabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
-                  }`}
-                />
-                <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
-                  {autoLockDisabled ? (isHi ? "स्क्रीन चालू" : "Stay Awake") : isHi ? "लॉक" : "Auto-lock"}
-                </span>
-              </button>
-            </div>
+              <Sliders className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div
+            className={`flex items-stretch divide-x rounded-2xl border overflow-hidden ${
+              isDark
+                ? "bg-stone-900/80 border-stone-700 divide-stone-700"
+                : "bg-[#FFFDF8] border-[#E8D8C4] divide-[#E8D8C4]"
+            }`}
+          >
+            <button
+              type="button"
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+            >
+              {soundEnabled ? (
+                <Volume2 className="w-4 h-4 text-[#651317] dark:text-amber-300" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-[#786252]" />
+              )}
+              <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                {soundEnabled ? (isHi ? "ध्वनि चालू" : "Sound On") : isHi ? "ध्वनि बंद" : "Sound Off"}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+              onClick={() => setVibrationEnabled(!vibrationEnabled)}
+            >
+              <Smartphone
+                className={`w-4 h-4 ${
+                  vibrationEnabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
+                }`}
+              />
+              <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                {vibrationEnabled ? (isHi ? "कंपन चालू" : "Vibrate On") : isHi ? "कंपन बंद" : "Vibrate Off"}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 px-2 active:bg-[#FAF0E4]/50 dark:active:bg-stone-800"
+              onClick={() => setAutoLockDisabled(!autoLockDisabled)}
+            >
+              <Lock
+                className={`w-4 h-4 ${
+                  autoLockDisabled ? "text-[#651317] dark:text-amber-300" : "text-[#786252]"
+                }`}
+              />
+              <span className="text-[10px] font-bold text-[#786252] dark:text-stone-400">
+                {autoLockDisabled ? (isHi ? "स्क्रीन चालू" : "Stay Awake") : isHi ? "लॉक" : "Auto-lock"}
+              </span>
+            </button>
           </div>
         </div>
       </div>

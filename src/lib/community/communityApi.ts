@@ -1,6 +1,24 @@
 import { supabase } from "@/lib/supabaseClient";
 
 // Helper to determine if a Supabase error is a missing relation error
+function slugifyGroupName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function uniqueGroupSlug(name: string): string {
+  const base = slugifyGroupName(name);
+  const suffix = Math.random().toString(36).slice(2, 8);
+  if (!base || base === "group") return `group-${suffix}`;
+  return `${base}-${suffix}`;
+}
+
+function randomInviteCode(): string {
+  return `HK${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
 function isMissingTableError(error: any): boolean {
   if (!error) return false;
   const msg = error.message || "";
@@ -21,6 +39,15 @@ function generateUUID(): string {
 }
 
 // Interfaces
+export type EventRsvpStatus = "interested" | "going" | "maybe";
+
+export interface EventRsvpPreview {
+  user_id: string;
+  rsvp_status: EventRsvpStatus;
+  display_name: string;
+  avatar_url: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -80,8 +107,9 @@ export interface CommunityPost {
   has_reacted: boolean;
   comment_count: number;
   // RSVP states
-  rsvp_status?: 'interested' | 'going' | null;
-  rsvps_count?: { interested: number; going: number };
+  rsvp_status?: EventRsvpStatus | null;
+  rsvps_count?: { interested: number; going: number; maybe: number };
+  rsvp_preview?: EventRsvpPreview[];
   // Question votes
   vote_percentages?: number[];
   user_voted_option?: number | null;
@@ -133,6 +161,42 @@ const getMockUserProfile = (userId: string) => {
     avatar_url: ""
   };
 };
+
+function emptyRsvpCounts() {
+  return { interested: 0, going: 0, maybe: 0 };
+}
+
+function tallyRsvps(rsvps: { rsvp_status?: string }[]) {
+  const acc = emptyRsvpCounts();
+  for (const r of rsvps) {
+    if (r.rsvp_status === "interested" || r.rsvp_status === "going" || r.rsvp_status === "maybe") {
+      acc[r.rsvp_status] += 1;
+    }
+  }
+  return acc;
+}
+
+function buildRsvpPreview(
+  rsvps: { user_id: string; rsvp_status?: string }[],
+  profiles: Map<string, { display_name: string; avatar_url: string }>
+): EventRsvpPreview[] {
+  const rank: Record<string, number> = { going: 0, interested: 1, maybe: 2 };
+  return rsvps
+    .filter((r): r is { user_id: string; rsvp_status: EventRsvpStatus } =>
+      r.rsvp_status === "going" || r.rsvp_status === "interested" || r.rsvp_status === "maybe"
+    )
+    .sort((a, b) => (rank[a.rsvp_status] ?? 9) - (rank[b.rsvp_status] ?? 9))
+    .slice(0, 8)
+    .map((r) => {
+      const profile = profiles.get(r.user_id) || getMockUserProfile(r.user_id);
+      return {
+        user_id: r.user_id,
+        rsvp_status: r.rsvp_status,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url || "",
+      };
+    });
+}
 
 // State flag to inform UI if we are in fallback mode
 export let isUsingLocalFallback = false;
@@ -230,6 +294,8 @@ export const communityApi = {
   },
 
   async createGroup(name: string, description: string, deity: string, userId: string): Promise<Group> {
+    const slug = uniqueGroupSlug(name);
+    const invite_code = randomInviteCode();
     try {
       const { data, error } = await supabase
         .from("groups")
@@ -237,7 +303,10 @@ export const communityApi = {
           name,
           description,
           deity,
-          created_by: userId
+          created_by: userId,
+          is_public: true,
+          slug,
+          invite_code,
         })
         .select()
         .single();
@@ -260,7 +329,7 @@ export const communityApi = {
     const groups = getLS<any[]>(LS_KEY_GROUPS, []);
     const members = getLS<any[]>(LS_KEY_MEMBERS, []);
     
-    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || "group";
+    const baseSlug = uniqueGroupSlug(name);
     let slug = baseSlug;
     let suffix = 1;
     while (groups.some(g => g.slug === slug)) {
@@ -274,6 +343,8 @@ export const communityApi = {
       description,
       deity,
       slug,
+      invite_code: randomInviteCode(),
+      is_public: true,
       created_by: userId,
       created_at: new Date().toISOString()
     };
@@ -463,18 +534,14 @@ export const communityApi = {
         throw error;
       }
 
-      return (data || []).map((p: any) => {
+      const mapped = (data || []).map((p: any) => {
         const reactions = p.post_reactions || [];
         const hasReacted = currentUserId ? reactions.some((r: any) => r.user_id === currentUserId) : false;
         
         // Compute RSVP details
         const rsvps = p.event_rsvps || [];
         const userRsvp = currentUserId ? rsvps.find((r: any) => r.user_id === currentUserId) : null;
-        const rsvpsCount = rsvps.reduce((acc: any, r: any) => {
-          if (r.rsvp_status === 'interested') acc.interested++;
-          if (r.rsvp_status === 'going') acc.going++;
-          return acc;
-        }, { interested: 0, going: 0 });
+        const rsvpsCount = tallyRsvps(rsvps);
 
         // Compute Poll votes
         const votes = p.question_option_votes || [];
@@ -507,9 +574,40 @@ export const communityApi = {
           comment_count: p.post_comments?.length || 0,
           rsvp_status: userRsvp?.rsvp_status || null,
           rsvps_count: rsvpsCount,
+          rsvp_preview: [] as EventRsvpPreview[],
+          _rsvpRows: rsvps as { user_id: string; rsvp_status?: string }[],
           vote_percentages: votePercentages,
           user_voted_option: userVote?.option_index ?? null
         };
+      });
+
+      const rsvpUserIds = [
+        ...new Set(
+          mapped.flatMap((p: any) => (p._rsvpRows || []).map((r: { user_id: string }) => r.user_id))
+        ),
+      ].filter(Boolean);
+      const profileMap = new Map<string, { display_name: string; avatar_url: string }>();
+      if (rsvpUserIds.length > 0) {
+        try {
+          const { data: profiles } = await supabase
+            .from("user_profiles")
+            .select("id, name, avatar_url")
+            .in("id", rsvpUserIds.slice(0, 80));
+          (profiles || []).forEach((row: any) => {
+            profileMap.set(row.id, {
+              display_name: row.name || "Devotee",
+              avatar_url: row.avatar_url || "",
+            });
+          });
+        } catch {
+          // Avatars optional — counts still work
+        }
+      }
+
+      return mapped.map((p: any) => {
+        const preview = buildRsvpPreview(p._rsvpRows || [], profileMap);
+        const { _rsvpRows, ...rest } = p;
+        return { ...rest, rsvp_preview: preview };
       });
     } catch (err: any) {
       console.warn("Supabase fetchPosts failed:", err);
@@ -551,11 +649,7 @@ export const communityApi = {
       // RSVPs
       const postRsvps = rsvps.filter(r => r.post_id === p.id);
       const userRsvp = currentUserId ? postRsvps.find(r => r.user_id === currentUserId) : null;
-      const rsvpsCount = postRsvps.reduce((acc, r) => {
-        if (r.rsvp_status === 'interested') acc.interested++;
-        if (r.rsvp_status === 'going') acc.going++;
-        return acc;
-      }, { interested: 0, going: 0 });
+      const rsvpsCount = tallyRsvps(postRsvps);
 
       // Poll votes
       const postVotes = votes.filter(v => v.post_id === p.id);
@@ -583,6 +677,7 @@ export const communityApi = {
         comment_count: postComments.length,
         rsvp_status: userRsvp ? userRsvp.rsvp_status : null,
         rsvps_count: rsvpsCount,
+        rsvp_preview: buildRsvpPreview(postRsvps, new Map()),
         vote_percentages: votePercentages,
         user_voted_option: userVote ? userVote.option_index : null
       };
@@ -929,7 +1024,7 @@ export const communityApi = {
   },
 
   // 4. EVENT RSVPS
-  async rsvpToEvent(postId: string, userId: string, rsvpStatus: 'interested' | 'going'): Promise<void> {
+  async rsvpToEvent(postId: string, userId: string, rsvpStatus: EventRsvpStatus): Promise<void> {
     try {
       const { error } = await supabase
         .from("event_rsvps")
@@ -953,7 +1048,7 @@ export const communityApi = {
     }
   },
 
-  rsvpToEventFallback(postId: string, userId: string, rsvpStatus: 'interested' | 'going') {
+  rsvpToEventFallback(postId: string, userId: string, rsvpStatus: EventRsvpStatus) {
     const rsvps = getLS<any[]>(LS_KEY_RSVPS, []);
     const idx = rsvps.findIndex(r => r.post_id === postId && r.user_id === userId);
     if (idx !== -1) {

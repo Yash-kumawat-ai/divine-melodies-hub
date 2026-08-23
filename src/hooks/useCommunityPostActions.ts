@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { communityApi, type CommunityPost, type PostComment } from "@/lib/community/communityApi";
+import { communityApi, type CommunityPost, type PostComment, type EventRsvpStatus } from "@/lib/community/communityApi";
 
 interface UseCommunityPostActionsInput {
   user: any;
@@ -26,8 +26,8 @@ export interface CommunityPostActionsReturn {
   handleToggleReaction: (postId: string) => Promise<void>;
   handleToggleRsvp: (
     postId: string,
-    currentRsvp: "interested" | "going" | null,
-    clickedRsvp: "interested" | "going"
+    currentRsvp: EventRsvpStatus | null,
+    clickedRsvp: EventRsvpStatus
   ) => Promise<void>;
   handleVoteOption: (postId: string, optionIndex: number) => Promise<void>;
   setCommentsMap: React.Dispatch<React.SetStateAction<Record<string, PostComment[]>>>;
@@ -190,8 +190,8 @@ export function useCommunityPostActions({
   // ── RSVP Handler ──────────────────────────────────────────────────────────
   const handleToggleRsvp = (
     postId: string,
-    currentRsvp: "interested" | "going" | null,
-    clickedRsvp: "interested" | "going"
+    currentRsvp: EventRsvpStatus | null,
+    clickedRsvp: EventRsvpStatus
   ) => {
     if (!user) {
       toast.error(isHi ? "RSVP करने के लिए कृपया लॉग इन करें" : "Please log in to RSVP");
@@ -199,18 +199,20 @@ export function useCommunityPostActions({
     }
     const newRsvp = currentRsvp === clickedRsvp ? null : clickedRsvp;
 
-    // Instant optimistic update in local state
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id !== postId) return p;
         const currentCounts = {
           interested: p.rsvps_count?.interested || 0,
           going: p.rsvps_count?.going || 0,
+          maybe: p.rsvps_count?.maybe || 0,
         };
         if (currentRsvp === "interested") currentCounts.interested = Math.max(0, currentCounts.interested - 1);
         if (currentRsvp === "going") currentCounts.going = Math.max(0, currentCounts.going - 1);
+        if (currentRsvp === "maybe") currentCounts.maybe = Math.max(0, currentCounts.maybe - 1);
         if (newRsvp === "interested") currentCounts.interested += 1;
         if (newRsvp === "going") currentCounts.going += 1;
+        if (newRsvp === "maybe") currentCounts.maybe += 1;
 
         return {
           ...p,
@@ -220,20 +222,16 @@ export function useCommunityPostActions({
       })
     );
 
-    // Instant feedback toast
     if (newRsvp) {
-      toast.success(
-        isHi
-          ? newRsvp === "interested"
-            ? "रुचि दर्ज की गई"
-            : "शामिल होना दर्ज किया गया"
-          : `RSVP: ${newRsvp === "interested" ? "Interested" : "Going"}`
-      );
+      const hiMsg =
+        newRsvp === "interested" ? "रुचि दर्ज की गई" : newRsvp === "maybe" ? "शायद — दर्ज किया गया" : "आना दर्ज किया गया";
+      const enMsg =
+        newRsvp === "interested" ? "Interested" : newRsvp === "maybe" ? "Maybe" : "I am coming";
+      toast.success(isHi ? hiMsg : `RSVP: ${enMsg}`);
     } else {
       toast.success(isHi ? "RSVP हटा दिया गया" : "RSVP removed");
     }
 
-    // Background network call
     (async () => {
       try {
         if (currentRsvp === clickedRsvp) {

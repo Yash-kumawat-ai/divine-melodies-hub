@@ -1,7 +1,5 @@
 // Shared temple banner map — kept separate so cards don't pull in WatchModal/Dialog.
-import shivWallpaper from '@/pages/images/shiv_wallpaper.webp';
 import krishnaMain from '@/pages/images/krishna main.webp';
-import meditationDesktop from '@/pages/images/meditation_desktop_wallpaper.webp';
 import deityHanuman from '@/assets/deities/hanuman.webp';
 import kashiVishwanathImg from '@/pages/images/kashi vishwanath.webp';
 import ujjainMahakalImg from '@/pages/images/Ujjain Mahakaleshwar Jyotirlinga dd astro.jpg';
@@ -34,7 +32,7 @@ export function resolveTempleBanner(templeId: string): string {
       return krishnaMain;
     default:
       if (templeId.includes('kashi') || templeId.includes('mahakal') || templeId.includes('somnath')) {
-        return shivWallpaper;
+        return somnathTempleImg;
       }
       if (templeId.includes('mayapur') || templeId.includes('radha') || templeId.includes('shyam')) {
         return krishnaMain;
@@ -42,6 +40,6 @@ export function resolveTempleBanner(templeId: string): string {
       if (templeId.includes('balaji') || templeId.includes('hanuman')) {
         return deityHanuman;
       }
-      return meditationDesktop;
+      return somnathTempleImg;
   }
 }

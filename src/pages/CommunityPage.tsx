@@ -13,7 +13,6 @@ import {
   Info, 
   Activity, 
   Award,
-  Sparkles,
   TrendingUp,
   X,
   Check,
@@ -45,6 +44,7 @@ import { toast } from "sonner";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { goBack, prefetchJoinCommunityPage } from "@/lib/navigation";
 import {
   Dialog,
   DialogContent,
@@ -78,7 +78,6 @@ import shyamBackgroundImg from "./images/shyam_background_hd.webp";
 import flowersImg from "./images/abhijit muhrat.webp";
 import mandalaSvg from "./images/mandala.svg";
 import DevotionalDivider from "@/components/DevotionalDivider";
-import communityFeaturesImg from "./images/community_features.png";
 
 const DEITY_IMAGES = [
   { id: "rama", name: "Rama Ji", src: ramaImg },
@@ -166,28 +165,35 @@ export default function CommunityPage() {
       setVisibleGroupCount(VISIBLE_PAGE_SIZE);
       setLoading(false);
 
-      const [
-        { count: profileCount },
-        { data: japTotals },
-        { count: groupsCount },
-        { count: bhajansCount },
-        { count: eventsCount },
-      ] = await Promise.all([
-        supabase.from("user_profiles").select("id", { count: "exact", head: true }),
-        (supabase.from as any)("user_jap_totals").select("total_chants"),
-        (supabase.from as any)("groups").select("id", { count: "exact", head: true }),
-        supabase.from("user_uploads").select("id", { count: "exact", head: true }),
-        (supabase.from as any)("community_posts").select("id", { count: "exact", head: true }).eq("type", "event"),
-      ]);
+      void (async () => {
+        try {
+          const [
+            { count: profileCount },
+            { data: japTotals },
+            { count: groupsCount },
+            { count: bhajansCount },
+            { count: eventsCount },
+          ] = await Promise.all([
+            supabase.from("user_profiles").select("id", { count: "exact", head: true }),
+            (supabase.from as any)("user_jap_totals").select("total_chants"),
+            (supabase.from as any)("groups").select("id", { count: "exact", head: true }),
+            supabase.from("user_uploads").select("id", { count: "exact", head: true }),
+            (supabase.from as any)("community_posts").select("id", { count: "exact", head: true }).eq("type", "event"),
+          ]);
 
-      const realTotalJaps = (japTotals ?? []).reduce((sum, row) => sum + (Number(row.total_chants) || 0), 0);
-      setGlobalStats({
-        devotees: profileCount ?? 0,
-        totalJaps: realTotalJaps,
-        groupCount: groupsCount ?? fetched.length ?? 0,
-        bhajansCount: bhajansCount ?? 0,
-        eventsCount: eventsCount ?? 0,
-      });
+          const realTotalJaps = (japTotals ?? []).reduce((sum, row) => sum + (Number(row.total_chants) || 0), 0);
+          setGlobalStats({
+            devotees: profileCount ?? 0,
+            totalJaps: realTotalJaps,
+            groupCount: groupsCount ?? fetched.length ?? 0,
+            bhajansCount: bhajansCount ?? 0,
+            eventsCount: eventsCount ?? 0,
+          });
+        } catch (statsErr) {
+          console.error("Error loading community stats:", statsErr);
+        }
+      })();
+      return;
     } catch (err) {
       console.error("Error loading community data:", err);
       setLoading(false);
@@ -224,6 +230,25 @@ export default function CommunityPage() {
     loadData({ silent: groups.length > 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = () => {
+      if (!cancelled) prefetchJoinCommunityPage();
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run, { timeout: 2500 });
+      return () => {
+        cancelled = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+    const t = window.setTimeout(run, 600);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
+  }, []);
 
   useEffect(() => {
     setVisibleGroupCount(VISIBLE_PAGE_SIZE);
@@ -473,9 +498,16 @@ export default function CommunityPage() {
       className="community-page min-h-screen bg-[#fdfbf7] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 transition-colors pb-16"
       data-lang={language}
     >
-      <SEO 
-        title={isHi ? "समूह - राघवन" : "Community - Raghavam"}
-        description={isHi ? "अपना समूह बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।" : "Create your community, chant together with family and friends and grow spiritually."}
+      <SEO
+        title={isHi ? "समुदाय" : "Community"}
+        description={
+          isHi
+            ? "अपना समूह बनाएं, परिवार और मित्रों के साथ सामूहिक नाम जाप करें और भक्ति पथ पर आगे बढ़ें।"
+            : "Create your community, chant together with family and friends and grow spiritually."
+        }
+        url={typeof window !== "undefined" ? `${window.location.origin}/community` : undefined}
+        image={typeof window !== "undefined" ? `${window.location.origin}${shyamBackgroundImg}` : shyamBackgroundImg}
+        lang={isHi ? "hi" : "en"}
       />
 
       {/* ─── HEADER BAR (Aligned with Website Fixed Nav Bar) ─────── */}
@@ -483,11 +515,9 @@ export default function CommunityPage() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 shrink-0">
             <button
-              onClick={() => {
-                if (window.history.length > 1) navigate(-1);
-                else navigate("/");
-              }}
-              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+              type="button"
+              onClick={() => goBack(navigate, "/")}
+              className="w-10 h-10 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
               aria-label={isHi ? "वापस" : "Back"}
             >
               <ChevronLeft className="w-5 h-5 text-[#651317] dark:text-amber-200" />
@@ -499,7 +529,7 @@ export default function CommunityPage() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigate("/notifications")}
-              className="relative w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+              className="relative w-10 h-10 rounded-full border border-border/80 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-[#651317] dark:text-amber-200 hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
               title={isHi ? "सूचनाएं" : "Notifications"}
             >
               <Bell className="w-4.5 h-4.5 text-[#651317] dark:text-amber-200" />
@@ -531,7 +561,7 @@ export default function CommunityPage() {
                   navigate("/auth/login?redirect=/community");
                 } else setCreateDialogOpen(true);
               }}
-              className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+              className="w-10 h-10 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white flex items-center justify-center active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
               aria-label={isHi ? "समूह बनाएं" : "Create Group"}
             >
               <Plus className="w-4.5 h-4.5 text-white" />
@@ -548,7 +578,11 @@ export default function CommunityPage() {
         >
           <img
             src={shyamBackgroundImg}
-            alt={isHi ? "समुदाय" : "Community"}
+            alt=""
+            width={1600}
+            height={900}
+            fetchpriority="high"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-[center_20%] z-0 pointer-events-none select-none opacity-100 saturate-[1.08] contrast-[1.05]"
           />
           <div
@@ -580,6 +614,7 @@ export default function CommunityPage() {
             <button
               type="button"
               onClick={() => navigate("/join-community?tab=feed")}
+              onPointerEnter={() => prefetchJoinCommunityPage()}
               className="inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-full bg-[#FFFDF8]/95 hover:bg-white text-[#651317] font-bold text-[12px] md:text-sm shadow-md active:scale-95 transition-all border border-amber-200/40"
             >
               <Search className="w-3.5 h-3.5" />
@@ -668,6 +703,7 @@ export default function CommunityPage() {
             {/* Box 4: नया पोस्ट */}
             <div
               onClick={() => navigate("/join-community?tab=feed")}
+              onPointerEnter={() => prefetchJoinCommunityPage()}
               className="w-[125px] sm:w-[140px] md:w-[155px] shrink-0 snap-start bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-stone-800 rounded-[20px] p-3 flex flex-col items-center justify-between text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97] shadow-xs"
             >
               <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#FAF0E4] dark:bg-[#2B1F14] border border-[#F3E5D8]/80 flex items-center justify-center mx-auto mb-2 shadow-inner shrink-0">
@@ -1111,6 +1147,7 @@ export default function CommunityPage() {
             </h2>
             <button
               onClick={() => navigate("/join-community")}
+              onPointerEnter={() => prefetchJoinCommunityPage()}
               className="text-xs font-bold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-0.5"
             >
               {isHi ? "सभी देखें" : "View All"} <ChevronRight className="w-3.5 h-3.5" />
@@ -1160,6 +1197,8 @@ export default function CommunityPage() {
                       <img
                         src={getGroupImage(group.image_url)}
                         alt={group.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover opacity-95"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15" />
@@ -1202,7 +1241,7 @@ export default function CommunityPage() {
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3 relative overflow-hidden">
                       {/* Non-animated Mandala Watermark Background in Cards */}
                       <div className="absolute -right-6 -bottom-6 w-20 h-20 pointer-events-none opacity-[0.06] dark:opacity-[0.04] flex items-center justify-center -z-0">
-                        <img src={mandalaSvg} className="w-full h-full object-contain" alt="mandala watermark" />
+                        <img src={mandalaSvg} className="w-full h-full object-contain" alt="" />
                       </div>
 
                       <div className="relative z-10">
@@ -1293,7 +1332,7 @@ export default function CommunityPage() {
 
       {/* ─── CREATE GROUP DIALOG ─────────────────────────────────── */}
       <Dialog open={createDialogOpen} onOpenChange={(o) => { if (!o) closeCreateDialog(); }}>
-        <DialogContent className="max-w-md md:max-w-3xl bg-[#FAF6EE] dark:bg-[#120F0B] border-orange-500/20 text-stone-950 dark:text-stone-50 rounded-3xl max-h-[92vh] overflow-y-auto p-0 shadow-2xl">
+        <DialogContent className="max-w-md md:max-w-3xl bg-[#FFFDF8] dark:bg-[#120F0B] border border-[#E8D8C4] dark:border-stone-800 text-[#3A2418] dark:text-stone-50 rounded-2xl max-h-[92vh] overflow-y-auto p-0 shadow-2xl">
           {/* Visually hidden — required by Radix for accessibility */}
           <DialogHeader className="sr-only">
             <DialogTitle>{isHi ? "समूह बनाएं" : "Create Community"}</DialogTitle>
@@ -1314,24 +1353,15 @@ export default function CommunityPage() {
               transition={{ duration: 0.22 }}
               className="p-6 md:p-8"
             >
-              {/* Glowing Header with Lotus & Flourish Leaves */}
-              <div className="relative flex flex-col items-center mb-6 pt-2">
-                <div className="relative flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-white dark:bg-stone-900 border border-orange-200 dark:border-orange-950 flex items-center justify-center shadow-lg shadow-orange-500/10 relative z-10">
-                    <span className="text-3xl filter drop-shadow-[0_2px_8px_rgba(249,115,22,0.45)] select-none">🪷</span>
-                  </div>
-                  {/* Glow backdrop */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-orange-200/40 dark:bg-orange-950/20 rounded-full blur-2xl -z-0" />
-                  {/* Decorative flourish leaves */}
-                  <div className="absolute top-2 left-[calc(50%-75px)] text-emerald-600/30 dark:text-emerald-500/20 text-2xl select-none pointer-events-none transform -rotate-12">🌿</div>
-                  <div className="absolute top-2 right-[calc(50%-75px)] text-emerald-600/30 dark:text-emerald-500/20 text-2xl select-none pointer-events-none transform rotate-12">🌿</div>
+              <div className="flex flex-col items-center mb-6">
+                <div className="w-12 h-12 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900 flex items-center justify-center mb-3">
+                  <Users className="w-5 h-5 text-[#651317] dark:text-amber-300" />
                 </div>
-                
-                <h2 className="font-display font-extrabold text-xl md:text-2xl text-orange-950 dark:text-amber-100 text-center tracking-tight leading-tight">
+                <h2 className="font-display font-bold text-lg sm:text-xl text-[#651317] dark:text-amber-100 text-center tracking-tight">
                   {isHi ? "समूह बनाएं" : "Create Community"}
                 </h2>
-                <p className="text-center text-xs text-stone-500 dark:text-stone-400 mt-1 flex items-center justify-center gap-1 font-medium">
-                  {isHi ? "श्रद्धापूर्वक स्थान बनाएं और साथ मिलकर आगे बढ़ें 🧡" : "Build a devotional space and grow together 🧡"}
+                <p className="text-center text-xs text-[#786252] dark:text-stone-400 mt-1 font-medium">
+                  {isHi ? "श्रद्धापूर्वक स्थान बनाएं और साथ मिलकर आगे बढ़ें" : "Build a devotional space and grow together"}
                 </p>
               </div>
 
@@ -1342,11 +1372,11 @@ export default function CommunityPage() {
                   <div className="space-y-4">
                     {/* Group Name */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
+                      <label className="text-xs font-bold text-[#3A2418] dark:text-stone-300 block">
                         {isHi ? "समूह का नाम" : "Group Name"}
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#786252]">
                           <Users className="w-4 h-4" />
                         </span>
                         <input
@@ -1356,41 +1386,33 @@ export default function CommunityPage() {
                           placeholder={isHi ? "जैसे: श्री श्याम सत्संग मंडल" : "e.g., Shree Shyam Group"}
                           value={groupName}
                           onChange={(e) => setGroupName(e.target.value)}
-                          className={`w-full rounded-xl border bg-white dark:bg-stone-900/60 pl-10 pr-10 py-3 text-sm focus:outline-none transition-all ${
-                            isNameUnique === true
-                              ? "border-emerald-500 ring-2 ring-emerald-500/10 focus:ring-emerald-500/20"
-                              : isNameUnique === false
-                              ? "border-rose-500 ring-2 ring-rose-500/10 focus:ring-rose-500/20"
-                              : "border-orange-500/20 focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20"
+                          className={`w-full h-11 rounded-xl border bg-[#FFFDF8] dark:bg-stone-900 pl-10 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-[#651317]/20 transition-all ${
+                            isNameUnique === false
+                              ? "border-rose-500 focus:border-rose-500"
+                              : "border-[#E8D8C4] dark:border-stone-700 focus:border-[#651317]"
                           }`}
                         />
                         {isNameUnique === true && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-5.5 h-5.5 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-450">
-                            <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-[#651317] rounded-full flex items-center justify-center text-white">
+                            <Check className="w-3 h-3" strokeWidth={3} />
                           </span>
                         )}
                         {isNameUnique === false && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-5.5 h-5.5 bg-rose-100 dark:bg-rose-950/60 rounded-full flex items-center justify-center text-rose-600 dark:text-rose-450">
-                            <X className="w-3.5 h-3.5" strokeWidth={3} />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-rose-100 dark:bg-rose-950/60 rounded-full flex items-center justify-center text-rose-600">
+                            <X className="w-3 h-3" strokeWidth={3} />
                           </span>
                         )}
                       </div>
-                      
-                      {/* Dynamic Tip display */}
                       {isNameUnique === false && (
-                        <p className="text-[10.5px] text-rose-600 dark:text-rose-400 font-semibold leading-relaxed mt-1 flex items-start gap-1">
-                          <span className="shrink-0 mt-0.5">⚠️</span>
-                          <span>
-                            {isHi 
-                              ? "यह नाम पहले से लिया गया है। टिप: इसे अद्वितीय बनाने के लिए स्थान का नाम जोड़ें (जैसे: 'जयपुर श्री श्याम ग्रुप सत्संग')।" 
-                              : "This group name is already taken. Tip: Add a place/location name (e.g. 'Jaipur Shree Shyam Group') to make it unique!"}
-                          </span>
+                        <p className="text-[10.5px] text-rose-600 dark:text-rose-400 font-medium leading-relaxed mt-1">
+                          {isHi
+                            ? "यह नाम पहले से लिया गया है। टिप: स्थान का नाम जोड़ें (जैसे: 'जयपुर श्री श्याम ग्रुप सत्संग')।"
+                            : "This group name is already taken. Tip: Add a place name (e.g. 'Jaipur Shree Shyam Group') to make it unique."}
                         </p>
                       )}
                       {isNameUnique === true && (
-                        <p className="text-[10.5px] text-emerald-600 dark:text-emerald-400 font-semibold leading-relaxed mt-1 flex items-start gap-1">
-                          <span className="shrink-0 mt-0.5">✅</span>
-                          <span>{isHi ? "यह नाम उपलब्ध है!" : "This name is available!"}</span>
+                        <p className="text-[10.5px] text-[#651317] dark:text-amber-300 font-medium leading-relaxed mt-1">
+                          {isHi ? "यह नाम उपलब्ध है।" : "This name is available."}
                         </p>
                       )}
                     </div>
@@ -1398,15 +1420,15 @@ export default function CommunityPage() {
                     {/* Description */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
+                        <label className="text-xs font-bold text-[#3A2418] dark:text-stone-300 block">
                           {isHi ? "विवरण (वैकल्पिक)" : "Description (Optional)"}
                         </label>
-                        <span className="text-[9px] text-stone-400 dark:text-stone-500 font-mono">
+                        <span className="text-[9px] text-[#786252] font-medium tabular-nums">
                           {groupDesc.length}/100
                         </span>
                       </div>
                       <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#786252]">
                           <Pencil className="w-4 h-4" />
                         </span>
                         <input 
@@ -1415,14 +1437,14 @@ export default function CommunityPage() {
                           placeholder={isHi ? "श्री राम नाम का संकीर्तन और भक्ति को मिलकर फैलाएं।" : "Chant Sri Rama's name together and spread devotion..."}
                           value={groupDesc}
                           onChange={(e) => setGroupDesc(e.target.value)}
-                          className="w-full rounded-xl border border-orange-500/20 bg-white dark:bg-stone-900/60 pl-10 pr-10 py-3 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                          className="w-full h-11 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 pl-10 pr-4 text-sm focus:border-[#651317] focus:outline-none focus:ring-1 focus:ring-[#651317]/20 transition-all"
                         />
                       </div>
                     </div>
 
                     {/* Invite Code */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
+                      <label className="text-xs font-bold text-[#3A2418] dark:text-stone-300 block">
                         {isHi ? "आमंत्रण कोड *" : "Invite Code *"}
                       </label>
                       <div className="flex gap-2">
@@ -1436,18 +1458,18 @@ export default function CommunityPage() {
                             setInviteCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""));
                             setIsInviteCodeManuallyEdited(true);
                           }}
-                          className="flex-1 rounded-xl border border-orange-500/20 bg-white dark:bg-stone-900/60 p-3 text-sm font-bold tracking-widest text-orange-600 dark:text-orange-400 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all"
+                          className="flex-1 h-11 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 px-3 text-sm font-bold tracking-widest text-[#651317] dark:text-amber-300 focus:border-[#651317] focus:outline-none focus:ring-1 focus:ring-[#651317]/20 transition-all"
                         />
                         <button
                           type="button"
                           onClick={() => copyInviteCode(inviteCode)}
-                          className="px-4 rounded-xl border border-orange-500/20 bg-white dark:bg-stone-900/60 text-stone-500 hover:text-orange-500 hover:border-orange-400 transition-colors"
+                          className="h-11 px-4 rounded-xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 text-[#786252] hover:text-[#651317] hover:border-[#651317] transition-colors"
                           title="Copy"
                         >
                           <Copy className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-[9px] text-stone-400 leading-normal">
+                      <p className="text-[9px] text-[#786252] leading-normal">
                         {isHi ? "इस कोड से भक्त सीधे जुड़ सकते हैं। प्रत्येक समूह का कोड अलग होना चाहिए।" : "Devotees can join directly with this code. Each group must have a unique code."}
                       </p>
                     </div>
@@ -1457,9 +1479,9 @@ export default function CommunityPage() {
                   <div className="space-y-4">
                     {/* Add Your Group Photo (Custom Image Upload) */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-stone-600 dark:text-stone-400 flex items-center justify-between">
+                      <label className="text-xs font-bold text-[#3A2418] dark:text-stone-400 flex items-center justify-between">
                         <span>{isHi ? "अपने समूह का फ़ोटो जोड़ें" : "Add your group photo"}</span>
-                        <span className="text-[9px] text-stone-400 font-normal">{isHi ? "(वैकल्पिक)" : "(Optional)"}</span>
+                        <span className="text-[9px] text-[#786252] font-normal">{isHi ? "(वैकल्पिक)" : "(Optional)"}</span>
                       </label>
                       <input
                         ref={groupImageInputRef}
@@ -1469,7 +1491,7 @@ export default function CommunityPage() {
                         onChange={handleGroupImageFile}
                       />
                       {customGroupImage ? (
-                        <div className="relative group rounded-xl overflow-hidden border border-amber-500/30 aspect-[2/1] bg-stone-100 dark:bg-stone-900">
+                        <div className="relative group rounded-xl overflow-hidden border border-[#E8D8C4] dark:border-stone-700 aspect-[2/1] bg-[#FAF6EE] dark:bg-stone-900">
                           <img src={customGroupImage} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                             <button
@@ -1494,9 +1516,9 @@ export default function CommunityPage() {
                         <button
                           type="button"
                           onClick={() => groupImageInputRef.current?.click()}
-                          className="w-full flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-amber-500/20 bg-white dark:bg-stone-900/50 py-5 text-xs font-semibold text-stone-500 hover:border-orange-400 hover:text-orange-500 transition-all"
+                          className="w-full flex flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#E8D8C4] dark:border-stone-700 bg-[#FAF6EE] dark:bg-stone-900/50 py-5 text-xs font-semibold text-[#786252] hover:border-[#651317] hover:text-[#651317] transition-all"
                         >
-                          <ImagePlus className="w-5 h-5 text-amber-500" />
+                          <ImagePlus className="w-5 h-5 text-[#651317]" />
                           <span>{isHi ? "फ़ोटो अपलोड करें" : "Upload group photo"}</span>
                         </button>
                       )}
@@ -1505,10 +1527,10 @@ export default function CommunityPage() {
                     {/* Choose Preset Deity circular avatars */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-stone-600 dark:text-stone-300 block">
+                        <label className="text-xs font-bold text-[#3A2418] dark:text-stone-300 block">
                           {isHi ? "या इष्ट देव चित्र चुनें" : "Or Choose Preset Deity Image"}
                         </label>
-                        <span className="text-[10px] text-stone-400 dark:text-stone-500 font-semibold">
+                        <span className="text-[10px] text-[#786252] font-medium">
                           {isHi ? "एक चुनें" : "Select one"}
                         </span>
                       </div>
@@ -1525,24 +1547,23 @@ export default function CommunityPage() {
                             >
                               <div className="relative">
                                 {/* Deity circular avatar */}
-                                <div className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all p-0.5 ${
+                                <div className={`w-12 h-12 rounded-full overflow-hidden border transition-all p-0.5 ${
                                   isSelected 
-                                    ? "border-orange-500 scale-[1.05] ring-4 ring-orange-500/10 shadow-md" 
-                                    : "border-stone-200 dark:border-stone-800 opacity-80 hover:opacity-100 hover:border-orange-400/40 hover:scale-[1.02]"
+                                    ? "border-[#651317] ring-2 ring-[#651317] ring-offset-2 ring-offset-[#FFFDF8] dark:ring-offset-[#120F0B]" 
+                                    : "border-[#E8D8C4] dark:border-stone-700 opacity-85 hover:opacity-100"
                                 }`}>
                                   <img src={img.src} alt={img.name} className="w-full h-full object-cover rounded-full" />
                                 </div>
-                                {/* Active checkmark indicator */}
                                 {isSelected && (
-                                  <span className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-orange-500 text-white rounded-full flex items-center justify-center shadow border-2 border-[#FAF6EE] dark:border-[#120F0B] text-[9px] font-bold">
-                                    ✓
+                                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#651317] text-white rounded-full flex items-center justify-center border-2 border-[#FFFDF8] dark:border-[#120F0B]">
+                                    <Check className="w-2.5 h-2.5" strokeWidth={3} />
                                   </span>
                                 )}
                               </div>
-                              <span className={`text-[9.5px] font-bold transition-colors ${
+                              <span className={`text-[9.5px] font-semibold transition-colors ${
                                 isSelected 
-                                  ? "text-orange-500 border-b border-orange-500/50 pb-0.5" 
-                                  : "text-stone-500 dark:text-stone-400 group-hover:text-stone-700 dark:group-hover:text-stone-200"
+                                  ? "text-[#651317] dark:text-amber-300" 
+                                  : "text-[#786252] dark:text-stone-400"
                               }`}>
                                 {img.name.split(" ")[0]}
                               </span>
@@ -1557,20 +1578,20 @@ export default function CommunityPage() {
 
                 {/* Visibility Option */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-600 dark:text-stone-400">
+                  <label className="text-xs font-bold text-[#3A2418] dark:text-stone-400">
                     {isHi ? "दृश्यता" : "Visibility"}
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setIsPublic(true)}
-                      className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border-2 transition-all text-center gap-1 ${
+                      className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border transition-all text-center gap-1 ${
                         isPublic
-                          ? "border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/10 text-emerald-700 dark:text-emerald-450 font-bold"
-                          : "border-stone-200 dark:border-stone-850 hover:border-amber-400/50 text-stone-500"
+                          ? "border-[#651317] bg-[#651317]/5 text-[#651317] dark:text-amber-300 font-bold"
+                          : "border-[#E8D8C4] dark:border-stone-700 text-[#786252]"
                       }`}
                     >
-                      <Globe className="w-5 h-5 text-emerald-500" />
+                      <Globe className={`w-5 h-5 ${isPublic ? "text-[#651317]" : "text-[#786252]"}`} />
                       <span className="text-xs font-bold select-none mt-0.5">
                         {isHi ? "सार्वजनिक (Public)" : "Public"}
                       </span>
@@ -1579,13 +1600,13 @@ export default function CommunityPage() {
                     <button
                       type="button"
                       onClick={() => setIsPublic(false)}
-                      className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border-2 transition-all text-center gap-1 ${
+                      className={`flex flex-col items-center justify-center py-3 px-4 rounded-xl border transition-all text-center gap-1 ${
                         !isPublic
-                          ? "border-amber-500 bg-amber-50/20 dark:bg-amber-950/10 text-amber-705 dark:text-amber-450 font-bold"
-                          : "border-stone-200 dark:border-stone-850 hover:border-amber-400/50 text-stone-500"
+                          ? "border-[#651317] bg-[#651317]/5 text-[#651317] dark:text-amber-300 font-bold"
+                          : "border-[#E8D8C4] dark:border-stone-700 text-[#786252]"
                       }`}
                     >
-                      <Lock className="w-5 h-5 text-amber-500" />
+                      <Lock className={`w-5 h-5 ${!isPublic ? "text-[#651317]" : "text-[#786252]"}`} />
                       <span className="text-xs font-bold select-none mt-0.5">
                         {isHi ? "निजी (Private)" : "Private"}
                       </span>
@@ -1594,17 +1615,17 @@ export default function CommunityPage() {
                 </div>
 
                 {/* Green Shield Warning Banner */}
-                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15">
-                  <span className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-450 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#FAF6EE] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-800">
+                  <span className="w-8 h-8 rounded-full bg-[#651317] text-white flex items-center justify-center shrink-0">
                     <Shield className="w-4 h-4" />
                   </span>
                   <div className="text-left flex-1">
-                    <p className="text-xs font-bold text-stone-850 dark:text-stone-200 leading-tight">
+                    <p className="text-xs font-bold text-[#3A2418] dark:text-stone-200 leading-tight">
                       {isPublic 
                         ? (isHi ? "सार्वजनिक समूह: कोई भी भक्त शामिल हो सकता है।" : "Public Group: Anyone can join and chant.")
                         : (isHi ? "निजी समूह: आमंत्रण लिंक की आवश्यकता होगी।" : "Private Group: Invitation code will be required.")}
                     </p>
-                    <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 font-medium">
+                    <p className="text-[10px] text-[#786252] dark:text-stone-400 mt-0.5 font-medium">
                       {isHi 
                         ? "भक्तिभाव और पवित्र वातावरण बनाए रखें।" 
                         : "Please maintain a devotional and pure atmosphere."}
@@ -1614,24 +1635,20 @@ export default function CommunityPage() {
 
                 {/* Submit and Cancel Buttons */}
                 <div className="space-y-2 pt-2">
-                  <Button
+                  <button
                     type="submit"
                     disabled={submitting || isNameUnique === false}
-                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+                    className="w-full h-12 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold text-sm active:scale-[0.98] transition-all disabled:opacity-50"
                   >
-                    <Sparkles className="w-4 h-4 animate-pulse" />
-                    <span>
-                      {submitting 
-                        ? (isHi ? "बन रहा है..." : "Creating...") 
-                        : (isHi ? "समूह बनाएं" : "Create Group")}
-                    </span>
-                    <ArrowRight className="w-4 h-4 ml-auto" />
-                  </Button>
+                    {submitting
+                      ? (isHi ? "बन रहा है..." : "Creating...")
+                      : (isHi ? "समूह बनाएं" : "Create Group")}
+                  </button>
                   
                   <button
                     type="button"
                     onClick={closeCreateDialog}
-                    className="w-full text-center text-xs font-bold text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-250 py-1.5 focus:outline-none transition-colors"
+                    className="w-full text-center text-sm font-semibold text-[#651317] dark:text-amber-300 hover:text-[#4f0f12] py-2"
                   >
                     {isHi ? "रद्द करें" : "Cancel"}
                   </button>
@@ -1662,50 +1679,46 @@ export default function CommunityPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                 {/* Success badge */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center shadow-xl shadow-orange-500/40">
+                  <div className="w-14 h-14 rounded-full bg-[#651317] flex items-center justify-center shadow-lg">
                     <Check className="w-7 h-7 text-white" strokeWidth={3} />
                   </div>
                 </div>
               </div>
 
-              <h2 className="font-display text-xl font-bold text-amber-900 dark:text-amber-100 leading-tight">
+              <h2 className="font-display text-xl font-bold text-[#651317] dark:text-amber-100 leading-tight">
                 {createdGroupData.name}
               </h2>
-              <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 mt-0.5 mb-4">
-                {isHi ? "Created! 🙏" : "Created! 🙏"}
+              <p className="text-sm font-semibold text-[#786252] dark:text-amber-400 mt-0.5 mb-4">
+                {isHi ? "समूह बन गया" : "Created"}
               </p>
 
-              {/* Invite Code display */}
               <div className="mb-4">
-                <p className="text-xs text-stone-500 dark:text-stone-400 mb-2 font-semibold uppercase tracking-widest">
+                <p className="text-xs text-[#786252] dark:text-stone-400 mb-2 font-semibold uppercase tracking-widest">
                   {isHi ? "आमंत्रण लिंक" : "Invite Link"}
                 </p>
                 <div className="flex items-center justify-center gap-2">
-                  <span className="font-display text-2xl font-semibold text-orange-500 tracking-widest">
+                  <span className="font-display text-2xl font-semibold text-[#651317] tracking-widest">
                     {createdGroupData.inviteCode}
                   </span>
                   <button
                     type="button"
                     onClick={() => copyInviteCode(createdGroupData.inviteCode)}
-                    className="p-1.5 rounded-lg border border-amber-500/20 bg-amber-50 dark:bg-stone-800 hover:bg-amber-100 transition-colors"
+                    className="p-1.5 rounded-lg border border-[#E8D8C4] bg-[#FAF6EE] dark:bg-stone-800 hover:border-[#651317] transition-colors"
                     title="Copy code"
                   >
-                    <Copy className="w-4 h-4 text-stone-500" />
+                    <Copy className="w-4 h-4 text-[#786252]" />
                   </button>
                 </div>
-                {/* Full URL */}
-                <p className="text-[10px] text-stone-400 mt-1.5 break-all">
+                <p className="text-[10px] text-[#786252] mt-1.5 break-all">
                   {window.location.origin}/community?join={createdGroupData.inviteCode}
                 </p>
               </div>
 
-              {/* Share row */}
-              <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
-                {isHi ? "भक्तों को आमंत्रित करें और मिलकर जाप करें" : "Share & invite devotees to grow together"}
+              <p className="text-xs text-[#786252] dark:text-stone-400 mb-3">
+                {isHi ? "भक्तों को आमंत्रित करें और मिलकर जाप करें" : "Share and invite devotees to grow together"}
               </p>
 
               <div className="flex gap-2.5 mb-5">
-                {/* Copy link */}
                 <button
                   type="button"
                   onClick={() => {
@@ -1713,7 +1726,7 @@ export default function CommunityPage() {
                     navigator.clipboard.writeText(url);
                     toast.success(isHi ? "लिंक कॉपी किया गया!" : "Link copied!");
                   }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-xs font-semibold text-stone-600 dark:text-stone-300 hover:border-orange-400 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 h-11 rounded-full border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-800 text-xs font-semibold text-[#651317] dark:text-stone-300 hover:border-[#651317] transition-colors"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   {isHi ? "लिंक कॉपी करें" : "Copy Link"}
@@ -1738,7 +1751,7 @@ export default function CommunityPage() {
                   closeCreateDialog();
                   navigate("/community");
                 }}
-                className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 shadow-md shadow-orange-500/25 flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold"
               >
                 {isHi ? "समूह में जाएं" : "Go to Group"}
                 <ArrowRight className="w-4 h-4" />

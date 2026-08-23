@@ -107,7 +107,7 @@ const FEATURE_ITEMS: FeatureItem[] = [
     path: "/community",
     labelKey: "community",
     icon: Users,
-    match: (pathname) => pathname.startsWith("/community"),
+    match: (pathname) => pathname === "/community" || pathname.startsWith("/join-community"),
   },
   {
     path: "/temple",

@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MeditationPracticeHome from "@/components/meditation/MeditationPracticeHome";
+import MantraJapHome from "@/components/meditation/MantraJapHome";
+import PremiumJapaCounter from "@/components/meditation/PremiumJapaCounter";
 import {
   getPracticeById,
   type MeditationPractice,
@@ -8,8 +10,6 @@ import {
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 
 const MeditationSession = lazy(() => import("@/components/meditation/MeditationSession"));
-const MantraJapHome = lazy(() => import("@/components/meditation/MantraJapHome"));
-const PremiumJapaCounter = lazy(() => import("@/components/meditation/PremiumJapaCounter"));
 
 function MeditationChunkFallback() {
   return (
@@ -17,6 +17,12 @@ function MeditationChunkFallback() {
       <div className="h-10 w-10 rounded-full border-2 border-amber-500/80 border-t-transparent animate-spin" aria-label="Loading Dhyan" />
     </div>
   );
+}
+
+function navigateMeditationBack(navigate: ReturnType<typeof useNavigate>) {
+  const idx = (window.history.state as { idx?: number } | null)?.idx;
+  if (typeof idx === "number" && idx > 0) navigate(-1);
+  else navigate("/");
 }
 
 export default function MeditationPage() {
@@ -40,7 +46,7 @@ export default function MeditationPage() {
   }, [practiceId]);
 
   const handleSelectPractice = (newPractice: { id: string }) => {
-    setSearchParams({ practice: newPractice.id });
+    setSearchParams({ practice: newPractice.id }, { replace: true });
   };
 
   const handleExit = () => {
@@ -54,31 +60,27 @@ export default function MeditationPage() {
       navigate(-1);
       return;
     }
-    setSearchParams({});
+    if (practiceId) {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+    navigateMeditationBack(navigate);
   };
 
   const handleQuickStart = () => {
-    setSearchParams({ practice: "mantra_jap_home" });
+    setSearchParams({ practice: "mantra_jap_home" }, { replace: true });
   };
 
   const handlePracticeChange = (newPractice: MeditationPractice) => {
-    setSearchParams({ practice: newPractice.id });
+    setSearchParams({ practice: newPractice.id }, { replace: true });
   };
 
   if (practiceId === "mantra_jap_home") {
-    return (
-      <Suspense fallback={<MeditationChunkFallback />}>
-        <MantraJapHome onBack={handleExit} />
-      </Suspense>
-    );
+    return <MantraJapHome onBack={handleExit} />;
   }
 
   if (practiceId === "mantra_japa_counter") {
-    return (
-      <Suspense fallback={<MeditationChunkFallback />}>
-        <MantraJapaCounterView />
-      </Suspense>
-    );
+    return <MantraJapaCounterView />;
   }
 
   if (practice) {
@@ -138,7 +140,7 @@ function MantraJapaCounterView() {
               navigate(-1);
               return;
             }
-            setSearchParams({ practice: "mantra_jap_home" });
+            setSearchParams({ practice: "mantra_jap_home" }, { replace: true });
           }}
           className="px-4 py-2 bg-amber-500 text-black rounded-lg"
         >
@@ -156,13 +158,15 @@ function MantraJapaCounterView() {
       practiceMode={practiceMode}
       onClose={(finalMantraId) => {
         const finalMantra = mantras.find((m) => m.id === finalMantraId) || activeMantra;
-        setSearchParams({
-          practice: "mantra_jap_home",
-          mantraId: finalMantra.id,
-          showSetup: "true",
-          ...(groupId ? { groupId } : {}),
-          ...(returnUrl ? { returnUrl } : {}),
-        });
+        setSearchParams(
+          {
+            practice: "mantra_jap_home",
+            mantraId: finalMantra.id,
+            ...(groupId ? { groupId } : {}),
+            ...(returnUrl ? { returnUrl } : {}),
+          },
+          { replace: true }
+        );
       }}
       onComplete={async (actualCount, durationSeconds, finalMantraId) => {
         const finalMantra = mantras.find((m) => m.id === finalMantraId) || activeMantra;
@@ -184,11 +188,14 @@ function MantraJapaCounterView() {
           navigate(returnUrl);
           return;
         }
-        setSearchParams({
-          practice: "mantra_jap_home",
-          mantraId: finalMantra.id,
-          ...(groupId ? { groupId } : {}),
-        });
+        setSearchParams(
+          {
+            practice: "mantra_jap_home",
+            mantraId: finalMantra.id,
+            ...(groupId ? { groupId } : {}),
+          },
+          { replace: true }
+        );
       }}
     />
   );

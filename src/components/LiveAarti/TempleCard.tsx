@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, MapPin, Landmark } from 'lucide-react';
+import { Play, MapPin, Landmark, Clock, Radio } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import LiveBadge from './LiveBadge';
@@ -16,6 +16,7 @@ interface TempleCardProps {
   minutesUntilStart?: number;
   minutesUntilEnd?: number;
   onClick: () => void;
+  priority?: boolean;
 }
 
 export default function TempleCard({
@@ -25,7 +26,8 @@ export default function TempleCard({
   aartiNameHindi,
   minutesUntilStart,
   minutesUntilEnd,
-  onClick
+  onClick,
+  priority = false,
 }: TempleCardProps) {
   const { language } = useLanguage();
   const isHi = language === 'hi';
@@ -60,37 +62,49 @@ export default function TempleCard({
 
   return (
     <motion.div
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      whileHover={{ y: -3, transition: { duration: 0.2 } }}
       onClick={onClick}
-      className="relative cursor-pointer overflow-hidden rounded-3xl border border-[#EAD7C3] dark:border-white/5 bg-white/60 dark:bg-white/[0.02] hover:bg-white/95 dark:hover:bg-white/[0.04] p-5 md:p-6 transition-all duration-300 group shadow-md dark:shadow-lg flex flex-col justify-between"
+      className="relative cursor-pointer overflow-hidden rounded-2xl md:rounded-[22px] border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] hover:border-[#651317]/40 dark:hover:border-amber-400/40 p-4 sm:p-5 transition-all duration-300 group shadow-xs hover:shadow-md flex flex-col justify-between text-left h-full"
     >
       {/* Decorative colored glow on top edge */}
       <div 
-        className="absolute top-0 left-0 right-0 h-1 transition-opacity group-hover:opacity-100 opacity-60"
+        className="absolute top-0 left-0 right-0 h-1 transition-opacity group-hover:opacity-100 opacity-70"
         style={{ backgroundColor: temple.accentColor || '#f97316' }}
       />
 
-      <div className="flex flex-col gap-4 justify-between h-full">
+      <div className="flex flex-col gap-3.5 justify-between h-full">
         <div className="space-y-3">
           {/* Temple image thumbnail */}
-          <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-950/40 border border-[#EAD7C3]/50 dark:border-white/5">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-950/60 border border-[#E8D8C4]/60 dark:border-stone-800/80">
             <img
               src={resolveTempleBanner(temple.id)}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
-              loading="lazy"
+              width={400}
+              height={225}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
+              loading={priority ? 'eager' : 'lazy'}
+              fetchpriority={priority ? 'high' : 'low'}
+              decoding="async"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+
+            {/* Live / Category tag on thumbnail */}
+            <div className="absolute top-2.5 left-2.5 z-10">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#651317] dark:text-amber-300 bg-[#FFFDF8]/95 dark:bg-stone-900/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-[#E8D8C4] dark:border-stone-700 shadow-2xs">
+                {temple.category}
+              </span>
+            </div>
+
+            {resolvedStatus === 'LIVE' && (
+              <div className="absolute top-2.5 right-2.5 z-10">
+                <LiveBadge />
+              </div>
+            )}
           </div>
-          {/* Header row: Category and status badge */}
-          <div className="flex items-start justify-between gap-2">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-orange-600 dark:text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-full">
-              {temple.category}
-            </span>
-            <div className="flex flex-col items-end gap-1.5">
-              {/* Status Badge */}
-              {resolvedStatus === 'LIVE' && <LiveBadge />}
-              
+
+          {/* Status and Verification row (if not live or has status) */}
+          <div className="flex items-center justify-between gap-2 min-h-[22px]">
+            <div className="flex items-center gap-1.5">
               {resolvedStatus === 'UPCOMING' && displayMinutes !== undefined && (
                 <CountdownTimer 
                   minutes={displayMinutes} 
@@ -99,79 +113,84 @@ export default function TempleCard({
               )}
 
               {resolvedStatus === 'OFFLINE' && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-zinc-550/10 border border-zinc-400/35 dark:border-zinc-500/30 text-zinc-550 dark:text-zinc-400 text-[10px] font-extrabold tracking-wider uppercase">
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-pulse" />
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/5 border border-[#E8D8C4] dark:border-stone-700 text-[#786252] dark:text-stone-400 text-[10px] font-bold tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#786252] dark:bg-stone-400 opacity-60" />
                   <span>{isHi ? "ऑफ़लाइन" : "OFFLINE"}</span>
                 </div>
               )}
 
               {resolvedStatus === 'STREAM_UNAVAILABLE' && (
-                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-500 text-[10px] font-extrabold tracking-wider uppercase">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-[10px] font-bold tracking-wider uppercase">
                   <span>{isHi ? "अवरुद्ध" : "BLOCKED"}</span>
                 </div>
               )}
-
-              {/* Verified text */}
-              {temple.lastVerifiedAt && (
-                <span className="text-[9px] text-[#543D2B]/50 dark:text-zinc-500 font-medium leading-none">
-                  {formatVerifiedTime(temple.lastVerifiedAt, isHi)}
-                </span>
-              )}
             </div>
+
+            {temple.lastVerifiedAt && (
+              <span className="text-[10px] text-[#786252]/70 dark:text-stone-400 font-medium leading-none truncate ml-auto">
+                {formatVerifiedTime(temple.lastVerifiedAt, isHi)}
+              </span>
+            )}
           </div>
 
           {/* Temple details */}
           <div className="space-y-1">
-            <h3 className="text-lg md:text-xl font-bold font-display text-[#543D2B] dark:text-white group-hover:text-[#E06D14] dark:group-hover:text-amber-100 transition-colors leading-tight">
+            <h3 className="text-base sm:text-lg font-bold font-display text-[#3A2418] dark:text-amber-100 group-hover:text-[#651317] dark:group-hover:text-amber-300 transition-colors leading-tight line-clamp-1">
               {title}
             </h3>
-            <p className="text-sm text-[#E06D14] dark:text-amber-100/75 font-medium flex items-center gap-1.5">
-              <Landmark className="w-3.5 h-3.5 text-orange-500/60" />
-              <span>{deityText}</span>
+            <p className="text-xs sm:text-sm text-[#651317] dark:text-amber-400 font-semibold flex items-center gap-1.5 truncate">
+              <Landmark className="w-3.5 h-3.5 shrink-0 opacity-80" />
+              <span className="truncate">{deityText}</span>
             </p>
-            <p className="text-xs text-[#543D2B]/60 dark:text-zinc-400 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#543D2B]/40 dark:text-zinc-500" />
-              <span>{temple.location}</span>
+            <p className="text-xs text-[#786252] dark:text-stone-400 flex items-center gap-1.5 truncate">
+              <MapPin className="w-3.5 h-3.5 shrink-0 opacity-70" />
+              <span className="truncate">{temple.location}</span>
             </p>
           </div>
         </div>
 
-        {/* Bottom row: Aarti session or default info */}
-        <div className="border-t border-[#EAD7C3]/50 dark:border-white/5 pt-4 flex items-center justify-between gap-3 mt-2">
-          {displayAartiName ? (
-            <div className="space-y-0.5 min-w-0 flex-1">
-              <p className="text-[10px] uppercase font-semibold text-[#543D2B]/50 dark:text-zinc-500 tracking-wider">
-                {resolvedStatus === 'LIVE' ? (isHi ? 'चल रही आरती' : 'CURRENT AARTI') : (isHi ? 'अगली आरती' : 'NEXT AARTI')}
+        {/* Bottom row: Aarti session and standardized royal button */}
+        <div className="border-t border-[#E8D8C4]/70 dark:border-stone-800 pt-3 flex items-center justify-between gap-2.5 mt-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase font-bold text-[#786252] dark:text-stone-400 tracking-wider">
+              {resolvedStatus === 'LIVE' ? (isHi ? 'चल रही आरती' : 'CURRENT AARTI') : (isHi ? 'अगली आरती' : 'NEXT AARTI')}
+            </p>
+            <p className="text-xs sm:text-sm font-bold text-[#3A2418] dark:text-amber-100 truncate">
+              {displayAartiName || (temple.aartiSchedule.length > 0 ? `${temple.aartiSchedule.length} ${isHi ? 'दैनिक सत्र' : 'Daily Sessions'}` : (isHi ? 'विशेष अवसर' : 'Special Events'))}
+            </p>
+            {resolvedStatus !== 'LIVE' && displayMinutes !== undefined && (
+              <p className="text-[11px] text-[#651317] dark:text-amber-400 font-semibold mt-0.5">
+                {isHi ? `शुरू होने में: ${formatMinutes(displayMinutes)}` : `Starts in: ${formatMinutes(displayMinutes)}`}
               </p>
-              <p className="text-sm font-semibold text-[#543D2B]/90 dark:text-amber-100 truncate">
-                {displayAartiName}
-              </p>
-              {resolvedStatus !== 'LIVE' && displayMinutes !== undefined && (
-                <p className="text-xs text-[#543D2B]/70 dark:text-zinc-400 font-medium mt-0.5">
-                  {isHi ? `शुरू होने में: ${formatMinutes(displayMinutes)}` : `Starts in: ${formatMinutes(displayMinutes)}`}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-0.5 min-w-0">
-              <p className="text-[10px] uppercase font-semibold text-[#543D2B]/50 dark:text-zinc-500 tracking-wider">
-                {isHi ? 'दैनिक आरतियां' : 'DAILY AARTIS'}
-              </p>
-              <p className="text-xs font-semibold text-[#543D2B]/70 dark:text-zinc-400">
-                {temple.aartiSchedule.length > 0 
-                  ? `${temple.aartiSchedule.length} ${isHi ? 'सत्र प्रतिदिन' : 'sessions daily'}` 
-                  : (isHi ? 'विशेष अवसरों पर' : 'Special occasions')}
-              </p>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Play/Join Button */}
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-amber-600 group-hover:from-orange-600 group-hover:to-amber-700 text-white shadow-md transition-all duration-300"
-          >
-            <Play className="w-4 h-4 fill-white stroke-none ml-0.5" />
-          </motion.div>
+          {/* Standard Royal Design-System Button */}
+          {resolvedStatus === 'LIVE' ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+              className="btn-royal-primary h-9 sm:h-10 px-3 sm:px-4 rounded-full text-xs font-bold gap-1.5 shrink-0 shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>{isHi ? 'दर्शन करें' : 'Watch Live'}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
+              className="btn-royal-secondary h-9 sm:h-10 px-3 sm:px-4 rounded-full text-xs font-bold gap-1.5 shrink-0 bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:bg-[#FAF2E8] dark:hover:bg-stone-800 shadow-2xs active:scale-95 cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>{isHi ? 'समय सारिणी' : 'Schedule'}</span>
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

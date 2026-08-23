@@ -1,3 +1,4 @@
+import { useMemo, useEffect } from "react";
 import { Clock3, Flame, Play, ArrowRight, Check } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { computeStats, loadSessionLogs } from "@/lib/meditation/meditationStorage";
@@ -5,10 +6,10 @@ import { cn } from "@/lib/utils";
 import meditationDesktopBg from "@/pages/images/meditation_desktop_wallpaper.webp";
 import redLotus from "@/pages/images/red_lotus_lossless.webp";
 import hanumanHd2 from "@/pages/images/hanuman_hd (2).webp";
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/hooks/useTheme";
 import { SEO } from "@/components/SEO";
+import { prefetchMeditationLcpImages } from "@/lib/prefetchMeditation";
 
 const MEDITATION_QUOTES = [
   { hi: "\u201cशांति बाहर नहीं, अंदर मिलती है।\u201d", en: "\u201cPeace is not found outside, it is found within.\u201d" },
@@ -44,6 +45,12 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
   const isHi = language === "hi";
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  useEffect(() => {
+    prefetchMeditationLcpImages();
+    void import("@/components/meditation/MantraJapHome");
+    void import("@/components/meditation/PremiumJapaCounter");
+  }, []);
 
   const stats = computeStats(loadSessionLogs());
 
@@ -212,7 +219,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.25 }}
-          className="relative min-h-[220px] sm:min-h-[250px] md:min-h-[280px] aspect-[1672/941] max-h-[320px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 md:px-10 py-6 md:py-8 w-full shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+          className="relative w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 md:px-10 py-6 md:py-8 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
         >
           <div className="absolute inset-0 z-0">
             <img

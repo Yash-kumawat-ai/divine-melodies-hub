@@ -2,8 +2,6 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play,
-  ArrowLeft,
-  Bell,
   Sparkles,
   Plus,
   X,
@@ -16,7 +14,6 @@ import {
   Sun,
   Target,
   Trash2,
-  Trophy,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
@@ -29,6 +26,7 @@ import mantraJapBanner from "@/pages/images/mantra_jap_banner.webp";
 import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { SEO } from "@/components/SEO";
 import { prefetchMantraImage } from "@/lib/prefetchMeditation";
+import MeditationTopBar from "./MeditationTopBar";
 
 // Gold lotus mark (matches MeditationPracticeHome)
 const LotusMark = ({ className = "w-5 h-4" }: { className?: string }) => (
@@ -280,13 +278,16 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
       }
     });
     const target = best || mantras[0];
-    setSearchParams({
-      practice: "mantra_japa_counter",
-      mantraId: target.id,
-      targetCount: String(japaTarget),
-      practiceMode: "mala",
-      sankalp: activeSankalpText,
-    });
+    setSearchParams(
+      {
+        practice: "mantra_japa_counter",
+        mantraId: target.id,
+        targetCount: String(japaTarget),
+        practiceMode: "mala",
+        sankalp: activeSankalpText,
+      },
+      { replace: true }
+    );
   }, [mantras, mantraTotalsMap, japaTarget, activeSankalpText, setSearchParams]);
 
   const handleContinueLastSession = handleStartJapaWithSankalp;
@@ -372,140 +373,168 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
     };
   }, [isGuest, mantraTotalsMap, guestMantraStats, todaySessions, stats.currentStreak, getRelativeDateString]);
 
-  // Find the last chanted mantra ID
-  const lastChantedMantraId = useMemo(() => {
-    if (mantras.length === 0) return null;
-    if (isGuest) {
-      let bestLegacyId: string | null = null;
-      let newestTime = 0;
-      Object.entries(guestMantraStats).forEach(([legacyId, stat]: [string, any]) => {
-        if (stat?.lastChantedAt) {
-          const t = new Date(stat.lastChantedAt).getTime();
-          if (t > newestTime) { newestTime = t; bestLegacyId = legacyId; }
-        }
-      });
-      if (bestLegacyId) {
-        const m = mantras.find((m) => LEGACY_MANTRA_MAP[m.name_english] === bestLegacyId);
-        if (m) return m.id;
-      }
-      return mantras[0]?.id;
-    }
-    
-    let bestId: string | null = null;
-    let newestTime = 0;
-    mantras.forEach((m) => {
-      const total = mantraTotalsMap[m.id];
-      if (total?.last_session_at) {
-        const t = new Date(total.last_session_at).getTime();
-        if (t > newestTime) { newestTime = t; bestId = m.id; }
-      }
-    });
-    return bestId || mantras[0]?.id;
-  }, [mantras, mantraTotalsMap, isGuest, guestMantraStats]);
-
-  // ─── Copy ──────────────────────────────────────────────────────
   const copy = {
     title: isHi ? "मंत्र जाप" : "Mantra Japa",
     selectTitle: isHi ? "मंत्र चुनें और जप शुरू करें" : "Select Mantra & Start",
   };
 
-  // ─── Render ────────────────────────────────────────────────────
-  if (selectedMantraForDetail) {
-    return (
-      <div className="flex flex-col h-full min-h-0 flex-1 relative">
-        <MantraDetailView
-          mantra={selectedMantraForDetail}
-          image={resolveMantraImage(selectedMantraForDetail)}
-          stats={mantraTotalsMap[selectedMantraForDetail.id]}
-          onBack={() => {
-            const returnUrl = searchParams.get("returnUrl");
-            if (returnUrl) {
-              navigate(returnUrl);
-              return;
-            }
-            const gId = searchParams.get("groupId");
-            if (gId) {
-              navigate(-1);
-              return;
-            }
-            setSelectedMantraForDetail(null);
-            setShowSetup(false);
-            setSearchParams({
-              practice: "mantra_jap_home",
-            });
-          }}
-          onStartJapa={() => {
-            const gId = searchParams.get("groupId");
-            const retUrl = searchParams.get("returnUrl");
-            setShowSetup(true);
-            if (searchParams.get("showSetup") === "true" && searchParams.get("mantraId") === selectedMantraForDetail.id) {
-              return;
-            }
-            setSearchParams({
-              practice: "mantra_jap_home",
-              mantraId: selectedMantraForDetail.id,
-              showSetup: "true",
-              ...(gId ? { groupId: gId } : {}),
-              ...(retUrl ? { returnUrl: retUrl } : {}),
-            });
-          }}
-        />
+  const handleChromeBack = () => {
+    if (!selectedMantraForDetail) {
+      onBack();
+      return;
+    }
+    const returnUrl = searchParams.get("returnUrl");
+    if (returnUrl) {
+      navigate(returnUrl);
+      return;
+    }
+    const gId = searchParams.get("groupId");
+    if (gId) {
+      navigate(-1);
+      return;
+    }
+    setSelectedMantraForDetail(null);
+    setShowSetup(false);
+    setSearchParams({ practice: "mantra_jap_home" }, { replace: true });
+  };
 
-        {/* Devotional Setup Pop-up Modal */}
-        <AnimatePresence>
-          {showSetup && (
-            <MantraSetupView
-              mantra={selectedMantraForDetail}
-              initialGroupId={searchParams.get("groupId")}
-              onBack={() => {
-                const returnUrl = searchParams.get("returnUrl");
-                const gId = searchParams.get("groupId");
-                setShowSetup(false);
-                setSearchParams({
-                  practice: "mantra_jap_home",
-                  mantraId: selectedMantraForDetail.id,
-                  ...(gId ? { groupId: gId } : {}),
-                  ...(returnUrl ? { returnUrl: returnUrl } : {}),
-                });
-              }}
-              onStartJapa={(opts) => {
-                const gId = opts.groupId || searchParams.get("groupId");
-                const retUrl = searchParams.get("returnUrl");
-                setSearchParams({
-                  practice: "mantra_japa_counter",
-                  mantraId: selectedMantraForDetail.id,
-                  targetCount: String(opts.targetCount),
-                  practiceMode: opts.practiceMode,
-                  sankalp: opts.sankalpText,
-                  ...(gId ? { groupId: String(gId) } : {}),
-                  ...(retUrl ? { returnUrl: retUrl } : {}),
-                });
-              }}
-            />
-          )}
-        </AnimatePresence>
-      </div>
-    );
-  }
+  const handleShare = () => {
+    const url = window.location.href;
+    const title = selectedMantraForDetail
+      ? isHi
+        ? selectedMantraForDetail.name_hindi
+        : selectedMantraForDetail.name_english
+      : copy.title;
+    if (navigator.share) {
+      navigator.share({ title, url, text: title }).catch(() => {});
+    } else {
+      void navigator.clipboard.writeText(url);
+    }
+  };
+
+  const barTitle = selectedMantraForDetail
+    ? isHi
+      ? selectedMantraForDetail.name_hindi
+      : selectedMantraForDetail.name_english
+    : copy.title;
 
   return (
     <div
       className={cn(
-        "relative flex flex-col h-full overflow-hidden transition-colors duration-300",
+        "relative flex flex-col h-full min-h-0 flex-1 overflow-hidden transition-colors duration-300",
         isDark ? "text-amber-50 bg-[#0c0a08]" : "text-[#3A2418] bg-[#FAF6EE]"
       )}
     >
       <SEO
-        title={isHi ? "मंत्र जाप साधना" : "Mantra Japa Sadhana"}
+        title={
+          selectedMantraForDetail
+            ? isHi
+              ? selectedMantraForDetail.name_hindi
+              : selectedMantraForDetail.name_english
+            : isHi
+              ? "मंत्र जाप साधना"
+              : "Mantra Japa Sadhana"
+        }
         description={
           isHi
             ? "मंत्र चुनें और माला या ध्वनि से जप करें। नियमित जाप से मन शांत और एकाग्र होता है।"
             : "Choose a mantra and chant with mala or voice. Daily japa calms the mind and sharpens focus."
         }
         image={mantraJapBanner}
-        url={typeof window !== "undefined" ? `${window.location.origin}/meditation?practice=mantra_jap_home` : "/meditation?practice=mantra_jap_home"}
+        url={
+          typeof window !== "undefined"
+            ? `${window.location.origin}/meditation?practice=mantra_jap_home${
+                selectedMantraForDetail ? `&mantraId=${selectedMantraForDetail.id}` : ""
+              }`
+            : "/meditation?practice=mantra_jap_home"
+        }
         lang={isHi ? "hi" : "en"}
       />
+      <MeditationTopBar
+        title={barTitle}
+        onBack={handleChromeBack}
+        onShare={handleShare}
+        onTrophy={selectedMantraForDetail ? undefined : () => navigate("/leaderboard")}
+        trailing={
+          isGuest ? (
+            <span className="text-[10px] px-2 py-1 rounded-full border border-[#E8D8C4] bg-[#FAF0E4] text-[#651317] font-bold dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-300">
+              {isHi ? "अतिथि" : "Guest"}
+            </span>
+          ) : null
+        }
+      />
+
+      {selectedMantraForDetail ? (
+        <div className="flex flex-col h-full min-h-0 flex-1 relative">
+          <MantraDetailView
+            mantra={selectedMantraForDetail}
+            image={resolveMantraImage(selectedMantraForDetail)}
+            stats={mantraTotalsMap[selectedMantraForDetail.id]}
+            onBack={handleChromeBack}
+            onStartJapa={() => {
+              const gId = searchParams.get("groupId");
+              const retUrl = searchParams.get("returnUrl");
+              setShowSetup(true);
+              if (
+                searchParams.get("showSetup") === "true" &&
+                searchParams.get("mantraId") === selectedMantraForDetail.id
+              ) {
+                return;
+              }
+              setSearchParams(
+                {
+                  practice: "mantra_jap_home",
+                  mantraId: selectedMantraForDetail.id,
+                  showSetup: "true",
+                  ...(gId ? { groupId: gId } : {}),
+                  ...(retUrl ? { returnUrl: retUrl } : {}),
+                },
+                { replace: true }
+              );
+            }}
+          />
+          <AnimatePresence>
+            {showSetup && (
+              <MantraSetupView
+                mantra={selectedMantraForDetail}
+                initialGroupId={searchParams.get("groupId")}
+                onBack={() => {
+                  const returnUrl = searchParams.get("returnUrl");
+                  const gId = searchParams.get("groupId");
+                  setShowSetup(false);
+                  setSearchParams(
+                    {
+                      practice: "mantra_jap_home",
+                      mantraId: selectedMantraForDetail.id,
+                      ...(gId ? { groupId: gId } : {}),
+                      ...(returnUrl ? { returnUrl: returnUrl } : {}),
+                    },
+                    { replace: true }
+                  );
+                }}
+                onStartJapa={(opts) => {
+                  const gId = opts.groupId || searchParams.get("groupId");
+                  const retUrl = searchParams.get("returnUrl");
+                  void import("@/components/meditation/PremiumJapaCounter");
+                  setSearchParams(
+                    {
+                      practice: "mantra_japa_counter",
+                      mantraId: selectedMantraForDetail.id,
+                      targetCount: String(opts.targetCount),
+                      practiceMode: opts.practiceMode,
+                      sankalp: opts.sankalpText,
+                      ...(gId ? { groupId: String(gId) } : {}),
+                      ...(retUrl ? { returnUrl: retUrl } : {}),
+                    },
+                    { replace: true }
+                  );
+                }}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <>
       {!isDark && (
         <div
           className="absolute inset-0 -z-20 pointer-events-none"
@@ -533,41 +562,8 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
             </div>
 
-            <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
-              <button
-                type="button"
-                onClick={onBack}
-                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
-                aria-label="Back"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div className="pointer-events-auto flex items-center gap-1.5 shrink-0">
-                {isGuest && (
-                  <span className="text-[10px] px-2.5 py-1 rounded-full border border-white/25 bg-black/35 text-white font-bold">
-                    {isHi ? "अतिथि" : "Guest"}
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => navigate("/leaderboard")}
-                  className="h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-all"
-                  title={isHi ? "लीडरबोर्ड" : "Leaderboard"}
-                >
-                  <Trophy className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md flex items-center justify-center text-white/90 transition-all"
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
             <h1 className="sr-only">{copy.title}</h1>
-            <div className="relative z-10 px-5 pt-14 pb-6 sm:px-8 sm:pt-16 sm:pb-8 text-left max-w-xl md:max-w-lg">
+            <div className="relative z-10 px-5 pt-5 pb-6 sm:px-8 sm:pt-6 sm:pb-8 text-left max-w-xl md:max-w-lg">
               <p className="text-[#F5C15C] font-bold tracking-[0.18em] text-xs uppercase mb-2">
                 {isHi ? "दैनिक साधना" : "Daily Sadhana"}
               </p>
@@ -648,17 +644,19 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 {mantras.map((m) => {
                   const cardData = getMantraCardData(m);
                   const image = resolveMantraImage(m);
-                  const isLastChanted = m.id === lastChantedMantraId;
 
                   return (
                     <motion.div
                       key={m.id}
                       onClick={() => {
                         setSelectedMantraForDetail(m);
-                        setSearchParams({
-                          practice: "mantra_jap_home",
-                          mantraId: m.id,
-                        });
+                        setSearchParams(
+                          {
+                            practice: "mantra_jap_home",
+                            mantraId: m.id,
+                          },
+                          { replace: true }
+                        );
                       }}
                       onPointerEnter={() => prefetchMantraImage(image)}
                       whileHover={{ y: -2 }}
@@ -668,22 +666,20 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           setSelectedMantraForDetail(m);
-                          setSearchParams({
-                            practice: "mantra_jap_home",
-                            mantraId: m.id,
-                          });
+                          setSearchParams(
+                            {
+                              practice: "mantra_jap_home",
+                              mantraId: m.id,
+                            },
+                            { replace: true }
+                          );
                         }
                       }}
                       className={cn(
                         "group relative w-full flex items-center rounded-2xl border p-4 sm:p-5 text-left cursor-pointer transition-all overflow-hidden",
-                        "bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-500/40",
-                        isLastChanted && "bg-[#651317]/[0.06] dark:bg-amber-500/10"
+                        "bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-500/40"
                       )}
                     >
-                      {isLastChanted && (
-                        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#651317] dark:bg-amber-400" />
-                      )}
-
                       <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-full border border-[#E8D8C4] dark:border-stone-600 bg-[#FAF0E4] dark:bg-stone-800 flex items-center justify-center mr-4">
                         {image ? (
                           <img
@@ -986,6 +982,8 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
           </div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

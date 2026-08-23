@@ -20,20 +20,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember } from "@/lib/community/communityApi";
+import { communityApi, type Group, type CommunityPost, type PostComment, type GroupMember, type EventRsvpStatus } from "@/lib/community/communityApi";
 import { SatsangFeedTab } from "@/components/community/SatsangFeedTab";
 import { EventsTab } from "@/components/community/EventsTab";
 import { DevoteesTab } from "@/components/community/DevoteesTab";
 import { PostCard } from "@/components/community/PostCard";
+import { goBack } from "@/lib/navigation";
+import { resolveCommunityCover } from "@/lib/community/communityCovers";
 
 // Image assets (re-used from JoinCommunityPage)
 import mandalaBeige from "@/pages/images/mandala-beige.svg";
 import mandalaGold from "@/pages/images/mandala-gold.svg";
-import RamCover from "@/pages/images/lord_ram_high_quality.webp";
-import ShivaCover from "@/pages/images/shiv_temple_hd.webp";
-import KrishnaCover from "@/pages/images/krishna_mobile_wallpaper.webp";
-import HanumanCover from "@/pages/images/hanuman_community_banner_high_quality.webp";
-import DefaultCover from "@/pages/images/hindu_temple_sunset_widescreen_high_quality.webp";
 
 import durgaImg from "@/assets/deities/durga.webp";
 import ganeshImg from "@/assets/deities/ganesh.webp";
@@ -56,12 +53,7 @@ const DEITIES = [
 ];
 
 function resolveCover(deity: string) {
-  const d = deity?.toLowerCase();
-  if (d === "rama") return RamCover;
-  if (d === "shiva") return ShivaCover;
-  if (d === "krishna") return KrishnaCover;
-  if (d === "hanuman") return HanumanCover;
-  return DefaultCover;
+  return resolveCommunityCover(deity);
 }
 
 export interface GroupHallProps {
@@ -99,7 +91,7 @@ export interface GroupHallProps {
   isSaved: (postId: string) => boolean;
   handleToggleComments: (postId: string) => void;
   handleToggleReaction: (postId: string) => void;
-  handleToggleRsvp: (postId: string, currentRsvp: "interested" | "going" | null, clickedRsvp: "interested" | "going") => void;
+  handleToggleRsvp: (postId: string, currentRsvp: EventRsvpStatus | null, clickedRsvp: EventRsvpStatus) => void;
   handleVoteOption: (postId: string, optionIndex: number) => void;
   handleDeleteComment: (postId: string, commentId: string) => void;
   handleAddComment: (postId: string) => void;
@@ -248,8 +240,9 @@ export function GroupHall({
       <header className="sticky top-0 z-40 w-full bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/40 py-2 flex items-center justify-between h-14 select-none px-1">
         <div className="flex items-center gap-3 min-w-0 flex-1 text-left">
           <button
-            onClick={() => navigate("/join-community")}
-            className="w-9 h-9 sm:w-9.5 sm:h-9.5 rounded-full border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+            type="button"
+            onClick={() => goBack(navigate, "/join-community?tab=groups")}
+            className="w-10 h-10 rounded-full border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8]/80 dark:bg-stone-900/60 text-foreground hover:bg-[#651317]/5 hover:text-[#651317] hover:border-[#651317]/30 flex items-center justify-center p-0 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
             aria-label={isHi ? "वापस" : "Back"}
           >
             <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -988,16 +981,14 @@ export function GroupHall({
         {/* TAB 4: EVENTS */}
         {activeGroupTab === 'events' && (
           <EventsTab
-            isHi={isHi} groupPosts={groupPosts} user={user}
-            commentsMap={commentsMap} expandedCommentsPostId={expandedCommentsPostId}
-            newCommentText={newCommentText} setNewCommentText={setNewCommentText}
-            commentIsLyricsSubmit={commentIsLyricsSubmit} setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-            loadingCommentsPostIds={loadingCommentsPostIds} isSaved={isSaved}
-            handleToggleComments={handleToggleComments} handleToggleReaction={handleToggleReaction}
-            handleToggleRsvp={handleToggleRsvp} handleVoteOption={handleVoteOption}
-            handleDeleteComment={handleDeleteComment} handleAddComment={handleAddComment}
-            handleToggleSavePost={handleToggleSavePost} loadPosts={loadPosts}
-            setPostType={setPostType} setCreatePostOpen={setCreatePostOpen}
+            isHi={isHi}
+            groupPosts={groupPosts}
+            user={user}
+            memberGroupIds={group.is_member ? [group.id] : []}
+            handleToggleRsvp={handleToggleRsvp}
+            loadPosts={loadPosts}
+            setPostType={setPostType}
+            setCreatePostOpen={setCreatePostOpen}
           />
         )}
 

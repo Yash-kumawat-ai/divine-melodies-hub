@@ -139,15 +139,21 @@ export async function fetchGroups(
 
     if (groupsError) throw groupsError;
 
-    // Fetch memberships to check if current user is member
-    const { data: memberships } = await supabase
-      .from("group_members")
-      .select("group_id, user_id");
+    const { data: memberships } = currentUserId
+      ? await supabase
+          .from("group_members")
+          .select("group_id, user_id")
+          .eq("user_id", currentUserId)
+      : { data: [] as { group_id: string; user_id: string }[] };
 
-    // Fetch cached total_japs and completion_percent from progress table
-    const { data: progressData } = await supabase
-      .from("naam_sangh_progress")
-      .select("group_id, total_japs, completion_percent");
+    const groupIds = (groups ?? []).map((g) => g.id);
+    const { data: progressData } =
+      groupIds.length > 0
+        ? await supabase
+            .from("naam_sangh_progress")
+            .select("group_id, total_japs, completion_percent")
+            .in("group_id", groupIds)
+        : { data: [] };
 
     const progressMap = new Map(
       progressData?.map((p) => [

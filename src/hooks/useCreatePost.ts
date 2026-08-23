@@ -2,6 +2,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { communityApi } from "@/lib/community/communityApi";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import {
+  compressCommunityImage,
+  COMMUNITY_IMAGE_MAX_PICK_BYTES,
+  COMMUNITY_IMAGE_TARGET_BYTES,
+} from "@/lib/compressCommunityImage";
+import type { ComposeIntent } from "@/components/community/FeedComposer";
 
 interface UseCreatePostInput {
   user: any;
@@ -35,16 +41,45 @@ export function useCreatePost({
   const [eventLinkedBhajan, setEventLinkedBhajan] = useState<number | null>(null);
   
   const [publishingPost, setPublishingPost] = useState(false);
+  const [cropOpenKey, setCropOpenKey] = useState(0);
+  const [voiceStartKey, setVoiceStartKey] = useState(0);
+  const [emojiOpenKey, setEmojiOpenKey] = useState(0);
 
   // Cloudinary image upload preview helper
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setPostImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => setPostImagePreview(reader.result as string);
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (file.size > COMMUNITY_IMAGE_MAX_PICK_BYTES) {
+      toast.error(isHi ? "चित्र 15MB से बड़ा है।" : "Photo is larger than 15MB.");
+      return;
     }
+    setPostImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setPostImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const ingestImageFile = (file: File) => {
+    if (file.size > COMMUNITY_IMAGE_MAX_PICK_BYTES) {
+      toast.error(isHi ? "चित्र 15MB से बड़ा है।" : "Photo is larger than 15MB.");
+      return;
+    }
+    setPostImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPostImagePreview(reader.result as string);
+      setCropOpenKey((k) => k + 1);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openCompose = (intent?: ComposeIntent | "bhajan_share" | "bhajan_request" | "question" | "thought" | "event" | "shloka") => {
+    const i: ComposeIntent = typeof intent === "string" ? { type: intent } : intent ?? {};
+    setPostType(i.type ?? "thought");
+    setCreatePostOpen(true);
+    if (i.mediaFile) ingestImageFile(i.mediaFile);
+    if (i.startVoice) setVoiceStartKey((k) => k + 1);
+    if (i.showEmoji) setEmojiOpenKey((k) => k + 1);
   };
 
   // Post Creator submit handler
@@ -61,7 +96,8 @@ export function useCreatePost({
       toast.error(isHi ? "शीर्षक आवश्यक है" : "Title is required");
       return;
     }
-    const contentToSave = (overrides?.content ?? postContent).trim();
+    const contentToSave = (overrides?.content ?? postContent).trim()
+      || (postType === "question" ? postTitle.trim() : "");
     const locationToSave = (overrides?.location ?? postLocation).trim();
     if (!contentToSave) {
       toast.error(isHi ? "विवरण सामग्री आवश्यक है" : "Content description is required");
@@ -76,7 +112,12 @@ export function useCreatePost({
       setPublishingPost(true);
       let imageUrl = null;
       if (postImageFile) {
-        imageUrl = await uploadToCloudinary(postImageFile, 'lyrics');
+        let toUpload = postImageFile;
+        if (postImageFile.size > COMMUNITY_IMAGE_TARGET_BYTES) {
+          const packed = await compressCommunityImage(postImageFile);
+          toUpload = packed.file;
+        }
+        imageUrl = await uploadToCloudinary(toUpload, "lyrics");
       }
 
       const options = postType === 'question'
@@ -169,6 +210,10 @@ export function useCreatePost({
     setEventLinkedBhajan,
     publishingPost,
     setPublishingPost,
+    cropOpenKey,
+    voiceStartKey,
+    emojiOpenKey,
+    openCompose,
     handleImageChange,
     handleCroppedImageReady,
     handleRemoveImage,

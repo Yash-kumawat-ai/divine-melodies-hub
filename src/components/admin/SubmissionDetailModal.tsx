@@ -240,7 +240,7 @@ export default function SubmissionDetailModal({
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold">Deity</label>
-              <Select value={deityId || 'none'} onValueChange={(v) => setDeityId(v === 'none' ? '' : v)}>
+              <Select modal={false} value={deityId || 'none'} onValueChange={(v) => setDeityId(v === 'none' ? '' : v)}>
                 <SelectTrigger className="h-9 text-sm rounded-xl">
                   <SelectValue placeholder="Select deity" />
                 </SelectTrigger>
@@ -256,7 +256,7 @@ export default function SubmissionDetailModal({
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold">Content type</label>
-              <Select value={contentType} onValueChange={setContentType}>
+              <Select modal={false} value={contentType} onValueChange={setContentType}>
                 <SelectTrigger className="h-9 text-sm rounded-xl">
                   <SelectValue />
                 </SelectTrigger>
@@ -331,7 +331,7 @@ export default function SubmissionDetailModal({
               <p className="text-xs font-bold text-[#32251E] dark:text-[#FFFDF8]">
                 {activeAction === 'rejected' ? 'Select Rejection Reason' : 'Specify Required Changes'}
               </p>
-              <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+              <Select modal={false} value={selectedTemplate} onValueChange={handleTemplateChange}>
                 <SelectTrigger className="border-[#D8C9B9] dark:border-zinc-700 bg-white dark:bg-[#2A1F14] text-[#32251E] dark:text-[#FFFDF8] h-10 text-xs font-medium rounded-xl">
                   <SelectValue placeholder="Select reason template..." />
                 </SelectTrigger>

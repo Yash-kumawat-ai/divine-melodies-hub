@@ -24,6 +24,8 @@ import {
 import { format, addDays } from "date-fns";
 import { ImageAdjuster } from "@/components/community/ImageAdjuster";
 import { cn } from "@/lib/utils";
+import { VoiceManager, checkVoiceSupport } from "@/lib/voiceUtils";
+import { toast } from "sonner";
 
 /** Parse "HH:mm" (24h) into 12-hour parts */
 function parseEventTimeParts(time24: string): { hour12: number; minute: number; period: "AM" | "PM" } {
@@ -94,6 +96,8 @@ export interface CreatePostDialogProps {
   onCroppedImageReady?: (file: File, previewUrl: string) => void;
   onRemoveImage?: () => void;
   onSubmit: (e: React.FormEvent, overrides?: { content?: string; location?: string }) => void;
+  cropOpenKey?: number;
+  voiceStartKey?: number;
 }
 
 const POST_TYPES = [
@@ -295,6 +299,8 @@ export function CreatePostDialog({
   onCroppedImageReady,
   onRemoveImage,
   onSubmit,
+  cropOpenKey = 0,
+  voiceStartKey = 0,
 }: CreatePostDialogProps) {
   // ── Local UI state for enhanced fields ──
   const [selectedMood, setSelectedMood] = useState("");
@@ -320,6 +326,8 @@ export function CreatePostDialog({
   const [otherRewardName, setOtherRewardName] = useState("");
   const [otherEventTypeName, setOtherEventTypeName] = useState("");
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const voiceRef = React.useRef<VoiceManager | null>(null);
+  const voiceBaseRef = React.useRef("");
 
   // Reset local state when modal closes
   useEffect(() => {
@@ -347,8 +355,33 @@ export function CreatePostDialog({
       setOtherRewardName("");
       setOtherEventTypeName("");
       setCustomFields([]);
+      voiceRef.current?.stopListening();
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !voiceStartKey) return;
+    if (!checkVoiceSupport().recognition) {
+      toast.error(isHi ? "आवाज़ लिखना उपलब्ध नहीं है।" : "Voice typing is not supported.");
+      return;
+    }
+    if (!voiceRef.current) {
+      voiceRef.current = new VoiceManager(isHi ? "hi" : "en");
+    } else {
+      voiceRef.current.setLanguage(isHi ? "hi" : "en");
+    }
+    voiceBaseRef.current = postContent;
+    void voiceRef.current.startListening(
+      (text) => {
+        const combined = text.trim();
+        const base = voiceBaseRef.current;
+        const join = base && combined && !base.endsWith(" ") ? " " : "";
+        setPostContent(`${base}${join}${combined}`);
+      },
+      (err) => toast.error(err)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceStartKey, open]);
 
   // Clear custom extras when switching post type (keep form focused)
   useEffect(() => {
@@ -622,6 +655,7 @@ export function CreatePostDialog({
                   onCroppedImageReady={onCroppedImageReady}
                   onRemoveImage={onRemoveImage}
                   isHi={isHi}
+                  cropOpenKey={cropOpenKey}
                   label={fl("Add Photo (optional)", "चित्र जोड़ें (वैकल्पिक)")}
                 />
               </>
@@ -702,6 +736,7 @@ export function CreatePostDialog({
                   onCroppedImageReady={onCroppedImageReady}
                   onRemoveImage={onRemoveImage}
                   isHi={isHi}
+                  cropOpenKey={cropOpenKey}
                   label={fl("Add Photo (optional)", "चित्र जोड़ें (वैकल्पिक)")}
                 />
               </>
@@ -829,6 +864,7 @@ export function CreatePostDialog({
                   onCroppedImageReady={onCroppedImageReady}
                   onRemoveImage={onRemoveImage}
                   isHi={isHi}
+                  cropOpenKey={cropOpenKey}
                   label={fl("Add Screenshot / Photo (optional)", "स्क्रीनशॉट / चित्र जोड़ें (वैकल्पिक)")}
                 />
               </>
@@ -1277,6 +1313,7 @@ export function CreatePostDialog({
                   onCroppedImageReady={onCroppedImageReady}
                   onRemoveImage={onRemoveImage}
                   isHi={isHi}
+                  cropOpenKey={cropOpenKey}
                   label={fl("Event Poster (optional)", "कार्यक्रम पोस्टर (वैकल्पिक)")}
                 />
               </>
@@ -1347,6 +1384,7 @@ export function CreatePostDialog({
                   onCroppedImageReady={onCroppedImageReady}
                   onRemoveImage={onRemoveImage}
                   isHi={isHi}
+                  cropOpenKey={cropOpenKey}
                   label={fl("Add Calligraphy / Photo (optional)", "सुलेख / चित्र जोड़ें (वैकल्पिक)")}
                 />
               </>

@@ -14,15 +14,16 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Heart, MessageSquare, Bookmark, Share2, ExternalLink, Trash2, Pencil, Play, ChevronRight, Calendar, MapPin, Send, Loader2, X, ZoomIn, Clock, Video, Sparkles, CheckCircle2
+  Heart, MessageSquare, Bookmark, Share2, ExternalLink, Trash2, Pencil, Play, ChevronRight, Calendar, MapPin, Send, Loader2, X, Clock, Video, Sparkles
 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { type CommunityPost, type PostComment } from "@/lib/community/communityApi";
+import { type CommunityPost, type PostComment, type EventRsvpStatus } from "@/lib/community/communityApi";
 import { EditPostDialog } from "@/components/community/EditPostDialog";
+import { CommunityPostImage } from "@/components/community/CommunityMedia";
 import { cn } from "@/lib/utils";
 
 // Deity Avatars
@@ -34,8 +35,6 @@ import lakshmiImg from "@/assets/deities/lakshmi.webp";
 import ramaImg from "@/assets/deities/rama.webp";
 import saiBabaImg from "@/assets/deities/sai-baba.webp";
 import shivaImg from "@/assets/deities/shiva.webp";
-import thumbsUpSvg from "@/pages/images/svg/thumbs-up-svgrepo-com.svg";
-
 // Small countdown helper component
 export function EventCountdown({ datetime }: { datetime: string }) {
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; mins: number } | null>(null);
@@ -88,7 +87,7 @@ export interface PostCardProps {
   isCommentsExpanded: boolean;
   onToggleComments: (postId: string) => void;
   onToggleReaction: (postId: string) => void;
-  onToggleRsvp: (postId: string, currentRsvp: 'interested' | 'going' | null, clickedRsvp: 'interested' | 'going') => void;
+  onToggleRsvp: (postId: string, currentRsvp: EventRsvpStatus | null, clickedRsvp: EventRsvpStatus) => void;
   onVoteOption: (postId: string, optionIndex: number) => void;
   onDeleteComment: (postId: string, commentId: string) => void;
   onAddComment: (postId: string) => void;
@@ -378,21 +377,12 @@ export function PostCard({
 
           {/* ── 3. Image Display (Adaptive Aspect Ratio & Clickable Lightbox) ── */}
           {post.image_url && (
-            <div 
-              onClick={() => setLightboxOpen(true)}
-              className="w-full rounded-2xl overflow-hidden border border-[#E8D8C4]/80 dark:border-stone-800 bg-[#FAF6EE] dark:bg-stone-900/60 max-h-[380px] sm:max-h-[420px] flex items-center justify-center shadow-2xs relative group cursor-pointer"
+            <CommunityPostImage
+              src={post.image_url}
+              alt={post.title || post.content?.slice(0, 80) || (isHi ? "सत्संग चित्र" : "Satsang photo")}
               title={isHi ? "पूर्ण दर्शन के लिए क्लिक करें" : "Click to view full image"}
-            >
-              <img 
-                src={post.image_url} 
-                alt="post visual" 
-                className="w-full h-auto max-h-[380px] sm:max-h-[420px] object-contain rounded-2xl group-hover:scale-[1.01] transition-transform duration-200" 
-                loading="lazy"
-              />
-              <div className="absolute top-2.5 right-2.5 bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-xs">
-                <ZoomIn className="w-3.5 h-3.5" />
-              </div>
-            </div>
+              onClick={() => setLightboxOpen(true)}
+            />
           )}
 
           {/* ── 4. Special Post Type Views ── */}
@@ -664,55 +654,30 @@ export function PostCard({
                   </div>
                 )}
 
-                {/* RSVP Action Buttons with refined SVGs */}
-                <div className="grid grid-cols-2 gap-2.5 select-none pt-1">
-                  {/* Interested Button */}
-                  {(() => {
-                    const isInterested = post.rsvp_status === 'interested';
-                    const count = post.rsvps_count?.interested || 0;
+                <div className="grid grid-cols-3 gap-2 select-none pt-1">
+                  {(
+                    [
+                      { status: "going" as const, hi: "मैं आ रहा हूँ", en: "I am coming", count: post.rsvps_count?.going || 0 },
+                      { status: "interested" as const, hi: "मुझे रुचि है", en: "I am interested", count: post.rsvps_count?.interested || 0 },
+                      { status: "maybe" as const, hi: "शायद", en: "Maybe", count: post.rsvps_count?.maybe || 0 },
+                    ]
+                  ).map((opt) => {
+                    const active = post.rsvp_status === opt.status;
                     return (
                       <button
+                        key={opt.status}
                         type="button"
-                        onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, 'interested')}
-                        className={`w-full flex items-center justify-center gap-2 h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
-                          isInterested 
-                            ? "bg-[#651317] hover:bg-[#4f0f12] text-white border border-[#651317]" 
+                        onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, opt.status)}
+                        className={`w-full flex items-center justify-center h-10 px-1 rounded-full text-[10px] sm:text-xs font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
+                          active
+                            ? "bg-[#651317] hover:bg-[#4f0f12] text-white border border-[#651317]"
                             : "bg-white dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
                         }`}
                       >
-                        {/* Thumbs Up SVG Icon */}
-                        <img 
-                          src={thumbsUpSvg} 
-                          alt="Interested" 
-                          className={cn(
-                            "w-4 h-4 shrink-0 transition-transform object-contain",
-                            isInterested ? "scale-110 drop-shadow-xs" : "opacity-95"
-                          )} 
-                        />
-                        <span>{isHi ? "रुचि है" : "Interested"} ({count})</span>
+                        <span className="truncate">{isHi ? opt.hi : opt.en} ({opt.count})</span>
                       </button>
                     );
-                  })()}
-
-                  {/* Going Button */}
-                  {(() => {
-                    const isGoing = post.rsvp_status === 'going';
-                    const count = post.rsvps_count?.going || 0;
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => onToggleRsvp(post.id, post.rsvp_status || null, 'going')}
-                        className={`w-full flex items-center justify-center gap-2 h-10 rounded-full text-xs sm:text-sm font-bold active:scale-95 transition-all shadow-xs cursor-pointer ${
-                          isGoing 
-                            ? "bg-[#651317] hover:bg-[#4f0f12] text-white border border-[#651317]" 
-                            : "bg-white dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-amber-300 hover:border-[#651317]/50"
-                        }`}
-                      >
-                        <CheckCircle2 className={cn("w-4 h-4 shrink-0", isGoing ? "text-emerald-300" : "text-[#651317] dark:text-amber-300")} />
-                        <span>{isHi ? "शामिल होऊंगा" : "Going"} ({count})</span>
-                      </button>
-                    );
-                  })()}
+                  })}
                 </div>
               </div>
             );

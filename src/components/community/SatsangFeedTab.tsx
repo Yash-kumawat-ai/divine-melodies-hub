@@ -1,7 +1,7 @@
 import { Plus, Megaphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PostCard } from "@/components/community/PostCard";
-import { communityApi, type CommunityPost, type PostComment } from "@/lib/community/communityApi";
+import { communityApi, type CommunityPost, type PostComment, type EventRsvpStatus } from "@/lib/community/communityApi";
 import mandalaBeige from "@/pages/images/mandala-beige.svg";
 
 export interface SatsangFeedTabProps {
@@ -21,8 +21,8 @@ export interface SatsangFeedTabProps {
   handleToggleReaction: (postId: string) => void;
   handleToggleRsvp: (
     postId: string,
-    currentRsvp: "interested" | "going" | null,
-    clickedRsvp: "interested" | "going"
+    currentRsvp: EventRsvpStatus | null,
+    clickedRsvp: EventRsvpStatus
   ) => void;
   handleVoteOption: (postId: string, optionIndex: number) => void;
   handleDeleteComment: (postId: string, commentId: string) => void;

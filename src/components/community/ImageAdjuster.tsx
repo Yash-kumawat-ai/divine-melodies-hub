@@ -10,7 +10,7 @@
  * - Clean, non-cluttered UI
  */
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Cropper from "react-easy-crop";
 import type { Area, Point } from "react-easy-crop";
 import { 
@@ -36,7 +36,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { getCroppedImg } from "@/lib/cropImage";
+import {
+  COMMUNITY_IMAGE_MAX_PICK_BYTES,
+  formatBytes,
+} from "@/lib/compressCommunityImage";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export interface ImageAdjusterProps {
   imageSrc: string | null;
@@ -45,6 +50,8 @@ export interface ImageAdjusterProps {
   onCroppedImageReady?: (file: File, previewUrl: string) => void;
   isHi?: boolean;
   label?: string;
+  /** Increment to open the cropper using the current imageSrc (e.g. Media from feed composer). */
+  cropOpenKey?: number;
 }
 
 type AspectPreset = "original" | "portrait" | "square" | "landscape";
@@ -56,12 +63,16 @@ export function ImageAdjuster({
   onCroppedImageReady,
   isHi = false,
   label,
+  cropOpenKey = 0,
 }: ImageAdjusterProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Raw uploaded image for cropping
   const [rawImage, setRawImage] = useState<string | null>(null);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [originalAspect, setOriginalAspect] = useState<number | undefined>(undefined);
+  const [sourceBytes, setSourceBytes] = useState<number | null>(null);
+  const [compressedHint, setCompressedHint] = useState<string | null>(null);
 
   // react-easy-crop states
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
@@ -69,6 +80,16 @@ export function ImageAdjuster({
   const [aspectPreset, setAspectPreset] = useState<AspectPreset>("original");
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const measureAspect = (src: string) => {
+    const img = new window.Image();
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        setOriginalAspect(img.naturalWidth / img.naturalHeight);
+      }
+    };
+    img.src = src;
+  };
 
   const getAspectValue = (): number | undefined => {
     switch (aspectPreset) {
@@ -80,25 +101,42 @@ export function ImageAdjuster({
         return 16 / 9;
       case "original":
       default:
-        return undefined;
+        return originalAspect;
     }
   };
 
+  const beginCrop = (src: string, bytes?: number) => {
+    setRawImage(src);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setAspectPreset("original");
+    setCompressedHint(null);
+    if (typeof bytes === "number") setSourceBytes(bytes);
+    measureAspect(src);
+    setIsCropModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (!cropOpenKey || !imageSrc) return;
+    beginCrop(imageSrc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cropOpenKey]);
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setRawImage(result);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setAspectPreset("original");
-        setIsCropModalOpen(true);
-      };
-      reader.readAsDataURL(file);
-      onImageChange(e);
+    if (!file) return;
+    if (file.size > COMMUNITY_IMAGE_MAX_PICK_BYTES) {
+      toast.error(isHi ? "चित्र 15MB से बड़ा है।" : "Photo is larger than 15MB.");
+      e.target.value = "";
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      beginCrop(result, file.size);
+    };
+    reader.readAsDataURL(file);
+    onImageChange(e);
   };
 
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -112,6 +150,14 @@ export function ImageAdjuster({
       setIsProcessing(true);
       if (croppedAreaPixels) {
         const { file, url } = await getCroppedImg(rawImage, croppedAreaPixels);
+        setCompressedHint(
+          sourceBytes
+            ? `${formatBytes(sourceBytes)} → ${formatBytes(file.size)}`
+            : formatBytes(file.size)
+        );
+        if (file.size > COMMUNITY_IMAGE_MAX_PICK_BYTES) {
+          toast.error(isHi ? "संक्षिप्त करने के बाद भी चित्र बड़ा है।" : "Image is still too large after compression.");
+        }
         onCroppedImageReady?.(file, url);
       }
       setIsCropModalOpen(false);
@@ -162,6 +208,11 @@ export function ImageAdjuster({
               className="max-h-[220px] w-auto max-w-full object-contain rounded-xl"
             />
           </div>
+          {compressedHint && (
+            <p className="text-[10px] text-[#8C7A6B] px-0.5">
+              {isHi ? `अपलोड आकार: ${compressedHint}` : `Upload size: ${compressedHint}`}
+            </p>
+          )}
 
           <div className="flex items-center justify-between gap-2 pt-0.5">
             <Button
@@ -260,6 +311,7 @@ export function ImageAdjuster({
             <div className="relative w-full h-[280px] sm:h-[320px] rounded-2xl overflow-hidden bg-black/90 shadow-inner">
               {rawImage && (
                 <Cropper
+                  key={`${aspectPreset}-${originalAspect ?? "na"}`}
                   image={rawImage}
                   crop={crop}
                   zoom={zoom}
@@ -310,6 +362,18 @@ export function ImageAdjuster({
                 {zoom.toFixed(1)}x
               </span>
             </div>
+
+            {(sourceBytes || compressedHint) && (
+              <p className="text-[10px] text-center text-[#8C7A6B] dark:text-stone-400">
+                {compressedHint
+                  ? (isHi ? `आकार: ${compressedHint}` : `Size: ${compressedHint}`)
+                  : sourceBytes
+                    ? (isHi
+                      ? `मूल आकार ${formatBytes(sourceBytes)} · लागू करने पर ~1MB तक छोटा होगा`
+                      : `Original ${formatBytes(sourceBytes)} · will compress to ~1MB on apply`)
+                    : null}
+              </p>
+            )}
 
             {/* 4. Action Buttons */}
             <div className="flex gap-2.5 pt-1">

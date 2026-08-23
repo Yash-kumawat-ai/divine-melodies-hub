@@ -25,10 +25,15 @@ export default function AppShell() {
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");
-  const isLiveAarti = resolvedPath === "/live-aarti" || resolvedPath === "/aarti";
+  const isLiveAarti = resolvedPath === "/live-aarti";
   const isCommunityPage = resolvedPath.startsWith("/community") || resolvedPath === "/join-community";
   const isUploadPage = resolvedPath === "/upload-bhajan";
-  const hideHeaderGlobally = isFullScreenApp || isWallpaperPage || isSearchPage || isShortsPage || isLiveAarti;
+  const hideHeaderGlobally =
+    isFullScreenApp ||
+    isWallpaperPage ||
+    isSearchPage ||
+    isShortsPage ||
+    isLiveAarti;
   const hideHeaderMobileOnly = isCommunityPage || isUploadPage;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");

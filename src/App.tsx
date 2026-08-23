@@ -275,14 +275,7 @@ function AppContent() {
               }
             />
             <Route path="/account/support" element={<SupportPage />} />
-            <Route
-              path="/leaderboard"
-              element={
-                <ProtectedRoute>
-                  <LeaderboardPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/wallpaper" element={<WallpaperPage />} />
             <Route path="/poster-maker" element={<WallpaperPage />} />
             <Route path="/upload-bhajan"

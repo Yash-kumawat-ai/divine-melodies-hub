@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Share2, Check, Play, Pause, Headphones } from "lucide-react";
+import { Check, Play, Pause, Headphones } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
@@ -251,7 +251,6 @@ export default function MantraDetailView({
   mantra,
   image,
   stats,
-  onBack,
   onStartJapa,
 }: MantraDetailViewProps) {
   const { language } = useLanguage();
@@ -364,23 +363,6 @@ export default function MantraDetailView({
     else startAudio();
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: isHi ? mantra.name_hindi : mantra.name_english,
-          text: isHi
-            ? `चेक करें: ${mantra.name_hindi} - मंत्र साधना विवरण`
-            : `Check out: ${mantra.name_english} - Mantra Sadhana Details`,
-          url: window.location.href,
-        })
-        .catch(console.error);
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert(isHi ? "लिंक कॉपी किया गया!" : "Link copied to clipboard!");
-    }
-  };
-
   const whyItems = isHi ? detail.whyChantHindi : detail.whyChantEnglish;
   const sacredText = detail.mantraTextHindi || (isHi ? mantra.name_hindi : mantra.name_english);
   const transliteration = detail.transliteration || mantra.name_english;
@@ -418,7 +400,7 @@ export default function MantraDetailView({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.25 }}
-            className="relative w-full h-[200px] sm:h-[220px] md:h-[280px] lg:h-[320px] overflow-hidden rounded-[22px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 pt-14 pb-5 sm:pt-16 sm:pb-6 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+            className="relative w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px] border border-[#E8D8C4] dark:border-stone-700 flex flex-col justify-end px-5 sm:px-8 pt-5 pb-5 sm:pt-6 sm:pb-6 shadow-[0_8px_24px_rgba(42,18,15,0.08)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
           >
             <div className="absolute inset-0 z-0 overflow-hidden rounded-[inherit]">
               {image ? (
@@ -439,25 +421,6 @@ export default function MantraDetailView({
               {/* Clean gradient scrim for great text contrast */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
-            </div>
-
-            <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-              <button
-                type="button"
-                onClick={onBack}
-                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
-                aria-label="Back"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="pointer-events-auto flex items-center justify-center h-11 w-11 rounded-full border border-white/25 bg-black/35 backdrop-blur-md text-white active:scale-95 transition-all shrink-0"
-                aria-label="Share"
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
             </div>
 
             <div className="relative z-10 max-w-xl md:max-w-2xl text-left">

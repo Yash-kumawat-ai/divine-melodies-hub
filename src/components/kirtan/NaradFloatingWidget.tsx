@@ -245,7 +245,9 @@ export default function NaradFloatingWidget() {
       <div
         className={cn(
           "pointer-events-none fixed z-[35] flex flex-col items-end",
-          "bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-6"
+          pathname === "/join-community" || pathname.startsWith("/community/")
+            ? "bottom-[calc(6.75rem+env(safe-area-inset-bottom))] right-4 md:bottom-[max(2rem,env(safe-area-inset-bottom))] md:right-6"
+            : "bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 md:bottom-[max(1.5rem,env(safe-area-inset-bottom))] md:right-6"
         )}
       >
         {!(open && isMobile) && (

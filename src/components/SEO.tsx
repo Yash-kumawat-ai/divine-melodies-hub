@@ -7,9 +7,10 @@ interface SEOProps {
   url?: string;
   type?: 'website' | 'article';
   lang?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-export function SEO({ title, description, image, url, type = 'website', lang }: SEOProps) {
+export function SEO({ title, description, image, url, type = 'website', lang, jsonLd }: SEOProps) {
   const siteName = 'Raghavam';
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
@@ -33,6 +34,12 @@ export function SEO({ title, description, image, url, type = 'website', lang }: 
       <meta name="twitter:title" content={fullTitle} />
       {description && <meta name="twitter:description" content={description} />}
       {image && <meta name="twitter:image" content={image} />}
+
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
     </Helmet>
   );
 }

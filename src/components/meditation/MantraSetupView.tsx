@@ -411,6 +411,9 @@ export default function MantraSetupView({
           <button
             type="button"
             onClick={handleBegin}
+            onPointerEnter={() => {
+              void import("@/components/meditation/PremiumJapaCounter");
+            }}
             className="w-full flex items-center justify-center gap-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold h-12 text-sm sm:text-base active:scale-95 transition-all shadow-[0_6px_20px_rgba(101,19,23,0.4)] border border-amber-400/30 cursor-pointer"
           >
             <Play className="w-4 h-4 fill-current stroke-none text-amber-300" />

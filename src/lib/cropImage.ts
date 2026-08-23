@@ -4,6 +4,8 @@
  * Canvas helper utility to crop/zoom images based on react-easy-crop pixel coordinates.
  */
 
+import { compressCanvasToCommunityFile } from "@/lib/compressCommunityImage";
+
 export interface Area {
   x: number;
   y: number;
@@ -21,13 +23,13 @@ export const createImage = (url: string): Promise<HTMLImageElement> =>
   });
 
 /**
- * Returns a cropped image as a Data URL string and File object.
+ * Returns a cropped, compressed image File and object URL.
  */
 export async function getCroppedImg(
   imageSrc: string,
   pixelCrop: Area,
-  rotation = 0
-): Promise<{ file: File; url: string }> {
+  _rotation = 0
+): Promise<{ file: File; url: string; originalBytes: number }> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -36,11 +38,9 @@ export async function getCroppedImg(
     throw new Error("No 2d context");
   }
 
-  // Set canvas size to the cropped area
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  canvas.width = Math.max(1, Math.round(pixelCrop.width));
+  canvas.height = Math.max(1, Math.round(pixelCrop.height));
 
-  // Draw the cropped image to canvas
   ctx.drawImage(
     image,
     pixelCrop.x,
@@ -49,25 +49,12 @@ export async function getCroppedImg(
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    canvas.width,
+    canvas.height
   );
 
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Canvas is empty"));
-          return;
-        }
-        const file = new File([blob], `cropped_image_${Date.now()}.jpg`, {
-          type: "image/jpeg",
-        });
-        const url = URL.createObjectURL(blob);
-        resolve({ file, url });
-      },
-      "image/jpeg",
-      0.92
-    );
-  });
+  const uncompressedApprox = canvas.width * canvas.height * 3;
+  const file = await compressCanvasToCommunityFile(canvas, `cropped_${Date.now()}`);
+  const url = URL.createObjectURL(file);
+  return { file, url, originalBytes: uncompressedApprox };
 }

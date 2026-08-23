@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Plus, Users, MessageSquare, Search, Copy, Globe, Info, Clock, Check, X, Trash2, Calendar, MapPin, ExternalLink, Sparkles, AlertCircle, Play, Heart, ThumbsUp, Send, User, ChevronRight, Pencil, ArrowRight,
@@ -20,28 +20,24 @@ import { Badge } from "@/components/ui/badge";
 import { PostCard } from "@/components/community/PostCard";
 import { FeedComposer } from "@/components/community/FeedComposer";
 import { EventsTab } from "@/components/community/EventsTab";
-import { SatsangFeedTab } from "@/components/community/SatsangFeedTab";
-import { DevoteesTab } from "@/components/community/DevoteesTab";
 import { GroupHall } from "@/components/community/GroupHall";
 import { CreateGroupDialog } from "@/components/community/CreateGroupDialog";
 import { CreatePostDialog } from "@/components/community/CreatePostDialog";
+import {
+  CommunityGroupCard,
+  getDeityDisplayName,
+  isValidGroupImageUrl,
+} from "@/components/community/CommunityGroupCard";
 import { useCreatePost } from "@/hooks/useCreatePost";
 import { useCommunityPostActions } from "@/hooks/useCommunityPostActions";
 import { useMantraJapa } from "@/hooks/useMantraJapa";
 import { fetchGroupRankings } from "@/lib/naamSangh/naamSanghApi";
 import { supabase } from "@/lib/supabaseClient";
+import { goBack } from "@/lib/navigation";
+import { resolveCommunityCover } from "@/lib/community/communityCovers";
 
 // Curated Widescreen Cover Images for groups
-import RamCover from "./images/lord_ram_high_quality.webp";
-import ShivaCover from "./images/shiv_temple_hd.webp";
-import KrishnaCover from "./images/krishna_mobile_wallpaper.webp";
-import HanumanCover from "./images/hanuman_community_banner_high_quality.webp";
-import DefaultCover from "./images/hindu_temple_sunset_widescreen_high_quality.webp";
-import litDiyaImg from "./images/lit_diya.png";
-import templeBellImg from "./images/temple_bell.png";
-import omWebp from "./images/om.webp";
 import mandalaBeige from "./images/mandala-beige.svg";
-import mandalaGold from "./images/mandala-gold.svg";
 import devotionalBg3 from "./images/devotional_background(3).webp";
 import mandirSvg from "./images/svg/mandirorg.svg";
 import malaSvg from "./images/svg/mala.svg";
@@ -70,14 +66,7 @@ const DEITIES = [
   { id: "sai-baba", name: "Sai Baba", src: saiBabaImg },
 ];
 
-const resolveCover = (deity: string) => {
-  const d = deity?.toLowerCase();
-  if (d === "rama") return RamCover;
-  if (d === "shiva") return ShivaCover;
-  if (d === "krishna") return KrishnaCover;
-  if (d === "hanuman") return HanumanCover;
-  return DefaultCover;
-};
+const resolveCover = resolveCommunityCover;
 
 const TAB_HERO_CONFIG = {
   groups: {
@@ -124,36 +113,6 @@ const TAB_HERO_CONFIG = {
   },
 };
 
-function EventCountdown({ datetime }: { datetime: string }) {
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; mins: number } | null>(null);
-
-  useEffect(() => {
-    const calcTime = () => {
-      const diff = new Date(datetime).getTime() - Date.now();
-      if (diff <= 0) {
-        setTimeLeft(null);
-        return;
-      }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const mins = Math.floor((diff / (1000 * 60)) % 60);
-      setTimeLeft({ days, hours, mins });
-    };
-
-    calcTime();
-    const interval = setInterval(calcTime, 60000);
-    return () => clearInterval(interval);
-  }, [datetime]);
-
-  if (!timeLeft) return null;
-
-  return (
-    <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-md font-extrabold text-[10px] tracking-wide uppercase">
-      ⏳ {timeLeft.days > 0 ? `${timeLeft.days}d ` : ""}{timeLeft.hours}h {timeLeft.mins}m left
-    </span>
-  );
-}
-
 export default function JoinCommunityPage() {
   const navigate = useNavigate();
   const { slug, postId } = useParams<{ slug?: string; postId?: string }>();
@@ -191,7 +150,10 @@ export default function JoinCommunityPage() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [myBhajans, setMyBhajans] = useState<any[]>([]);
-  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    return tab === "feed" || tab === "events" || Boolean(new URLSearchParams(window.location.search).get("postId"));
+  });
   const [loadingGroups, setLoadingGroups] = useState(true);
   
   // Modals
@@ -214,7 +176,12 @@ export default function JoinCommunityPage() {
   const [creatingGroup, setCreatingGroup] = useState(false);
 
   const isNameUnique = groupName.trim()
-    ? !groups.some(g => g.name.trim().toLowerCase() === groupName.trim().toLowerCase())
+    ? !groups.some((g) => {
+        const sameName = g.name.trim().toLowerCase() === groupName.trim().toLowerCase();
+        const slug = groupName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        const sameSlug = Boolean(slug && g.slug && g.slug === slug);
+        return sameName || sameSlug;
+      })
     : null;
 
 
@@ -314,13 +281,21 @@ export default function JoinCommunityPage() {
     handleCroppedImageReady,
     handleRemoveImage,
     handleCreatePost,
+    openCompose,
+    cropOpenKey,
+    voiceStartKey,
   } = useCreatePost({ user, isHi, selectedGroup, loadPosts });
 
   useEffect(() => {
-    loadPosts();
     loadGroups();
     loadMyBhajans();
   }, [user?.id]);
+
+  const shouldLoadPosts = activeTab === "feed" || activeTab === "events" || Boolean(postId);
+  useEffect(() => {
+    if (!shouldLoadPosts) return;
+    loadPosts();
+  }, [user?.id, shouldLoadPosts]);
 
   useEffect(() => {
     if (postId) {
@@ -508,10 +483,31 @@ export default function JoinCommunityPage() {
       toast.success(isHi ? "समूह सफलतापूर्वक बनाया गया!" : "Community group created successfully!");
       setGroupName("");
       setGroupDesc("");
+      setGroupDeity("rama");
       setCreateGroupOpen(false);
       loadGroups();
-    } catch {
-      toast.error(isHi ? "समूह बनाने में असमर्थ" : "Failed to create group");
+    } catch (err: any) {
+      const msg = String(err?.message || err?.details || "");
+      const lower = msg.toLowerCase();
+      if (lower.includes("duplicate") || lower.includes("unique") || lower.includes("already exists")) {
+        toast.error(
+          isHi
+            ? "यह नाम या लिंक पहले से लिया गया है। स्थान जोड़कर फिर कोशिश करें।"
+            : "This name is already taken. Add a place name and try again."
+        );
+      } else if (lower.includes("row-level security") || lower.includes("42501") || lower.includes("permission") || lower.includes("not authenticated")) {
+        toast.error(
+          isHi
+            ? "समूह बनाने की अनुमति नहीं है। कृपया फिर से लॉग इन करें।"
+            : "You don’t have permission to create a group. Please sign in again."
+        );
+      } else {
+        toast.error(
+          isHi
+            ? `समूह बनाने में असमर्थ${msg ? `: ${msg}` : ""}`
+            : `Failed to create group${msg ? `: ${msg}` : ""}`
+        );
+      }
     } finally {
       setCreatingGroup(false);
     }
@@ -562,6 +558,15 @@ export default function JoinCommunityPage() {
     } else {
       navigate(`/community/groups/${group.id}`);
     }
+  };
+
+  const groupCardMedia = (group: Group) => {
+    const deityFound = DEITIES.find((d) => d.id === group.deity);
+    return {
+      coverSrc: isValidGroupImageUrl(group.image_url) ? group.image_url! : resolveCover(group.deity),
+      avatarSrc: deityFound ? deityFound.src : "/placeholder-deity.jpg",
+      deityLabel: getDeityDisplayName(group.deity, isHi, deityFound?.name),
+    };
   };
 
   // Share group invitation link on WhatsApp
@@ -686,10 +691,52 @@ export default function JoinCommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 pb-20">
-      <SEO 
-        title={isHi ? "डिजिटल सत्संग - राघवन" : "Digital Satsang - Raghavam"}
-        description="भजन साझा करें, नाम जाप अनुरोध सबमिट करें और भक्तों के समुदाय से जुड़ें।"
+    <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0c0a08] text-stone-900 dark:text-stone-100 pb-28">
+      <SEO
+        title={
+          slug && selectedGroup
+            ? selectedGroup.name
+            : activeTab === "events"
+              ? isHi
+                ? "सत्संग कार्यक्रम"
+                : "Satsang Events"
+              : activeTab === "feed"
+                ? isHi
+                  ? "सत्संग फीड"
+                  : "Satsang Feed"
+                : isHi
+                  ? "नाम संकीर्तन समूह"
+                  : "Naam Sangh Groups"
+        }
+        description={
+          slug && selectedGroup
+            ? (selectedGroup.description?.trim()
+              || (isHi ? `${selectedGroup.name} भक्ति समूह` : `${selectedGroup.name} devotion group`))
+            : activeTab === "events"
+              ? isHi
+                ? "आगामी सत्संग, भजन संध्या और कीर्तन कार्यक्रम।"
+                : "Upcoming satsang, bhajan sandhya, and kirtan events."
+              : activeTab === "feed"
+                ? isHi
+                  ? "भजन, विचार और सत्संग पोस्ट साझा करें।"
+                  : "Share bhajans, thoughts, and satsang posts."
+                : isHi
+                  ? "भक्ति समूहों से जुड़ें और सामूहिक नाम जाप करें।"
+                  : "Join devotion groups and chant together."
+        }
+        url={
+          typeof window !== "undefined"
+            ? slug
+              ? `${window.location.origin}/community/groups/${slug}`
+              : `${window.location.origin}/join-community?tab=${activeTab}`
+            : undefined
+        }
+        lang={isHi ? "hi" : "en"}
+        image={
+          typeof window !== "undefined"
+            ? `${window.location.origin}${devotionalBg3}`
+            : undefined
+        }
       />
 
       {/* ─── HEADER BAR ────────────────────────────────────────── */}
@@ -697,14 +744,9 @@ export default function JoinCommunityPage() {
         <header className="sticky top-0 z-30 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-b border-orange-500/10 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                if (groupViewOpen) {
-                  navigate("/join-community");
-                } else {
-                  navigate("/community");
-                }
-              }}
-              className="w-9 h-9 rounded-full border border-[#D6A86B]/30 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-[#C88A3D] active:scale-95 transition-all shrink-0"
+              type="button"
+              onClick={() => goBack(navigate, "/community")}
+              className="w-10 h-10 rounded-full border border-[#D6A86B]/30 bg-orange-50/40 dark:bg-stone-900/40 hover:bg-orange-100/50 dark:hover:bg-stone-850 flex items-center justify-center text-[#C88A3D] active:scale-95 transition-all shrink-0"
               title={isHi ? "समुदाय पर वापस जाएं" : "Back to Community"}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -859,7 +901,11 @@ export default function JoinCommunityPage() {
                     {/* Background image: devotional_background(3).webp with full 100% clarity (no fade/opacity) */}
                     <img 
                       src={devotionalBg3} 
-                      alt="Digital Satsang Banner" 
+                      alt=""
+                      width={1600}
+                      height={900}
+                      fetchpriority="high"
+                      decoding="async"
                       className="absolute inset-0 w-full h-full object-cover object-center"
                     />
                     
@@ -926,10 +972,10 @@ export default function JoinCommunityPage() {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
                   return (
-                    <button
+                    <Link
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center justify-center gap-2 flex-1 px-4 py-2.5 text-xs md:text-sm font-extrabold transition-all rounded-xl whitespace-nowrap cursor-pointer ${
+                      to={`/join-community?tab=${tab.id}`}
+                      className={`flex h-11 flex-1 items-center justify-center gap-2 px-4 text-xs md:text-sm font-extrabold transition-all rounded-xl whitespace-nowrap ${
                         isActive
                           ? 'bg-[#651317] text-white shadow-xs'
                           : 'text-[#651317] dark:text-amber-200 hover:text-[#651317] hover:bg-[#FAF0E4] dark:hover:bg-stone-800'
@@ -937,23 +983,20 @@ export default function JoinCommunityPage() {
                     >
                       <Icon className="w-4 h-4" />
                       {tab.label}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
 
               {/* ─── TAB 1: FEED VIEW ──────────────────────────────────── */}
               {activeTab === 'feed' && (
-                <div className="rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-white dark:bg-stone-900 overflow-hidden shadow-xs space-y-3 p-3">
+                <div className="rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-white dark:bg-stone-900 overflow-hidden shadow-xs space-y-3 p-3 pb-8">
 
                   {/* Post Creation Input Bar */}
                   <FeedComposer
                     isHi={isHi}
                     user={user}
-                    onOpenCompose={(type) => {
-                      if (type) setPostType(type);
-                      setCreatePostOpen(true);
-                    }}
+                    onOpenCompose={openCompose}
                   />
 
                   {/* Feed Search Bar */}
@@ -989,7 +1032,7 @@ export default function JoinCommunityPage() {
                         <button
                           key={id}
                           onClick={() => setFeedFilter(id)}
-                          className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shrink-0 border ${
+                          className={`inline-flex h-8 min-w-[4.75rem] items-center justify-center px-3.5 rounded-full text-xs font-extrabold transition-all shrink-0 border ${
                             isSelected
                               ? "bg-[#651317] border-[#651317] text-white shadow-xs"
                               : "bg-[#FAF6EE] dark:bg-stone-800 border-[#E8D8C4] dark:border-stone-700 text-[#651317] dark:text-stone-300 hover:bg-[#F5ECE0]"
@@ -1075,8 +1118,8 @@ export default function JoinCommunityPage() {
                     return (
                       <>
                         {/* TOP TOOLBAR: SEARCH & CREATE GROUP */}
-                        <div className="flex items-center justify-between gap-3 text-left w-full mb-2">
-                          <div className="relative flex-1">
+                        <div className="flex items-center gap-2 text-left w-full mb-2">
+                          <div className="relative min-w-0 flex-1">
                             <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                             <Input 
                               type="text"
@@ -1089,10 +1132,11 @@ export default function JoinCommunityPage() {
 
                           <Button
                             onClick={() => setCreateGroupOpen(true)}
-                            className="btn-primary shrink-0 text-sm font-extrabold px-4 h-10 rounded-xl flex items-center justify-center gap-1.5"
+                            className="h-10 min-h-10 shrink-0 rounded-xl px-3 sm:px-4 text-sm font-extrabold inline-flex items-center justify-center gap-1.5 bg-[#651317] hover:bg-[#4f0f12] text-white"
                           >
                             <Plus className="w-4 h-4" />
-                            <span>{isHi ? "नया समूह" : "New Group"}</span>
+                            <span className="hidden min-[400px]:inline">{isHi ? "नया समूह" : "New Group"}</span>
+                            <span className="min-[400px]:hidden">{isHi ? "समूह" : "New"}</span>
                           </Button>
                         </div>
 
@@ -1103,109 +1147,29 @@ export default function JoinCommunityPage() {
                               <h3 className="font-display font-extrabold text-sm text-brand-primary dark:text-amber-100 uppercase tracking-wider flex items-center gap-1.5">
                                 👥 {isHi ? "मेरे समूह" : "My Communities"}
                               </h3>
-                              <button 
-                                onClick={() => setGroupSearch("")}
+                              <a
+                                href="#community-explore-groups"
                                 className="text-xs font-bold text-brand-gold hover:underline flex items-center gap-0.5"
                               >
                                 {isHi ? "सभी देखें" : "See All"} <ChevronRight className="w-3.5 h-3.5" />
-                              </button>
+                              </a>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                              {joined.map(group => {
-                                const deityFound = DEITIES.find(d => d.id === group.deity);
-                                const hasValidGroupImg = group.image_url && 
-                                  group.image_url.trim() !== "" && 
-                                  group.image_url !== "null" && 
-                                  group.image_url !== "undefined" && 
-                                  (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
-                                const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
-                                
-                                const getDeityDisplayName = (deityId) => {
-                                  if (!deityId) return "";
-                                  const mappings = {
-                                    "rama": { en: "Ram Ji", hi: "श्री राम जी" },
-                                    "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
-                                    "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
-                                    "shiva": { en: "Shiva Ji", hi: "शिव जी" },
-                                    "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
-                                    "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
-                                    "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
-                                    "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
-                                  };
-                                  const key = deityId.toLowerCase();
-                                  if (mappings[key]) {
-                                    return isHi ? mappings[key].hi : mappings[key].en;
-                                  }
-                                  return deityFound ? deityFound.name : deityId;
-                                };
-
+                              {joined.map((group, index) => {
+                                const media = groupCardMedia(group);
                                 return (
-                                  <div 
-                                    key={group.id} 
-                                    className="card-interactive overflow-hidden flex flex-col justify-between text-left relative min-h-[290px]"
-                                  >
-                                    {/* Cover Banner at the top of card */}
-                                    <div className="h-32 w-full relative overflow-hidden bg-surface-alt">
-                                      <img
-                                        src={cardCoverSrc}
-                                        alt={group.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
-                                    </div>
-
-                                    {/* Avatar Overlap */}
-                                    <div className="absolute left-5 top-20 z-20">
-                                      <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-background p-0.5 bg-background shadow-md">
-                                        <img 
-                                          src={deityFound ? deityFound.src : "/placeholder-deity.jpg"} 
-                                          alt={group.name} 
-                                          className="w-full h-full object-cover rounded-full" 
-                                        />
-                                      </div>
-                                    </div>
-
-                                    {/* Subtle background mandala-gold */}
-                                    <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.16] dark:opacity-[0.08] pointer-events-none w-28 h-28 z-0">
-                                      <img src={mandalaGold} className="w-full h-full object-contain" alt="" />
-                                    </div>
-
-                                    {/* Card Content Body */}
-                                    <div className="relative z-10 pt-7 px-5 pb-5 flex-1 flex flex-col justify-between space-y-4">
-                                      <div className="space-y-3">
-                                        {/* Header Title Row */}
-                                        <div className="flex items-center justify-between gap-2 mt-1">
-                                          <h4 className="font-display font-extrabold text-base text-brand-primary truncate leading-snug">
-                                            {group.name}
-                                          </h4>
-                                          <span className="shrink-0 inline-flex items-center gap-0.5 text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold uppercase">
-                                            🪷 {getDeityDisplayName(group.deity)}
-                                          </span>
-                                        </div>
-
-                                        <p className="text-xs text-muted-foreground font-bold flex items-center gap-1">
-                                          👥 {group.member_count} {isHi ? "भक्त जुड़े हैं" : "devotees joined"}
-                                        </p>
-
-                                        {/* Group Description */}
-                                        <p className="text-xs text-muted-foreground font-medium line-clamp-2 leading-relaxed">
-                                          {group.description || (isHi ? "भक्तिमय संगीत और नाम जाप साझा करने का स्थान।" : "A space for sharing devotional music and chanting.")}
-                                        </p>
-                                      </div>
-
-                                      {/* Full width button */}
-                                      <div className="pt-2">
-                                        <button
-                                          onClick={() => handleOpenGroupDetails(group)}
-                                          className="btn-primary btn-sm btn-full"
-                                        >
-                                          <span>{isHi ? "समूह देखें" : "See Group"}</span>
-                                          <ChevronRight className="w-4 h-4" />
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <CommunityGroupCard
+                                    key={group.id}
+                                    group={group}
+                                    isHi={isHi}
+                                    coverSrc={media.coverSrc}
+                                    avatarSrc={media.avatarSrc}
+                                    deityLabel={media.deityLabel}
+                                    variant="joined"
+                                    priority={index === 0}
+                                    onOpen={() => handleOpenGroupDetails(group)}
+                                  />
                                 );
                               })}
                             </div>
@@ -1227,11 +1191,11 @@ export default function JoinCommunityPage() {
 
 
                         {/* 2. EXPLORE / DISCOVER COMMUNITIES SECTION */}
-                        <div className="space-y-5 text-left pt-2">
+                        <div id="community-explore-groups" className="space-y-5 text-left pt-2 pb-8">
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
                               <h3 className="font-display font-extrabold text-sm text-brand-primary dark:text-amber-100 uppercase tracking-wider">
-                                🔍 {isHi ? "नए समूह खोजें" : "Explore Groups"}
+                                {isHi ? "नए समूह खोजें" : "Explore Groups"}
                               </h3>
                             </div>
                           </div>
@@ -1254,7 +1218,7 @@ export default function JoinCommunityPage() {
                               </p>
                               <Button 
                                 onClick={() => setCreateGroupOpen(true)}
-                                className="btn-primary btn-sm mt-4"
+                                className="h-10 min-h-10 mt-4 rounded-xl px-4 text-sm font-extrabold bg-[#651317] hover:bg-[#4f0f12] text-white"
                               >
                                 {isHi ? "नया समूह बनाएं" : "Create Group"}
                               </Button>
@@ -1264,126 +1228,20 @@ export default function JoinCommunityPage() {
                           {/* Suggested Unjoined / Search results listing */}
                           {!loadingGroups && exploreList.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
-                              {exploreList.map(group => {
-                                const deityFound = DEITIES.find(d => d.id === group.deity);
-                                const hasValidGroupImg = group.image_url && 
-                                  group.image_url.trim() !== "" && 
-                                  group.image_url !== "null" && 
-                                  group.image_url !== "undefined" && 
-                                  (group.image_url.startsWith("http") || group.image_url.startsWith("/") || group.image_url.startsWith("data:"));
-                                const cardCoverSrc = hasValidGroupImg ? group.image_url! : resolveCover(group.deity);
-
+                              {exploreList.map((group) => {
+                                const media = groupCardMedia(group);
                                 return (
-                                  <div 
+                                  <CommunityGroupCard
                                     key={group.id}
-                                    className="overflow-hidden rounded-3xl bg-card border border-border shadow-sm hover:shadow-md transition-all flex flex-col justify-between relative group min-h-[290px] text-left"
-                                  >
-                                    {/* Header Banner representing deity */}
-                                    <div className="h-32 w-full relative overflow-hidden bg-surface-alt">
-                                      <img
-                                        src={cardCoverSrc}
-                                        alt={group.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
-                                        loading="lazy"
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-                                      
-                                      {/* Public/Private badge */}
-                                      <span className={`absolute top-3 left-3 text-[9px] font-bold px-2.5 py-1 rounded-full text-white/95 flex items-center gap-1.5 backdrop-blur-md border border-white/10 ${
-                                        group.is_public ? "bg-emerald-600/70" : "bg-rose-700/70"
-                                      }`}>
-                                        <Globe className="w-2.5 h-2.5" />
-                                        {group.is_public ? (isHi ? "सार्वजनिक" : "Public") : (isHi ? "निजी" : "Private")}
-                                      </span>
-                                    </div>
-
-                                    {/* Content Card Body */}
-                                    <div className="p-5 flex-1 flex flex-col justify-between relative overflow-hidden">
-                                      <div className="absolute right-0 bottom-0 translate-x-6 translate-y-6 opacity-[0.06] dark:opacity-[0.03] pointer-events-none w-24 h-24">
-                                        <img src={mandalaBeige} className="w-full h-full object-contain" alt="" />
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        {/* Deity Indicator tag */}
-                                        {(() => {
-                                          const getDeityDisplayName = (deityId) => {
-                                            if (!deityId) return "";
-                                            const mappings = {
-                                              "rama": { en: "Rama Ji", hi: "श्री राम जी" },
-                                              "hanuman": { en: "Hanuman Ji", hi: "श्री हनुमान जी" },
-                                              "krishna": { en: "Krishna Ji", hi: "श्री कृष्ण जी" },
-                                              "shiva": { en: "Shiva Ji", hi: "शिव जी" },
-                                              "ganesh": { en: "Ganesh Ji", hi: "गणेश जी" },
-                                              "durga": { en: "Durga Ma", hi: "दुर्गा माँ" },
-                                              "lakshmi": { en: "Lakshmi Ma", hi: "लक्ष्मी माँ" },
-                                              "sai-baba": { en: "Sai Baba", hi: "साईं बाबा" }
-                                            };
-                                            const key = deityId.toLowerCase();
-                                            if (mappings[key]) {
-                                              return isHi ? mappings[key].hi : mappings[key].en;
-                                            }
-                                            return deityFound ? deityFound.name : deityId;
-                                          };
-                                          const dName = getDeityDisplayName(group.deity);
-                                          return dName ? (
-                                            <span className="inline-block text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold uppercase tracking-wide">
-                                              🪷 {dName}
-                                            </span>
-                                          ) : null;
-                                        })()}
-
-                                        <h3 className="font-display text-base font-extrabold text-brand-primary dark:text-amber-100 leading-snug">
-                                          {group.name}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground font-bold">
-                                          👥 {group.member_count} {isHi ? "भक्त जुड़े हैं" : "Members"}
-                                        </p>
-                                        
-                                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                          {group.description || (isHi ? "भक्तिमय संगीत और नाम जाप साझा करने का स्थान।" : "A space for sharing devotional music and thoughts.")}
-                                        </p>
-                                      </div>
-
-                                      {/* Action Buttons */}
-                                      <div className="flex gap-2 mt-4 pt-3 border-t border-border">
-                                        {group.is_member ? (
-                                          <>
-                                            <Button
-                                              onClick={() => handleOpenGroupDetails(group)}
-                                              className="btn-primary btn-sm flex-1 text-sm font-extrabold"
-                                            >
-                                              {isHi ? "समूह देखें" : "View Group"}
-                                            </Button>
-                                            <Button
-                                              variant="outline"
-                                              onClick={() => handleToggleGroupJoin(group)}
-                                              className="btn-secondary btn-sm flex-1 text-rose-600 border-rose-500/20 bg-rose-500/5 flex items-center justify-center gap-1 text-sm font-extrabold"
-                                            >
-                                              <Check className="w-3.5 h-3.5" />
-                                              {isHi ? "शामिल हैं" : "Joined"}
-                                            </Button>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Button
-                                              variant="outline"
-                                              onClick={() => handleOpenGroupDetails(group)}
-                                              className="btn-secondary btn-sm flex-1 text-sm font-extrabold"
-                                            >
-                                              {isHi ? "विवरण देखें" : "Details"}
-                                            </Button>
-                                            <Button
-                                              onClick={() => handleToggleGroupJoin(group)}
-                                              className="btn-primary btn-sm flex-1 flex items-center justify-center gap-1 text-sm font-extrabold"
-                                            >
-                                              <Plus className="w-3.5 h-3.5 text-white" />
-                                              {isHi ? "शामिल हों" : "Join"}
-                                            </Button>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
+                                    group={group}
+                                    isHi={isHi}
+                                    coverSrc={media.coverSrc}
+                                    avatarSrc={media.avatarSrc}
+                                    deityLabel={media.deityLabel}
+                                    variant="explore"
+                                    onOpen={() => handleOpenGroupDetails(group)}
+                                    onJoin={() => handleToggleGroupJoin(group)}
+                                  />
                                 );
                               })}
                             </div>
@@ -1395,79 +1253,22 @@ export default function JoinCommunityPage() {
                 </div>
               )}{/* ─── TAB 3: EVENTS VIEW ────────────────────────────────── */}
               {activeTab === 'events' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between border-b border-orange-500/10 pb-3">
-                    <div>
-                      <h3 className="font-display font-extrabold text-base text-orange-950 dark:text-amber-100">
-                        {isHi ? "आगामी सत्संग कार्यक्रम" : "Upcoming Satsang Events"}
-                      </h3>
-                      <p className="text-xs text-stone-500 mt-1">
-                        {isHi ? "आसपास हो रहे भजन संध्या, सत्संग और कीर्तन कार्यक्रमों में भाग लें।" : "Participate in local bhajan sandhyas, satsangs, and kirtan programs."}
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => {
-                        setPostType('event');
-                        setCreatePostOpen(true);
-                      }}
-                      className="bg-[#5c1d0c] hover:bg-[#4a170a] text-white text-sm font-extrabold rounded-xl"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      {isHi ? "कार्यक्रम जोड़ें" : "Add Event"}
-                    </Button>
-                  </div>
-
-                  {eventsList.length === 0 ? (
-                    <div className="text-center py-16 bg-white dark:bg-stone-900 border border-orange-500/10 rounded-2xl">
-                      <span className="text-4xl block">📅</span>
-                      <p className="text-stone-500 dark:text-stone-400 font-medium text-sm mt-3">
-                        {isHi ? "कोई आगामी कार्यक्रम निर्धारित नहीं है।" : "No events scheduled yet."}
-                      </p>
-                      <Button 
-                        onClick={() => {
-                          setPostType('event');
-                          setCreatePostOpen(true);
-                        }}
-                        className="mt-4 bg-[#5c1d0c] hover:bg-[#4a170a] text-white rounded-xl text-sm font-extrabold px-4 py-2"
-                      >
-                        {isHi ? "पहला कार्यक्रम जोड़ें" : "Schedule Event"}
-                      </Button>
+                <div className="space-y-6 pb-8">
+                  {loadingPosts ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {eventsList.map(post => (
-                        <PostCard 
-                          key={post.id} 
-                          post={post}
-                          user={user}
-                          isHi={isHi}
-                          comments={commentsMap[post.id] || []}
-                          isCommentsExpanded={expandedCommentsPostId === post.id}
-                          onToggleComments={handleToggleComments}
-                          onToggleReaction={handleToggleReaction}
-                          onToggleRsvp={handleToggleRsvp}
-                          onVoteOption={handleVoteOption}
-                          onDeleteComment={handleDeleteComment}
-                          onAddComment={handleAddComment}
-                          newCommentText={newCommentText}
-                          setNewCommentText={setNewCommentText}
-                          commentIsLyricsSubmit={commentIsLyricsSubmit}
-                          setCommentIsLyricsSubmit={setCommentIsLyricsSubmit}
-                          isLoadingComments={loadingCommentsPostIds[post.id]}
-                          isPostSaved={isSaved(post.id)}
-                          onToggleSavePost={handleToggleSavePost}
-                          onDeletePost={async (id) => {
-                            try {
-                              await communityApi.softRemovePost(id);
-                              loadPosts();
-                            } catch (err) {
-                              console.error("Delete post error:", err);
-                            }
-                          }}
-                          onPostUpdated={loadPosts}
-                        />
-                      ))}
-                    </div>
+                    <EventsTab
+                      isHi={isHi}
+                      groupPosts={eventsList}
+                      user={user}
+                      memberGroupIds={groups.filter((g) => g.is_member).map((g) => g.id)}
+                      handleToggleRsvp={handleToggleRsvp}
+                      loadPosts={loadPosts}
+                      setPostType={setPostType}
+                      setCreatePostOpen={setCreatePostOpen}
+                    />
                   )}
                 </div>
               )}
@@ -1852,6 +1653,8 @@ export default function JoinCommunityPage() {
         onCroppedImageReady={handleCroppedImageReady}
         onRemoveImage={handleRemoveImage}
         onSubmit={handleCreatePost}
+        cropOpenKey={cropOpenKey}
+        voiceStartKey={voiceStartKey}
       />
 
       {/* ─── MODAL: CREATE GROUP ────────────────────────────────── */}

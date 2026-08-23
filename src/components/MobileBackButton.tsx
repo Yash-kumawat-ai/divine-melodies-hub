@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { goBack } from "@/lib/navigation";
 import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
 
@@ -21,11 +21,7 @@ export default function MobileBackButton({
 
   const handleClick = () => {
     onBack?.();
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate(fallbackPath);
-    }
+    goBack(navigate, fallbackPath);
   };
 
   return (
