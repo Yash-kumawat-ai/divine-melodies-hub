@@ -424,14 +424,18 @@ export default function Footer() {
           {/* Stat 1: Bhajans */}
           <div className="flex flex-col items-center text-center col-start-1 row-start-1">
             <Headphones className="w-5 h-5 text-primary mb-1.5 opacity-80" />
-            <span className="font-display font-bold text-foreground text-sm md:text-base">{totalBhajanCount.toLocaleString()}+</span>
+            <span className="font-display font-bold text-foreground text-sm md:text-base">
+              <span className="inline-block min-w-[3ch] text-center">{totalBhajanCount > 0 ? totalBhajanCount.toLocaleString() : '—'}</span>+
+            </span>
             <span className="text-xs text-muted-foreground font-medium">{l.bhajansStat}</span>
           </div>
 
           {/* Stat 2: Artists */}
           <div className="flex flex-col items-center text-center col-start-1 row-start-2 md:col-start-2 md:row-start-1">
             <Mic className="w-5 h-5 text-primary mb-1.5 opacity-80" />
-            <span className="font-display font-bold text-foreground text-sm md:text-base">{artistCount.toLocaleString()}+</span>
+            <span className="font-display font-bold text-foreground text-sm md:text-base">
+              <span className="inline-block min-w-[2ch] text-center">{artistCount > 0 ? artistCount.toLocaleString() : '—'}</span>+
+            </span>
             <span className="text-xs text-muted-foreground font-medium">{l.artistsStat}</span>
           </div>
 

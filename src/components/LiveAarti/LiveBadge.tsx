@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface LiveBadgeProps {
   className?: string;
@@ -7,12 +6,11 @@ interface LiveBadgeProps {
 
 export default function LiveBadge({ className = '' }: LiveBadgeProps) {
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 text-[10px] font-extrabold tracking-wider uppercase ${className}`}>
-      <motion.span
-        animate={{ scale: [1, 1.35, 1], opacity: [1, 0.5, 1] }}
-        transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-        className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]"
-      />
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-[10px] font-extrabold tracking-wider uppercase shadow-2xs ${className}`}>
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]"></span>
+      </span>
       <span>LIVE</span>
     </div>
   );

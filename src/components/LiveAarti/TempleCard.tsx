@@ -1,6 +1,5 @@
 import React from 'react';
 import { Play, MapPin, Landmark, Clock, Radio } from 'lucide-react';
-import { motion } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import LiveBadge from './LiveBadge';
 import CountdownTimer from './CountdownTimer';
@@ -61,10 +60,9 @@ export default function TempleCard({
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -3, transition: { duration: 0.2 } }}
+    <div
       onClick={onClick}
-      className="relative cursor-pointer overflow-hidden rounded-2xl md:rounded-[22px] border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] hover:border-[#651317]/40 dark:hover:border-amber-400/40 p-4 sm:p-5 transition-all duration-300 group shadow-xs hover:shadow-md flex flex-col justify-between text-left h-full"
+      className="relative cursor-pointer overflow-hidden rounded-2xl md:rounded-[22px] border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] hover:border-[#651317]/40 dark:hover:border-amber-400/40 p-4 sm:p-5 transition-transform duration-200 hover:-translate-y-1 active:scale-[0.98] group shadow-xs hover:shadow-md flex flex-col justify-between text-left h-full will-change-transform"
     >
       {/* Decorative colored glow on top edge */}
       <div 
@@ -150,17 +148,21 @@ export default function TempleCard({
         </div>
 
         {/* Bottom row: Aarti session and standardized royal button */}
-        <div className="border-t border-[#E8D8C4]/70 dark:border-stone-800 pt-3 flex items-center justify-between gap-2.5 mt-1">
-          <div className="min-w-0 flex-1">
+        <div className="border-t border-[#E8D8C4]/70 dark:border-stone-800 pt-3 flex items-center justify-between gap-2.5 mt-1 min-h-[58px]">
+          <div className="min-w-0 flex-1 flex flex-col justify-center min-h-[44px]">
             <p className="text-[10px] uppercase font-bold text-[#786252] dark:text-stone-400 tracking-wider">
               {resolvedStatus === 'LIVE' ? (isHi ? 'चल रही आरती' : 'CURRENT AARTI') : (isHi ? 'अगली आरती' : 'NEXT AARTI')}
             </p>
             <p className="text-xs sm:text-sm font-bold text-[#3A2418] dark:text-amber-100 truncate">
               {displayAartiName || (temple.aartiSchedule.length > 0 ? `${temple.aartiSchedule.length} ${isHi ? 'दैनिक सत्र' : 'Daily Sessions'}` : (isHi ? 'विशेष अवसर' : 'Special Events'))}
             </p>
-            {resolvedStatus !== 'LIVE' && displayMinutes !== undefined && (
-              <p className="text-[11px] text-[#651317] dark:text-amber-400 font-semibold mt-0.5">
+            {resolvedStatus !== 'LIVE' && displayMinutes !== undefined ? (
+              <p className="text-[11px] text-[#651317] dark:text-amber-400 font-semibold truncate leading-tight">
                 {isHi ? `शुरू होने में: ${formatMinutes(displayMinutes)}` : `Starts in: ${formatMinutes(displayMinutes)}`}
+              </p>
+            ) : (
+              <p className="text-[11px] text-transparent select-none leading-tight" aria-hidden="true">
+                —
               </p>
             )}
           </div>
@@ -193,6 +195,6 @@ export default function TempleCard({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Landmark, MapPin, Sparkles, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import type { Temple } from '../../types/liveAarti';
 import { useLanguage } from '@/hooks/useLanguage';
 import { resolveTempleBanner } from './templeBanners';
@@ -31,11 +30,10 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
           const deityText = isHi ? temple.deityHindi : temple.deity;
 
           return (
-            <motion.div
+            <div
               key={temple.id}
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
               onClick={() => onTempleClick(temple)}
-              className="flex-shrink-0 w-64 sm:w-72 snap-start overflow-hidden rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] hover:border-[#651317]/40 dark:hover:border-amber-400/40 p-3.5 sm:p-4 transition-all duration-300 relative cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md text-left"
+              className="flex-shrink-0 w-64 sm:w-72 snap-start overflow-hidden rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] hover:border-[#651317]/40 dark:hover:border-amber-400/40 p-3.5 sm:p-4 transition-transform duration-200 hover:-translate-y-1 active:scale-[0.98] relative cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md text-left will-change-transform"
             >
               {/* Highlight colored bar */}
               <div 
@@ -83,7 +81,7 @@ export default function TodaysTemples({ temples, onTempleClick }: TodaysTemplesP
                 <span>{isHi ? 'दर्शन एवं आरती' : 'Darshan & Aarti'}</span>
                 <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

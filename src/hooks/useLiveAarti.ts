@@ -74,13 +74,126 @@ interface VerificationState {
   lastVerifiedAt: string;
 }
 
+export function computeInitialAartiData() {
+  const now = getIST();
+  const dayName = now.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });
+
+  const initialStatuses: Record<string, VerificationState> = {};
+  const templesWithStatus = (data.temples as Temple[]).map(temple => {
+    let initialStatus: 'LIVE' | 'UPCOMING' | 'OFFLINE' | 'STREAM_UNAVAILABLE' = 'OFFLINE';
+    
+    // Check if an aarti is actively ongoing at current IST time
+    const activeAarti = temple.aartiSchedule.find(a => {
+      const start = parseISTTime(a.time);
+      const end = new Date(start.getTime() + a.durationMinutes * 60000);
+      return now >= start && now < end;
+    });
+
+    if (activeAarti || temple.status === 'LIVE') {
+      initialStatus = 'LIVE';
+    } else if (temple.aartiSchedule.length > 0) {
+      initialStatus = 'UPCOMING';
+    }
+
+    const state: VerificationState = {
+      id: temple.id,
+      status: initialStatus,
+      liveTitle: activeAarti ? (activeAarti.nameHindi || activeAarti.name) : null,
+      videoId: temple.videoId || null,
+      lastVerifiedAt: new Date().toISOString()
+    };
+    initialStatuses[temple.id] = state;
+
+    return {
+      ...temple,
+      status: state.status,
+      videoId: state.videoId,
+      liveTitle: state.liveTitle,
+      lastVerifiedAt: state.lastVerifiedAt
+    };
+  });
+
+  const auspiciousIds = (data.weeklyAuspiciousMapping as Record<string, string[]>)[dayName] ?? [];
+  const auspicious = templesWithStatus
+    .filter(t => auspiciousIds.includes(t.id) && !t.requiresTitleFilter)
+    .sort((a, b) => b.streamReliability - a.streamReliability);
+
+  const live: AartiWithStatus[] = [];
+  const soon: AartiWithStatus[] = [];
+  const up: AartiWithStatus[] = [];
+
+  for (const temple of templesWithStatus) {
+    const verified = initialStatuses[temple.id];
+    if (verified.status === 'LIVE') {
+      const matchingAarti = temple.aartiSchedule.find(a => {
+        const start = parseISTTime(a.time);
+        const end = new Date(start.getTime() + a.durationMinutes * 60000);
+        return now >= start && now < end;
+      }) || {
+        name: temple.deity + ' Live Darshan',
+        nameHindi: temple.deityHindi + ' लाइव दर्शन',
+        time: now.toTimeString().slice(0, 5),
+        durationMinutes: 60
+      };
+
+      live.push({
+        temple,
+        aarti: matchingAarti,
+        status: 'live',
+        minutesUntilStart: 0,
+        minutesUntilEnd: 60,
+        videoId: verified.videoId || undefined,
+        liveTitle: verified.liveTitle || undefined,
+        lastVerifiedAt: verified.lastVerifiedAt
+      });
+    } else if (verified.status === 'UPCOMING') {
+      const nextData = getNextAarti(temple);
+      if (nextData) {
+        if (nextData.minutesUntilStart <= 30) {
+          soon.push({
+            temple,
+            aarti: nextData.aarti,
+            status: 'starting-soon',
+            minutesUntilStart: nextData.minutesUntilStart,
+            minutesUntilEnd: nextData.minutesUntilStart + (nextData.aarti.durationMinutes || 30),
+            videoId: verified.videoId || undefined,
+            liveTitle: verified.liveTitle || undefined,
+            lastVerifiedAt: verified.lastVerifiedAt
+          });
+        } else {
+          up.push({
+            temple,
+            aarti: nextData.aarti,
+            status: 'upcoming',
+            minutesUntilStart: nextData.minutesUntilStart,
+            minutesUntilEnd: nextData.minutesUntilStart + (nextData.aarti.durationMinutes || 30),
+            videoId: verified.videoId || undefined,
+            liveTitle: verified.liveTitle || undefined,
+            lastVerifiedAt: verified.lastVerifiedAt
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    liveNow: live,
+    startingSoon: soon,
+    upcoming: up,
+    todaysTemples: auspicious.length > 0 ? auspicious : templesWithStatus.slice(0, 6),
+    allTemples: templesWithStatus,
+    verifiedStatuses: initialStatuses
+  };
+}
+
 export function useLiveAarti() {
-  const [liveNow, setLiveNow] = useState<AartiWithStatus[]>([]);
-  const [startingSoon, setStartingSoon] = useState<AartiWithStatus[]>([]);
-  const [upcoming, setUpcoming] = useState<AartiWithStatus[]>([]);
-  const [todaysTemples, setTodaysTemples] = useState<Temple[]>([]);
-  const [allTemples, setAllTemples] = useState<Temple[]>(data.temples as Temple[]);
-  const [verifiedStatuses, setVerifiedStatuses] = useState<Record<string, VerificationState>>({});
+  const [initialData] = useState(() => computeInitialAartiData());
+  const [liveNow, setLiveNow] = useState<AartiWithStatus[]>(initialData.liveNow);
+  const [startingSoon, setStartingSoon] = useState<AartiWithStatus[]>(initialData.startingSoon);
+  const [upcoming, setUpcoming] = useState<AartiWithStatus[]>(initialData.upcoming);
+  const [todaysTemples, setTodaysTemples] = useState<Temple[]>(initialData.todaysTemples);
+  const [allTemples, setAllTemples] = useState<Temple[]>(initialData.allTemples);
+  const [verifiedStatuses, setVerifiedStatuses] = useState<Record<string, VerificationState>>(initialData.verifiedStatuses);
   // Page renders immediately from schedule JSON; live verification updates in background.
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);

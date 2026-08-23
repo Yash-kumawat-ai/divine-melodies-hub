@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLiveAarti, getNextAarti } from '@/hooks/useLiveAarti';
 import { ArrowLeft, Share2, Clock, Flame, Landmark } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { SEO } from '@/components/SEO';
+import { Helmet } from 'react-helmet-async';
 import TempleCard from '../components/LiveAarti/TempleCard';
 import WatchModal from '../components/LiveAarti/WatchModal';
 import TodaysTemples from '../components/LiveAarti/TodaysTemples';
@@ -83,64 +84,50 @@ export default function LiveAartiPage() {
     noLive: isHi ? 'इस समय कोई लाइव आरती सक्रिय नहीं है।' : 'No aarti is currently live right now.',
   };
 
-  const openTemple = (temple: Temple) => {
+  const initialTempleHandled = useRef(false);
+
+  const openTemple = useCallback((temple: Temple) => {
     setSelectedTemple(temple);
     setModalOpen(true);
-    const url = new URL(window.location.href);
-    url.searchParams.set('temple', temple.id);
-    window.history.replaceState(null, '', url.toString());
-  };
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('temple', temple.id);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalOpen(false);
     setSelectedTemple(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete('temple');
-    window.history.replaceState(null, '', url.toString());
-  };
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('temple');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
+  // Ensure scroll is at the top on mount/refresh
   useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
+  // Handle deep-link / initial URL search param only once on mount
+  useEffect(() => {
+    if (initialTempleHandled.current || allTemples.length === 0) return;
     const id = searchParams.get('temple');
-    if (!id || allTemples.length === 0) return;
-    const found = allTemples.find((t) => t.id === id);
-    if (found && !selectedTemple) {
-      setSelectedTemple(found);
-      setModalOpen(true);
-    }
-  }, [searchParams, allTemples, selectedTemple]);
-
-  const getUpcomingSessions = () => {
-    const sessions: { temple: Temple; aarti: { name: string; nameHindi: string }; minutesUntilStart: number }[] = [];
-    for (const temple of allTemples) {
-      const next = getNextAarti(temple);
-      if (next) {
-        sessions.push({ temple, aarti: next.aarti, minutesUntilStart: next.minutesUntilStart });
+    if (id) {
+      const found = allTemples.find((t) => t.id === id);
+      if (found) {
+        setSelectedTemple(found);
+        setModalOpen(true);
       }
+      initialTempleHandled.current = true;
     }
-    return sessions.sort((a, b) => a.minutesUntilStart - b.minutesUntilStart);
-  };
+  }, [searchParams, allTemples]);
 
-  const formatStartsIn = (minutes: number) => {
-    const hrs = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    let timeStr = '';
-    if (hrs > 0) timeStr += `${hrs}h`;
-    if (mins > 0) timeStr += (hrs > 0 ? ' ' : '') + `${mins}m`;
-    return isHi ? `शुरू होने में: ${timeStr}` : `Starts in ${timeStr}`;
-  };
-
-  const filteredLiveNow = useMemo(
-    () => liveNow.filter((item) => matchesCategory(item.temple, category)),
-    [liveNow, category],
-  );
-  const filteredSoon = useMemo(
-    () => startingSoon.filter((item) => matchesCategory(item.temple, category)),
-    [startingSoon, category],
-  );
-  const filteredUpcoming = useMemo(
-    () => upcoming.filter((item) => matchesCategory(item.temple, category)),
-    [upcoming, category],
-  );
   const filteredTodays = useMemo(
     () => todaysTemples.filter((t) => matchesCategory(t, category)),
     [todaysTemples, category],
@@ -159,10 +146,9 @@ export default function LiveAartiPage() {
   const heroTemple =
     liveTemples.find((t) => t.id === heroTempleId) ||
     liveTemples[0] ||
-    filteredLiveNow[0]?.temple ||
+    todaysTemples[0] ||
+    allTemples[0] ||
     null;
-
-  const nextSession = liveNow.length === 0 ? getUpcomingSessions()[0] : null;
 
   const seoTitle = isHi ? 'लाइव आरती दर्शन - सोमनाथ, काशी, उज्जैन, सालासर' : 'Live Aarti Darshan from Major Indian Temples';
   const seoDescription = isHi
@@ -197,7 +183,12 @@ export default function LiveAartiPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] text-[#3A2418] dark:bg-[#0c0a08] dark:text-amber-50 pb-28 md:pb-16 transition-colors duration-300">
+    <div className="min-h-screen bg-[#FAF6EE] text-[#3A2418] dark:bg-[#0c0a08] dark:text-amber-50 pb-28 md:pb-16 transition-colors duration-300 [scrollbar-gutter:stable]">
+      <Helmet>
+        <link rel="preconnect" href="https://i.ytimg.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://i.ytimg.com" />
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" crossOrigin="" />
+      </Helmet>
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -209,7 +200,7 @@ export default function LiveAartiPage() {
 
       {/* Sticky Top Header Bar */}
       <header className="sticky top-0 shrink-0 z-40 border-b bg-[#FFFDF8]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md border-[#E8D8C4] dark:border-stone-800 shadow-2xs">
-        <div className="mx-auto max-w-6xl px-4 lg:px-6 py-2.5 flex items-center justify-between gap-2">
+        <div className="mx-auto max-w-6xl px-4 lg:px-6 py-3 sm:py-3.5 min-h-[56px] sm:min-h-[60px] flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={handleBack}
@@ -219,7 +210,7 @@ export default function LiveAartiPage() {
             <ArrowLeft className="w-4 h-4" />
           </button>
 
-          <h1 className="flex-1 min-w-0 text-center text-base sm:text-lg font-semibold font-display tracking-tight text-[#651317] dark:text-amber-100 truncate px-2">
+          <h1 className="flex-1 min-w-0 text-center text-base sm:text-lg md:text-xl font-bold font-heading tracking-normal leading-normal text-[#651317] dark:text-amber-100 truncate px-2 py-0.5">
             {text.title}
           </h1>
 
@@ -244,23 +235,16 @@ export default function LiveAartiPage() {
               <span>{isHi ? 'पावन आरती दर्शन' : 'Sacred Aarti Broadcast'}</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-black text-[#3A2418] dark:text-amber-100 tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-black text-[#3A2418] dark:text-amber-100 tracking-normal leading-normal py-0.5">
               {text.title}
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-[#786252] dark:text-stone-300 font-medium">
+            <p className="mt-2 text-xs sm:text-sm text-[#786252] dark:text-stone-300 font-medium leading-relaxed">
               {text.subtitle}
             </p>
-
-            {isVerifying && (
-              <div className="mt-3.5 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[#651317] dark:text-amber-300 text-[11px] font-bold">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                <span>{isHi ? 'लाइव स्ट्रीम स्थिति जाँची जा रही है…' : 'Verifying live stream feeds…'}</span>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Category Filters Bar - scrollbar-hide */}
+        {/* Category Filters Bar */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
           {filters.map((f) => {
             const active = category === f.id;
@@ -270,7 +254,6 @@ export default function LiveAartiPage() {
                 type="button"
                 onClick={() => {
                   setCategory(f.id);
-                  setLivePage(1);
                   setAllTemplesPage(1);
                 }}
                 className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95 ${
@@ -285,49 +268,8 @@ export default function LiveAartiPage() {
           })}
         </div>
 
-        {/* Next upcoming aarti sticky capsule banner if no stream currently live */}
-        {nextSession && (
-          <div
-            onClick={() => openTemple(nextSession.temple)}
-            className="w-full rounded-2xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs hover:border-[#651317]/40 dark:hover:border-amber-400/40 cursor-pointer transition-all"
-          >
-            <div className="flex items-start sm:items-center gap-3 min-w-0">
-              <div className="h-10 w-10 rounded-full bg-[#651317]/10 dark:bg-amber-400/15 flex items-center justify-center text-[#651317] dark:text-amber-300 shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#651317] dark:text-amber-400">
-                  {isHi ? 'अगली आरती' : 'Next Aarti Session'}
-                </p>
-                <p className="text-sm sm:text-base font-bold text-[#3A2418] dark:text-amber-100 truncate">
-                  {isHi ? nextSession.temple.nameHindi : nextSession.temple.name}
-                  {' — '}
-                  {isHi ? nextSession.aarti.nameHindi : nextSession.aarti.name}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 self-end sm:self-center">
-              <span className="text-xs sm:text-sm font-bold text-[#651317] dark:text-amber-300">
-                {formatStartsIn(nextSession.minutesUntilStart)}
-              </span>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openTemple(nextSession.temple);
-                }}
-                className="btn-royal-primary h-9 px-4 rounded-full text-xs font-bold gap-1.5 shadow-xs cursor-pointer active:scale-95"
-              >
-                <Clock className="w-3.5 h-3.5" />
-                <span>{isHi ? 'समय देखें' : 'View'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Featured Live Stream Hero (if active) */}
-        {heroTemple && heroTemple.status === 'LIVE' && (
+        {/* Featured Live Stream Hero Slot (Stable Geometry) */}
+        {heroTemple && (
           <LiveAartiHero
             temple={heroTemple}
             liveTemples={liveTemples.length > 0 ? liveTemples : [heroTemple]}
@@ -336,137 +278,12 @@ export default function LiveAartiPage() {
           />
         )}
 
-        {/* Section: Live Now */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]"></span>
-              </span>
-              <h2 className="text-lg sm:text-xl font-bold font-display text-[#3A2418] dark:text-amber-100 tracking-wide">
-                {text.liveNow}
-              </h2>
-            </div>
-            {filteredLiveNow.length > 0 && (
-              <span className="text-xs font-bold text-[#651317] dark:text-amber-400 bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 px-2.5 py-0.5 rounded-full">
-                {filteredLiveNow.length} {isHi ? 'लाइव' : 'Live'}
-              </span>
-            )}
-          </div>
-
-          {filteredLiveNow.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-                {filteredLiveNow.slice(0, livePage * LIVE_PAGE_SIZE).map((item, idx) => (
-                  <div key={`live-${item.temple.id}-${idx}`} id={`temple-card-${item.temple.id}`}>
-                    <TempleCard
-                      temple={item.temple}
-                      status="live"
-                      aartiName={item.aarti.name}
-                      aartiNameHindi={item.aarti.nameHindi}
-                      minutesUntilEnd={item.minutesUntilEnd}
-                      onClick={() => openTemple(item.temple)}
-                      priority={idx === 0}
-                    />
-                  </div>
-                ))}
-              </div>
-              {livePage * LIVE_PAGE_SIZE < filteredLiveNow.length && (
-                <div className="mt-6 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setLivePage((p) => p + 1)}
-                    className="btn-royal-secondary h-11 px-6 rounded-full text-sm font-bold shadow-2xs"
-                  >
-                    {isHi ? 'और लाइव आरती दिखाएँ' : 'Show more live aartis'}
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="p-6 sm:p-8 rounded-2xl md:rounded-3xl border border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#140d08] text-center max-w-xl mx-auto space-y-4 shadow-xs">
-              <div className="space-y-1.5">
-                <h3 className="text-base sm:text-lg font-bold font-display text-[#651317] dark:text-amber-300">
-                  {isHi ? 'इस समय कोई लाइव आरती सक्रिय नहीं है' : 'No Aarti Live Right Now'}
-                </h3>
-                <p className="text-xs text-[#786252] dark:text-stone-400 font-medium">{text.noLive}</p>
-              </div>
-
-              <div className="pt-2 border-t border-[#E8D8C4]/60 dark:border-stone-800 space-y-2">
-                <p className="text-[11px] uppercase font-bold text-[#786252] dark:text-stone-400 tracking-wider text-left">
-                  {isHi ? 'आगामी आरती समय:' : 'Upcoming Aarti Timings:'}
-                </p>
-                <div className="space-y-2">
-                  {getUpcomingSessions()
-                    .filter((s) => matchesCategory(s.temple, category))
-                    .slice(0, 3)
-                    .map((session, index) => {
-                      const templeName = isHi ? session.temple.nameHindi : session.temple.name;
-                      const aartiName = isHi ? session.aarti.nameHindi : session.aarti.name;
-                      return (
-                        <button
-                          key={`upcoming-session-${session.temple.id}-${index}`}
-                          type="button"
-                          className="flex w-full items-center justify-between text-xs text-[#3A2418] dark:text-stone-200 bg-[#FAF6EE] dark:bg-stone-900 hover:bg-[#FAF0E4] p-3 rounded-xl border border-[#E8D8C4] dark:border-stone-700 text-left transition-colors cursor-pointer"
-                          onClick={() => openTemple(session.temple)}
-                        >
-                          <span className="font-bold truncate pr-2">
-                            {templeName} — {aartiName}
-                          </span>
-                          <span className="text-[#651317] dark:text-amber-300 font-bold shrink-0">
-                            {formatStartsIn(session.minutesUntilStart)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Section: Starting Soon & Upcoming */}
-        {(filteredSoon.length > 0 || filteredUpcoming.length > 0) && (
-          <section className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-500" />
-                <h2 className="text-lg sm:text-xl font-bold font-display text-[#3A2418] dark:text-amber-100 tracking-wide">
-                  {text.startingSoon}
-                </h2>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-              {filteredSoon.map((item, idx) => (
-                <TempleCard
-                  key={`soon-${item.temple.id}-${idx}`}
-                  temple={item.temple}
-                  status="starting-soon"
-                  aartiName={item.aarti.name}
-                  aartiNameHindi={item.aarti.nameHindi}
-                  minutesUntilStart={item.minutesUntilStart}
-                  onClick={() => openTemple(item.temple)}
-                />
-              ))}
-              {filteredSoon.length === 0 &&
-                filteredUpcoming.map((item, idx) => (
-                  <TempleCard
-                    key={`up-${item.temple.id}-${idx}`}
-                    temple={item.temple}
-                    status="upcoming"
-                    aartiName={item.aarti.name}
-                    aartiNameHindi={item.aarti.nameHindi}
-                    minutesUntilStart={item.minutesUntilStart}
-                    onClick={() => openTemple(item.temple)}
-                  />
-                ))}
-            </div>
-          </section>
+        {/* Section: Today's Auspicious Temples Carousel */}
+        {filteredTodays.length > 0 && (
+          <TodaysTemples temples={filteredTodays} onTempleClick={openTemple} />
         )}
 
-        {/* Section: All Sacred Temples & Live Darshan Channels */}
+        {/* Section: All Sacred Temples & Live Darshan Channels (Unified Grid with Pagination) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -486,6 +303,7 @@ export default function LiveAartiPage() {
                 key={`all-temple-${temple.id}-${idx}`}
                 temple={temple}
                 onClick={() => openTemple(temple)}
+                priority={idx < 3}
               />
             ))}
           </div>
@@ -495,18 +313,13 @@ export default function LiveAartiPage() {
               <button
                 type="button"
                 onClick={() => setAllTemplesPage((p) => p + 1)}
-                className="btn-royal-secondary h-11 px-6 rounded-full text-sm font-bold shadow-2xs"
+                className="btn-royal-secondary h-11 px-6 rounded-full text-sm font-bold shadow-2xs cursor-pointer active:scale-95"
               >
                 {isHi ? 'और मंदिर दिखाएँ' : 'Show more temples'}
               </button>
             </div>
           )}
         </section>
-
-        {/* Section: Today's Auspicious Temples */}
-        {filteredTodays.length > 0 && (
-          <TodaysTemples temples={filteredTodays} onTempleClick={openTemple} />
-        )}
 
         {/* Watch Live / Schedule Modal */}
         <WatchModal temple={selectedTemple} isOpen={modalOpen} onClose={closeModal} />

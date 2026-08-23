@@ -83,6 +83,7 @@ export default function LiveAartiHero({
                 alt={title}
                 width={800}
                 height={450}
+                loading="eager"
                 fetchpriority="high"
                 decoding="async"
                 className="h-full w-full object-cover opacity-85 group-hover:scale-102 transition-transform duration-500"
@@ -111,7 +112,13 @@ export default function LiveAartiHero({
             </p>
           </div>
           <div className="shrink-0">
-            <LiveBadge />
+            {temple.status === 'LIVE' ? (
+              <LiveBadge />
+            ) : (
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[#651317] dark:text-amber-300 bg-[#651317]/10 dark:bg-amber-400/15 border border-[#651317]/20 dark:border-amber-400/30 px-2.5 py-1 rounded-full">
+                {temple.category}
+              </span>
+            )}
           </div>
         </div>
       </div>

@@ -32,6 +32,9 @@
 }
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
   ::selection {
     background-color: rgba(101, 19, 23, 0.18);
     color: #651317;
