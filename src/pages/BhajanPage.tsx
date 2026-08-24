@@ -13,6 +13,7 @@ import { resolveBhajanYouTubeVideoId } from '@/lib/youtubeEmbedPopup';
 import { shareOnWhatsApp, shareOnTelegram, copyShareLink } from '@/lib/shareUtils';
 import BhajanCard from '@/components/BhajanCard';
 import AddToGroupDialog from '@/components/community/AddToGroupDialog';
+import youtubeSvgLogo from '@/pages/images/youtube-svgrepo-com.svg';
 import {
   Loader2,
   Music2,
@@ -654,30 +655,34 @@ export default function BhajanPage() {
           </article>
 
           {/* SECONDARY SECTION: Official Video & Darshan (Below Lyrics) */}
-          {(resolvedBhajan.youtubeUrl || resolvedVideoId) && (
-            <div
-              ref={videoSectionRef}
-              className="overflow-hidden rounded-2xl sm:rounded-3xl border border-[#E8D8C4] dark:border-stone-800 bg-black shadow-md relative aspect-video w-full"
-            >
-              {isPlaying && resolvedVideoId ? (
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${resolvedVideoId}?autoplay=1&rel=0`}
-                  title={resolvedBhajan.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="absolute inset-0 h-full w-full border-0"
-                />
-              ) : (
-                <div
-                  onClick={() => {
-                    if (resolvedVideoId) {
-                      setIsPlaying(true);
-                    } else if (resolvedBhajan.youtubeUrl) {
-                      window.open(resolvedBhajan.youtubeUrl, '_blank', 'noopener,noreferrer');
-                    }
-                  }}
-                  className="absolute inset-0 cursor-pointer group"
-                >
+          {(() => {
+            const fallbackSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(resolvedBhajan.title + ' ' + (resolvedBhajan.singerName || 'Traditional') + ' bhajan')}`;
+            const targetYoutubeUrl = resolvedBhajan.youtubeUrl || fallbackSearchUrl;
+
+            return (
+              <div
+                ref={videoSectionRef}
+                className="overflow-hidden rounded-2xl sm:rounded-3xl border border-[#E8D8C4] dark:border-stone-800 bg-black shadow-md relative aspect-video w-full"
+              >
+                {isPlaying && resolvedVideoId ? (
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${resolvedVideoId}?autoplay=1&rel=0`}
+                    title={resolvedBhajan.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full border-0"
+                  />
+                ) : (
+                  <div
+                    onClick={() => {
+                      if (resolvedVideoId) {
+                        setIsPlaying(true);
+                      } else {
+                        window.open(targetYoutubeUrl, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                    className="absolute inset-0 cursor-pointer group"
+                  >
                   <img
                     src={
                       resolvedBhajan.imageUrl ||
@@ -688,23 +693,42 @@ export default function BhajanPage() {
                     height={450}
                     loading="lazy"
                     decoding="async"
-                    className="h-full w-full object-cover opacity-85 group-hover:scale-102 transition-transform duration-500"
+                    className="h-full w-full object-cover group-hover:scale-102 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/20" />
+                  
+                  {/* Top Gradient Header with Title matching native YouTube Embed */}
+                  <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent p-4 flex items-center gap-3">
+                    <img 
+                      src="/mandala-logo.png" 
+                      alt="Avatar" 
+                      className="w-8 h-8 rounded-full border border-white/20 shadow-sm shrink-0" 
+                    />
+                    <span className="text-white font-medium text-sm sm:text-base line-clamp-1 drop-shadow-md">
+                      {resolvedBhajan.title}
+                    </span>
+                  </div>
 
-                  {/* Centered Play Button Overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white p-4 text-center">
-                    <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#651317] hover:bg-[#80181D] text-white shadow-xl transition-all group-hover:scale-110 border-2 border-amber-400/60 cursor-pointer">
-                      <Play className="ml-1 h-7 w-7 fill-white stroke-none" />
-                    </span>
-                    <span className="text-xs sm:text-sm font-bold bg-black/75 px-4 py-1.5 rounded-full backdrop-blur-xs border border-white/20 shadow-sm inline-flex items-center gap-2">
-                      {isHi ? 'भजन वीडियो देखें' : 'Watch Bhajan Video'}
-                    </span>
+                  {/* Centered Authentic YouTube Red Play Button (Option B) */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <img
+                      src={youtubeSvgLogo}
+                      alt="Play Video on YouTube"
+                      width={68}
+                      height={48}
+                      className="w-16 sm:w-20 drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] group-hover:scale-115 transition-transform duration-300 filter"
+                    />
+                  </div>
+
+                  {/* Bottom "Watch on YouTube" Badge */}
+                  <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 hover:bg-black/90 text-white text-[11px] font-semibold px-2.5 py-1 rounded-md backdrop-blur-xs border border-white/10 shadow-sm transition-colors">
+                    <span>Watch on</span>
+                    <span className="font-bold">YouTube</span>
                   </div>
                 </div>
               )}
             </div>
-          )}
+            );
+          })()}
 
           {/* Related / Recommended Bhajans Section (Non-Blocking) */}
           {relatedBhajans.length > 0 && (

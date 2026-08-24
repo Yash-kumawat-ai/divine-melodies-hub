@@ -32,6 +32,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
 import { prefetchMeditationPage } from "@/lib/prefetchMeditation";
 import { cn } from "@/lib/utils";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 type NavKey = "home" | "browse" | "upload" | "panchang" | "more";
 
@@ -175,10 +176,16 @@ export default function MobileBottomNav() {
     clearRadixBodyLocks();
   };
 
+  const isNavVisible = useScrollDirection();
+
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[200] pointer-events-auto grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[hsl(var(--brand-gold-border))] bg-surface-raised/95 dark:border-white/10 dark:bg-background/90 px-2 pt-2 shadow-3 dark:shadow-floating backdrop-blur-2xl md:hidden"
+        className={cn(
+          "mobile-bottom-nav fixed bottom-0 left-0 right-0 z-[200] pointer-events-auto grid w-full grid-cols-5 items-end rounded-t-[1.65rem] border-t border-x-0 border-b-0 border-[hsl(var(--brand-gold-border))] bg-surface-raised/95 dark:border-white/10 dark:bg-background/90 px-2 pt-2 shadow-3 dark:shadow-floating backdrop-blur-2xl md:hidden transition-transform duration-300 ease-in-out will-change-transform",
+          !isNavVisible && "translate-y-full pointer-events-none",
+          isNavVisible && "translate-y-0"
+        )}
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         aria-label="Main navigation"
       >

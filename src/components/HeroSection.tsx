@@ -17,6 +17,8 @@ import {
   RamVaniCard as MobileRamVaniCard,
 } from "@/components/mobile/MobileHero";
 
+import { FivePillarsStrip } from "@/components/home/FivePillarsStrip";
+
 interface HeroSectionProps {
   stats?: {
     bhajans: number;
@@ -39,6 +41,11 @@ export function HeroSection({ stats }: HeroSectionProps) {
         <div className="w-full mt-3.5 p-3.5 rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] flex flex-col gap-3">
           <SearchCard />
           <ActionButtons />
+        </div>
+
+        {/* Five Pillars Strip on Mobile */}
+        <div className="w-full mt-3.5">
+          <FivePillarsStrip />
         </div>
 
         <RamMarquee />
@@ -127,7 +134,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
               <button
                 type="button"
                 onClick={() => navigate("/all-bhajans")}
-                className="btn-royal-primary w-full min-w-0 h-11 rounded-full !px-3 text-[12px] md:text-sm gap-1.5"
+                className="btn-royal-primary w-full min-w-0 h-11 rounded-full !px-3 text-[12px] md:text-sm gap-1.5 cursor-pointer active:scale-95 transition-all"
               >
                 <Play className="!w-3.5 !h-3.5 fill-current stroke-none" />
                 <span className="truncate">{isHi ? "भजन खोजें" : "Explore Bhajans"}</span>
@@ -136,7 +143,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
               <button
                 type="button"
                 onClick={() => navigate("/live-aarti")}
-                className="btn-royal-secondary w-full min-w-0 h-11 rounded-full !px-3 text-[12px] md:text-sm gap-1.5 bg-[#FFFDF8] hover:!bg-[#FFFDF8]"
+                className="btn-royal-secondary w-full min-w-0 h-11 rounded-full !px-3 text-[12px] md:text-sm gap-1.5 !bg-[#FFFDF8] hover:!bg-[#FFFDF8] dark:!bg-[#1A120B] dark:hover:!bg-[#1A120B] cursor-pointer active:scale-95 transition-all"
               >
                 <LiveAartiIcon className="!h-5 !w-5" />
                 <span className="truncate">{isHi ? "लाइव आरती" : "Live Aarti"}</span>
@@ -144,6 +151,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </m.div>
           </div>
         </div>
+
+        {/* Five Pillars Strip on Desktop */}
+        <FivePillarsStrip />
 
         <HeroInsightCards />
       </div>

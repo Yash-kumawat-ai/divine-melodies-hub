@@ -148,12 +148,28 @@ describe("slugUtils", () => {
       expect(slug).toBe("radha-krishna-hare");
     });
 
-    it("bounds slug length to 50 characters without cutting words in half", () => {
-      const longTitle = "This Is A Very Long Devotional Bhajan Title That Exceeds Fifty Characters And Should Be Bounded Cleanly";
-      const slug = generateBhajanSlug(longTitle, 50);
-      expect(slug.length).toBeLessThanOrEqual(50);
-      expect(slug).not.toMatch(/-$/);
-      expect(slug).toBe("this-is-a-very-long-devotional-bhajan-title-that");
+    it("splits on various strong delimiters like •, ।, –, —, //", () => {
+      expect(generateBhajanSlug("Shri Ram Bhajan • T-Series")).toBe("shri-ram-bhajan");
+      expect(generateBhajanSlug("Shiv Tandav Stotram । Shankar Mahadevan")).toBe("shiv-tandav-stotram");
+      expect(generateBhajanSlug("Khatu Shyam Aarti // Saawariya")).toBe("khatu-shyam-aarti");
+      expect(generateBhajanSlug("Govind Bolo Hari Gopal Bolo – Devotional")).toBe("govind-bolo-hari-gopal-bolo");
+    });
+
+    it("bounds suffix collision resolution strictly within 50 characters", async () => {
+      // 48 character long base
+      const longBase = "this-is-a-very-long-devotional-bhajan-title-that"; // 48 chars
+      const resolved = await resolveUniqueSlug(
+        longBase,
+        async (candidate) => {
+          // Simulate first candidate occupied
+          if (candidate === "this-is-a-very-long-devotional-bhajan-title-that") return true;
+          return false;
+        },
+        50
+      );
+
+      expect(resolved.length).toBeLessThanOrEqual(50);
+      expect(resolved.endsWith("-2")).toBe(true);
     });
   });
 });

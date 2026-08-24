@@ -132,14 +132,15 @@ export function generateUploadSlug({ existingSlug, title, id }: UploadSlugOption
 
 /**
  * Deterministic sequential collision resolver:
- * Tests baseSlug, baseSlug-2, baseSlug-3, ...
+ * Tests candidate, base-2, base-3, ... while strictly guaranteeing <= maxLength total length.
  * Checks BOTH static catalog and database until an available slug is found.
  */
 export async function resolveUniqueSlug(
-  baseSlug: string,
-  isOccupiedInDb: (slugCandidate: string) => Promise<boolean>
+  baseInput: string,
+  isOccupiedInDb: (slugCandidate: string) => Promise<boolean>,
+  maxLength = 50
 ): Promise<string> {
-  const cleanBase = generateBhajanSlug(baseSlug) || 'bhajan';
+  const cleanBase = generateBhajanSlug(baseInput, maxLength) || 'bhajan';
   let candidate = cleanBase;
   let counter = 1;
 
@@ -152,7 +153,50 @@ export async function resolveUniqueSlug(
       }
     }
     counter += 1;
-    candidate = `${cleanBase}-${counter}`;
+    const suffix = `-${counter}`;
+    const allowedBaseLength = Math.max(2, maxLength - suffix.length);
+    const recomputedBase = generateBhajanSlug(baseInput, allowedBaseLength) || 'bhajan';
+    candidate = `${recomputedBase}${suffix}`;
+  }
+}
+
+/**
+ * 1-Hop Redirect Flattening & Cycle Elimination:
+ * 1. Flattens incoming historical redirects: (to_slug = oldSlug) -> (to_slug = newSlug)
+ * 2. Upserts (from_slug = oldSlug, to_slug = newSlug)
+ * 3. Deletes self-referencing / reclaimed cycles (from_slug = newSlug)
+ */
+export async function recordAndFlattenSlugRedirect(
+  supabase: any,
+  oldSlug: string,
+  newSlug: string,
+  bhajanId?: string
+): Promise<void> {
+  if (!oldSlug || !newSlug || oldSlug === newSlug) return;
+
+  try {
+    // 1. Flatten chains
+    await supabase
+      .from('bhajan_slug_redirects')
+      .update({ to_slug: newSlug })
+      .eq('to_slug', oldSlug);
+
+    // 2. Upsert mapping
+    await supabase
+      .from('bhajan_slug_redirects')
+      .upsert({
+        from_slug: oldSlug,
+        to_slug: newSlug,
+        bhajan_id: bhajanId || null
+      }, { onConflict: 'from_slug' });
+
+    // 3. Remove circular references
+    await supabase
+      .from('bhajan_slug_redirects')
+      .delete()
+      .eq('from_slug', newSlug);
+  } catch (err) {
+    console.error('Error flattening slug redirect:', err);
   }
 }
 

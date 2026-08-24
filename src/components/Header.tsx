@@ -53,6 +53,7 @@ import { cn } from "@/lib/utils";
 import { HamburgerButton } from "@/components/navigation/HamburgerButton";
 import { prefetchAdminPages } from "@/lib/prefetchAdminPages";
 import { prefetchMeditationPage } from "@/lib/prefetchMeditation";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const MeditationIcon = ({ className }: { className?: string }) => (
   <svg
@@ -236,8 +237,16 @@ export default function Header() {
     { to: "/pricing", label: t("pricing"), icon: Tags, match: (path: string) => path === "/pricing" },
   ];
 
+  const isNavVisible = useScrollDirection();
+
   return (
-    <header className="sticky top-0 z-50 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30">
+    <header
+      className={cn(
+        "sticky top-0 z-50 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30 transition-transform duration-300 ease-in-out will-change-transform",
+        !isNavVisible && "-translate-y-full shadow-none",
+        isNavVisible && "translate-y-0 shadow-xs"
+      )}
+    >
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
         <div className="flex items-center gap-1 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
           {/* Hamburger — mobile left corner */}

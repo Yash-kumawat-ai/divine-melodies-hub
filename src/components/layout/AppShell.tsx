@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 
 import { useBhajanModalOpen } from "@/hooks/useBhajanModalOpen";
 
+import { clearRadixBodyLocks } from "@/lib/clearRadixBodyLocks";
+
 export default function AppShell() {
   const { pathname, search } = useLocation();
   const searchParams = new URLSearchParams(search || window.location.search);
@@ -18,10 +20,9 @@ export default function AppShell() {
 
   const isKirtanAi = resolvedPath === "/kirtan-ai" || resolvedPath === "/narad-ai";
   const isTemplePage = resolvedPath === "/temple";
-  const isLeaderboard = resolvedPath === "/leaderboard";
   const activePracticeId = searchParams.get("practice");
-  const hasActivePractice = resolvedPath === "/meditation" && activePracticeId != null && activePracticeId !== "";
-  const isFullScreenApp = isKirtanAi || isTemplePage || isLeaderboard || hasActivePractice;
+  const isRunningPracticeSession = resolvedPath === "/meditation" && (activePracticeId === "mantra_japa_counter" || (activePracticeId != null && activePracticeId !== "" && activePracticeId !== "mantra_jap_home"));
+  const isFullScreenApp = isKirtanAi || isTemplePage || isRunningPracticeSession;
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");
@@ -42,6 +43,10 @@ export default function AppShell() {
   const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage || isBhajanModalOpen;
 
   const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath.startsWith("/meditation")) && !isBhajanModalOpen;
+
+  useEffect(() => {
+    clearRadixBodyLocks();
+  }, [pathname, search]);
 
   useEffect(() => {
     if (!isFullScreenApp && !isShortsPage) {

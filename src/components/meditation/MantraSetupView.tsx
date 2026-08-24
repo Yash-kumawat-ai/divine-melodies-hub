@@ -76,9 +76,14 @@ export default function MantraSetupView({
 
   useEffect(() => {
     const origOverflow = document.body.style.overflow;
+    const origTouchAction = document.body.style.touchAction;
+    
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    
     return () => {
       document.body.style.overflow = origOverflow;
+      document.body.style.touchAction = origTouchAction;
     };
   }, []);
 
@@ -162,22 +167,25 @@ export default function MantraSetupView({
     "fixed bottom-0 left-0 right-0 max-w-lg mx-auto border-t rounded-t-[28px] p-6 pb-12 max-h-[85vh] overflow-y-auto z-[350] bg-[#FFFDF8] border-[#E8D8C4] text-[#3A2418] shadow-2xl dark:bg-[#140b07] dark:border-stone-700 dark:text-amber-50";
 
   return createPortal(
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 overflow-hidden touch-none select-none overscroll-none">
+      {/* Backdrop completely absorbs all clicks and touch gestures */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.08 }}
+        transition={{ duration: 0.1 }}
         onClick={onBack}
-        className="fixed inset-0 bg-black/55 -z-10"
+        onTouchMove={(e) => e.preventDefault()}
+        className="absolute inset-0 bg-black/65 backdrop-blur-xs z-0"
       />
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.08 }}
-        className="relative w-full max-w-lg bg-[#FAF6EE] dark:bg-[#120a06] border border-[#E8D8C4] dark:border-amber-500/30 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden my-auto max-h-[min(92vh,720px)] flex flex-col z-20"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        transition={{ duration: 0.12 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg bg-[#FAF6EE] dark:bg-[#120a06] border border-[#E8D8C4] dark:border-amber-500/30 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden my-auto max-h-[min(92vh,720px)] flex flex-col z-10 overscroll-contain select-text"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8D8C4] dark:border-stone-800 bg-[#FFFDF8] dark:bg-[#180E09] shrink-0">
           <div className="flex items-center gap-3 min-w-0">
@@ -204,7 +212,7 @@ export default function MantraSetupView({
           </button>
         </div>
 
-        <div className="overflow-hidden p-3 sm:p-4 space-y-3 text-left">
+        <div className="overflow-y-auto p-3 sm:p-4 space-y-3 text-left overscroll-contain touch-pan-y flex-1">
           {/* Practice Method Selection */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase tracking-wider text-[#651317] dark:text-amber-300">
@@ -431,7 +439,8 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSankalpSheetOpen(false)}
-              className="fixed inset-0 bg-black/55 z-[340]"
+              onTouchMove={(e) => e.preventDefault()}
+              className="fixed inset-0 bg-black/55 z-[340] backdrop-blur-xs"
             />
             <motion.div
               initial={{ y: "100%" }}
@@ -527,7 +536,8 @@ export default function MantraSetupView({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsGroupSheetOpen(false)}
-              className="fixed inset-0 bg-black/55 z-[340]"
+              onTouchMove={(e) => e.preventDefault()}
+              className="fixed inset-0 bg-black/55 z-[340] backdrop-blur-xs"
             />
             <motion.div
               initial={{ y: "100%" }}
