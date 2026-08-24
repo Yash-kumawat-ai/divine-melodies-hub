@@ -1,4 +1,5 @@
 import type { Temple } from '@/types/liveAarti';
+import { getPublicSiteUrl } from '@/lib/env';
 
 export function getTempleEmbedUrl(temple: Temple): string | null {
   if (temple.videoId) {
@@ -10,5 +11,5 @@ export function getTempleEmbedUrl(temple: Temple): string | null {
   return null;
 }
 
-export const LIVE_AARTI_CANONICAL = 'https://harikirtan.com/live-aarti';
-export const LIVE_AARTI_OG_IMAGE = 'https://harikirtan.com/brand-logo.webp';
+export const LIVE_AARTI_CANONICAL = `${getPublicSiteUrl()}/live-aarti`;
+export const LIVE_AARTI_OG_IMAGE = `${getPublicSiteUrl()}/og-image.jpg`;

@@ -18,7 +18,6 @@ export function CommunityCoverImage({ src, alt, priority, className }: CoverProp
         className="h-full w-full object-cover object-[center_20%]"
         decoding="async"
         loading={priority ? "eager" : "lazy"}
-        fetchpriority={priority ? "high" : "auto"}
       />
     </div>
   );

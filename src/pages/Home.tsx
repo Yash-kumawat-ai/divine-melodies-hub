@@ -10,6 +10,7 @@ import DevotionalDivider from '@/components/DevotionalDivider';
 import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
 import { generateBhajanSlug } from '@/lib/slugUtils';
+import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
@@ -425,23 +426,14 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userBhajans.map((bhajan) => {
-                const convertedBhajan = {
-                  id: parseInt(bhajan.id),
-                  slug: generateBhajanSlug(bhajan.title),
-                  title: bhajan.title,
-                  titleHindi: bhajan.title_hindi,
-                  deityId: bhajan.deity_id,
-                  singerName: bhajan.singer_name,
-                  composerName: bhajan.composer_name || '',
-                  lyricsHindi: bhajan.lyrics_hindi,
-                  lyricsTransliteration: '',
-                  youtubeUrl: bhajan.youtube_url || '',
-                  playCount: 0,
-                  rating: 0,
-                  tags: [],
-                  featured: false,
-                };
-                return <BhajanCard key={bhajan.id} bhajan={convertedBhajan} />;
+                const convertedBhajan = mapUserUploadToBhajan(bhajan);
+                return (
+                  <BhajanCard
+                    key={bhajan.id}
+                    bhajan={convertedBhajan}
+                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                  />
+                );
               })}
             </div>
           </div>

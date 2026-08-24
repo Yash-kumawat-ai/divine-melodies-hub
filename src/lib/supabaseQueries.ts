@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabaseClient';
+import { generateBhajanSlug, generateUploadSlug, resolveUniqueSlug } from '@/lib/slugUtils';
 
 /*
  * RLS Policy Reminders (enforced at database level):
@@ -119,6 +120,8 @@ export interface AdminBhajanContentUpdate {
   composer_name: string | null;
   deity_id: number | null;
   content_type?: string | null;
+  slug?: string | null;
+  search_aliases?: string[] | null;
 }
 
 function isValidOptionalYoutubeUrl(url: string): boolean {
@@ -297,8 +300,52 @@ export const markMyModerationNotificationsRead = async () => {
   return { error };
 };
 
+/**
+ * Safe 1-hop redirect recorder with chain flattening and loop prevention:
+ * When oldSlug -> newSlug:
+ * 1. Upserts from_slug = oldSlug, to_slug = newSlug
+ * 2. Flattens existing chains: any row pointing to oldSlug now points directly to newSlug
+ * 3. Removes circular loops (if newSlug was previously recorded as from_slug)
+ */
+export async function recordSlugRedirect(
+  client: any,
+  fromSlug: string,
+  toSlug: string,
+  bhajanId: string
+): Promise<void> {
+  if (!fromSlug || !toSlug || fromSlug === toSlug) return;
+
+  try {
+    // 1. Remove any loop where from_slug is the new target slug
+    await client
+      .from('bhajan_slug_redirects')
+      .delete()
+      .eq('from_slug', toSlug);
+
+    // 2. Upsert the direct redirect record
+    await client
+      .from('bhajan_slug_redirects')
+      .upsert(
+        {
+          from_slug: fromSlug,
+          to_slug: toSlug,
+          bhajan_id: bhajanId,
+        },
+        { onConflict: 'from_slug' }
+      );
+
+    // 3. Flatten chains: update any historical redirects that pointed to fromSlug to now point to toSlug
+    await client
+      .from('bhajan_slug_redirects')
+      .update({ to_slug: toSlug })
+      .eq('to_slug', fromSlug);
+  } catch (err) {
+    console.warn('Non-critical redirect record note:', err);
+  }
+}
+
 export const updateAdminBhajanContent = async (
-  id: string | number,
+  id: string,
   fields: AdminBhajanContentUpdate,
   adminUserId: string,
 ) => {
@@ -313,6 +360,13 @@ export const updateAdminBhajanContent = async (
     return { data: null, error: { message: 'YouTube URL must be a youtube.com or youtu.be link' } };
   }
 
+  // Fetch current row with status and slug
+  const { data: existingRow } = await client
+    .from('user_uploads')
+    .select('id, title, slug, status')
+    .eq('id', id)
+    .maybeSingle();
+
   const payload: Record<string, unknown> = {
     title,
     title_hindi: fields.title_hindi?.trim() || null,
@@ -324,6 +378,46 @@ export const updateAdminBhajanContent = async (
   };
   if (fields.content_type !== undefined) {
     payload.content_type = fields.content_type?.trim() || null;
+  }
+  if (fields.search_aliases !== undefined) {
+    payload.search_aliases = fields.search_aliases;
+  }
+
+  // Slug Handling with Editorial Control:
+  // - Cosmetic changes (emoji/symbol/whitespace) produce identical candidateSlug -> KEEP existing slug!
+  // - Meaningful title changes produce different candidateSlug -> resolve unique slug, update, and record 1-hop redirect!
+  const candidateSlug = generateBhajanSlug(title);
+
+  if (!existingRow?.slug && candidateSlug) {
+    const finalNewSlug = await resolveUniqueSlug(candidateSlug, async (cand) => {
+      const { data: existingSlugRow } = await client
+        .from('user_uploads')
+        .select('id')
+        .eq('slug', cand)
+        .neq('id', id)
+        .maybeSingle();
+      return !!existingSlugRow;
+    });
+    payload.slug = finalNewSlug;
+  } else if (existingRow?.slug && candidateSlug && candidateSlug !== existingRow.slug) {
+    // Meaningful title change on an existing record
+    const finalNewSlug = await resolveUniqueSlug(candidateSlug, async (cand) => {
+      const { data: existingSlugRow } = await client
+        .from('user_uploads')
+        .select('id')
+        .eq('slug', cand)
+        .neq('id', id)
+        .maybeSingle();
+      return !!existingSlugRow;
+    });
+
+    if (finalNewSlug !== existingRow.slug) {
+      payload.slug = finalNewSlug;
+      // Record 1-hop redirect if this is an approved/published bhajan
+      if (existingRow.status === 'approved') {
+        await recordSlugRedirect(client, existingRow.slug, finalNewSlug, id);
+      }
+    }
   }
 
   const { data, error } = await client
@@ -353,6 +447,82 @@ export const updateAdminBhajanContent = async (
 
 export const reviewSubmission = async (input: ReviewSubmissionInput, adminUserId: string) => {
   const client = supabase as any;
+
+  // On approval, validate singer requirement and guarantee unique slug
+  if (input.status === 'approved') {
+    const { data: currentItem, error: fetchErr } = await client
+      .from('user_uploads')
+      .select('*')
+      .eq('id', input.id)
+      .maybeSingle();
+
+    if (fetchErr || !currentItem) {
+      return { data: null, error: { message: fetchErr?.message || 'Submission not found' } };
+    }
+
+    const cType = (currentItem.content_type || 'bhajan').toLowerCase();
+    const singer = (currentItem.singer_name || '').trim();
+    const invalidSingers = ['', 'none', 'null', 'undefined', 'na', 'n/a', 'unknown'];
+    if (['bhajan', 'aarti', 'chalisa'].includes(cType) && invalidSingers.includes(singer.toLowerCase())) {
+      return {
+        data: null,
+        error: { message: 'Cannot approve: A valid singer/artist name is required for bhajans, aartis, and chalisas.' },
+      };
+    }
+
+    let finalSlug = currentItem.slug;
+    if (!finalSlug) {
+      const cleanEnglishSlug = generateBhajanSlug(currentItem.title || '');
+      if (!cleanEnglishSlug || cleanEnglishSlug.length < 2) {
+        return {
+          data: null,
+          error: { message: 'Cannot approve: A valid English/public title is required to generate a permanent URL slug.' },
+        };
+      }
+
+      // Sequentially resolve unique slug against both static catalog and Supabase
+      finalSlug = await resolveUniqueSlug(cleanEnglishSlug, async (candidate) => {
+        const { data: existingSlugRow } = await client
+          .from('user_uploads')
+          .select('id')
+          .eq('slug', candidate)
+          .neq('id', input.id)
+          .maybeSingle();
+        return !!existingSlugRow;
+      });
+    }
+
+    const { data, error } = await client
+      .from('user_uploads')
+      .update({
+        status: input.status,
+        slug: finalSlug,
+      })
+      .eq('id', input.id)
+      .select('*')
+      .single();
+
+    if (!error) {
+      try {
+        await client.from('admin_audit_logs').insert([
+          {
+            admin_user_id: adminUserId,
+            action: input.status,
+            entity_type: 'user_upload',
+            entity_id: input.id,
+            new_status: input.status,
+            reason: input.reason || input.adminNotes || null,
+            action_ip: input.actionIp || null,
+            action_user_agent: input.actionUserAgent || null,
+          },
+        ]);
+      } catch {
+        // audit log insert is non-critical
+      }
+    }
+
+    return { data, error };
+  }
 
   const { data, error } = await client
     .from('user_uploads')

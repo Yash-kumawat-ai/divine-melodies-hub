@@ -409,7 +409,7 @@ export default function MantraDetailView({
                   alt=""
                   width={1024}
                   height={1024}
-                  fetchpriority="high"
+                  loading="eager"
                   decoding="async"
                   className="w-full h-full object-cover object-[center_25%] md:object-[center_28%]"
                 />

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BhajanCard from '@/components/BhajanCard';
 import { Loader2 } from 'lucide-react';
 import { getRecentApprovedBhajans } from '@/lib/supabaseQueries';
-import { generateBhajanSlug } from '@/lib/slugUtils';
+import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
 
 interface RecentBhajan {
   id: string;
   title: string;
   title_hindi: string;
+  slug?: string;
   deity_id: number;
   singer_name: string;
   composer_name?: string;
@@ -16,9 +18,12 @@ interface RecentBhajan {
   play_count?: number;
   average_rating?: number;
   created_at: string;
+  search_aliases?: string[] | string;
+  content_type?: string;
 }
 
 export default function RecentBhajans() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<RecentBhajan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,27 +56,16 @@ export default function RecentBhajans() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {items.map((bhajan) => (
-                <BhajanCard
-                  key={bhajan.id}
-                  bhajan={{
-                    id: parseInt(bhajan.id, 10),
-                    slug: generateBhajanSlug(bhajan.title),
-                    title: bhajan.title,
-                    titleHindi: bhajan.title_hindi,
-                    deityId: bhajan.deity_id,
-                    singerName: bhajan.singer_name,
-                    composerName: bhajan.composer_name || '',
-                    youtubeUrl: bhajan.youtube_url || '',
-                    lyricsHindi: bhajan.lyrics_hindi,
-                    lyricsTransliteration: '',
-                    playCount: bhajan.play_count || 0,
-                    rating: bhajan.average_rating || 0,
-                    tags: ['recent'],
-                    featured: false,
-                  }}
-                />
-              ))}
+              {items.map((bhajan) => {
+                const mappedBhajan = mapUserUploadToBhajan(bhajan);
+                return (
+                  <BhajanCard
+                    key={bhajan.id}
+                    bhajan={mappedBhajan}
+                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                  />
+                );
+              })}
             </div>
           )}
         </div>

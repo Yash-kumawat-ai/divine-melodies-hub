@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
@@ -6,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { getTrendingBhajans, queryUserUploads } from '@/lib/supabaseQueries';
-import { generateBhajanSlug } from '@/lib/slugUtils';
+import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
 
 interface UserBhajan {
   id: string;
   title: string;
   title_hindi: string;
+  slug?: string;
   deity_id: number;
   singer_name: string;
   composer_name?: string;
@@ -20,6 +22,8 @@ interface UserBhajan {
   average_rating: number;
   created_at: string;
   youtube_url?: string;
+  search_aliases?: string[] | string;
+  content_type?: string;
 }
 
 const PERIOD_OPTIONS = [
@@ -30,6 +34,7 @@ const PERIOD_OPTIONS = [
 ];
 
 export const TrendingPage = () => {
+  const navigate = useNavigate();
   const [bhajans, setBhajans] = useState<UserBhajan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePeriod, setActivePeriod] = useState('daily');
@@ -80,22 +85,8 @@ export const TrendingPage = () => {
             </div>
 
             <BhajanCard
-              bhajan={{
-                id: parseInt(bhajan.id),
-                slug: generateBhajanSlug(bhajan.title),
-                title: bhajan.title,
-                titleHindi: bhajan.title_hindi,
-                deityId: bhajan.deity_id,
-                singerName: bhajan.singer_name,
-                composerName: bhajan.composer_name || '',
-                youtubeUrl: bhajan.youtube_url || '',
-                lyricsHindi: bhajan.lyrics_hindi,
-                lyricsTransliteration: '',
-                playCount: bhajan.play_count || 0,
-                rating: bhajan.average_rating || 0,
-                tags: [],
-                featured: false,
-              }}
+              bhajan={mapUserUploadToBhajan(bhajan)}
+              onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
             />
 
             {/* Stats */}

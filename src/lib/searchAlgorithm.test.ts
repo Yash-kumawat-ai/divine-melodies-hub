@@ -188,4 +188,83 @@ describe('searchAlgorithm', () => {
     expect(smart.some((b) => b.id === 21) || narad.some((b) => b.id === 21)).toBe(true);
     expect(narad.some((b) => b.id === 21)).toBe(true);
   });
+
+  it('ranks Baglamukhi Aarti first for "baglamukhi aarti" and handles "arti" synonym', () => {
+    const baglamukhiAarti = {
+      id: 50,
+      slug: 'maa-baglamukhi-aarti',
+      title: 'Maa Baglamukhi Aarti',
+      titleHindi: 'माँ बगलामुखी की आरती',
+      singerName: 'Anuradha Paudwal',
+      composerName: 'Traditional',
+      lyricsHindi: 'जय बगलामुखी माता',
+      search_aliases: ['baglamukhi arti', 'pitambara aarti'],
+    };
+
+    const results = smartSearchBhajans('baglamukhi aarti', [
+      ...unrelatedBhajans,
+      baglamukhiAarti,
+      chupChapBhajan,
+    ]);
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].id).toBe(50);
+
+    const artiResults = smartSearchBhajans('baglamukhi arti', [
+      ...unrelatedBhajans,
+      baglamukhiAarti,
+    ]);
+    expect(artiResults[0].id).toBe(50);
+  });
+
+  it('returns Hanuman Chalisa first for "hanuman chalisa"', () => {
+    const results = smartSearchBhajans('hanuman chalisa', [
+      chupChapBhajan,
+      ...unrelatedBhajans,
+    ]);
+    expect(results[0].id).toBe(2);
+  });
+
+  it('does not match Krishna or unrelated items when searching "balaji" unless in title/aliases', () => {
+    const krishnaBhajan = {
+      id: 70,
+      title: 'Achyutam Keshavam',
+      titleHindi: 'अच्युतम् केशवम्',
+      singerName: 'Madhav',
+      composerName: '',
+      lyricsHindi: 'कृष्ण दामोदरम्',
+    };
+
+    const salasarBalaji = {
+      id: 71,
+      title: 'Salasar Balaji Aarti',
+      titleHindi: 'सालासर बालाजी आरती',
+      singerName: 'Lakhbir Singh Lakha',
+      composerName: '',
+      lyricsHindi: 'जय सालासर बालाजी',
+      search_aliases: ['balaji aarti'],
+    };
+
+    const results = smartSearchBhajans('balaji', [krishnaBhajan, salasarBalaji]);
+    expect(results.some((b) => b.id === 70)).toBe(false);
+    expect(results.some((b) => b.id === 71)).toBe(true);
+  });
+
+  it('matches bhajan by composer name when queried', () => {
+    const ramBhajan = {
+      id: 80,
+      title: 'Shri Ramachandra Kripalu Bhajman',
+      titleHindi: 'श्री रामचंद्र कृपालु भजुमन',
+      singerName: 'Lata Mangeshkar',
+      composerName: 'Goswami Tulsidas',
+      lyricsHindi: 'श्री रामचंद्र कृपालु भजुमन हरण भवभय दारुणम्',
+    };
+
+    const results = smartSearchBhajans('Tulsidas', [
+      ...unrelatedBhajans,
+      ramBhajan,
+    ]);
+    expect(results.some((b) => b.id === 80)).toBe(true);
+    expect(results[0].id).toBe(80);
+  });
 });

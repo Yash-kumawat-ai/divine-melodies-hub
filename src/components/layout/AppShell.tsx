@@ -71,7 +71,9 @@ export default function AppShell() {
       <main
         className={cn(
           "flex-1",
-          (isFullScreenApp || isShortsPage) && "flex min-h-0 flex-col overflow-hidden",
+          (isFullScreenApp || isShortsPage)
+            ? "flex min-h-0 flex-col overflow-hidden"
+            : "min-h-[calc(100dvh-4.5rem)]",
           (isFullScreenApp && showMobileBottomNav && !isTemplePage) && "pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0",
           isTemplePage && "temple-mobile-layout"
         )}
@@ -85,7 +87,11 @@ export default function AppShell() {
           <MobileBottomNav />
         </div>
       )}
-      {!hideFooter && <LayoutFooter />}
+      {!hideFooter && (
+        <div className="w-full" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' }}>
+          <LayoutFooter />
+        </div>
+      )}
     </div>
   );
 }

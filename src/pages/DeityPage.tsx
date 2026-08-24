@@ -1,10 +1,12 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import BhajanCard from "@/components/BhajanCard";
 import { getDeityBySlug, getBhajansByDeity } from "@/data/bhajans";
 import { generateDeitySlug, generateBhajanSlug } from "@/lib/slugUtils";
+import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { SEO } from "@/components/SEO";
+import { getPublicSiteUrl } from "@/lib/env";
 
 interface CustomDeity {
   id: number;
@@ -28,6 +30,7 @@ interface UserBhajan {
 }
 
 export default function DeityPage() {
+  const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [customDeity, setCustomDeity] = useState<CustomDeity | null>(null);
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
@@ -128,24 +131,9 @@ export default function DeityPage() {
     );
   }
 
-  const mappedUserBhajans = userBhajans.map((ub, index) => ({
-    id: (staticDeity ? staticBhajanList.length : 0) + index + 1,
-    slug: generateBhajanSlug(ub.title),
-    title: ub.title,
-    titleHindi: ub.title_hindi,
-    deityId: ub.deity_id,
-    singerName: ub.singer_name,
-    composerName: ub.composer_name || '',
-    youtubeUrl: ub.youtube_url || '',
-    lyricsHindi: ub.lyrics_hindi,
-    lyricsTransliteration: '',
-    playCount: 0,
-    rating: 0,
-    tags: [],
-    featured: false,
-    source: 'user',
-    sourceKey: ub.id,
-  }));
+  const mappedUserBhajans = userBhajans.map((ub) =>
+    mapUserUploadToBhajan(ub, customDeity ? [customDeity] : undefined)
+  );
 
   // Show static + uploaded songs for static deities, and uploaded songs for custom deities.
   const combinedBhajans = staticDeity
@@ -155,8 +143,42 @@ export default function DeityPage() {
       ]
     : mappedUserBhajans;
 
+  const seoTitle = staticDeity
+    ? `${staticDeity.nameHindi} (${staticDeity.name}) के प्रसिद्ध भजन एवं आरती - Raghavam`
+    : `${deity.name} Bhajans & Aartis - Raghavam`;
+
+  const seoDescription = `Listen to sacred devotional bhajans, aartis, and chalisa dedicated to ${deity.name}${staticDeity ? ` (${staticDeity.nameHindi})` : ''} on Raghavam. Explore lyrics, audio, and videos.`;
+  const baseUrl = getPublicSiteUrl();
+  const canonicalUrl = `${baseUrl}/deity/${slug}`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${deity.name} Bhajans`,
+    description: seoDescription,
+    url: canonicalUrl,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: combinedBhajans.slice(0, 15).map((b: any, idx: number) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        name: b.title,
+        url: `${baseUrl}/bhajan/${b.slug || b.id}`,
+      })),
+    },
+  };
+
   return (
     <div>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        url={canonicalUrl}
+        image={staticDeity?.imageUrl || `${baseUrl}/og-image.jpg`}
+        type="website"
+        lang="hi"
+        jsonLd={jsonLd}
+      />
       <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
@@ -180,7 +202,11 @@ export default function DeityPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {combinedBhajans.map((b: any) => (
-              <BhajanCard key={`${b.source}-${b.sourceKey}`} bhajan={b} />
+              <BhajanCard
+                key={`${b.source}-${b.sourceKey}`}
+                bhajan={b}
+                onCardClick={(selected) => navigate(`/bhajan/${selected.slug}`)}
+              />
             ))}
           </div>
           {combinedBhajans.length === 0 && (

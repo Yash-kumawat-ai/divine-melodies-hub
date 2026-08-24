@@ -46,6 +46,8 @@ import {
 import Pagination from "@/components/Pagination";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
 import { generateBhajanSlug } from "@/lib/slugUtils";
+import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -129,25 +131,9 @@ export default function SearchPage() {
       sourceKey: String(b.id),
     }));
 
-    const uploadedBhajans = userBhajans.map((ub, index) => ({
-      id: bhajans.length + index + 1,
-      slug: generateBhajanSlug(ub.title),
-      title: ub.title,
-      titleHindi: ub.title_hindi,
-      deityId: ub.deity_id,
-      singerName: ub.singer_name,
-      composerName: ub.composer_name || '',
-      youtubeUrl: ub.youtube_url || '',
-      imageUrl: ub.image_url || '',
-      lyricsHindi: ub.lyrics_hindi,
-      lyricsTransliteration: '',
-      playCount: 0,
-      rating: 0,
-      tags: [],
-      featured: false,
-      source: 'user' as const,
-      sourceKey: ub.id,
-    }));
+    const uploadedBhajans = userBhajans.map((ub) =>
+      mapUserUploadToBhajan(ub, allDeities)
+    );
 
     const combinedBhajans = [...staticBhajans, ...uploadedBhajans];
 
@@ -577,6 +563,11 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FCF8F2] via-[#F8F3EC] to-[#FDFBF8] dark:from-background dark:via-background/95 dark:to-background pb-12 text-[#32251E] dark:text-[#FFFDF8]">
+      <SEO
+        title="खोजें (Search Bhajans & Aartis)"
+        description="Search devotional bhajans, aartis, chalisa, and artists on Raghavam."
+        noindex={true}
+      />
       {/* Hide scrollbars style utility */}
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar {

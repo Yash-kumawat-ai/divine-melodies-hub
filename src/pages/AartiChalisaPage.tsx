@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, Search, Sparkles, Music, Loader2, Play, ChevronRight, ChevronLeft, Flame } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -8,10 +9,14 @@ import BhajanCard from '@/components/BhajanCard';
 import SearchBar from '@/components/SearchBar';
 import Pagination from '@/components/Pagination';
 import { generateBhajanSlug } from '@/lib/slugUtils';
+import { SEO } from '@/components/SEO';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
+
+import { getPublicSiteUrl } from '@/lib/env';
 
 interface AartiItem {
   id: string | number;
+  slug?: string;
   title: string;
   titleHindi: string;
   contentType: 'aarti' | 'chalisa' | 'path';
@@ -27,6 +32,7 @@ interface AartiItem {
 }
 
 export default function AartiChalisaPage() {
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const isHi = language === 'hi';
 
@@ -55,6 +61,7 @@ export default function AartiChalisaPage() {
         .filter((item) => item.content_type === 'aarti' || item.content_type === 'chalisa')
         .map((item) => ({
           id: item.id,
+          slug: item.slug || generateBhajanSlug(item.title || ''),
           title: item.title,
           titleHindi: item.title_hindi,
           contentType: item.content_type as 'aarti' | 'chalisa',
@@ -88,6 +95,7 @@ export default function AartiChalisaPage() {
         const type = titleLower.includes('chalisa') || titleLower.includes('चालीसा') ? 'chalisa' : 'aarti';
         return {
           id: b.id,
+          slug: b.slug || generateBhajanSlug(b.title),
           title: b.title,
           titleHindi: b.titleHindi,
           contentType: type,
@@ -133,8 +141,34 @@ export default function AartiChalisaPage() {
     return filteredItems.slice(start, start + pageSize);
   }, [filteredItems, currentPage, pageSize]);
 
+  const seoTitle = isHi
+    ? "पावन आरती एवं चालीसा संग्रह - हनुमान चालीसा, शिव, गणेश, दुर्गा आरती | Raghavam"
+    : "Sacred Aarti & Chalisa Collection - Hanuman Chalisa, Shiva, Ganesh Aarti | Raghavam";
+
+  const seoDescription = isHi
+    ? "समस्त देवी-देवताओं की प्रसिद्ध आरतियां, चालीसा, स्तोत्र एवं पाठ संग्रह। हिंदी लिरिक्स, वीडियो और ऑडियो के साथ राघवम् पर पाठ करें।"
+    : "Explore the complete sacred collection of Aartis, Hanuman Chalisa, Stotras, and devotional paths with verified lyrics and videos on Raghavam.";
+
+  const canonicalUrl = `${getPublicSiteUrl()}/aarti-chalisa`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Aarti & Chalisa Collection',
+    description: seoDescription,
+    url: canonicalUrl,
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFDF8] dark:bg-background pb-16">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        url={canonicalUrl}
+        type="website"
+        lang={isHi ? 'hi' : 'en'}
+        jsonLd={jsonLd}
+      />
       {/* ── LANDSCAPE HERO BANNER ── */}
       <section className="py-6 px-4 max-w-6xl mx-auto">
         <div className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-[#E8D8C4] dark:border-zinc-800 shadow-md bg-[#FAF2E8] dark:bg-[#1E1710] p-6 sm:p-8 min-h-[160px] sm:min-h-[190px] flex flex-col justify-center text-center">
@@ -233,7 +267,7 @@ export default function AartiChalisaPage() {
                     <BhajanCard
                       bhajan={{
                         id: item.id,
-                        slug: generateBhajanSlug(item.title),
+                        slug: item.slug || generateBhajanSlug(item.title),
                         title: item.title,
                         titleHindi: item.titleHindi,
                         deityId: item.deityId || 1,
@@ -247,6 +281,7 @@ export default function AartiChalisaPage() {
                         tags: [item.contentType, item.subType || ''].filter(Boolean),
                         featured: false,
                       }}
+                      onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
                     />
                   </div>
                 ))}

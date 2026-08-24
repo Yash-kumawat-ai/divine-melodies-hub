@@ -581,7 +581,7 @@ export default function CommunityPage() {
             alt=""
             width={1600}
             height={900}
-            fetchpriority="high"
+            loading="eager"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-[center_20%] z-0 pointer-events-none select-none opacity-100 saturate-[1.08] contrast-[1.05]"
           />

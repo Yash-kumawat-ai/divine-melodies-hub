@@ -24,7 +24,6 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
 import { useHomePublicStats } from '@/hooks/useHomeDashboardQueries';
 import { cn } from '@/lib/utils';
-import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
 
 // Local translation dictionary to support Hindi and English beautifully
@@ -99,46 +98,26 @@ const footerDict = {
 
 export default function Footer() {
   const { language } = useLanguage();
-  const [showScroll, setShowScroll] = useState(false);
   const [activeSection, setActiveSection] = useState<'explore' | 'community' | 'sadhana' | null>(null);
 
   const exploreOpen = activeSection === 'explore';
   const communityOpen = activeSection === 'community';
   const sadhanaOpen = activeSection === 'sadhana';
 
+  // Non-blocking cached stats with graceful static fallbacks
   const { totalCount: totalBhajanCount } = useBhajanCounts();
   const { data: publicStats } = useHomePublicStats();
-  const artistCount = publicStats?.artists ?? 0;
+  const displayedBhajanCount = totalBhajanCount > 0 ? totalBhajanCount : 1000;
+  const displayedArtistCount = (publicStats?.artists ?? 0) > 0 ? publicStats!.artists : 50;
 
   // Safely get local translations
   const l = footerDict[language === 'hi' ? 'hi' : 'en'];
 
-  useEffect(() => {
-    let ticking = false;
-    const checkScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(() => {
-        const y = window.scrollY;
-        setShowScroll((prev) => {
-          if (!prev && y > 400) return true;
-          if (prev && y <= 400) return false;
-          return prev;
-        });
-        ticking = false;
-      });
-    };
-    window.addEventListener('scroll', checkScroll, { passive: true });
-    return () => window.removeEventListener('scroll', checkScroll);
-  }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
-    <LazyMotion features={domAnimation}>
-    <footer className="bg-[#FFFDF8] dark:bg-background text-foreground border-t border-[#EFE4D7] dark:border-zinc-800 mt-0 pt-10 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-12 relative overflow-hidden transition-colors duration-300">
+    <footer 
+      className="bg-[#FFFDF8] dark:bg-background text-foreground border-t border-[#EFE4D7] dark:border-zinc-800 mt-0 pt-10 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-12 relative overflow-hidden transition-colors duration-300 w-full"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '0 450px' }}
+    >
       {/* Decorative background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -193,7 +172,7 @@ export default function Footer() {
                 href="https://t.me/raghavam" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full border border-sky-500/30 bg-sky-500/5 flex items-center justify-center text-sky-500 transition-all duration-300 hover:bg-sky-500 hover:text-white hover:border-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.45)] hover:scale-105"
+                className="w-12 h-12 rounded-full border border-sky-500/30 bg-sky-500/5 flex items-center justify-center text-sky-500 transition-all duration-300 hover:bg-sky-500 hover:text-white hover:border-sky-500 hover:shadow-[0_0_15px_rgba(56,189,248,0.45)] hover:scale-105 cursor-pointer"
                 aria-label="Telegram"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -209,7 +188,7 @@ export default function Footer() {
                 href="https://chat.whatsapp.com/" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-center text-emerald-600 dark:text-emerald-400 transition-all duration-300 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.45)] hover:scale-105"
+                className="w-12 h-12 rounded-full border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-center text-emerald-600 dark:text-emerald-400 transition-all duration-300 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.45)] hover:scale-105 cursor-pointer"
                 aria-label="WhatsApp"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -225,7 +204,7 @@ export default function Footer() {
                 href="https://youtube.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full border border-red-500/30 bg-red-500/5 flex items-center justify-center text-red-500 transition-all duration-300 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.45)] hover:scale-105"
+                className="w-12 h-12 rounded-full border border-red-500/30 bg-red-500/5 flex items-center justify-center text-red-500 transition-all duration-300 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.45)] hover:scale-105 cursor-pointer"
                 aria-label="YouTube"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
@@ -237,195 +216,165 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Three Collapsible Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 items-start">
+        {/* Semantic Navigation Section with Pure CSS Transitions (Zero Framer-Motion Overhead) */}
+        <nav aria-label="Footer Navigation" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 items-start">
           
           {/* Explore Section */}
           <div className="flex flex-col">
             <button 
+              type="button"
               onClick={() => setActiveSection(exploreOpen ? null : 'explore')}
               className={cn(
-                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-200 group text-left cursor-pointer",
                 exploreOpen 
                   ? "border-amber-500 bg-amber-500/10 dark:bg-[#1b130e] shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
                   : "border-amber-500/20 bg-amber-500/5 dark:bg-[#140e0b] hover:bg-amber-500/10 dark:hover:bg-[#1b130e] hover:border-amber-500/50 hover:shadow-[0_0_10px_rgba(245,158,11,0.08)]"
               )}
             >
               <div className="flex items-center gap-3.5">
-                <Compass className={cn("w-6 h-6 text-amber-500 transition-transform duration-300", exploreOpen ? "scale-110 rotate-45" : "group-hover:scale-110")} />
+                <Compass className={cn("w-6 h-6 text-amber-500 transition-transform duration-200", exploreOpen ? "scale-110 rotate-45" : "group-hover:scale-110")} />
                 <span className="font-display text-lg font-bold text-amber-600 dark:text-amber-500">{l.explore}</span>
               </div>
-              <ChevronDown className={cn("w-5 h-5 text-amber-500/60 transition-all duration-300", exploreOpen ? "text-amber-500 rotate-180" : "group-hover:text-amber-500")} />
+              <ChevronDown className={cn("w-5 h-5 text-amber-500/60 transition-transform duration-200", exploreOpen ? "text-amber-500 rotate-180" : "group-hover:text-amber-500")} />
             </button>
 
-            <AnimatePresence initial={false}>
-              {exploreOpen && (
-                <m.div
-                  key="explore-content"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2.5 p-4 rounded-2xl border border-amber-500/15 bg-amber-500/5 dark:bg-[#140e0b]/60 shadow-inner">
-                    <ul className="space-y-1">
-                      {[
-                        { label: l.home, href: "/", icon: <Home className="w-4 h-4" /> },
-                        { label: l.bhajans, href: "/all-bhajans", icon: <Music className="w-4 h-4" /> },
-                        { label: l.mantraJapa, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-amber-500/30 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">ॐ</span> },
-                        { label: l.aarti, href: "/live-aarti", icon: <Flame className="w-4 h-4" /> },
-                        { label: l.panchang, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
-                      ].map((item, idx) => (
-                        <li key={idx}>
-                          <Link 
-                            to={item.href} 
-                            onClick={() => setActiveSection(null)}
-                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-amber-500/8 transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-muted-foreground group-hover:text-amber-500 transition-colors">
-                                {item.icon}
-                              </span>
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </m.div>
-              )}
-            </AnimatePresence>
+            {exploreOpen && (
+              <div className="mt-2.5 p-4 rounded-2xl border border-amber-500/15 bg-amber-500/5 dark:bg-[#140e0b]/60 shadow-inner animate-in fade-in-50 duration-200">
+                <ul className="space-y-1" role="list">
+                  {[
+                    { label: l.home, href: "/", icon: <Home className="w-4 h-4" /> },
+                    { label: l.bhajans, href: "/all-bhajans", icon: <Music className="w-4 h-4" /> },
+                    { label: l.mantraJapa, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-amber-500/30 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">ॐ</span> },
+                    { label: l.aarti, href: "/live-aarti", icon: <Flame className="w-4 h-4" /> },
+                    { label: l.panchang, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
+                  ].map((item, idx) => (
+                    <li key={idx}>
+                      <Link 
+                        to={item.href} 
+                        onClick={() => setActiveSection(null)}
+                        className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-amber-500/8 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground group-hover:text-amber-500 transition-colors">
+                            {item.icon}
+                          </span>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Community Section */}
           <div className="flex flex-col">
             <button 
+              type="button"
               onClick={() => setActiveSection(communityOpen ? null : 'community')}
               className={cn(
-                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-200 group text-left cursor-pointer",
                 communityOpen 
                   ? "border-emerald-500 bg-emerald-500/10 dark:bg-[#0f1712] shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
                   : "border-emerald-500/20 bg-emerald-500/5 dark:bg-[#0c120f] hover:bg-emerald-500/10 dark:hover:bg-[#0f1712] hover:border-emerald-500/50 hover:shadow-[0_0_10px_rgba(16,185,129,0.08)]"
               )}
             >
               <div className="flex items-center gap-3.5">
-                <Users className={cn("w-6 h-6 text-emerald-600 dark:text-emerald-500 transition-transform duration-300", communityOpen ? "scale-110 rotate-6" : "group-hover:scale-110")} />
+                <Users className={cn("w-6 h-6 text-emerald-600 dark:text-emerald-500 transition-transform duration-200", communityOpen ? "scale-110 rotate-6" : "group-hover:scale-110")} />
                 <span className="font-display text-lg font-bold text-emerald-600 dark:text-emerald-500">{l.community}</span>
               </div>
-              <ChevronDown className={cn("w-5 h-5 text-emerald-500/60 transition-all duration-300", communityOpen ? "text-emerald-500 rotate-180" : "group-hover:text-emerald-500")} />
+              <ChevronDown className={cn("w-5 h-5 text-emerald-500/60 transition-transform duration-200", communityOpen ? "text-emerald-500 rotate-180" : "group-hover:text-emerald-500")} />
             </button>
 
-            <AnimatePresence initial={false}>
-              {communityOpen && (
-                <m.div
-                  key="community-content"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2.5 p-4 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 dark:bg-[#0c120f]/60 shadow-inner">
-                    <ul className="space-y-1">
-                      {[
-                        { label: l.uploadBhajan, href: "/upload-bhajan", icon: <Upload className="w-4 h-4" /> },
-                        { label: l.becomeArtist, href: "/upload-bhajan", icon: <Star className="w-4 h-4" /> },
-                        { label: l.becomeVolunteer, href: "/about", icon: <Heart className="w-4 h-4" /> },
-                        { label: l.sendSuggestions, href: "/account/support", icon: <MessageSquare className="w-4 h-4" /> },
-                      ].map((item, idx) => (
-                        <li key={idx}>
-                          <Link 
-                            to={item.href} 
-                            onClick={() => setActiveSection(null)}
-                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-emerald-500/8 transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-muted-foreground group-hover:text-emerald-500 transition-colors">
-                                {item.icon}
-                              </span>
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </m.div>
-              )}
-            </AnimatePresence>
+            {communityOpen && (
+              <div className="mt-2.5 p-4 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 dark:bg-[#0c120f]/60 shadow-inner animate-in fade-in-50 duration-200">
+                <ul className="space-y-1" role="list">
+                  {[
+                    { label: l.uploadBhajan, href: "/upload-bhajan", icon: <Upload className="w-4 h-4" /> },
+                    { label: l.becomeArtist, href: "/upload-bhajan", icon: <Star className="w-4 h-4" /> },
+                    { label: l.becomeVolunteer, href: "/about", icon: <Heart className="w-4 h-4" /> },
+                    { label: l.sendSuggestions, href: "/account/support", icon: <MessageSquare className="w-4 h-4" /> },
+                  ].map((item, idx) => (
+                    <li key={idx}>
+                      <Link 
+                        to={item.href} 
+                        onClick={() => setActiveSection(null)}
+                        className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-emerald-500/8 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground group-hover:text-emerald-500 transition-colors">
+                            {item.icon}
+                          </span>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Sadhana Section */}
           <div className="flex flex-col">
             <button 
+              type="button"
               onClick={() => setActiveSection(sadhanaOpen ? null : 'sadhana')}
               className={cn(
-                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 group text-left",
+                "w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-200 group text-left cursor-pointer",
                 sadhanaOpen 
                   ? "border-purple-500 bg-purple-500/10 dark:bg-[#160f1b] shadow-[0_0_15px_rgba(168,85,247,0.15)]" 
                   : "border-purple-500/20 bg-purple-500/5 dark:bg-[#110c14] hover:bg-purple-500/10 dark:hover:bg-[#160f1b] hover:border-purple-500/50 hover:shadow-[0_0_10px_rgba(168,85,247,0.08)]"
               )}
             >
               <div className="flex items-center gap-3.5">
-                <Flower2 className={cn("w-6 h-6 text-purple-600 dark:text-purple-500 transition-transform duration-300", sadhanaOpen ? "scale-110 rotate-12" : "group-hover:scale-110")} />
+                <Flower2 className={cn("w-6 h-6 text-purple-600 dark:text-purple-500 transition-transform duration-200", sadhanaOpen ? "scale-110 rotate-12" : "group-hover:scale-110")} />
                 <span className="font-display text-lg font-bold text-purple-600 dark:text-purple-500">{l.sadhana}</span>
               </div>
-              <ChevronDown className={cn("w-5 h-5 text-purple-500/60 transition-all duration-300", sadhanaOpen ? "text-purple-500 rotate-180" : "group-hover:text-purple-500")} />
+              <ChevronDown className={cn("w-5 h-5 text-purple-500/60 transition-transform duration-200", sadhanaOpen ? "text-purple-500 rotate-180" : "group-hover:text-purple-500")} />
             </button>
 
-            <AnimatePresence initial={false}>
-              {sadhanaOpen && (
-                <m.div
-                  key="sadhana-content"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-2.5 p-4 rounded-2xl border border-purple-500/15 bg-purple-500/5 dark:bg-[#110c14]/60 shadow-inner">
-                    <ul className="space-y-1">
-                      {[
-                        { label: l.meditationSadhana, href: "/meditation", icon: <Sparkles className="w-4 h-4" /> },
-                        { label: l.mantraCollection, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-500">ॐ</span> },
-                        { label: l.vratFestivals, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
-                        { label: l.kathaDiscourse, href: "/blog", icon: <BookOpen className="w-4 h-4" /> },
-                      ].map((item, idx) => (
-                        <li key={idx}>
-                          <Link 
-                            to={item.href} 
-                            onClick={() => setActiveSection(null)}
-                            className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-purple-500/8 transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-muted-foreground group-hover:text-purple-500 transition-colors">
-                                {item.icon}
-                              </span>
-                              <span className="font-medium">{item.label}</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </m.div>
-              )}
-            </AnimatePresence>
+            {sadhanaOpen && (
+              <div className="mt-2.5 p-4 rounded-2xl border border-purple-500/15 bg-purple-500/5 dark:bg-[#110c14]/60 shadow-inner animate-in fade-in-50 duration-200">
+                <ul className="space-y-1" role="list">
+                  {[
+                    { label: l.meditationSadhana, href: "/meditation", icon: <Sparkles className="w-4 h-4" /> },
+                    { label: l.mantraCollection, href: "/meditation", icon: <span className="font-display text-xs font-semibold w-4 h-4 flex items-center justify-center border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-500">ॐ</span> },
+                    { label: l.vratFestivals, href: "/panchang", icon: <Calendar className="w-4 h-4" /> },
+                    { label: l.kathaDiscourse, href: "/blog", icon: <BookOpen className="w-4 h-4" /> },
+                  ].map((item, idx) => (
+                    <li key={idx}>
+                      <Link 
+                        to={item.href} 
+                        onClick={() => setActiveSection(null)}
+                        className="group flex items-center justify-between py-2.5 px-3 rounded-xl text-sm text-foreground/75 hover:text-foreground hover:bg-purple-500/8 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground group-hover:text-purple-500 transition-colors">
+                            {item.icon}
+                          </span>
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-        </div>
+        </nav>
 
-        {/* Stats Row */}
+        {/* Stats Row with Stable Non-Zero Geometry */}
         <div className="grid grid-cols-3 md:grid-cols-5 items-center justify-center gap-4 md:gap-6 py-6 border-t border-b border-primary/10 mb-10">
           {/* Stat 1: Bhajans */}
           <div className="flex flex-col items-center text-center col-start-1 row-start-1">
             <Headphones className="w-5 h-5 text-primary mb-1.5 opacity-80" />
             <span className="font-display font-bold text-foreground text-sm md:text-base">
-              <span className="inline-block min-w-[3ch] text-center">{totalBhajanCount > 0 ? totalBhajanCount.toLocaleString() : '—'}</span>+
+              <span className="inline-block min-w-[3ch] text-center">{displayedBhajanCount.toLocaleString()}</span>+
             </span>
             <span className="text-xs text-muted-foreground font-medium">{l.bhajansStat}</span>
           </div>
@@ -434,7 +383,7 @@ export default function Footer() {
           <div className="flex flex-col items-center text-center col-start-1 row-start-2 md:col-start-2 md:row-start-1">
             <Mic className="w-5 h-5 text-primary mb-1.5 opacity-80" />
             <span className="font-display font-bold text-foreground text-sm md:text-base">
-              <span className="inline-block min-w-[2ch] text-center">{artistCount > 0 ? artistCount.toLocaleString() : '—'}</span>+
+              <span className="inline-block min-w-[2ch] text-center">{displayedArtistCount.toLocaleString()}</span>+
             </span>
             <span className="text-xs text-muted-foreground font-medium">{l.artistsStat}</span>
           </div>
@@ -446,6 +395,10 @@ export default function Footer() {
               <img 
                 src="/mandala-logo.png" 
                 alt="Om Mandala" 
+                width={80}
+                height={80}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-contain animate-spin-slow filter drop-shadow-[0_0_8px_rgba(217,119,6,0.35)] hover:scale-105 transition-transform duration-300 cursor-pointer" 
               />
             </div>
@@ -489,8 +442,6 @@ export default function Footer() {
         </div>
 
       </div>
-
-     </footer>
-    </LazyMotion>
+    </footer>
   );
 }

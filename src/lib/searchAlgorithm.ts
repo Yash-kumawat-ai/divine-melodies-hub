@@ -99,23 +99,44 @@ function getBhajanSearchFields(bhajan: any): {
   title: string;
   titleHindi: string;
   singer: string;
+  composer: string;
+  aliases: string;
+  contentType: string;
+  deityName: string;
   titleBlob: string;
   titleCompact: string;
   singerCompact: string;
+  composerCompact: string;
+  aliasesCompact: string;
   transliteration: string;
 } {
   const title = String(bhajan.title || '');
-  const titleHindi = String(bhajan.titleHindi || '');
-  const singer = String(bhajan.singerName || '');
-  const titleBlob = `${title} ${titleHindi} ${bhajan.lyricsTransliteration || ''}`.trim();
+  const titleHindi = String(bhajan.titleHindi || bhajan.title_hindi || '');
+  const singer = String(bhajan.singerName || bhajan.singer_name || '');
+  const composer = String(bhajan.composerName || bhajan.composer_name || '');
+  const aliases = Array.isArray(bhajan.search_aliases) 
+    ? bhajan.search_aliases.join(' ') 
+    : String(bhajan.search_aliases || '');
+  const contentType = String(bhajan.contentType || bhajan.content_type || '');
+  const deityName = String(bhajan.deityName || bhajan.deity_name || '');
+  const transliteration = String(bhajan.lyricsTransliteration || bhajan.lyrics_transliteration || '');
+
+  const titleBlob = `${title} ${titleHindi} ${singer} ${composer} ${aliases} ${contentType} ${deityName} ${transliteration}`.trim();
+
   return {
     title,
     titleHindi,
     singer,
+    composer,
+    aliases,
+    contentType,
+    deityName,
     titleBlob,
     titleCompact: normalizeSearchText(`${title} ${titleHindi}`),
     singerCompact: normalizeSearchText(singer),
-    transliteration: String(bhajan.lyricsTransliteration || ''),
+    composerCompact: normalizeSearchText(composer),
+    aliasesCompact: normalizeSearchText(aliases),
+    transliteration,
   };
 }
 
@@ -181,6 +202,9 @@ export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
     substringMatch(fields.title, trimmed) ||
     substringMatch(fields.titleHindi, trimmed) ||
     substringMatch(fields.singer, trimmed) ||
+    substringMatch(fields.composer, trimmed) ||
+    substringMatch(fields.aliases, trimmed) ||
+    substringMatch(fields.deityName, trimmed) ||
     substringMatch(fields.transliteration, trimmed) ||
     latinQueryMatchesHindiTitle(trimmed, fields.titleHindi)
   ) {
@@ -188,7 +212,12 @@ export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
   }
 
   if (queryCompact.length >= 3) {
-    if (fields.titleCompact.includes(queryCompact) || fields.singerCompact.includes(queryCompact)) {
+    if (
+      fields.titleCompact.includes(queryCompact) ||
+      fields.singerCompact.includes(queryCompact) ||
+      fields.composerCompact.includes(queryCompact) ||
+      fields.aliasesCompact.includes(queryCompact)
+    ) {
       return true;
     }
   }
@@ -203,6 +232,7 @@ export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
           tWord.includes(qWord) ||
           qWord.includes(tWord) ||
           compactMatch(tWord, qWord) ||
+          areSynonyms(qWord, tWord) ||
           (isLatinQuery(qWord) && (laxLatinWordMatch(qWord, tWord) || fuzzyTitleWordMatch(qWord, tWord))),
       ),
     );
@@ -220,19 +250,30 @@ export function bhajanMatchesQuery(bhajan: any, query: string): boolean {
 
 const synonymMap: Record<string, string[]> = {
   hare: ['hari', 'haraye', 'harey', 'hareesh'],
-  krishna: ['kanha', 'kanhaiya', 'kishan', 'govind', 'gopal', 'hari'],
-  rama: ['ram', 'ramachandra', 'raghupath', 'raghunath'],
-  shiva: ['shiv', 'mahadev', 'bholenath', 'neelkant'],
-  hanuman: ['hanumanji', 'bajrangbali', 'vanar'],
+  krishna: ['kanha', 'kanhaiya', 'kishan', 'govind', 'gopal', 'कृष्ण', 'कान्हा', 'गोविंद'],
+  rama: ['ram', 'ramachandra', 'raghunath', 'राम', 'रघुनाथ'],
+  shiva: ['shiv', 'mahadev', 'bholenath', 'shankar', 'शिव', 'महादेव', 'शंकर'],
+  hanuman: ['hanumanji', 'bajrangbali', 'maruti', 'हनुमान', 'बजरंगबली'],
+  aarti: ['arti', 'artee', 'aartii', 'आरती', 'आरति'],
+  arti: ['aarti', 'artee', 'aartii', 'आरती', 'आरति'],
+  chalisa: ['chalisha', 'chaleesa', 'chaalisa', 'चालीसा'],
+  mata: ['maa', 'mataji', 'maata', 'माता', 'माँ', 'माते'],
+  maa: ['mata', 'mataji', 'maata', 'माता', 'माँ'],
+  baglamukhi: ['bagalamukhi', 'बगलामुखी', 'पीताम्बरा', 'pitambara'],
+  durga: ['durgaji', 'ambe', 'ambika', 'दुर्गा', 'अम्बे'],
+  ganesh: ['ganesha', 'ganpati', 'vinayaka', 'गणेश', 'गणपति'],
 };
 
 function areSynonyms(word1: string, word2: string): boolean {
-  const a = word1.toLowerCase();
-  const b = word2.toLowerCase();
+  const a = word1.toLowerCase().trim();
+  const b = word2.toLowerCase().trim();
   if (a === b) return true;
   for (const [key, synonyms] of Object.entries(synonymMap)) {
-    if (a === key && synonyms.includes(b)) return true;
-    if (b === key && synonyms.includes(a)) return true;
+    const keyLower = key.toLowerCase();
+    const synLowers = synonyms.map((s) => s.toLowerCase());
+    if ((a === keyLower || synLowers.includes(a)) && (b === keyLower || synLowers.includes(b))) {
+      return true;
+    }
   }
   return false;
 }
@@ -251,13 +292,17 @@ function scoreBhajan(bhajan: any, query: string): number {
 
   if (substringMatch(fields.titleHindi, query)) score += 90;
   if (substringMatch(fields.singer, query)) score += 75;
+  if (substringMatch(fields.aliases, query)) score += 50;
+  if (substringMatch(fields.deityName, query)) score += 40;
+  if (substringMatch(fields.composer, query)) score += 30;
 
   if (queryCompact.length >= 3 && fields.titleCompact.includes(queryCompact)) score += 160;
   if (queryCompact.length >= 3 && fields.singerCompact.includes(queryCompact)) score += 65;
+  if (queryCompact.length >= 3 && fields.aliasesCompact.includes(queryCompact)) score += 45;
 
   for (const qWord of queryWords) {
     if (substringMatch(fields.titleBlob, qWord)) score += 40;
-    if (areSynonyms(qWord, fields.title) || areSynonyms(qWord, fields.singer)) score += 35;
+    if (areSynonyms(qWord, fields.title) || areSynonyms(qWord, fields.titleHindi) || areSynonyms(qWord, fields.singer)) score += 35;
   }
 
   const lyrics = `${bhajan.lyricsHindi || ''} ${fields.transliteration}`;

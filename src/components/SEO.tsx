@@ -1,4 +1,4 @@
-﻿import { Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title: string;
@@ -8,9 +8,10 @@ interface SEOProps {
   type?: 'website' | 'article';
   lang?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
 }
 
-export function SEO({ title, description, image, url, type = 'website', lang, jsonLd }: SEOProps) {
+export function SEO({ title, description, image, url, type = 'website', lang, jsonLd, noindex }: SEOProps) {
   const siteName = 'Raghavam';
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
@@ -18,6 +19,7 @@ export function SEO({ title, description, image, url, type = 'website', lang, js
     <Helmet>
       {lang && <html lang={lang} />}
       <title>{fullTitle}</title>
+      {noindex && <meta name="robots" content="noindex, follow" />}
       {description && <meta name="description" content={description} />}
       {url && <link rel="canonical" href={url} />}
       

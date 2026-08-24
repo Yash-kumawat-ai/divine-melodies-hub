@@ -7,6 +7,7 @@ import { deities, bhajans, Bhajan as StaticBhajan } from '@/data/bhajans';
 import { Loader2, User, CheckCircle2, AlertTriangle, Video, FileText, ExternalLink, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { CHALISA_SUB_TYPES, OTHER_SUB_TYPES } from '@/constants/uploadCategories';
+import { generateBhajanSlug } from '@/lib/slugUtils';
 
 interface BhajanFormProps {
   lyrics: string;
@@ -309,6 +310,7 @@ export default function BhajanForm({
         sub_type: subType || null,
         title: title.trim() || titleHindi.trim(),
         title_hindi: titleHindi.trim(),
+        slug: generateBhajanSlug(title.trim() || titleHindi.trim()),
         deity_id: deityId ? parseInt(deityId) : null,
         singer_name: singerName.trim() || null,
         composer_name: composerName.trim() || null,

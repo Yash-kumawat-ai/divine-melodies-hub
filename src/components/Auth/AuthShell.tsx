@@ -99,8 +99,8 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
           src={ramJiLoginWebp}
           alt="Lord Ram Devotional Desktop Cover"
           className="absolute inset-0 h-full w-full object-cover object-top md:object-[center_top] filter brightness-100 contrast-100"
-          fetchpriority="high"
           loading="eager"
+          decoding="async"
         />
       </div>
 
@@ -162,8 +162,8 @@ export default function AuthShell({ mode, children }: AuthShellProps) {
           src={ramJiLoginHdWebp}
           alt="Lord Ram Mobile Devotional Artwork"
           className="w-full h-full object-cover object-[center_top] filter brightness-[0.98]"
-          fetchpriority="high"
           loading="eager"
+          decoding="async"
         />
         {/* Ethereal dark gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/90" />

@@ -48,6 +48,25 @@ export function getNextAarti(temple: Temple): {
   return nextAarti;
 }
 
+export function getNextUpcomingAarti(temples: Temple[]): {
+  temple: Temple;
+  aarti: any;
+  minutesUntilStart: number;
+} | null {
+  let closest: { temple: Temple; aarti: any; minutesUntilStart: number } | null = null;
+  let minMinutes = Infinity;
+
+  for (const temple of temples) {
+    const next = getNextAarti(temple);
+    if (next && next.minutesUntilStart < minMinutes) {
+      minMinutes = next.minutesUntilStart;
+      closest = { temple, aarti: next.aarti, minutesUntilStart: next.minutesUntilStart };
+    }
+  }
+
+  return closest;
+}
+
 export function formatVerifiedTime(lastVerifiedAt?: string, isHi?: boolean): string {
   if (!lastVerifiedAt) return '';
   const now = new Date();
@@ -84,7 +103,15 @@ export function computeInitialAartiData() {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
       const raw = localStorage.getItem(HERO_CACHE_KEY);
-      if (raw) cachedData = JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Valid for 3 minutes max
+        if (parsed && parsed.timestamp && Date.now() - parsed.timestamp < 3 * 60 * 1000) {
+          cachedData = parsed.data || {};
+        } else {
+          localStorage.removeItem(HERO_CACHE_KEY);
+        }
+      }
     }
   } catch {}
 
@@ -100,7 +127,7 @@ export function computeInitialAartiData() {
         initialStatus = 'LIVE';
         if (c.videoId) videoId = c.videoId;
         if (c.liveTitle) liveTitle = c.liveTitle;
-      } else if (c.status === 'UPCOMING' || c.status === 'OFFLINE') {
+      } else if (c.status === 'UPCOMING' || c.status === 'OFFLINE' || c.status === 'STREAM_UNAVAILABLE') {
         initialStatus = c.status as any;
       }
     } else {
@@ -111,11 +138,13 @@ export function computeInitialAartiData() {
         return now >= start && now < end;
       });
 
-      if (activeAarti || temple.status === 'LIVE') {
+      if (activeAarti) {
         initialStatus = 'LIVE';
-        liveTitle = activeAarti ? (activeAarti.nameHindi || activeAarti.name) : null;
+        liveTitle = activeAarti.nameHindi || activeAarti.name;
       } else if (temple.aartiSchedule.length > 0) {
         initialStatus = 'UPCOMING';
+      } else {
+        initialStatus = 'OFFLINE';
       }
     }
 
@@ -418,7 +447,10 @@ export function useLiveAarti() {
             liveTitle: state.liveTitle
           };
         }
-        localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(cacheToSave));
+        localStorage.setItem(
+          HERO_CACHE_KEY,
+          JSON.stringify({ timestamp: Date.now(), data: cacheToSave })
+        );
       }
     } catch {}
   }
@@ -437,13 +469,20 @@ export function useLiveAarti() {
         for (const row of rows) {
           const id = row.temple_id as string;
           if (!quick[id]) continue;
-          quick[id] = {
-            id,
-            status: row.status,
-            liveTitle: row.live_title ?? null,
-            videoId: row.video_id ?? null,
-            lastVerifiedAt: row.last_verified_at ?? new Date().toISOString(),
-          };
+          
+          // Verify row is not older than 30 minutes
+          const verifiedTime = row.last_verified_at ? new Date(row.last_verified_at).getTime() : 0;
+          const isFresh = Date.now() - verifiedTime < 30 * 60 * 1000;
+
+          if (isFresh && row.status) {
+            quick[id] = {
+              id,
+              status: row.status,
+              liveTitle: row.live_title ?? null,
+              videoId: row.video_id ?? null,
+              lastVerifiedAt: row.last_verified_at ?? new Date().toISOString(),
+            };
+          }
         }
         applyStatuses(quick);
       }

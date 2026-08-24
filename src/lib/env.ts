@@ -1,24 +1,10 @@
-export function validateEnv() {
-  const required = [
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_PUBLISHABLE_KEY',
-    'VITE_CLOUDINARY_CLOUD_NAME',
-  ];
-  
-  const missing: string[] = [];
-  
-  for (const key of required) {
-    const value = import.meta.env[key];
-    if (!value || value.startsWith('your-') || value.includes('your-')) {
-      missing.push(key);
-    }
+﻿/**
+ * Environment configuration helper
+ */
+export function getPublicSiteUrl(): string {
+  const envUrl = import.meta.env?.VITE_PUBLIC_SITE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    return envUrl.trim().replace(/\/+$/, '');
   }
-  
-  if (missing.length > 0) {
-    throw new Error(`Missing required env: ${missing.join(', ')}`);
-  }
-}
-
-export function getEnv(key: string, fallback = ''): string {
-  return import.meta.env[key] || fallback;
+  return 'https://raghavam.com';
 }

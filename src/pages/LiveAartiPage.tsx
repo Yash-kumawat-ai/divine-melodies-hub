@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useLiveAarti, getNextAarti } from '@/hooks/useLiveAarti';
+import { useLiveAarti, getNextAarti, getNextUpcomingAarti } from '@/hooks/useLiveAarti';
 import { ArrowLeft, Share2, Clock, Flame, Landmark } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -175,16 +175,40 @@ export default function LiveAartiPage() {
     [allTemples, category],
   );
 
-  const heroTemple =
-    liveTemples.find((t) => t.id === heroTempleId) ||
-    allTemples.find((t) => t.id === 'salasar-balaji' && matchesCategory(t, category)) ||
-    liveTemples.find((t) => t.id === 'salasar-balaji') ||
-    liveTemples[0] ||
-    allTemples.find((t) => t.videoId && matchesCategory(t, category)) ||
-    todaysTemples[0] ||
-    allTemples.find((t) => t.id === 'salasar-balaji') ||
-    allTemples[0] ||
-    null;
+  const nextUpcoming = useMemo(
+    () => getNextUpcomingAarti(filteredAllTemples),
+    [filteredAllTemples]
+  );
+
+  const heroTemple = useMemo(() => {
+    if (heroTempleId) {
+      const selected = allTemples.find((t) => t.id === heroTempleId);
+      if (selected) return selected;
+    }
+    if (liveTemples.length > 0) {
+      return liveTemples[0];
+    }
+    if (startingSoon.length > 0) {
+      const matchSoon = startingSoon.find((s) => matchesCategory(s.temple, category));
+      if (matchSoon) return matchSoon.temple;
+    }
+    if (nextUpcoming?.temple) {
+      return nextUpcoming.temple;
+    }
+    if (filteredTodays.length > 0) {
+      return filteredTodays[0];
+    }
+    if (filteredAllTemples.length > 0) {
+      return filteredAllTemples[0];
+    }
+    return allTemples[0] || null;
+  }, [heroTempleId, liveTemples, startingSoon, category, nextUpcoming, filteredTodays, filteredAllTemples, allTemples]);
+
+  const isHeroLive = heroTemple?.status === 'LIVE';
+  const heroNextAarti = useMemo(() => {
+    if (!heroTemple) return null;
+    return getNextAarti(heroTemple);
+  }, [heroTemple]);
 
   const seoTitle = isHi ? 'लाइव आरती दर्शन - सोमनाथ, काशी, उज्जैन, सालासर' : 'Live Aarti Darshan from Major Indian Temples';
   const seoDescription = isHi
@@ -304,14 +328,16 @@ export default function LiveAartiPage() {
           })}
         </div>
 
-        {/* Featured Live Stream Hero Slot (Stable Geometry) */}
+        {/* Featured Live Stream / Upcoming Aarti Hero Slot */}
         {heroTemple && (
           <LiveAartiHero
             temple={heroTemple}
-            liveTemples={liveTemples.length > 0 ? liveTemples : [heroTemple]}
+            liveTemples={liveTemples}
             onSelectTemple={(t) => setHeroTempleId(t.id)}
             onOpenDetails={openTemple}
             isModalOpen={modalOpen}
+            isLive={isHeroLive}
+            nextAartiData={heroNextAarti}
           />
         )}
 

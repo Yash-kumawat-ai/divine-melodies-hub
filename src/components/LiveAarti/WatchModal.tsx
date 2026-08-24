@@ -193,7 +193,6 @@ export default function WatchModal({ temple, isOpen, onClose }: WatchModalProps)
                   width={800}
                   height={450}
                   loading="eager"
-                  fetchpriority="high"
                   decoding="async"
                   className="w-full h-full object-cover opacity-85 group-hover:scale-102 transition-transform duration-500"
                 />

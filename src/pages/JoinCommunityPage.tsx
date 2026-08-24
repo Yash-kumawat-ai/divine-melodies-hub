@@ -904,7 +904,7 @@ export default function JoinCommunityPage() {
                       alt=""
                       width={1600}
                       height={900}
-                      fetchpriority="high"
+                      loading="eager"
                       decoding="async"
                       className="absolute inset-0 w-full h-full object-cover object-center"
                     />

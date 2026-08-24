@@ -1,31 +1,12 @@
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "@/data/bhajans";
-import { generateBhajanSlug } from "@/lib/slugUtils";
 import { naradSearchBhajans } from "@/lib/searchAlgorithm";
 import { searchUserBhajans } from "@/lib/supabaseQueries";
+import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
 
 export const NARAD_RESULT_LIMIT = 12;
 
-export function convertUploadToBhajan(upload: any, index: number): Bhajan {
-  const converted = {
-    id: Number.parseInt(String(upload.id), 10) || 100000 + index,
-    slug: generateBhajanSlug(upload.title || `uploaded-bhajan-${index}`),
-    title: upload.title || "Untitled Bhajan",
-    titleHindi: upload.title_hindi || upload.title || "",
-    deityId: Number(upload.deity_id) || 0,
-    singerName: upload.singer_name || "Unknown",
-    composerName: upload.composer_name || "",
-    youtubeUrl: upload.youtube_url || "",
-    lyricsHindi: upload.lyrics_hindi || "",
-    lyricsTransliteration: "",
-    playCount: upload.play_count || 0,
-    rating: upload.average_rating || 0,
-    tags: upload.mood_tags || [],
-    featured: false,
-  } as Bhajan & { language?: string; aliases?: string[] };
-
-  converted.language = upload.language || "";
-  converted.aliases = upload.aliases || [];
-  return converted;
+export function convertUploadToBhajan(upload: any): Bhajan {
+  return mapUserUploadToBhajan(upload);
 }
 
 export function dedupeBhajans(items: Bhajan[]): Bhajan[] {

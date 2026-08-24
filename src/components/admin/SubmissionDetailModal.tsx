@@ -21,6 +21,8 @@ import { CheckCircle2, XCircle, AlertTriangle, Loader2, FileText, ExternalLink, 
 import SubmitterPopover from './SubmitterPopover';
 import { deities } from '@/data/bhajans';
 import { extractYouTubeVideoId } from '@/lib/youtubeSearch';
+import { generateBhajanSlug } from '@/lib/slugUtils';
+import { bhajanMatchesQuery } from '@/lib/searchAlgorithm';
 import type { AdminBhajanContentUpdate } from '@/lib/supabaseQueries';
 
 export interface QueueItem {
@@ -43,6 +45,8 @@ export interface QueueItem {
   is_duplicate_flagged?: boolean;
   duplicate_reference_title?: string;
   user_claimed_different?: boolean;
+  search_aliases?: string[] | string;
+  slug?: string;
 }
 
 const REJECTION_TEMPLATES = [
@@ -86,6 +90,17 @@ export default function SubmissionDetailModal({
   const [composerName, setComposerName] = useState('');
   const [deityId, setDeityId] = useState<string>('');
   const [contentType, setContentType] = useState<string>('bhajan');
+  const [searchAliases, setSearchAliases] = useState('');
+  const [testSearchQuery, setTestSearchQuery] = useState('');
+  const [actionError, setActionError] = useState('');
+
+  function sanitizeAliases(input: string): string[] {
+    return input
+      .split(',')
+      .map((s) => s.replace(/\|/g, '').replace(/https?:\/\/\S+/g, '').trim())
+      .filter((s) => s.length > 0 && s.length <= 48)
+      .slice(0, 8);
+  }
 
   useEffect(() => {
     if (!item) return;
@@ -97,6 +112,13 @@ export default function SubmissionDetailModal({
     setComposerName(item.composer_name || '');
     setDeityId(item.deity_id != null ? String(item.deity_id) : '');
     setContentType(item.content_type || 'bhajan');
+    setSearchAliases(
+      Array.isArray(item.search_aliases)
+        ? item.search_aliases.join(', ')
+        : String(item.search_aliases || '')
+    );
+    setTestSearchQuery('');
+    setActionError('');
     setReason('');
     setSelectedTemplate('');
     setActiveAction(null);
@@ -116,29 +138,18 @@ export default function SubmissionDetailModal({
   };
 
   const handleApprove = async () => {
-    await onAction(item.id, 'approved');
-    resetAndClose();
-  };
-
-  const handleRejectOrChanges = async (status: 'rejected' | 'changes_requested') => {
-    if (!reason.trim()) {
-      setActiveAction(status);
+    setActionError('');
+    const cType = (contentType || 'bhajan').toLowerCase();
+    const singer = singerName.trim();
+    const invalidSingers = ['', 'none', 'null', 'undefined', 'na', 'n/a', 'unknown'];
+    if (['bhajan', 'aarti', 'chalisa'].includes(cType) && invalidSingers.includes(singer.toLowerCase())) {
+      setActionError('Cannot approve: A valid singer/artist name is required for bhajans, aartis, and chalisas.');
       return;
     }
-    await onAction(item.id, status, reason.trim());
-    resetAndClose();
-  };
 
-  const resetAndClose = () => {
-    setReason('');
-    setSelectedTemplate('');
-    setActiveAction(null);
-    onClose();
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
     try {
+      const cleanAliases = sanitizeAliases(searchAliases);
+      // Save content updates first (including auto-slug and search aliases)
       await onSave(item.id, {
         title,
         title_hindi: titleHindi,
@@ -148,7 +159,57 @@ export default function SubmissionDetailModal({
         composer_name: composerName,
         deity_id: deityId ? Number(deityId) : null,
         content_type: contentType,
+        slug: item.slug || generateBhajanSlug(title || titleHindi),
+        search_aliases: cleanAliases,
       });
+      await onAction(item.id, 'approved');
+      resetAndClose();
+    } catch (err: any) {
+      setActionError(err?.message || 'Failed to approve submission.');
+    }
+  };
+
+  const handleRejectOrChanges = async (status: 'rejected' | 'changes_requested') => {
+    setActionError('');
+    if (!reason.trim()) {
+      setActiveAction(status);
+      return;
+    }
+    try {
+      await onAction(item.id, status, reason.trim());
+      resetAndClose();
+    } catch (err: any) {
+      setActionError(err?.message || 'Failed to process action.');
+    }
+  };
+
+  const resetAndClose = () => {
+    setReason('');
+    setSelectedTemplate('');
+    setActiveAction(null);
+    setActionError('');
+    onClose();
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setActionError('');
+    try {
+      const cleanAliases = sanitizeAliases(searchAliases);
+      await onSave(item.id, {
+        title,
+        title_hindi: titleHindi,
+        lyrics_hindi: lyricsHindi,
+        youtube_url: youtubeUrl,
+        singer_name: singerName,
+        composer_name: composerName,
+        deity_id: deityId ? Number(deityId) : null,
+        content_type: contentType,
+        slug: item.slug || generateBhajanSlug(title || titleHindi),
+        search_aliases: cleanAliases,
+      });
+    } catch (err: any) {
+      setActionError(err?.message || 'Failed to save content.');
     } finally {
       setSaving(false);
     }
@@ -278,6 +339,83 @@ export default function SubmissionDetailModal({
                 className="h-9 text-sm rounded-xl"
               />
             </div>
+            <div className="space-y-1 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold">Search Aliases / Alternative Spellings</label>
+                <span className="text-[10px] text-muted-foreground">Max 8 aliases, comma-separated</span>
+              </div>
+              <Input
+                value={searchAliases}
+                onChange={(e) => setSearchAliases(e.target.value)}
+                placeholder="e.g. baglamukhi arti, ma baglamukhi aarti, pitambara mata"
+                className="h-9 text-sm rounded-xl"
+              />
+            </div>
+            {item.slug && (
+              <div className="space-y-1 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#7A6B60] dark:text-[#D4C5B9]">Canonical Permanent Slug</label>
+                  <span className="text-[10px] text-muted-foreground">URL Path</span>
+                </div>
+                <Input
+                  value={`/bhajan/${item.slug}`}
+                  disabled
+                  className="h-8 text-xs rounded-xl bg-zinc-100 dark:bg-zinc-800 font-mono text-zinc-600 dark:text-zinc-400"
+                />
+              </div>
+            )}
+          </div>
+
+          {actionError && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-bold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
+              <span>{actionError}</span>
+            </div>
+          )}
+
+          {/* Live Search Match Tester for Quality Control */}
+          <div className="p-3.5 rounded-2xl bg-[#FAF2E8]/60 dark:bg-zinc-900/60 border border-[#E8D8C4] dark:border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] flex items-center gap-1.5">
+                <span>🔍 Live Search Match Preview</span>
+              </span>
+              <span className="text-[10px] text-[#7A6B60] dark:text-stone-400">Test search discoverability</span>
+            </div>
+            <Input
+              value={testSearchQuery}
+              onChange={(e) => setTestSearchQuery(e.target.value)}
+              placeholder="Type a test query (e.g. baglamukhi aarti, maa arti)..."
+              className="h-8 text-xs rounded-xl bg-white dark:bg-[#1E1710]"
+            />
+            {testSearchQuery.trim() && (() => {
+              const selectedDeity = deities.find((d) => String(d.id) === deityId);
+              const testCandidate = {
+                title,
+                titleHindi,
+                singerName,
+                composerName,
+                search_aliases: searchAliases.split(',').map((s) => s.trim()).filter(Boolean),
+                deityName: selectedDeity ? selectedDeity.name : '',
+                lyricsHindi,
+                contentType,
+              };
+              const isMatch = bhajanMatchesQuery(testCandidate, testSearchQuery);
+              return (
+                <div className="pt-0.5">
+                  {isMatch ? (
+                    <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>Match Confirmed! Users searching "{testSearchQuery}" will discover this content.</span>
+                    </p>
+                  ) : (
+                    <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Not matching. Add "{testSearchQuery}" into Title or Search Aliases field above.</span>
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {videoId && (

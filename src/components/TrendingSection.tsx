@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
 
@@ -26,6 +27,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
   isLoading = false,
   period = 'daily',
 }) => {
+  const navigate = useNavigate();
   if (isLoading) {
     return (
       <section className="py-12 px-4 bg-gradient-warm">
@@ -102,6 +104,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
                   tags: [],
                   featured: false,
                 }}
+                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
               />
               
               {/* Play Count */}

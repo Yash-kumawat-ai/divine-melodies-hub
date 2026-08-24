@@ -227,7 +227,7 @@ export default function MeditationPracticeHome({ onSelectPractice, onQuickStart 
               alt=""
               width={1672}
               height={941}
-              fetchpriority="high"
+              loading="eager"
               decoding="async"
               className="w-full h-full object-cover object-center"
             />

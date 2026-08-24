@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "npm run sitemap:generate && vite build",
     "build:dev": "vite build --mode development",
+    "sitemap:generate": "node scripts/generateSitemap.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "festival:build": "node scripts/buildFestivalData.mjs",

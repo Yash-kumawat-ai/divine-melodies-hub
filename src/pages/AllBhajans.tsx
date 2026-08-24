@@ -1,19 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Loader2, Music, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
 import { queryUserUploads } from '@/lib/supabaseQueries';
-import { generateBhajanSlug } from '@/lib/slugUtils';
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
+import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
 import { useLanguage } from '@/hooks/useLanguage';
+import { SEO } from '@/components/SEO';
 import SearchBar from '@/components/SearchBar';
 import Pagination from '@/components/Pagination';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
+
+import { getPublicSiteUrl } from '@/lib/env';
 
 interface UserBhajan {
   id: string;
   title: string;
   title_hindi: string;
+  slug?: string;
   deity_id: number;
   singer_name: string;
   composer_name?: string;
@@ -24,9 +29,12 @@ interface UserBhajan {
   average_rating: number;
   play_count: number;
   youtube_url?: string;
+  search_aliases?: string[] | string;
+  content_type?: string;
 }
 
 export const AllBhajans = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isHi = language === 'hi';
   const [bhajans, setBhajans] = useState<UserBhajan[]>([]);
@@ -67,15 +75,7 @@ export const AllBhajans = () => {
     let results = [...bhajans];
 
     if (search.trim()) {
-      const searchable = results.map((b) => ({
-        id: b.id,
-        title: b.title,
-        titleHindi: b.title_hindi,
-        singerName: b.singer_name,
-        lyricsHindi: b.lyrics_hindi,
-        lyricsTransliteration: '',
-        tags: b.mood_tags || [],
-      }));
+      const searchable = results.map((b) => mapUserUploadToBhajan(b));
       const matched = smartSearchBhajans(search, searchable);
       const matchedIds = new Set(matched.map((item) => String(item.id)));
       results = results.filter((b) => matchedIds.has(b.id));
@@ -90,8 +90,34 @@ export const AllBhajans = () => {
     return filteredBhajans.slice(start, start + pageSize);
   }, [filteredBhajans, currentPage, pageSize]);
 
+  const seoTitle = isHi
+    ? "सभी भक्ति भजन संग्रह - कृष्ण, शिव, राम, हनुमान भजन लिरिक्स व वीडियो | Raghavam"
+    : "Complete Devotional Bhajan Collection - Krishna, Shiva, Ram Bhajans | Raghavam";
+
+  const seoDescription = isHi
+    ? "राघवम् पर सभी पावन भक्ति भजनों का सम्पूर्ण संग्रह खोजें। लिरिक्स, गायक, भाव और संगीत के साथ ऑनलाइन सुनें।"
+    : "Explore the comprehensive collection of sacred devotional bhajans, lyrics, and videos across all deities on Raghavam.";
+
+  const canonicalUrl = `${getPublicSiteUrl()}/all-bhajans`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'All Bhajans Collection',
+    description: seoDescription,
+    url: canonicalUrl,
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFDF8] dark:bg-background pb-16">
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        url={canonicalUrl}
+        type="website"
+        lang={isHi ? 'hi' : 'en'}
+        jsonLd={jsonLd}
+      />
       {/* ── LANDSCAPE HERO BANNER ── */}
       <section className="py-6 px-4 max-w-6xl mx-auto">
         <div className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-[#E8D8C4] dark:border-zinc-800 shadow-md bg-[#FAF2E8] dark:bg-[#1E1710] p-6 sm:p-8 min-h-[160px] sm:min-h-[190px] flex flex-col justify-center text-center">
@@ -171,28 +197,17 @@ export const AllBhajans = () => {
                 animate={{ opacity: 1 }}
                 className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
               >
-                {paginatedBhajans.map((bhajan) => (
-                  <div key={bhajan.id} className="min-w-0">
-                    <BhajanCard
-                      bhajan={{
-                        id: bhajan.id,
-                        slug: generateBhajanSlug(bhajan.title),
-                        title: bhajan.title,
-                        titleHindi: bhajan.title_hindi,
-                        deityId: bhajan.deity_id,
-                        singerName: bhajan.singer_name,
-                        composerName: bhajan.composer_name || '',
-                        youtubeUrl: bhajan.youtube_url || '',
-                        lyricsHindi: bhajan.lyrics_hindi,
-                        lyricsTransliteration: '',
-                        playCount: bhajan.play_count || 0,
-                        rating: bhajan.average_rating || 0,
-                        tags: bhajan.mood_tags || [],
-                        featured: false,
-                      }}
-                    />
-                  </div>
-                ))}
+                {paginatedBhajans.map((bhajan) => {
+                  const mappedBhajan = mapUserUploadToBhajan(bhajan);
+                  return (
+                    <div key={bhajan.id} className="min-w-0">
+                      <BhajanCard
+                        bhajan={mappedBhajan}
+                        onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                      />
+                    </div>
+                  );
+                })}
               </motion.div>
 
               {/* Google-Style Page Numbers Pagination */}

@@ -206,7 +206,6 @@ export function PromotionalCarousel() {
                     width={800}
                     height={450}
                     loading={index === 0 ? 'eager' : 'lazy'}
-                    fetchpriority={index === 0 ? 'high' : 'auto'}
                     decoding="async"
                     className="absolute inset-0 w-full h-full object-cover object-[73%_center] z-0 pointer-events-none select-none brightness-[1.08] contrast-[1.03] saturate-[1.06]"
                   />

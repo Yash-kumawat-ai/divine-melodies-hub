@@ -188,12 +188,12 @@ export default function BhajanDetailModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showClose={false}
-        overlayClassName={elevatedLayer ? 'z-[150]' : 'z-[120]'}
+        overlayClassName={elevatedLayer ? 'z-[350]' : 'z-[300]'}
         className={cn(
           mobileFullscreenDialog,
           '!flex !flex-col !min-h-0 !overflow-hidden border-border bg-background p-0',
           'max-w-4xl sm:max-w-4xl sm:w-[min(100vw-2rem,56rem)]',
-          elevatedLayer ? 'z-[151]' : 'z-[125]',
+          elevatedLayer ? 'z-[351]' : 'z-[301]',
         )}
       >
         <DialogTitle className="sr-only">{bhajan.title}</DialogTitle>
@@ -218,6 +218,7 @@ export default function BhajanDetailModal({
               <DialogClose
                 type="button"
                 aria-label={t('back')}
+                onClick={onClose}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/80 dark:bg-zinc-900/80 border border-border text-foreground shadow-sm backdrop-blur-md transition-all hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <ArrowLeft className="h-4 w-4" />

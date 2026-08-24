@@ -1,10 +1,7 @@
-/**
- * Share Utilities for Bhajans
- * Enables sharing bhajans via WhatsApp, Telegram, Email, and copy link
- */
+import { getPublicSiteUrl } from './env';
 
 export interface Bhajan {
-  id: number;
+  id: number | string;
   slug: string;
   title: string;
   titleHindi: string;
@@ -12,8 +9,10 @@ export interface Bhajan {
 }
 
 const getBaseUrl = () => {
-  if (typeof window === 'undefined') return 'https://divine-melodies-hub.vercel.app';
-  return window.location.origin;
+  if (typeof window !== 'undefined' && window.location?.origin && !window.location.origin.includes('localhost')) {
+    return window.location.origin;
+  }
+  return getPublicSiteUrl();
 };
 
 const getBhajanUrl = (bhajan: Bhajan) => {

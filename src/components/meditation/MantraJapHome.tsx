@@ -553,7 +553,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 alt="Mantra Japa Sacred Banner"
                 width={1971}
                 height={798}
-                fetchpriority="high"
+                loading="eager"
                 decoding="async"
                 className="w-full h-full object-cover object-[72%_center] md:object-[center_38%]"
               />

@@ -454,7 +454,11 @@ export default function SavedPostsPage() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   {likedBhajans.map((bhajan) => (
-                    <BhajanCard key={bhajan.id} bhajan={bhajan} />
+                    <BhajanCard
+                      key={bhajan.id}
+                      bhajan={bhajan}
+                      onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                    />
                   ))}
                 </div>
               )}

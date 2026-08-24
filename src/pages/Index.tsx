@@ -1,10 +1,11 @@
-﻿import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import DeityGrid from "@/components/DeityGrid";
 import BhajanCard from "@/components/BhajanCard";
 import { getFeaturedBhajans } from "@/data/bhajans";
-import { generateBhajanSlug } from "@/lib/slugUtils";
+import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -14,6 +15,7 @@ interface UserBhajan {
   user_id: string;
   title: string;
   title_hindi: string;
+  slug?: string;
   deity_id: number;
   singer_name: string;
   composer_name?: string;
@@ -22,9 +24,12 @@ interface UserBhajan {
   lyrics_hindi: string;
   created_at: string;
   status: string;
+  search_aliases?: string[] | string;
+  content_type?: string;
 }
 
 const Index = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const featured = getFeaturedBhajans();
   const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
@@ -40,10 +45,13 @@ const Index = () => {
           .order('created_at', { ascending: false })
           .limit(6);
 
-        if (error) throw error;
-        if (data) setUserBhajans(data as UserBhajan[]);
+        if (error) {
+          console.error("Error fetching user bhajans:", error);
+        } else {
+          setUserBhajans(data || []);
+        }
       } catch (err) {
-        console.error('Error fetching user bhajans:', err);
+        console.error("Error in fetchUserBhajans:", err);
       } finally {
         setLoading(false);
       }
@@ -102,7 +110,11 @@ const Index = () => {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {featured.map((bhajan) => (
-              <BhajanCard key={bhajan.id} bhajan={bhajan} />
+              <BhajanCard 
+                key={bhajan.id} 
+                bhajan={bhajan} 
+                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+              />
             ))}
           </div>
         </div>
@@ -120,25 +132,13 @@ const Index = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userBhajans.map((bhajan) => {
-                const convertedBhajan = {
-                  id: parseInt(bhajan.id),
-                  slug: generateBhajanSlug(bhajan.title),
-                  title: bhajan.title,
-                  titleHindi: bhajan.title_hindi,
-                  deityId: bhajan.deity_id,
-                  singerName: bhajan.singer_name,
-                  composerName: bhajan.composer_name || '',
-                  lyricsHindi: bhajan.lyrics_hindi,
-                  lyricsTransliteration: '',
-                  youtubeUrl: bhajan.youtube_url || '',
-                  playCount: 0,
-                  rating: 0,
-                  tags: [],
-                  featured: false,
-                };
-
+                const convertedBhajan = mapUserUploadToBhajan(bhajan);
                 return (
-                  <BhajanCard key={bhajan.id} bhajan={convertedBhajan} />
+                  <BhajanCard 
+                    key={bhajan.id} 
+                    bhajan={convertedBhajan} 
+                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                  />
                 );
               })}
             </div>

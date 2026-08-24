@@ -59,7 +59,10 @@ export default function LikedBhajansPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {likedBhajans.map((bhajan) => (
             <div key={bhajan.id} className="min-w-0">
-              <BhajanCard bhajan={bhajan} />
+              <BhajanCard
+                bhajan={bhajan}
+                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+              />
             </div>
           ))}
         </div>
