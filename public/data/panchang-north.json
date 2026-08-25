@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-25",
+  "date": "2026-08-26",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Dwadasi",
-  "tithi_number": 0,
-  "nakshatra": "Uttarashada - 2",
-  "yoga": "Ayushman",
-  "karana": "Balava",
-  "paksha": "Krishna",
+  "tithi": "Triodasi",
+  "tithi_number": 13,
+  "nakshatra": "Sravana - 1",
+  "yoga": "Saubhagya",
+  "karana": "Taitula",
+  "paksha": "Shukla",
   "sunrise": "05:59 AM",
-  "sunset": "06:46 PM",
-  "rahu_kaal": "03:34 PM - 05:10 PM",
+  "sunset": "06:45 PM",
+  "rahu_kaal": "10:46 AM - 12:22 PM",
   "brahma_muhurat": "04:23 AM - 05:11 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-08-25T05:15:26+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-08-26T05:17:59+05:30"
 }
