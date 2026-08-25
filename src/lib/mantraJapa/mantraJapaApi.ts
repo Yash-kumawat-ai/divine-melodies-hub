@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabaseClient";
 // ─── Types ────────────────────────────────────────────────────────────
 export interface Mantra {
   id: string;
+  slug: string;
   name_hindi: string;
   name_english: string;
   deity: string | null;
@@ -23,6 +24,18 @@ export interface Mantra {
   recommended_counts: number[] | null;
   sort_order: number;
   is_active: boolean;
+}
+
+export interface PersonalMantra {
+  id: string; // UUID primary key
+  user_id: string | null;
+  name_hindi: string;
+  name_english: string;
+  deity: string | null;
+  full_text_hindi: string;
+  transliteration: string | null;
+  is_public: false;
+  created_at: string;
 }
 
 export interface JapSession {
@@ -81,6 +94,8 @@ export interface AggregatedStats {
 
 // ─── API Functions ────────────────────────────────────────────────────
 
+import { slugify } from "./mantraSlugs";
+
 /** Fetch all active mantras (public, no auth needed) */
 export async function fetchMantras(): Promise<Mantra[]> {
   const { data, error } = await supabase
@@ -90,7 +105,124 @@ export async function fetchMantras(): Promise<Mantra[]> {
     .order("sort_order", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as Mantra[];
+  return ((data ?? []) as any[]).map((row) => ({
+    ...row,
+    slug: row.slug || slugify(row.name_english || row.id),
+  })) as Mantra[];
+}
+
+/** Fetch user's personal mantras (authenticated via Supabase RLS, or guest localStorage) */
+export async function fetchPersonalMantras(userId: string | null): Promise<PersonalMantra[]> {
+  if (!userId) {
+    try {
+      const saved = localStorage.getItem("hari_kirtan_personal_mantras_v1");
+      return saved ? (JSON.parse(saved) as PersonalMantra[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Authenticated: Query Supabase personal_mantras table (RLS enforced)
+  const { data, error } = await supabase
+    .from("personal_mantras")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    // If table is not created yet, fallback to user-scoped local storage
+    try {
+      const saved = localStorage.getItem(`hari_kirtan_personal_mantras_${userId}`);
+      return saved ? (JSON.parse(saved) as PersonalMantra[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return (data ?? []) as PersonalMantra[];
+}
+
+/** Insert a personal mantra */
+export async function createPersonalMantra(
+  userId: string | null,
+  data: { name_hindi: string; name_english: string; deity?: string | null }
+): Promise<PersonalMantra> {
+  const chosenDeity = data.deity || "om";
+  const fallbackId = crypto.randomUUID();
+  const newMantra: PersonalMantra = {
+    id: fallbackId,
+    user_id: userId,
+    name_hindi: data.name_hindi,
+    name_english: data.name_english,
+    deity: chosenDeity,
+    full_text_hindi: data.name_hindi,
+    transliteration: data.name_english,
+    is_public: false,
+    created_at: new Date().toISOString(),
+  };
+
+  if (!userId) {
+    try {
+      const existing = await fetchPersonalMantras(null);
+      const updated = [newMantra, ...existing];
+      localStorage.setItem("hari_kirtan_personal_mantras_v1", JSON.stringify(updated));
+    } catch { /* ignore */ }
+    return newMantra;
+  }
+
+  // Authenticated user: Let Postgres generate ID if supported, or insert
+  try {
+    const { data: inserted, error } = await supabase
+      .from("personal_mantras")
+      .insert({
+        user_id: userId,
+        name_hindi: data.name_hindi,
+        name_english: data.name_english,
+        deity: chosenDeity,
+        full_text_hindi: data.name_hindi,
+        transliteration: data.name_english,
+        is_public: false,
+      })
+      .select()
+      .single();
+
+    if (!error && inserted) {
+      return inserted as PersonalMantra;
+    }
+  } catch { /* ignore */ }
+
+  // Fallback to local storage if DB table is unavailable
+  try {
+    const existing = await fetchPersonalMantras(userId);
+    const updated = [newMantra, ...existing];
+    localStorage.setItem(`hari_kirtan_personal_mantras_${userId}`, JSON.stringify(updated));
+  } catch { /* ignore */ }
+
+  return newMantra;
+}
+
+/** Delete a personal mantra */
+export async function deletePersonalMantra(
+  userId: string | null,
+  mantraId: string
+): Promise<void> {
+  if (!userId) {
+    try {
+      const existing = await fetchPersonalMantras(null);
+      const updated = existing.filter((m) => m.id !== mantraId);
+      localStorage.setItem("hari_kirtan_personal_mantras_v1", JSON.stringify(updated));
+    } catch { /* ignore */ }
+    return;
+  }
+
+  try {
+    await supabase.from("personal_mantras").delete().eq("id", mantraId);
+  } catch { /* ignore */ }
+
+  try {
+    const existing = await fetchPersonalMantras(userId);
+    const updated = existing.filter((m) => m.id !== mantraId);
+    localStorage.setItem(`hari_kirtan_personal_mantras_${userId}`, JSON.stringify(updated));
+  } catch { /* ignore */ }
 }
 
 /** Fetch user's jap totals for all mantras */

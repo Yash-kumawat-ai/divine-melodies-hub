@@ -11,6 +11,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import {
   fetchMantras,
+  fetchPersonalMantras,
+  createPersonalMantra,
+  deletePersonalMantra,
   fetchUserTotals,
   fetchTodaySessions,
   fetchUserSankalpas,
@@ -20,6 +23,7 @@ import {
   completeJapSession,
   computeAggregatedStats,
   type Mantra,
+  type PersonalMantra,
   type JapTotal,
   type JapSession,
   type UserSankalp,
@@ -33,6 +37,7 @@ import {
   type DevotionProgress,
   type MantraJapaStatsMap,
 } from "@/lib/devotion/devotionStorage";
+import { slugify } from "@/lib/mantraJapa/mantraSlugs";
 
 // ─── Image Mapping (local images for each deity) ──────────────────
 import omImage from "@/pages/images/om.webp";
@@ -45,16 +50,44 @@ import deityLakshmi from "@/pages/images/lakshmi.webp";
 import deityHanuman from "@/pages/images/hanuman.webp";
 import deityRadhaKrishna from "@/pages/images/deity-radha-krishna.webp";
 
-const DEITY_IMAGE_MAP: Record<string, string> = {
+export const DEITY_IMAGE_MAP: Record<string, string> = {
+  om: omImage,
+  universal: omImage,
   shiva: deityShiva,
+  shiv: deityShiva,
   krishna: deityKrishna,
+  radhakrishna: deityRadhaKrishna,
+  "radha-krishna": deityRadhaKrishna,
+  "radhe-radhe": deityRadhaKrishna,
+  radha: deityRadhaKrishna,
   rama: deityRama,
+  ram: deityRama,
   vishnu: deityRama, // fallback
   ganesh: deityGanesh,
+  ganesha: deityGanesh,
   hanuman: deityHanuman,
   lakshmi: deityLakshmi,
   durga: deityDurga,
 };
+
+export interface DeityOption {
+  id: string;
+  nameHi: string;
+  nameEn: string;
+  image: string;
+}
+
+export const DEITY_OPTIONS: DeityOption[] = [
+  { id: "om", nameHi: "ॐ", nameEn: "Om", image: omImage },
+  { id: "shiva", nameHi: "शिव जी", nameEn: "Shiva", image: deityShiva },
+  { id: "krishna", nameHi: "श्री कृष्ण", nameEn: "Krishna", image: deityKrishna },
+  { id: "radhakrishna", nameHi: "राधा कृष्ण", nameEn: "Radha Krishna", image: deityRadhaKrishna },
+  { id: "rama", nameHi: "श्री राम", nameEn: "Rama", image: deityRama },
+  { id: "hanuman", nameHi: "हनुमान जी", nameEn: "Hanuman", image: deityHanuman },
+  { id: "ganesh", nameHi: "गणेश जी", nameEn: "Ganesha", image: deityGanesh },
+  { id: "durga", nameHi: "माँ दुर्गा", nameEn: "Durga", image: deityDurga },
+  { id: "lakshmi", nameHi: "माँ लक्ष्मी", nameEn: "Lakshmi", image: deityLakshmi },
+];
 
 const MANTRA_ENGLISH_IMAGE_MAP: Record<string, string> = {
   "Om Chanting": omImage,
@@ -71,6 +104,7 @@ const MANTRA_ENGLISH_IMAGE_MAP: Record<string, string> = {
 const DEFAULT_MANTRAS: Mantra[] = [
   {
     id: "om",
+    slug: "om-chanting",
     name_hindi: "ॐ",
     name_english: "Om Chanting",
     deity: "shiva",
@@ -88,6 +122,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "om_namah_shivaya",
+    slug: "om-namah-shivaya",
     name_hindi: "ॐ नमः शिवाय",
     name_english: "Om Namah Shivaya",
     deity: "shiva",
@@ -105,6 +140,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "mahamrityunjaya",
+    slug: "maha-mrityunjaya-mantra",
     name_hindi: "महामृत्युंजय मंत्र",
     name_english: "Mahamrityunjaya Mantra",
     deity: "shiva",
@@ -122,6 +158,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "hare_krishna",
+    slug: "hare-krishna-mahamantra",
     name_hindi: "हरे कृष्ण महामंत्र",
     name_english: "Hare Krishna Mahamantra",
     deity: "krishna",
@@ -139,6 +176,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "radhe_radhe",
+    slug: "radhe-radhe",
     name_hindi: "राधे राधे",
     name_english: "Radhe Radhe",
     deity: "krishna",
@@ -156,6 +194,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "jai_shree_ram",
+    slug: "jai-shree-ram",
     name_hindi: "जय श्री राम",
     name_english: "Jai Shree Ram",
     deity: "rama",
@@ -173,6 +212,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "om_namo_narayanaya",
+    slug: "om-namo-narayanaya",
     name_hindi: "ॐ नमो नारायणाय",
     name_english: "Om Namo Narayanaya",
     deity: "rama",
@@ -190,6 +230,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "gayatri",
+    slug: "gayatri-mantra",
     name_hindi: "गायत्री मंत्र",
     name_english: "Gayatri Mantra",
     deity: "durga",
@@ -207,6 +248,7 @@ const DEFAULT_MANTRAS: Mantra[] = [
   },
   {
     id: "ganesha",
+    slug: "shri-ganesha-mantra",
     name_hindi: "श्री गणेश मंत्र",
     name_english: "Shri Ganesha Mantra",
     deity: "ganesh",
@@ -224,10 +266,26 @@ const DEFAULT_MANTRAS: Mantra[] = [
   }
 ];
 
-/** Resolve the image for a mantra — prefers DB image_url, then local mapping */
-export function resolveMantraImage(mantra: Mantra): string | undefined {
+/** Resolve the image for a mantra — prefers DB image_url, then name mapping, then deity mapping, fallback to Om */
+export function resolveMantraImage(
+  mantra: {
+    image_url?: string | null;
+    name_english?: string | null;
+    deity?: string | null;
+  } | null | undefined
+): string {
+  if (!mantra) return omImage;
   if (mantra.image_url) return mantra.image_url;
-  return MANTRA_ENGLISH_IMAGE_MAP[mantra.name_english] ?? DEITY_IMAGE_MAP[mantra.deity ?? ""] ?? undefined;
+  const englishName = mantra.name_english || "";
+  if (MANTRA_ENGLISH_IMAGE_MAP[englishName]) {
+    return MANTRA_ENGLISH_IMAGE_MAP[englishName];
+  }
+  const deityKey = (mantra.deity || "om").toLowerCase().trim().replace(/[\s_-]+/g, "");
+  return (
+    DEITY_IMAGE_MAP[deityKey] ||
+    DEITY_IMAGE_MAP[mantra.deity?.toLowerCase().trim() || ""] ||
+    omImage
+  );
 }
 
 // ─── Query Keys ───────────────────────────────────────────────────
@@ -288,51 +346,46 @@ export function useMantraJapa() {
   const isGuest = !userId;
   const queryClient = useQueryClient();
 
-  const [customMantras, setCustomMantras] = useState<Mantra[]>([]);
+  // ── 0. Personal Mantras (Private & RLS enforced) ───────────────
+  const personalMantrasQuery = useQuery({
+    queryKey: ["personal-mantras", userId ?? "guest"],
+    queryFn: () => fetchPersonalMantras(userId),
+    staleTime: 30_000,
+  });
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("hari_kirtan_custom_mantras_v1");
-      if (saved) {
-        setCustomMantras(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.error("Error reading custom mantras:", e);
-    }
-  }, []);
+  const addPersonalMantraMutation = useMutation({
+    mutationFn: (data: { name_hindi: string; name_english: string; deity?: string | null }) => {
+      return createPersonalMantra(userId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["personal-mantras", userId ?? "guest"] });
+    },
+  });
 
-  const addCustomMantra = useCallback((nameHindi: string, nameEnglish: string) => {
-    const newMantra: Mantra = {
-      id: `custom-${Date.now()}`,
-      name_hindi: nameHindi,
-      name_english: nameEnglish,
-      deity: "om",
-      description_hindi: "स्वयं जोड़ा गया मंत्र",
-      description_english: "Custom added mantra",
-      meaning_hindi: null,
-      meaning_english: null,
-      full_text_hindi: nameHindi,
-      transliteration: nameEnglish,
-      image_url: null,
-      audio_url: null,
-      recommended_counts: [108, 1008],
-      sort_order: 100,
-      is_active: true
-    };
-    const updated = [...customMantras, newMantra];
-    setCustomMantras(updated);
-    localStorage.setItem("hari_kirtan_custom_mantras_v1", JSON.stringify(updated));
-    return newMantra;
-  }, [customMantras]);
+  const deletePersonalMantraMutation = useMutation({
+    mutationFn: (mantraId: string) => {
+      return deletePersonalMantra(userId, mantraId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["personal-mantras", userId ?? "guest"] });
+    },
+  });
 
-  const deleteCustomMantra = useCallback((id: string) => {
-    if (!id.startsWith("custom-")) return;
-    const updated = customMantras.filter((m) => m.id !== id);
-    setCustomMantras(updated);
-    localStorage.setItem("hari_kirtan_custom_mantras_v1", JSON.stringify(updated));
-  }, [customMantras]);
+  const addCustomMantra = useCallback(
+    async (nameHindi: string, nameEnglish: string) => {
+      return addPersonalMantraMutation.mutateAsync({ name_hindi: nameHindi, name_english: nameEnglish });
+    },
+    [addPersonalMantraMutation]
+  );
 
-  // ── 1. Mantras (always from Supabase, public) ──────────────────
+  const deleteCustomMantra = useCallback(
+    async (id: string) => {
+      return deletePersonalMantraMutation.mutateAsync(id);
+    },
+    [deletePersonalMantraMutation]
+  );
+
+  // ── 1. Public Mantras (always from Supabase, public) ───────────
   const mantrasQuery = useQuery({
     queryKey: KEYS.mantras,
     queryFn: fetchMantras,
@@ -340,19 +393,20 @@ export function useMantraJapa() {
     retry: 2,
   });
 
-  const mergedMantras = useMemo(() => {
+  const publicMantras = useMemo(() => {
     const db = mantrasQuery.data ?? [];
     const base = db.length > 0 ? db : DEFAULT_MANTRAS;
     
     // Ensure default mantras are always there in case db didn't include some of them, 
     // or if they are duplicate we can deduplicate by name_english/id
-    const ids = new Set(base.map(m => m.id));
-    const nameEnglishes = new Set(base.map(m => m.name_english.toLowerCase()));
+    const ids = new Set(base.map((m) => m.id));
+    const nameEnglishes = new Set(base.map((m) => m.name_english.toLowerCase()));
     
-    const filteredDefaults = DEFAULT_MANTRAS.filter(m => !ids.has(m.id) && !nameEnglishes.has(m.name_english.toLowerCase()));
-    const allBase = [...base, ...filteredDefaults].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    return [...allBase, ...customMantras];
-  }, [mantrasQuery.data, customMantras]);
+    const filteredDefaults = DEFAULT_MANTRAS.filter(
+      (m) => !ids.has(m.id) && !nameEnglishes.has(m.name_english.toLowerCase())
+    );
+    return [...base, ...filteredDefaults].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  }, [mantrasQuery.data]);
 
   // ── 2. User Totals (Supabase when authed) ──────────────────────
   const totalsQuery = useQuery({
@@ -494,10 +548,19 @@ export function useMantraJapa() {
   }, [userId, queryClient]);
 
   return {
-    // Data
-    mantras: mergedMantras,
+    // Public Mantras
+    mantras: publicMantras,
+    publicMantras,
     mantrasLoading: mantrasQuery.isLoading,
     mantrasError: mantrasQuery.error,
+
+    // Personal Mantras (Private)
+    personalMantras: personalMantrasQuery.data ?? [],
+    personalMantrasLoading: personalMantrasQuery.isLoading,
+    addPersonalMantra: addPersonalMantraMutation.mutateAsync,
+    deletePersonalMantra: deletePersonalMantraMutation.mutateAsync,
+
+    // Stats & Sessions
     stats,
     mantraTotalsMap,
     todaySessions: todayQuery.data ?? [],
@@ -512,7 +575,7 @@ export function useMantraJapa() {
     activateSankalp: activateSankalpMutation.mutateAsync,
     deleteSankalpFn: deleteSankalpMutation.mutateAsync,
 
-    // Custom Mantra Ops
+    // Backward-compatible Custom Mantra Ops
     addCustomMantra,
     deleteCustomMantra,
 

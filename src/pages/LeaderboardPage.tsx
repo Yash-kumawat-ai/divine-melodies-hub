@@ -8,7 +8,7 @@ export default function LeaderboardPage() {
 
   const handleBack = () => {
     if (returnPath) navigate(returnPath);
-    else navigate("/meditation?practice=mantra_jap_home");
+    else navigate("/meditation/mantra-japa");
   };
 
   return (

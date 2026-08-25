@@ -292,7 +292,7 @@ export default function Home() {
               { title: isHi ? 'नारद AI' : 'Narad AI', path: '/narad-ai', imageSrc: '/images/narad-ai.webp' },
               { title: isHi ? 'वॉलपेपर' : 'Wallpapers', path: '/wallpaper', imageSrc: wallpapersWebp },
               { title: isHi ? 'पोस्टर' : 'Posters', path: '/wallpaper?tab=maker', imageSrc: posterWebp },
-              { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation?practice=mantra_jap_home', imageSrc: japWebp },
+              { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation/mantra-japa', imageSrc: japWebp },
               { title: isHi ? 'समुदाय' : 'Community', path: '/community', imageSrc: communityWebp },
               { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', imageSrc: shortsWebp },
               { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', imageSrc: darshanWebp },

@@ -36,6 +36,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import JapaLeaderboardView from "./JapaLeaderboardView";
+import { getMantraCanonicalUrl } from "@/lib/mantraJapa/mantraSlugs";
 
 import hanumanDevotionalImg from "@/pages/images/Hanuman_Devotional_High_Quality.webp";
 import ramJiSvg from "@/pages/images/svg/ram ji.svg";
@@ -158,55 +159,55 @@ export const MALA_THEMES: Record<MalaTypeId, MalaTheme> = {
   rudraksha: {
     labelHi: "रुद्राक्ष",
     labelEn: "Rudraksha",
-    thread: "rgba(62, 32, 16, 0.55)",
+    thread: "rgba(92, 50, 24, 0.75)",
     beadDone:
       "radial-gradient(circle at 32% 28%, #8B5A2B 0%, #5C3310 45%, #3A1F0A 78%, #2A1508 100%)",
     beadTodo:
-      "radial-gradient(circle at 32% 28%, #6B4423 0%, #4A2C12 50%, #2E1A0C 100%)",
-    beadShadow: "0 1px 3px rgba(42,21,8,0.55), inset 0 -2px 4px rgba(0,0,0,0.35)",
-    sumeru: "radial-gradient(circle at 35% 30%, #C4A35A 0%, #8B6914 40%, #5C4010 100%)",
-    sumeruBorder: "#D4AF37",
-    sumeruGlow: "0 0 12px rgba(139,105,20,0.55)",
-    tasselCap: "#B8860B",
-    tasselFringe: "linear-gradient(to bottom, #651317, #8B1E15, transparent)",
-    activeRing: "#651317",
-    activeGlow: "0 0 12px rgba(101,19,23,0.55)",
+      "radial-gradient(circle at 32% 28%, #8B5A2B 0%, #6B4423 45%, #4A2C12 75%, #2E1A0C 100%)",
+    beadShadow: "0 1px 4px rgba(42,21,8,0.6), inset 0 -1px 3px rgba(0,0,0,0.4)",
+    sumeru: "radial-gradient(circle at 35% 30%, #F5D77F 0%, #D4AF37 40%, #8B6914 100%)",
+    sumeruBorder: "#651317",
+    sumeruGlow: "0 0 14px rgba(212,175,55,0.65)",
+    tasselCap: "#8B1E15",
+    tasselFringe: "linear-gradient(to bottom, #8B1E15, #651317, #3A0A0C)",
+    activeRing: "#D97706",
+    activeGlow: "0 0 14px rgba(217,119,6,0.6)",
     previewBeads: ["#5C3310", "#3A1F0A", "#8B5A2B"],
   },
   tulsi: {
     labelHi: "तुलसी",
     labelEn: "Tulsi",
-    thread: "rgba(74, 92, 48, 0.5)",
+    thread: "rgba(74, 92, 48, 0.75)",
     beadDone:
       "radial-gradient(circle at 32% 28%, #A67C52 0%, #6B7F3B 42%, #4A5C30 75%, #3A4A24 100%)",
     beadTodo:
-      "radial-gradient(circle at 32% 28%, #8B9A6B 0%, #5A6B40 55%, #3F4D2E 100%)",
-    beadShadow: "0 1px 3px rgba(58,74,36,0.4), inset 0 -2px 3px rgba(0,0,0,0.2)",
-    sumeru: "radial-gradient(circle at 35% 30%, #C4B896 0%, #8B9A5A 45%, #5A6B38 100%)",
-    sumeruBorder: "#A8B86A",
-    sumeruGlow: "0 0 10px rgba(107,127,59,0.45)",
+      "radial-gradient(circle at 32% 28%, #A6B885 0%, #6B7F3B 45%, #4A5C30 80%, #3A4A24 100%)",
+    beadShadow: "0 1px 4px rgba(58,74,36,0.5), inset 0 -1px 3px rgba(0,0,0,0.3)",
+    sumeru: "radial-gradient(circle at 35% 30%, #E2D8B8 0%, #A8B86A 45%, #5A6B38 100%)",
+    sumeruBorder: "#3A4A24",
+    sumeruGlow: "0 0 12px rgba(107,127,59,0.55)",
     tasselCap: "#6B7F3B",
-    tasselFringe: "linear-gradient(to bottom, #4A5C30, #6B7F3B, transparent)",
-    activeRing: "#4A5C30",
-    activeGlow: "0 0 12px rgba(74,92,48,0.5)",
+    tasselFringe: "linear-gradient(to bottom, #3A4A24, #6B7F3B, #2A361A)",
+    activeRing: "#6B7F3B",
+    activeGlow: "0 0 14px rgba(107,127,59,0.6)",
     previewBeads: ["#6B7F3B", "#4A5C30", "#A67C52"],
   },
   sandalwood: {
     labelHi: "चंदन",
     labelEn: "Sandalwood",
-    thread: "rgba(196, 163, 90, 0.55)",
+    thread: "rgba(180, 140, 70, 0.75)",
     beadDone:
       "radial-gradient(circle at 32% 28%, #F5E6D3 0%, #E8D0A8 40%, #D4B896 72%, #C4A070 100%)",
     beadTodo:
-      "radial-gradient(circle at 32% 28%, #EDE0CC 0%, #D9C4A0 55%, #C4AD88 100%)",
-    beadShadow: "0 1px 3px rgba(139,105,60,0.35), inset 0 -1px 3px rgba(255,255,255,0.35)",
-    sumeru: "radial-gradient(circle at 35% 30%, #F5C15C 0%, #D9A441 45%, #B8860B 100%)",
-    sumeruBorder: "#F5C15C",
-    sumeruGlow: "0 0 12px rgba(217,164,65,0.55)",
+      "radial-gradient(circle at 32% 28%, #F5E6D3 0%, #E2CCA4 45%, #C4AD88 80%, #A68A60 100%)",
+    beadShadow: "0 1px 4px rgba(139,105,60,0.45), inset 0 -1px 3px rgba(255,255,255,0.4)",
+    sumeru: "radial-gradient(circle at 35% 30%, #FFE29A 0%, #F5C15C 45%, #B8860B 100%)",
+    sumeruBorder: "#651317",
+    sumeruGlow: "0 0 14px rgba(245,193,92,0.65)",
     tasselCap: "#D9A441",
-    tasselFringe: "linear-gradient(to bottom, #651317, #A62419, transparent)",
+    tasselFringe: "linear-gradient(to bottom, #8B1E15, #651317, #3A0A0C)",
     activeRing: "#651317",
-    activeGlow: "0 0 12px rgba(101,19,23,0.45)",
+    activeGlow: "0 0 14px rgba(101,19,23,0.55)",
     previewBeads: ["#E8D0A8", "#D4B896", "#F5E6D3"],
   },
 };
@@ -269,9 +270,9 @@ export const CircularMalaRing = memo(function CircularMalaRing({
     return arr;
   }, [numBeads]);
 
-  const R = radiusOverride ?? (isMobile ? 120 : 195);
-  const regularBeadSize = radiusOverride ? (isMobile ? 15 : 24) : (isMobile ? 20 : 32);
-  const sumeruBeadSize = radiusOverride ? (isMobile ? 22 : 34) : (isMobile ? 28 : 44);
+  const R = radiusOverride ?? (isMobile ? 104 : 195);
+  const regularBeadSize = radiusOverride ? (isMobile ? 15 : 24) : (isMobile ? 19 : 32);
+  const sumeruBeadSize = radiusOverride ? (isMobile ? 24 : 34) : (isMobile ? 28 : 44);
 
   const activeBeadIndex = useMemo(() => {
     if (count === 0) return 1;
@@ -285,7 +286,10 @@ export const CircularMalaRing = memo(function CircularMalaRing({
 
   return (
     <div
-      onClick={onTap}
+      onClick={(e) => {
+        e.stopPropagation();
+        onTap?.();
+      }}
       className="relative flex items-center justify-center select-none"
       style={{
         width: `${(R + 24) * 2}px`,
@@ -320,7 +324,7 @@ export const CircularMalaRing = memo(function CircularMalaRing({
 
       {/* Mala Thread */}
       <div
-        className="absolute rounded-full border-[2.5px] pointer-events-none z-10"
+        className="absolute rounded-full border-[2.5px] pointer-events-none z-10 shadow-xs"
         style={{
           width: `${R * 2}px`,
           height: `${R * 2}px`,
@@ -351,19 +355,18 @@ export const CircularMalaRing = memo(function CircularMalaRing({
               top,
               width: `${beadSize}px`,
               height: `${beadSize}px`,
-              zIndex: isSumeru ? 30 : isActiveBead ? 25 : 20,
+              zIndex: isSumeru ? 35 : isActiveBead ? 25 : 20,
             }}
           >
             {isSumeru ? (
               <div
-                className="w-full h-full rounded-full flex items-center justify-center relative border"
+                className="w-full h-full rounded-full flex items-center justify-center relative shadow-[0_2px_8px_rgba(0,0,0,0.35)]"
                 style={{
                   background: theme.sumeru,
-                  borderColor: theme.sumeruBorder,
-                  boxShadow: theme.sumeruGlow,
+                  boxShadow: `${theme.sumeruGlow}, 0 2px 8px rgba(0,0,0,0.35)`,
                 }}
               >
-                <span className="text-[13px] md:text-[18px] font-bold text-[#1a1008] font-display select-none pointer-events-none leading-none">
+                <span className="text-[12px] md:text-[16px] font-bold text-[#3A1208] dark:text-amber-950 font-display select-none pointer-events-none leading-none drop-shadow-xs">
                   ॐ
                 </span>
                 <div
@@ -371,26 +374,26 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                   style={{ top: `${Math.round(sumeruBeadSize * 0.88)}px` }}
                 >
                   <div
-                    className="w-1.5 h-1.5 rounded-sm border border-black/20 shadow-sm"
+                    className="w-2 h-2 rounded-xs border border-black/30 shadow-sm"
                     style={{ background: theme.tasselCap }}
                   />
                   <div
-                    className="w-1 h-8 rounded-b-md shadow-sm origin-top"
+                    className="w-1 h-8 rounded-b-md shadow-md origin-top"
                     style={{ background: theme.tasselFringe }}
                   />
                 </div>
               </div>
             ) : malaType === "rudraksha" ? (
-              /* Previous textured rudraksha beads */
+              /* Natural textured rudraksha beads without stroke border */
               <div
                 className={`w-full h-full rounded-full transition-all duration-300 ${
                   isActiveBead
                     ? isDark
                       ? "ring-2 ring-yellow-400 ring-offset-1 ring-offset-black scale-135 shadow-[0_0_14px_rgba(253,224,71,0.95)]"
-                      : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.3)]"
+                      : "ring-2 ring-yellow-500 ring-offset-1 ring-offset-white scale-135 shadow-[0_0_14px_rgba(234,179,8,0.4)]"
                     : isCompletedBead
-                    ? "shadow-[0_0_8px_rgba(245,158,11,0.85)] border border-amber-400/35"
-                    : "opacity-45"
+                    ? "shadow-[0_0_8px_rgba(245,158,11,0.85)]"
+                    : "shadow-[0_1px_4px_rgba(0,0,0,0.35)] opacity-90"
                 }`}
                 style={{
                   backgroundImage: "url('/images/rudraksha.webp')",
@@ -400,14 +403,14 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                     isCompletedBead || isActiveBead
                       ? "#D97706"
                       : isDark
-                      ? "#5c2a13"
-                      : "#A14D16",
+                      ? "#4A2210"
+                      : "#8B4513",
                   filter:
                     isCompletedBead || isActiveBead
                       ? "brightness(1.15) saturate(1.4) contrast(1.1)"
                       : isDark
-                      ? "brightness(0.6) contrast(1.1) sepia(0.25)"
-                      : "brightness(0.95) contrast(1.1) sepia(0.2)",
+                      ? "brightness(0.75) contrast(1.15) sepia(0.25)"
+                      : "brightness(0.85) contrast(1.15) sepia(0.2)",
                 }}
               />
             ) : (
@@ -420,13 +423,9 @@ export const CircularMalaRing = memo(function CircularMalaRing({
                   boxShadow: isActiveBead
                     ? theme.activeGlow
                     : theme.beadShadow,
-                  opacity: isCompletedBead || isActiveBead ? 1 : 0.78,
+                  opacity: isCompletedBead || isActiveBead ? 1 : 0.88,
                   outline: isActiveBead ? `2.5px solid ${theme.activeRing}` : undefined,
                   outlineOffset: isActiveBead ? 2 : undefined,
-                  border:
-                    malaType === "tulsi"
-                      ? "1px solid rgba(58,74,36,0.35)"
-                      : "1px solid rgba(196,160,112,0.45)",
                 }}
               />
             )}
@@ -441,21 +440,21 @@ export const CircularMalaRing = memo(function CircularMalaRing({
       ) : showCenterStats ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none select-none z-20">
           <span
-            className={`font-sans lining-nums tabular-nums text-[54px] md:text-[66px] font-bold leading-none tracking-tight ${
+            className={`font-sans lining-nums tabular-nums text-[46px] md:text-[66px] font-bold leading-none tracking-tight ${
               isDark ? "text-[#F5C15C]" : "text-[#651317]"
             }`}
           >
             {count}
           </span>
           <span
-            className={`text-sm md:text-base font-semibold tracking-wider ${
+            className={`text-xs md:text-base font-semibold tracking-wider ${
               isDark ? "text-amber-200/50" : "text-[#786252]"
             }`}
           >
             /{targetCount}
           </span>
           <div
-            className={`mt-2.5 px-3 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
+            className={`mt-2 px-2.5 py-0.5 border rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase ${
               isDark
                 ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
                 : "bg-[#FAF0E4] border-[#E8D8C4] text-[#651317]"
@@ -792,10 +791,7 @@ export default function PremiumJapaCounter({
     void import("@/components/meditation/MantraJapHome");
   }, []);
 
-  const japaSeoUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/meditation?practice=mantra_japa_counter&mantraId=${activeMantra.id}`
-      : `/meditation?practice=mantra_japa_counter&mantraId=${activeMantra.id}`;
+  const japaSeoUrl = getMantraCanonicalUrl(activeMantra.slug);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -968,14 +964,14 @@ export default function PremiumJapaCounter({
   const incrementCount = useCallback(() => {
     if (isCompleted || count >= targetCount) return;
     
-    // 0.75-second (750ms) cooldown throttle check
+    // 1.0-second (1000ms) cooldown throttle check
     const now = Date.now();
-    if (now - lastTapTimeRef.current < 750) {
+    if (lastTapTimeRef.current > 0 && now - lastTapTimeRef.current < 1000) {
       setShowTooFastToast(true);
       if (tooFastTimeoutRef.current) clearTimeout(tooFastTimeoutRef.current);
       tooFastTimeoutRef.current = setTimeout(() => {
         setShowTooFastToast(false);
-      }, 1400);
+      }, 2000);
       return;
     }
     lastTapTimeRef.current = now;
@@ -1079,6 +1075,9 @@ export default function PremiumJapaCounter({
     setIsCompleted(false);
     setTimerActive(false);
     setFloatingTexts([]);
+    lastTapTimeRef.current = 0;
+    setShowTooFastToast(false);
+    if (tooFastTimeoutRef.current) clearTimeout(tooFastTimeoutRef.current);
   }, [practiceMode]);
 
   // ─── VOICE COUNTING (SPEECH RECOGNITION) ──────────────────────
@@ -1546,19 +1545,19 @@ export default function PremiumJapaCounter({
     <AnimatePresence>
       {showTooFastToast && (
         <motion.div
-          initial={{ opacity: 0, y: -30, scale: 0.85 }}
+          initial={{ opacity: 0, y: -16, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className={`fixed top-20 left-1/2 -translate-x-1/2 z-[200] px-5 py-2.5 rounded-2xl border-2 shadow-[0_8px_30px_rgba(0,0,0,0.25)] text-xs md:text-sm font-bold tracking-wide pointer-events-none flex items-center gap-2 select-none ${
+          exit={{ opacity: 0, y: -12, scale: 0.95 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className={`fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-[200] px-4 py-2 rounded-full border shadow-lg text-xs sm:text-sm font-semibold tracking-wide pointer-events-none flex items-center gap-2 select-none backdrop-blur-md ${
             isDark
-              ? "bg-[#1e120a] border-amber-500/60 text-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.3)]"
-              : "bg-[#FFFDF8] border-[#591A0D]/50 text-[#591A0D] shadow-[0_8px_24px_rgba(89,26,13,0.25)]"
+              ? "bg-[#1e120a]/95 border-amber-500/50 text-amber-300 shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+              : "bg-[#FFFDF8]/95 border-[#651317]/40 text-[#651317] shadow-[0_4px_18px_rgba(101,19,23,0.15)]"
           }`}
         >
-          <span className="text-base">⚠️</span>
+          <span className="text-sm">🌸</span>
           <span>
-            {isHi ? "आप बहुत तेज़ टैप कर रहे हैं! कृपया थोड़ा धीरे जप करें" : "Too fast! Please chant a bit slower"}
+            {isHi ? "कृपया धीरे जप करें" : "Please chant slowly"}
           </span>
         </motion.div>
       )}
@@ -2454,27 +2453,29 @@ export default function PremiumJapaCounter({
       />
 
       {/* Top Background Hanuman / Deity Backdrop */}
-      <div className="pointer-events-none absolute top-0 inset-x-0 z-0 px-4 lg:px-6">
-        <div className="mx-auto max-w-5xl w-full h-[220px] sm:h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px]">
-        <img
-          src={hanumanDevotionalImg}
-          width={1672}
-          height={941}
-          decoding="async"
-          className={`w-full h-full object-cover object-top ${
-            isDark ? "opacity-[0.45]" : "opacity-[0.65]"
-          }`}
-          style={{
-            maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to bottom, black 40%, transparent 100%)",
-          }}
-          alt=""
-        />
+      <div className="pointer-events-none absolute top-0 inset-x-0 z-0 px-2 sm:px-4 lg:px-6">
+        <div className="mx-auto max-w-5xl w-full h-[230px] sm:h-[250px] md:h-[300px] lg:h-[340px] overflow-hidden rounded-[24px] relative">
+          <img
+            src={hanumanDevotionalImg}
+            width={1672}
+            height={941}
+            decoding="async"
+            className={`w-full h-full object-cover object-top ${
+              isDark ? "opacity-[0.40]" : "opacity-[0.55]"
+            }`}
+            style={{
+              maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+            }}
+            alt=""
+          />
+          {/* Subtle soft backdrop radial glow behind the top beads for perfect bead visibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-transparent pointer-events-none" />
         </div>
       </div>
 
       {/* Top Floating Chrome Bar */}
-      <div className="relative z-20 w-full max-w-5xl mx-auto px-4 pt-3 pb-1 flex items-center justify-between shrink-0">
+      <div className="relative z-20 w-full max-w-5xl mx-auto px-4 pt-2.5 pb-1 flex items-center justify-between shrink-0">
         <button
           type="button"
           onClick={(e) => {
@@ -2485,7 +2486,7 @@ export default function PremiumJapaCounter({
               onClose(activeMantra.id);
             }
           }}
-          className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
           aria-label="Back"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -2497,22 +2498,22 @@ export default function PremiumJapaCounter({
             e.stopPropagation();
             setLeaderboardOpen(true);
           }}
-          className="h-11 w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
+          className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-[#E8D8C4]/90 dark:border-stone-600 bg-[#FFFDF8]/90 dark:bg-stone-900/90 backdrop-blur-sm flex items-center justify-center text-[#651317] dark:text-amber-300 active:scale-95 transition-all shadow-sm"
           aria-label="Leaderboard"
         >
           <Trophy className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row md:max-w-5xl md:mx-auto w-full px-4 pt-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-6">
-        <div className="flex flex-col items-center justify-center md:flex-1 min-h-0 py-1 sm:py-2">
+      <div className="relative z-10 flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row md:max-w-5xl md:mx-auto w-full px-3 sm:px-4 pt-0.5 pb-3 md:pb-6">
+        <div className="flex flex-col items-center justify-center md:flex-1 min-h-0 py-0.5 sm:py-2 shrink-0">
           <div
-            className="relative flex items-center justify-center select-none my-1"
+            className="relative flex items-center justify-center select-none my-0.5 sm:my-1 shrink-0"
             style={{
-              width: isMobile ? "270px" : "min(100%, 360px)",
-              height: isMobile ? "270px" : "min(100%, 360px)",
-              maxWidth: isMobile ? 270 : 360,
-              maxHeight: isMobile ? 270 : 360,
+              width: isMobile ? "245px" : "min(100%, 360px)",
+              height: isMobile ? "245px" : "min(100%, 360px)",
+              maxWidth: isMobile ? 245 : 360,
+              maxHeight: isMobile ? 245 : 360,
             }}
           >
             <CircularMalaRing
@@ -2525,12 +2526,12 @@ export default function PremiumJapaCounter({
               isHi={isHi}
               floatingTexts={floatingTexts}
               onTap={incrementCount}
-              radiusOverride={isMobile ? 115 : 145}
+              radiusOverride={isMobile ? 104 : 145}
             />
           </div>
 
           <p
-            className={`mt-1 px-4 text-center font-display text-sm sm:text-base md:text-lg font-bold leading-snug whitespace-pre-line max-w-md ${
+            className={`mt-1.5 px-3 text-center font-display text-sm sm:text-base md:text-lg font-bold leading-snug whitespace-pre-line max-w-md shrink-0 ${
               isDark ? "text-amber-100" : "text-[#651317]"
             }`}
           >
@@ -2540,7 +2541,7 @@ export default function PremiumJapaCounter({
           </p>
 
           <p
-            className={`mt-1 text-[11px] sm:text-xs font-medium ${
+            className={`mt-0.5 text-[11px] sm:text-xs font-medium shrink-0 ${
               isDark ? "text-amber-200/70" : "text-[#786252]"
             }`}
           >
@@ -2555,7 +2556,7 @@ export default function PremiumJapaCounter({
         </div>
 
         <div
-          className="mt-2 md:mt-0 w-full md:w-[min(100%,380px)] shrink-0 space-y-2.5"
+          className="mt-1.5 md:mt-0 w-full md:w-[min(100%,380px)] shrink-0 space-y-2 sm:space-y-2.5"
           onClick={(e) => e.stopPropagation()}
         >
           <div

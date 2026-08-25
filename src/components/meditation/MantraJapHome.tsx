@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTheme } from "@/hooks/useTheme";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useMantraJapa, resolveMantraImage } from "@/hooks/useMantraJapa";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useMantraJapa, resolveMantraImage, DEITY_OPTIONS } from "@/hooks/useMantraJapa";
 import MantraDetailView from "./MantraDetailView";
 import MantraSetupView from "./MantraSetupView";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,11 @@ import type { Mantra } from "@/lib/mantraJapa/mantraJapaApi";
 import { SEO } from "@/components/SEO";
 import { prefetchMantraImage } from "@/lib/prefetchMeditation";
 import MeditationTopBar from "./MeditationTopBar";
+import {
+  getMantraCanonicalPath,
+  getMantraCanonicalUrl,
+  getPersonalMantraPath,
+} from "@/lib/mantraJapa/mantraSlugs";
 
 // Gold lotus mark (matches MeditationPracticeHome)
 const LotusMark = ({ className = "w-5 h-4" }: { className?: string }) => (
@@ -122,6 +127,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
   const {
     mantras,
     mantrasLoading,
+    personalMantras,
     stats,
     mantraTotalsMap,
     todaySessions,
@@ -132,17 +138,20 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
     activateSankalp,
     deleteSankalpFn,
     refresh,
-    addCustomMantra,
-    deleteCustomMantra,
+    addPersonalMantra,
+    deletePersonalMantra,
   } = useMantraJapa();
 
   // ─── Local UI State ────────────────────────────────────────────
   const [selectedMantraForDetail, setSelectedMantraForDetail] = useState<Mantra | null>(null);
   const [showSetup, setShowSetup] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [showAddMantraModal, setShowAddMantraModal] = useState(false);
   const [customMantraHindi, setCustomMantraHindi] = useState("");
   const [customMantraEnglish, setCustomMantraEnglish] = useState("");
+  const [selectedDeity, setSelectedDeity] = useState<string>("om");
+  const [mantraToDelete, setMantraToDelete] = useState<PersonalMantra | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const urlMantraId = searchParams.get("mantraId");
   const urlShowSetup = searchParams.get("showSetup") === "true";
@@ -278,17 +287,8 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
       }
     });
     const target = best || mantras[0];
-    setSearchParams(
-      {
-        practice: "mantra_japa_counter",
-        mantraId: target.id,
-        targetCount: String(japaTarget),
-        practiceMode: "mala",
-        sankalp: activeSankalpText,
-      },
-      { replace: true }
-    );
-  }, [mantras, mantraTotalsMap, japaTarget, activeSankalpText, setSearchParams]);
+    navigate(getMantraCanonicalPath(target.slug));
+  }, [mantras, mantraTotalsMap, navigate]);
 
   const handleContinueLastSession = handleStartJapaWithSankalp;
 
@@ -395,11 +395,12 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
     }
     setSelectedMantraForDetail(null);
     setShowSetup(false);
-    setSearchParams({ practice: "mantra_jap_home" }, { replace: true });
   };
 
   const handleShare = () => {
-    const url = window.location.href;
+    const url = selectedMantraForDetail
+      ? getMantraCanonicalUrl(selectedMantraForDetail.slug)
+      : (typeof window !== "undefined" ? `${window.location.origin}/meditation/mantra-japa` : "https://raghavam.com/meditation/mantra-japa");
     const title = selectedMantraForDetail
       ? isHi
         ? selectedMantraForDetail.name_hindi
@@ -442,11 +443,9 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
         }
         image={mantraJapBanner}
         url={
-          typeof window !== "undefined"
-            ? `${window.location.origin}/meditation?practice=mantra_jap_home${
-                selectedMantraForDetail ? `&mantraId=${selectedMantraForDetail.id}` : ""
-              }`
-            : "/meditation?practice=mantra_jap_home"
+          selectedMantraForDetail
+            ? getMantraCanonicalUrl(selectedMantraForDetail.slug)
+            : (typeof window !== "undefined" ? `${window.location.origin}/meditation/mantra-japa` : "https://raghavam.com/meditation/mantra-japa")
         }
         lang={isHi ? "hi" : "en"}
       />
@@ -472,25 +471,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             stats={mantraTotalsMap[selectedMantraForDetail.id]}
             onBack={handleChromeBack}
             onStartJapa={() => {
-              const gId = searchParams.get("groupId");
-              const retUrl = searchParams.get("returnUrl");
               setShowSetup(true);
-              if (
-                searchParams.get("showSetup") === "true" &&
-                searchParams.get("mantraId") === selectedMantraForDetail.id
-              ) {
-                return;
-              }
-              setSearchParams(
-                {
-                  practice: "mantra_jap_home",
-                  mantraId: selectedMantraForDetail.id,
-                  showSetup: "true",
-                  ...(gId ? { groupId: gId } : {}),
-                  ...(retUrl ? { returnUrl: retUrl } : {}),
-                },
-                { replace: true }
-              );
             }}
           />
           <AnimatePresence>
@@ -499,35 +480,21 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                 mantra={selectedMantraForDetail}
                 initialGroupId={searchParams.get("groupId")}
                 onBack={() => {
-                  const returnUrl = searchParams.get("returnUrl");
-                  const gId = searchParams.get("groupId");
                   setShowSetup(false);
-                  setSearchParams(
-                    {
-                      practice: "mantra_jap_home",
-                      mantraId: selectedMantraForDetail.id,
-                      ...(gId ? { groupId: gId } : {}),
-                      ...(returnUrl ? { returnUrl: returnUrl } : {}),
-                    },
-                    { replace: true }
-                  );
                 }}
                 onStartJapa={(opts) => {
                   const gId = opts.groupId || searchParams.get("groupId");
                   const retUrl = searchParams.get("returnUrl");
                   void import("@/components/meditation/PremiumJapaCounter");
-                  setSearchParams(
-                    {
-                      practice: "mantra_japa_counter",
-                      mantraId: selectedMantraForDetail.id,
-                      targetCount: String(opts.targetCount),
+                  navigate(getMantraCanonicalPath(selectedMantraForDetail.slug), {
+                    state: {
+                      groupId: gId || undefined,
+                      returnUrl: retUrl || undefined,
+                      targetCount: opts.targetCount,
                       practiceMode: opts.practiceMode,
-                      sankalp: opts.sankalpText,
-                      ...(gId ? { groupId: String(gId) } : {}),
-                      ...(retUrl ? { returnUrl: retUrl } : {}),
+                      sankalpText: opts.sankalpText,
                     },
-                    { replace: true }
-                  );
+                  });
                 }}
               />
             )}
@@ -649,14 +616,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                     <motion.div
                       key={m.id}
                       onClick={() => {
-                        setSelectedMantraForDetail(m);
-                        setSearchParams(
-                          {
-                            practice: "mantra_jap_home",
-                            mantraId: m.id,
-                          },
-                          { replace: true }
-                        );
+                        navigate(getMantraCanonicalPath(m.slug));
                       }}
                       onPointerEnter={() => prefetchMantraImage(image)}
                       whileHover={{ y: -2 }}
@@ -665,14 +625,7 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          setSelectedMantraForDetail(m);
-                          setSearchParams(
-                            {
-                              practice: "mantra_jap_home",
-                              mantraId: m.id,
-                            },
-                            { replace: true }
-                          );
+                          navigate(getMantraCanonicalPath(m.slug));
                         }
                       }}
                       className={cn(
@@ -732,27 +685,6 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       </div>
 
                       <div className="shrink-0 flex items-center gap-1 pl-1">
-                        {m.id.startsWith("custom-") && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (
-                                confirm(
-                                  isHi
-                                    ? "क्या आप इस मंत्र को हटाना चाहते हैं?"
-                                    : "Are you sure you want to delete this mantra?"
-                                )
-                              ) {
-                                deleteCustomMantra(m.id);
-                              }
-                            }}
-                            className="p-2 text-red-600/70 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all active:scale-95 z-20"
-                            title={isHi ? "मंत्र हटाएं" : "Delete Mantra"}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
                         <ChevronRight className="w-5 h-5 text-[#E8D8C4] group-hover:text-[#651317] dark:text-stone-600 dark:group-hover:text-amber-400 transition-colors" />
                       </div>
                     </motion.div>
@@ -761,6 +693,91 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
               </div>
             )}
           </section>
+
+          {/* Personal Mantras Section (Private) */}
+          {personalMantras.length > 0 && (
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#651317]/10 dark:bg-amber-500/15 text-[#651317] dark:text-amber-300">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </span>
+                  <h3 className="font-display font-bold text-lg text-[#3A2418] dark:text-amber-100">
+                    {isHi ? "व्यक्तिगत मंत्र" : "My Personal Mantras"}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 w-full">
+                {personalMantras.map((pm) => {
+                  const pmImage = resolveMantraImage(pm);
+                  return (
+                    <motion.div
+                      key={pm.id}
+                      onClick={() => {
+                        navigate(getPersonalMantraPath(pm.id));
+                      }}
+                      onPointerEnter={() => prefetchMantraImage(pmImage)}
+                      whileHover={{ y: -2 }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          navigate(getPersonalMantraPath(pm.id));
+                        }
+                      }}
+                      className={cn(
+                        "group relative w-full flex items-center rounded-2xl border p-4 sm:p-5 text-left cursor-pointer transition-all overflow-hidden",
+                        "bg-[#FFFDF8] dark:bg-stone-900 border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-500/40"
+                      )}
+                    >
+                      <div className="relative h-14 w-14 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-full border border-[#E8D8C4] dark:border-stone-600 bg-[#FAF0E4] dark:bg-stone-800 flex items-center justify-center mr-4">
+                        <img
+                          src={pmImage}
+                          alt=""
+                          width={480}
+                          height={480}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-display text-base sm:text-[17px] font-bold leading-tight text-[#3A2418] dark:text-amber-50 truncate">
+                            {isHi ? pm.name_hindi : pm.name_english}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FAF0E4] dark:bg-stone-800 text-[#651317] dark:text-amber-300 border border-[#E8D8C4] dark:border-stone-700">
+                            {isHi ? "व्यक्तिगत" : "Personal"}
+                          </span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs font-medium mt-0.5 truncate text-[#786252] dark:text-stone-400">
+                          {pm.name_english}
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-1 pl-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMantraToDelete(pm);
+                          }}
+                          className="p-2 text-red-600/70 hover:text-red-700 hover:bg-red-50 dark:hover:bg-stone-800 rounded-xl transition-all active:scale-95 z-20"
+                          title={isHi ? "मंत्र हटाएं" : "Delete Mantra"}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <ChevronRight className="w-5 h-5 text-[#E8D8C4] group-hover:text-[#651317] dark:text-stone-600 dark:group-hover:text-amber-400 transition-colors" />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Beginners guide */}
           <div className="max-w-3xl mx-auto w-full">
@@ -800,26 +817,26 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       {[
                         {
                           hi: "एक मंत्र चुनें और नियमित समय तय करें",
-                          en: "Choose one mantra and set a fixed daily time.",
+                          en: "Choose a mantra and set a fixed daily time",
                         },
                         {
-                          hi: "शुरुआत 11, 21 या 108 जाप से करें",
-                          en: "Start with 11, 21, or 108 chants.",
+                          hi: "शांत स्थान पर बैठें और मन को शांत रखें",
+                          en: "Sit in a calm place with quiet focus",
                         },
                         {
-                          hi: "प्रतिदिन एक ही समय पर अभ्यास करें",
-                          en: "Practice at the same time every day.",
+                          hi: "आरंभ में 108 जप का लक्ष्य रखें",
+                          en: "Start with a target of 108 chants",
                         },
                         {
-                          hi: "भक्ति, विश्वास और निरंतरता बनाए रखें",
-                          en: "Maintain devotion, faith, and consistency.",
+                          hi: "प्रतिदिन नियमपूर्वक जप करने से ध्यान गहरा होता है",
+                          en: "Daily consistency deepens focus and spiritual strength",
                         },
                       ].map((item, idx) => (
                         <div key={idx} className="flex items-start gap-3">
-                          <LotusMark className="w-4 h-3 shrink-0 mt-1.5" />
-                          <span className="text-sm font-medium leading-relaxed text-[#3A2418] dark:text-stone-200">
+                          <div className="h-2 w-2 rounded-full bg-[#651317] dark:bg-amber-400 mt-1.5 shrink-0" />
+                          <p className="text-xs sm:text-sm text-[#3A2418] dark:text-stone-300">
                             {isHi ? item.hi : item.en}
-                          </span>
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -829,95 +846,99 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
             </section>
           </div>
 
-          {/* Benefits */}
-          <section id="japa-benefits" className="space-y-5 scroll-mt-24 pb-2">
-            <h3 className="text-base md:text-lg font-bold text-center flex items-center justify-center gap-2 text-[#651317] dark:text-amber-300">
-              <span className="text-[#D9A441]">—◆—</span>
-              {isHi ? "मंत्र जाप के लाभ" : "Benefits of Mantra Japa"}
-              <span className="text-[#D9A441]">—◆—</span>
-            </h3>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {[
-                {
-                  icon: YogiIcon,
-                  titleHi: "मानसिक शांति",
-                  titleEn: "Mental Peace",
-                  descHi: "मन के विचार शांत होते हैं और तनाव कम होता है।",
-                  descEn: "Calms thoughts, eases the mind, and reduces daily stress.",
-                },
-                {
-                  icon: Target,
-                  titleHi: "एकाग्रता में वृद्धि",
-                  titleEn: "Enhanced Focus",
-                  descHi: "एकाग्रता, स्मरण शक्ति और ध्यान की क्षमता बढ़ती है।",
-                  descEn: "Improves concentration, memory retention, and focus.",
-                },
-                {
-                  icon: Sun,
-                  titleHi: "सकारात्मक ऊर्जा",
-                  titleEn: "Positive Energy",
-                  descHi: "नकारात्मकता दूर होती है और सकारात्मक ऊर्जा मिलती है।",
-                  descEn: "Dispels negative vibes and fills you with positive energy.",
-                },
-                {
-                  icon: Heart,
-                  titleHi: "आध्यात्मिक उन्नति",
-                  titleEn: "Spiritual Growth",
-                  descHi: "ईश्वर से जुड़ाव गहरा होता है और आध्यात्मिक विकास होता है।",
-                  descEn: "Deepens connection with the divine and triggers inner growth.",
-                },
-              ].map((card, idx) => (
-                <div
-                  key={idx}
-                  className="bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-3.5 sm:p-5 flex flex-col items-center text-center space-y-2.5 transition-all hover:-translate-y-0.5"
-                >
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FAF0E4] dark:bg-amber-500/10 text-[#651317] dark:text-amber-300">
-                    <card.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-[13px] sm:text-sm text-[#3A2418] dark:text-amber-50 leading-snug">
-                      {isHi ? card.titleHi : card.titleEn}
-                    </h4>
-                    <p className="text-[10px] sm:text-xs leading-relaxed text-[#786252] dark:text-stone-400">
-                      {isHi ? card.descHi : card.descEn}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          {/* Bottom subtle note */}
+          <div className="text-center py-6">
+            <p className="text-[11px] font-medium tracking-wide text-[#786252] dark:text-stone-400">
+              {isHi
+                ? "ॐ श्री गुरुभ्यो नमः • राघवं साधना केंद्र"
+                : "Om Shri Gurubhyo Namaha • Raghavam Sadhana Hub"}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Add custom mantra modal */}
+      {/* Delete Personal Mantra Confirmation Modal */}
+      <AnimatePresence>
+        {mantraToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-sm bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-6 shadow-2xl space-y-4 text-center"
+            >
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                <Trash2 className="w-6 h-6" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="font-display font-bold text-lg text-[#3A2418] dark:text-amber-100">
+                  {isHi ? "मंत्र हटाएं?" : "Delete Personal Mantra?"}
+                </h3>
+                <p className="text-xs text-[#786252] dark:text-stone-400 leading-relaxed">
+                  {isHi
+                    ? `क्या आप वाकई "${mantraToDelete.name_hindi || mantraToDelete.name_english}" को अपनी सूची से हटाना चाहते हैं? यह क्रिया वापस नहीं ली जा सकती।`
+                    : `Are you sure you want to remove "${mantraToDelete.name_english || mantraToDelete.name_hindi}" from your mantras? This action cannot be undone.`}
+                </p>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMantraToDelete(null)}
+                  className="flex-1 py-2.5 border border-[#E8D8C4] dark:border-stone-700 rounded-xl text-xs font-bold bg-[#FAF0E4] dark:bg-stone-800 text-[#3A2418] dark:text-amber-100 active:scale-95 transition-all"
+                >
+                  {isHi ? "रद्द करें" : "Cancel"}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const id = mantraToDelete.id;
+                    setMantraToDelete(null);
+                    await deletePersonalMantra(id);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white active:scale-95 transition-all shadow-sm"
+                >
+                  {isHi ? "हटाएं" : "Delete"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Custom Mantra Modal */}
       <AnimatePresence>
         {showAddMantraModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md overflow-hidden rounded-2xl border border-[#E8D8C4] dark:border-stone-700 bg-[#FFFDF8] dark:bg-stone-900 p-6 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-md bg-[#FFFDF8] dark:bg-stone-900 border border-[#E8D8C4] dark:border-stone-700 rounded-2xl p-6 shadow-2xl space-y-4"
             >
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAddMantraModal(false);
-                  setCustomMantraHindi("");
-                  setCustomMantraEnglish("");
-                }}
-                className="absolute top-4 right-4 p-2 rounded-full text-[#786252] hover:bg-[#FAF0E4] dark:hover:bg-stone-800 transition-all"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-2.5 mb-6">
-                <LotusMark className="w-5 h-4 shrink-0" />
-                <h3 className="text-lg font-bold font-display text-[#651317] dark:text-amber-100">
-                  {isHi ? "अपना मंत्र जोड़ें" : "Add Custom Mantra"}
+              <div className="flex items-center justify-between border-b border-[#E8D8C4]/60 dark:border-stone-800 pb-3">
+                <h3 className="font-display font-bold text-lg text-[#651317] dark:text-amber-100 flex items-center gap-2">
+                  <LotusMark className="w-5 h-4" />
+                  {isHi ? "नया व्यक्तिगत मंत्र जोड़ें" : "Add Personal Mantra"}
                 </h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddMantraModal(false);
+                    setModalError(null);
+                  }}
+                  className="p-1 rounded-lg text-[#786252] hover:bg-[#FAF0E4] dark:hover:bg-stone-800"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
+
+              {modalError && (
+                <div className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-300 text-xs font-medium text-center">
+                  {modalError}
+                </div>
+              )}
 
               <div className="space-y-4">
                 <div>
@@ -927,7 +948,10 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                   <input
                     type="text"
                     value={customMantraHindi}
-                    onChange={(e) => setCustomMantraHindi(e.target.value)}
+                    onChange={(e) => {
+                      setCustomMantraHindi(e.target.value);
+                      if (modalError) setModalError(null);
+                    }}
                     placeholder={isHi ? "उदा. ॐ नमः शिवाय" : "e.g., ॐ नमः शिवाय"}
                     className="w-full px-4 py-3 border border-[#E8D8C4] dark:border-stone-700 rounded-xl focus:outline-none focus:border-[#651317] dark:focus:border-amber-500 bg-white dark:bg-stone-800 text-[#3A2418] dark:text-amber-50 placeholder:text-[#786252]/60 text-sm"
                   />
@@ -940,10 +964,49 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                   <input
                     type="text"
                     value={customMantraEnglish}
-                    onChange={(e) => setCustomMantraEnglish(e.target.value)}
+                    onChange={(e) => {
+                      setCustomMantraEnglish(e.target.value);
+                      if (modalError) setModalError(null);
+                    }}
                     placeholder={isHi ? "उदा. Om Namah Shivaya" : "e.g., Om Namah Shivaya"}
                     className="w-full px-4 py-3 border border-[#E8D8C4] dark:border-stone-700 rounded-xl focus:outline-none focus:border-[#651317] dark:focus:border-amber-500 bg-white dark:bg-stone-800 text-[#3A2418] dark:text-amber-50 placeholder:text-[#786252]/60 text-sm"
                   />
+                </div>
+
+                {/* Deity / Divine Form Picker */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-[#651317] dark:text-amber-300/90">
+                    {isHi ? "भगवान चुनें" : "Select Deity"}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2.5 max-h-52 overflow-y-auto pr-1 p-0.5">
+                    {DEITY_OPTIONS.map((d) => {
+                      const isSelected = selectedDeity === d.id;
+                      return (
+                        <button
+                          key={d.id}
+                          type="button"
+                          onClick={() => setSelectedDeity(d.id)}
+                          className={cn(
+                            "flex flex-col items-center justify-center gap-1.5 p-2.5 sm:p-3 rounded-2xl border text-center transition-all min-h-[92px]",
+                            isSelected
+                              ? "border-[#651317] dark:border-amber-400 bg-[#FAF0E4] dark:bg-amber-500/15 ring-2 ring-[#651317]/20 dark:ring-amber-400/30 shadow-sm"
+                              : "border-[#E8D8C4] dark:border-stone-700 bg-white/70 dark:bg-stone-800/80 hover:border-amber-400/60"
+                          )}
+                        >
+                          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#E8D8C4] dark:border-stone-600 bg-[#FAF0E4] dark:bg-stone-700 flex items-center justify-center">
+                            <img
+                              src={d.image}
+                              alt={d.nameEn}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <span className="text-[11px] sm:text-xs font-semibold leading-tight text-[#3A2418] dark:text-amber-100 break-words text-center">
+                            {isHi ? d.nameHi : d.nameEn}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="pt-2 flex gap-3">
@@ -953,6 +1016,8 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       setShowAddMantraModal(false);
                       setCustomMantraHindi("");
                       setCustomMantraEnglish("");
+                      setSelectedDeity("om");
+                      setModalError(null);
                     }}
                     className="flex-1 py-3 border border-[#E8D8C4] dark:border-stone-700 rounded-xl text-sm font-bold bg-[#FAF0E4] dark:bg-stone-800 text-[#3A2418] dark:text-amber-100 active:scale-95 transition-all"
                   >
@@ -964,13 +1029,15 @@ export default function MantraJapHome({ onBack }: MantraJapHomeProps) {
                       const hin = customMantraHindi.trim();
                       const eng = customMantraEnglish.trim();
                       if (!hin || !eng) {
-                        alert(isHi ? "कृपया दोनों फ़ील्ड भरें।" : "Please fill in both fields.");
+                        setModalError(isHi ? "कृपया दोनों फ़ील्ड भरें।" : "Please fill in both fields.");
                         return;
                       }
-                      addCustomMantra(hin, eng);
+                      await addPersonalMantra({ name_hindi: hin, name_english: eng, deity: selectedDeity });
                       setShowAddMantraModal(false);
                       setCustomMantraHindi("");
                       setCustomMantraEnglish("");
+                      setSelectedDeity("om");
+                      setModalError(null);
                     }}
                     className="flex-1 py-3 rounded-xl text-sm font-bold bg-[#651317] hover:bg-[#4f0f12] text-white active:scale-95 transition-all"
                   >

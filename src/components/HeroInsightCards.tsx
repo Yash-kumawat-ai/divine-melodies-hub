@@ -34,7 +34,7 @@ export function HeroInsightCards({ className }: HeroInsightCardsProps) {
         badgeHi="108 मनका माला"
         ctaEn="Begin Jap Practice"
         ctaHi="जप साधना शुरू करें"
-        href="/meditation?practice=mantra_jap_home"
+        href="/meditation/mantra-japa"
         imageSrc={naamJapImage}
         imageAlt="Dhyan Jap Sadhana"
         accent="#801C24"

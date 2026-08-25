@@ -601,7 +601,7 @@ export function GroupHall({
                   if (onStartJapa) {
                     onStartJapa();
                   } else {
-                    navigate(`/meditation?practice=mantra_jap_home&showSetup=true&groupId=${group.id}`);
+                    navigate("/meditation/mantra-japa");
                   }
                 }
               },

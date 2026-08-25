@@ -29,7 +29,7 @@ const BANNERS = [
   { id: 4, title: "Poster Maker", image: posterBanner, href: "/poster-maker" },
   { id: 5, title: "God Darshan", image: darshanBanner, href: "/wallpaper" },
   { id: 6, title: "Panchang", image: panchangBanner, href: "/panchang" },
-  { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/meditation?practice=mantra_jap_home" },
+  { id: 7, title: "Naam Jap", image: naamJapBanner, href: "/meditation/mantra-japa" },
   { id: 8, title: "Bhakti Samuday", image: bhaktiSamudayBanner, href: "/community" },
 ];
 

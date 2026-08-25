@@ -1,4 +1,4 @@
-﻿import fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,7 +15,8 @@ const staticRoutes = [
   { loc: '/aarti-chalisa', changefreq: 'daily', priority: '0.9' },
   { loc: '/katha', changefreq: 'weekly', priority: '0.8' },
   { loc: '/recent-bhajans', changefreq: 'daily', priority: '0.8' },
-  { loc: '/meditation', changefreq: 'daily', priority: '0.8' },
+  { loc: '/meditation', changefreq: 'daily', priority: '0.85' },
+  { loc: '/meditation/mantra-japa', changefreq: 'daily', priority: '0.85' },
   { loc: '/panchang', changefreq: 'daily', priority: '0.8' },
   { loc: '/temple', changefreq: 'daily', priority: '0.8' },
   { loc: '/shorts', changefreq: 'daily', priority: '0.8' },
@@ -28,6 +29,18 @@ const staticRoutes = [
 
 const deitySlugs = [
   'krishna', 'shiva', 'hanuman', 'rama', 'durga', 'ganesh', 'sai-baba', 'lakshmi', 'khatu-shyam'
+];
+
+const canonicalMantraSlugs = [
+  'om-chanting',
+  'om-namah-shivaya',
+  'maha-mrityunjaya-mantra',
+  'hare-krishna-mahamantra',
+  'radhe-radhe',
+  'jai-shree-ram',
+  'om-namo-narayanaya',
+  'gayatri-mantra',
+  'shri-ganesha-mantra',
 ];
 
 async function run() {
@@ -59,6 +72,11 @@ async function run() {
   // 3. Static Bhajans
   for (const slug of staticSlugs) {
     entries.push(`  <url><loc>${BASE_URL}/bhajan/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`);
+  }
+
+  // 4. Mantra Japa Canonical Pages
+  for (const mSlug of canonicalMantraSlugs) {
+    entries.push(`  <url><loc>${BASE_URL}/meditation/mantra-japa/${mSlug}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`);
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

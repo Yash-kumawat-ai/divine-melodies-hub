@@ -176,6 +176,13 @@ function AppContent() {
             <Route path="/bhajan/:slug" element={<BhajanPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/meditation" element={<MeditationPage />} />
+            <Route path="/meditation/mantra-japa" element={<MeditationPage />} />
+            <Route path="/meditation/mantra-japa/personal/:personalMantraId" element={<MeditationPage />} />
+            <Route path="/meditation/mantra-japa/:mantraSlug" element={<MeditationPage />} />
+            <Route path="/meditation/breathing" element={<MeditationPage />} />
+            <Route path="/meditation/meditation-timer" element={<MeditationPage />} />
+            <Route path="/meditation/naam-japa" element={<MeditationPage />} />
+            <Route path="/meditation/mala" element={<MeditationPage />} />
             <Route path="/panchang" element={<PanchangPage />} />
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
             <Route path="/narad-ai" element={<KirtanAIPage />} />

@@ -6,6 +6,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 import type { Mantra, JapTotal } from "@/lib/mantraJapa/mantraJapaApi";
 import { SEO } from "@/components/SEO";
+import { getMantraCanonicalUrl } from "@/lib/mantraJapa/mantraSlugs";
 
 const japaStepsData = [
   {
@@ -245,6 +246,7 @@ type MantraDetailViewProps = {
   stats: JapTotal | undefined;
   onBack: () => void;
   onStartJapa: () => void;
+  isPersonal?: boolean;
 };
 
 export default function MantraDetailView({
@@ -252,6 +254,7 @@ export default function MantraDetailView({
   image,
   stats,
   onStartJapa,
+  isPersonal = false,
 }: MantraDetailViewProps) {
   const { language } = useLanguage();
   const isHi = language === "hi";
@@ -262,6 +265,11 @@ export default function MantraDetailView({
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
+
+  // Background preload for active counter component
+  useEffect(() => {
+    void import("@/components/meditation/PremiumJapaCounter");
+  }, []);
 
   const detailsKey = getMantraDetailsKey(mantra);
   const detail = MANTRA_DETAILS[detailsKey] || MANTRA_DETAILS.om;
@@ -370,20 +378,17 @@ export default function MantraDetailView({
   return (
     <div
       className={cn(
-        "relative flex flex-col h-full min-h-0 overflow-hidden transition-colors duration-300",
+        "relative flex flex-col w-full min-h-screen transition-colors duration-300",
         isDark ? "text-amber-50 bg-[#0c0a08]" : "text-[#3A2418] bg-[#FAF6EE]"
       )}
     >
       <SEO
         title={isHi ? mantra.name_hindi : mantra.name_english}
-        description={isHi ? detail.meaningHindi : detail.meaningEnglish}
+        description={isPersonal ? (isHi ? "व्यक्तिगत साधना मंत्र" : "Personal Sadhana Mantra") : isHi ? detail.meaningHindi : detail.meaningEnglish}
         image={image}
-        url={
-          typeof window !== "undefined"
-            ? `${window.location.origin}/meditation?practice=mantra_jap_home&mantraId=${mantra.id}`
-            : `/meditation?practice=mantra_jap_home&mantraId=${mantra.id}`
-        }
+        url={isPersonal ? (typeof window !== "undefined" ? window.location.href : "") : getMantraCanonicalUrl(mantra.slug)}
         lang={isHi ? "hi" : "en"}
+        noindex={isPersonal}
       />
       {!isDark && (
         <div
@@ -394,7 +399,7 @@ export default function MantraDetailView({
         />
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 w-full">
         <div className="mx-auto max-w-5xl px-4 lg:px-6 mt-4 md:mt-5 pb-6 md:pb-8 space-y-4 md:space-y-5">
           <motion.section
             initial={{ opacity: 0 }}
@@ -561,19 +566,17 @@ export default function MantraDetailView({
               </ul>
             </div>
           </section>
+
         </div>
       </div>
 
-      {/* Sticky CTA */}
-      <section className="shrink-0 z-30 border-t border-[#E8D8C4] dark:border-stone-800 bg-[#FAF6EE]/95 dark:bg-[#0c0a08]/95 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-4 lg:px-6 pt-3 pb-4 md:pt-4 md:pb-5">
+      {/* Primary Start Japa CTA Button */}
+      <section className="w-full pt-2 pb-10 px-4 md:px-0">
+        <div className="mx-auto max-w-5xl px-0 lg:px-6">
           <button
             type="button"
             onClick={onStartJapa}
             className="flex w-full md:max-w-md md:mx-auto items-center justify-center gap-2.5 rounded-full bg-[#651317] hover:bg-[#4f0f12] text-white font-bold px-8 py-3.5 text-sm sm:text-base active:scale-95 transition-all shadow-[0_8px_24px_rgba(101,19,23,0.35)]"
-            onPointerEnter={() => {
-              void import("@/components/meditation/PremiumJapaCounter");
-            }}
           >
             <span className="font-display text-lg leading-none">ॐ</span>
             <span>{isHi ? "जप प्रारंभ करें" : "Start Japa"}</span>

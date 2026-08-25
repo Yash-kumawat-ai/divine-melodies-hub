@@ -35,6 +35,7 @@ import { fetchGroupRankings } from "@/lib/naamSangh/naamSanghApi";
 import { supabase } from "@/lib/supabaseClient";
 import { goBack } from "@/lib/navigation";
 import { resolveCommunityCover } from "@/lib/community/communityCovers";
+import { getMantraCanonicalPath } from "@/lib/mantraJapa/mantraSlugs";
 
 // Curated Widescreen Cover Images for groups
 import mandalaBeige from "./images/mandala-beige.svg";
@@ -355,9 +356,14 @@ export default function JoinCommunityPage() {
     const groupDeity = targetGroup.deity?.toLowerCase();
     // Find matching mantra in database
     const matchingMantra = mantras.find(m => m.deity?.toLowerCase() === groupDeity) || mantras[0];
-    const mantraId = matchingMantra ? matchingMantra.id : "om_namah_shivaya";
+    const targetSlug = matchingMantra ? matchingMantra.slug : "om-namah-shivaya";
     const currentPath = window.location.pathname + window.location.search;
-    navigate(`/meditation?practice=mantra_jap_home&mantraId=${mantraId}&showSetup=true&groupId=${targetGroup.id}&returnUrl=${encodeURIComponent(currentPath)}`);
+    navigate(getMantraCanonicalPath(targetSlug), {
+      state: {
+        groupId: targetGroup.id,
+        returnUrl: currentPath,
+      },
+    });
   };
 
   // Log group chants handler (calls useMantraJapa mutation)

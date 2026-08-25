@@ -218,7 +218,7 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
       spokenText: `Starting 108 japa for ${mantra}. Set your sankalp when ready.`,
       primaryLabel: "Start japa",
       secondaryLabel: "Open chat",
-      route: "/meditation?practice=mantra_jap_home",
+      route: "/meditation/mantra-japa",
       mantra,
       ...deityFields,
     };
@@ -314,7 +314,7 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
 
 export function resolveNaradActionPath(action: NaradActionResult): string | null {
   if (action.route) return action.route;
-  if (action.kind === "japa_start") return "/meditation?practice=mantra_jap_home";
+  if (action.kind === "japa_start") return "/meditation/mantra-japa";
   if (action.kind === "offering") return "/temple";
   return null;
 }
