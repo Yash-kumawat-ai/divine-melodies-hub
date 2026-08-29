@@ -1,12 +1,12 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, Heart, Home, Menu, MessageSquarePlus, Mic, Play, Search, Send, Share2, Upload, X, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { TextToSpeech, VoiceManager, checkVoiceSupport } from "@/lib/voiceUtils";
 import BhajanCard from "@/components/BhajanCard";
-import BhajanDetailModal from "@/components/BhajanDetailModal";
+import { getContentUrl } from "@/lib/contentUrls";
 import { Bhajan, bhajans as appBhajans, deities as appDeities } from "@/data/bhajans";
 import { bhajanMatchesQuery } from "@/lib/searchAlgorithm";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -218,6 +218,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
   const isCompact = variant === "compact";
   const isHiddenBridge = isCompact && compactDisplay === "hidden";
   const isMinimalBar = isCompact && compactDisplay === "minimal";
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -233,8 +234,6 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceSupport, setVoiceSupport] = useState({ recognition: true, synthesis: true });
-  const [selectedBhajan, setSelectedBhajan] = useState<Bhajan | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const voiceRef = useRef<VoiceManager | null>(null);
   const ttsRef = useRef<TextToSpeech | null>(null);
   const lastSpokenRef = useRef("");
@@ -978,8 +977,7 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
                                 key={`${bhajan.slug}-${bhajan.id}`}
                                 bhajan={bhajan}
                                 onCardClick={(clickedBhajan) => {
-                                  setSelectedBhajan(clickedBhajan);
-                                  setIsDetailOpen(true);
+                                  navigate(getContentUrl(clickedBhajan));
                                 }}
                               />
                             ))}
@@ -1084,16 +1082,6 @@ const KirtanAIChatCore = forwardRef<KirtanAIChatCoreHandle, KirtanAIChatCoreProp
           </div>
         </main>
       </div>
-      <BhajanDetailModal
-        bhajan={selectedBhajan}
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setSelectedBhajan(null);
-        }}
-        allBhajans={appBhajans}
-        elevatedLayer={isCompact}
-      />
     </motion.div>
   );
 });

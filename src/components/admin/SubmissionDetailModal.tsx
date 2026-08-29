@@ -23,6 +23,7 @@ import { deities } from '@/data/bhajans';
 import { extractYouTubeVideoId } from '@/lib/youtubeSearch';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import { bhajanMatchesQuery } from '@/lib/searchAlgorithm';
+import { getContentUrl } from '@/lib/contentUrls';
 import type { AdminBhajanContentUpdate } from '@/lib/supabaseQueries';
 
 export interface QueueItem {
@@ -358,7 +359,7 @@ export default function SubmissionDetailModal({
                   <span className="text-[10px] text-muted-foreground">URL Path</span>
                 </div>
                 <Input
-                  value={`/bhajan/${item.slug}`}
+                  value={getContentUrl({ slug: item.slug, contentType: selectedContentType || item.content_type, subType: selectedSubType || item.sub_type })}
                   disabled
                   className="h-8 text-xs rounded-xl bg-zinc-100 dark:bg-zinc-800 font-mono text-zinc-600 dark:text-zinc-400"
                 />

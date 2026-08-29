@@ -1,21 +1,16 @@
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { 
-  Search as SearchIcon, 
   Music2, 
   BookText, 
   Loader2, 
   Youtube, 
   ExternalLink, 
   PlayCircle, 
-  MessageSquare,
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Mic,
   Heart,
   Sparkles,
-  Play,
-  X,
   CalendarDays,
   Film,
   Bot,
@@ -27,104 +22,163 @@ import {
   Trophy,
   Upload,
   Flame,
-  ArrowRight
+  ArrowRight,
+  Copy,
+  Check,
+  Clock
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+
 import BhajanCard from "@/components/BhajanCard";
-import BhajanDetailModal from "@/components/BhajanDetailModal";
-import { bhajans, deities, Bhajan, getDeityById } from "@/data/bhajans";
+import { bhajans, deities } from "@/data/bhajans";
 import SearchBar from "@/components/SearchBar";
 import { 
   searchFeatures, 
   searchAartisAndChalisas, 
   searchDeities,
-  FeatureSearchItem,
-  AartiChalisaSearchItem,
-  DeitySearchItem
 } from "@/lib/unifiedSearch";
 import Pagination from "@/components/Pagination";
 import { smartSearchBhajans } from "@/lib/searchAlgorithm";
-import { generateBhajanSlug } from "@/lib/slugUtils";
 import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
 import { SEO } from "@/components/SEO";
-import { supabase } from "@/integrations/supabase/client";
 import { useDeities } from "@/hooks/useDeities";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useLyricsFallback } from "@/hooks/useLyricsFallback";
-import { useAssistantContext } from "@/hooks/useAssistantContext";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useTheme } from "@/hooks/useTheme";
 import { searchYouTubeVideos, YouTubeVideoResult } from "@/lib/youtubeSearch";
-import { useLikedBhajans } from "@/hooks/useLikedBhajans";
+import { useUserUploads } from "@/hooks/useUserUploads";
+import { useBhajanCounts } from "@/hooks/useBhajanCounts";
 import { cn } from "@/lib/utils";
-import mandalaGold from "@/pages/images/mandala-gold.svg";
-import mandalaBeige from "@/pages/images/mandala-beige.svg";
-import manjiraSvg from "@/pages/images/svg/manjira.svg";
-import meditationImage from "@/pages/images/meditation_image (1).webp";
-import malaBeadsImage from "@/pages/images/mala_beads.webp";
-import devotionalImage from "@/pages/images/devotional_image.webp";
+import { getDeityUrl } from "@/lib/deityUrls";
+import { LotusIcon } from "@/components/icons/LotusIcon";
 
-interface UserBhajan {
-  id: string;
-  user_id: string;
-  title: string;
-  title_hindi: string;
-  deity_id: number;
-  singer_name: string;
-  composer_name?: string;
-  image_url?: string;
-  youtube_url?: string;
-  lyrics_hindi: string;
-  created_at: string;
-  status: string;
-}
+// SVGs & Feature Artwork
+import mandalaGold from "@/pages/images/mandala-gold.svg";
+import ramYellowFlower from "@/pages/images/svg/ram yellow flower.svg";
+import radhePinkFlower from "@/pages/images/svg/radhe pink flower.svg";
+import shivayyWhiteFlower from "@/pages/images/svg/shivayy white flower.svg";
+import shyamBlueFlower from "@/pages/images/svg/shyam blue flower.svg";
+import diyaSvg from "@/pages/images/svg/diya.svg";
+import bookSvg from "@/pages/images/svg/book.svg";
+import manjiraSvg from "@/pages/images/svg/manjira.svg";
+import prayerSvg from "@/pages/images/svg/prayer.svg";
+import omWhiteSvg from "@/pages/images/svg/om white.svg";
+import headphoneSvg from "@/pages/images/svg/headphone-svgrepo-com.svg";
+
+// High quality feature illustrations
+import liveArtiWebp from "@/pages/images/features webp/live arti.webp";
+import darshanWebp from "@/pages/images/features webp/darshan.webp";
+import japWebp from "@/pages/images/features webp/jap.webp";
+import meditationWebp from "@/pages/images/features webp/meditation (2).webp";
+import posterWebp from "@/pages/images/features webp/poster.webp";
+
+// Daily Vedic Shlokas
+const DAILY_SHLOKAS = [
+  {
+    sanskrit: "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥",
+    hindi: "आपका अधिकार केवल कर्म करने में है, फल में कभी नहीं। फल की चिंता किए बिना निष्काम कर्म करें।",
+    source: "श्रीमद्भगवद्गीता (२.४७)",
+    deity: "श्री कृष्ण",
+  },
+  {
+    sanskrit: "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्। उर्वारुकमिव बन्धनान्मृत्यlineोर्मुक्षीय मामृतात्॥",
+    hindi: "हम त्रिनेत्रधारी भगवान शिव की आराधना करते हैं, जो हमें जीवन व मुक्ति का दिव्य आशीर्वाद प्रदान करते हैं।",
+    source: "महामृत्युंजय मंत्र (ऋग्वेद)",
+    deity: "भगवान शिव",
+  },
+  {
+    sanskrit: "मंगल भवन अमंगल हारी। द्रवहु सुदसरथ अजिर बिहारी॥",
+    hindi: "जो मंगल के धाम और अमंगल का हरण करने वाले हैं, वे श्री राम हम सब पर अपनी कृपा दृष्टि बनाए रखें।",
+    source: "श्रीरामचरितमानस",
+    deity: "श्री राम",
+  },
+  {
+    sanskrit: "नासे रोग हरे सब पीरा। जपत निरंतर हनुमत बीरा॥",
+    hindi: "वीर हनुमान जी के नाम का निरंतर जप करने से समस्त रोग, भय और कष्ट दूर हो जाते हैं।",
+    source: "श्री हनुमान चालीसा",
+    deity: "हनुमान जी",
+  },
+  {
+    sanskrit: "वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ। निर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा॥",
+    hindi: "करोड़ों सूर्यों के समान तेजस्वी महाकाय भगवान गणेश हमारे सभी कार्यों को सदैव निर्विघ्न संपन्न करें।",
+    source: "गणेश वंदना",
+    deity: "भगवान गणेश",
+  }
+];
+
+// Trending Search Suggestions
+const TRENDING_SEARCHES = [
+  { label: "श्री हनुमान चालीसा", query: "हनुमान चालीसा", icon: "🙏" },
+  { label: "महामृत्युंजय मंत्र", query: "महामृत्युंजय मंत्र", icon: "🔱" },
+  { label: "राधे राधे", query: "राधे राधे", icon: "🌸" },
+  { label: "खाटू श्याम भजन", query: "खाटू श्याम", icon: "✨" },
+  { label: "शिव तांडव स्तोत्र", query: "शिव तांडव", icon: "🕉️" },
+  { label: "आरती कुंजबिहारी की", query: "आरती कुंजबिहारी", icon: "🪔" },
+  { label: "श्री राम स्तुति", query: "राम स्तुति", icon: "🏹" },
+  { label: "गणेश वंदना", query: "गणेश", icon: "🐘" },
+];
 
 export default function SearchPage() {
   const navigate = useNavigate();
-  const { likedBhajans, likedIds } = useLikedBhajans();
   const [isListening, setIsListening] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
-  const initialDeity = searchParams.get("deity") || "";
+  const initialDeityFilter = searchParams.get("deity") || "";
+  const shouldAutoVoice = searchParams.get("voice") === "1";
+
   const [query, setQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
+  const [selectedDeityFilter, setSelectedDeityFilter] = useState(initialDeityFilter);
   const [youtubeQuery, setYoutubeQuery] = useState(initialQuery);
   const [youtubeResults, setYoutubeResults] = useState<YouTubeVideoResult[]>([]);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState('');
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideoResult | null>(null);
   const [activeMode, setActiveMode] = useState<'bhajans' | 'youtube'>('bhajans');
-  const [selectedDeity, setSelectedDeity] = useState(initialDeity);
-  const [showAllDeities, setShowAllDeities] = useState(false);
-  const [userBhajans, setUserBhajans] = useState<UserBhajan[]>([]);
-  const [loadingUserBhajans, setLoadingUserBhajans] = useState(true);
-  const [selectedBhajanForDetail, setSelectedBhajanForDetail] = useState<Bhajan | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiedShloka, setCopiedShloka] = useState(false);
   const pageSize = 12;
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query, selectedDeity]);
-  const { deities: allDeities, loading: deitiesLoading } = useDeities();
-  const isMobile = useIsMobile();
+  // React Query cached single-source data hooks
+  const { userBhajans } = useUserUploads();
+  const { deities: allDeities } = useDeities();
+  const { getDeityCount } = useBhajanCounts();
   const deityScrollRef = useRef<HTMLDivElement>(null);
+  const filterPillsRef = useRef<HTMLDivElement>(null);
   
-  // Lyrics fallback orchestration
-  const lyricsFallback = useLyricsFallback();
-  const [showFallbackLyrics, setShowFallbackLyrics] = useState(false);
-  
-  // Assistant context management
-  const { setContext: setAssistantContext } = useAssistantContext();
   const { openPlayer } = useYouTubePlayer();
-  const { t, language } = useLanguage();
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { language } = useLanguage();
 
-  // Define results BEFORE using it in useEffect dependency arrays
+  // Current time slot detection for curated Bhakti recommendations
+  const currentHour = new Date().getHours();
+  const defaultTimeSlot = useMemo(() => {
+    if (currentHour >= 4 && currentHour < 11) return 'morning';
+    if (currentHour >= 11 && currentHour < 16) return 'afternoon';
+    if (currentHour >= 16 && currentHour < 20) return 'evening';
+    return 'night';
+  }, [currentHour]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<'morning' | 'afternoon' | 'evening' | 'night'>(defaultTimeSlot);
+
+  // Debounced search query (150ms) for 60fps fluid typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 150);
+    return () => clearTimeout(handler);
+  }, [query]);
+
+  // Sync URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (selectedDeityFilter) params.set("deity", selectedDeityFilter);
+    setSearchParams(params, { replace: true });
+    setCurrentPage(1);
+  }, [query, selectedDeityFilter, setSearchParams]);
+
+  // Results computation
   const results = useMemo(() => {
-    // Keep a stable source key so React list keys are always unique.
     const staticBhajans = bhajans.map((b) => ({
       ...b,
       source: 'static' as const,
@@ -136,25 +190,20 @@ export default function SearchPage() {
     );
 
     const combinedBhajans = [...staticBhajans, ...uploadedBhajans];
-
     let filtered = combinedBhajans;
 
-    if (selectedDeity) {
+    if (selectedDeityFilter) {
       filtered = filtered.filter(b => {
-        // Find the deity by matching slug
         const matchingDeity = allDeities.find(d => {
           if (d.isCustom) {
-            // For custom deities, use name-based slug
             const deitySlug = d.name.toLowerCase().replace(/\s+/g, '-');
-            return deitySlug === selectedDeity;
+            return deitySlug === selectedDeityFilter;
           } else {
-            // For preset deities, use the slug from static data
             const presetDeity = deities.find(pd => pd.id === d.id);
-            return presetDeity?.slug === selectedDeity;
+            return presetDeity?.slug === selectedDeityFilter;
           }
         });
 
-        // Check if bhajan matches the selected deity ID
         if (matchingDeity && matchingDeity.id) {
           return b.deityId === matchingDeity.id;
         }
@@ -162,27 +211,27 @@ export default function SearchPage() {
       });
     }
 
-    if (query.trim()) {
-      filtered = smartSearchBhajans(query, filtered);
+    if (debouncedQuery.trim()) {
+      filtered = smartSearchBhajans(debouncedQuery, filtered);
     }
 
     return filtered;
-  }, [query, selectedDeity, userBhajans, allDeities]);
+  }, [debouncedQuery, selectedDeityFilter, userBhajans, allDeities]);
 
   const matchedFeatures = useMemo(() => {
-    if (!query.trim()) return [];
-    return searchFeatures(query);
-  }, [query]);
+    if (!debouncedQuery.trim()) return [];
+    return searchFeatures(debouncedQuery);
+  }, [debouncedQuery]);
 
   const matchedAartis = useMemo(() => {
-    if (!query.trim()) return [];
-    return searchAartisAndChalisas(query);
-  }, [query]);
+    if (!debouncedQuery.trim()) return [];
+    return searchAartisAndChalisas(debouncedQuery);
+  }, [debouncedQuery]);
 
   const matchedDeities = useMemo(() => {
-    if (!query.trim()) return [];
-    return searchDeities(query);
-  }, [query]);
+    if (!debouncedQuery.trim()) return [];
+    return searchDeities(debouncedQuery);
+  }, [debouncedQuery]);
 
   const renderFeatureIcon = (iconName: string) => {
     switch (iconName) {
@@ -203,6 +252,7 @@ export default function SearchPage() {
     }
   };
 
+  // YouTube discovery runner
   useEffect(() => {
     const run = async () => {
       const q = youtubeQuery.trim();
@@ -215,8 +265,8 @@ export default function SearchPage() {
       setYoutubeLoading(true);
       setYoutubeError('');
       try {
-        const results = await searchYouTubeVideos(q);
-        setYoutubeResults(results);
+        const res = await searchYouTubeVideos(q);
+        setYoutubeResults(res);
       } catch (error: any) {
         setYoutubeError(error.message || 'Unable to search YouTube right now.');
       } finally {
@@ -228,35 +278,6 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [youtubeQuery]);
 
-  // Fetch user uploads on mount
-  useEffect(() => {
-    const fetchUserBhajans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('user_uploads')
-          .select('*')
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Error fetching user bhajans:', error);
-        } else if (data) {
-          setUserBhajans(data as UserBhajan[]);
-        }
-      } catch (err) {
-        console.error('Error fetching user bhajans:', err);
-      } finally {
-        setLoadingUserBhajans(false);
-      }
-    };
-
-    fetchUserBhajans();
-  }, []);
-
-  const handleDeityFilter = (slug: string) => {
-    setSelectedDeity(slug === selectedDeity ? "" : slug);
-  };
-
   const getDeitySlug = (deity: typeof allDeities[number]) => {
     if (deity.isCustom) {
       return deity.name.toLowerCase().replace(/\s+/g, '-');
@@ -264,310 +285,136 @@ export default function SearchPage() {
     return deities.find(d => d.id === deity.id)?.slug || deity.name.toLowerCase();
   };
 
-  const visibleDeities = useMemo(() => {
-    const mobileLimit = 7;
-    if (!isMobile || showAllDeities) return allDeities;
+  const getDeityFloralSvg = (slug: string) => {
+    switch (slug) {
+      case 'rama': return ramYellowFlower;
+      case 'krishna': return radhePinkFlower;
+      case 'shiva': return shivayyWhiteFlower;
+      case 'khatu-shyam': return shyamBlueFlower;
+      default: return null;
+    }
+  };
 
-    const limitedDeities = allDeities.slice(0, mobileLimit);
-    if (!selectedDeity) return limitedDeities;
-
-    const selectedDeityItem = allDeities.find((deity) => getDeitySlug(deity) === selectedDeity);
-    if (!selectedDeityItem) return limitedDeities;
-
-    const alreadyVisible = limitedDeities.some((deity) => getDeitySlug(deity) === selectedDeity);
-    return alreadyVisible ? limitedDeities : [...limitedDeities, selectedDeityItem];
-  }, [allDeities, isMobile, showAllDeities, selectedDeity]);
-
-  // Speech recognition handler
+  // Voice Search Handler with Insecure Context & LAN Fallback Detection
   const startSpeechRecognition = () => {
+    if (typeof window === 'undefined') return;
+
+    if (!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      toast.error(
+        language === 'hi'
+          ? 'सुरक्षा कारणों से वॉइस सर्च केवल HTTPS या localhost पर समर्थित है।'
+          : 'Voice search requires a secure context (HTTPS or localhost).'
+      );
+      return;
+    }
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error(language === 'hi' ? 'आपका ब्राउज़र वॉइस सर्च का समर्थन नहीं करता है।' : "Speech recognition is not supported in your browser.");
       return;
     }
-    const recognition = new SpeechRecognition();
-    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-US';
-    recognition.onstart = () => {
-      setIsListening(true);
-      toast.info(language === 'hi' ? 'सुन रहा हूँ... बोलिए' : 'Listening... speak now');
-    };
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      if (activeMode === 'bhajans') {
-        setQuery(transcript);
-      } else {
-        setYoutubeQuery(transcript);
-      }
-      setIsListening(false);
-      toast.success(language === 'hi' ? `सर्च किया: ${transcript}` : `Searched for: ${transcript}`);
-    };
-    recognition.onerror = (e: any) => {
-      console.error(e);
-      setIsListening(false);
-      toast.error(language === 'hi' ? 'वॉइस सर्च विफल रहा।' : 'Speech recognition failed.');
-    };
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-    recognition.start();
-  };
 
-  const getDeityBg = (slug: string) => {
-    switch (slug) {
-      case 'krishna': return 'bg-sky-100 dark:bg-sky-950/40 text-sky-600 border-sky-200/50';
-      case 'shiva': return 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 border-orange-200/50';
-      case 'hanuman': return 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 border-amber-200/50';
-      case 'rama': return 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 border-emerald-200/50';
-      case 'durga': return 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 border-rose-200/50';
-      case 'ganesh': return 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 border-yellow-200/50';
-      case 'sai-baba': return 'bg-stone-50 dark:bg-stone-950/30 text-stone-600 border-stone-200/50';
-      case 'lakshmi': return 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 border-pink-200/50';
-      default: return 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 border-amber-200/50';
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info(language === 'hi' ? 'सुन रहा हूँ... बोलिए' : 'Listening... speak now');
+      };
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (activeMode === 'bhajans') {
+          setQuery(transcript);
+        } else {
+          setYoutubeQuery(transcript);
+        }
+        setIsListening(false);
+        toast.success(language === 'hi' ? `सर्च किया: ${transcript}` : `Searched for: ${transcript}`);
+      };
+      recognition.onerror = (e: any) => {
+        console.warn("Speech recognition error:", e);
+        setIsListening(false);
+        if (e.error === 'not-allowed') {
+          toast.error(language === 'hi' ? 'माइक्रोफ़ोन अनुमति ब्लॉक है। कृपया अनुमति दें।' : 'Microphone permission blocked. Please allow microphone access.');
+        } else if (e.error !== 'no-speech') {
+          toast.error(language === 'hi' ? 'वॉइस सर्च विफल रहा।' : 'Speech recognition failed.');
+        }
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      recognition.start();
+    } catch (err) {
+      setIsListening(false);
+      console.error("Speech recognition startup error:", err);
     }
   };
 
-  const today = new Date();
-  const panchangData = useMemo(() => {
-    const day = today.getDay();
-    const tithis = [
-      { hi: "एकादशी (शुक्ल पक्ष)", en: "Ekadashi (Shukla Paksha)" },
-      { hi: "द्वादशी (शुक्ल पक्ष)", en: "Dwadashi (Shukla Paksha)" },
-      { hi: "त्रयोदशी (शुक्ल पक्ष)", en: "Trayodashi (Shukla Paksha)" },
-      { hi: "चतुर्दशी (शुक्ल पक्ष)", en: "Chaturdashi (Shukla Paksha)" },
-      { hi: "पूर्णिमा", en: "Purnima" },
-      { hi: "प्रतिपदा (कृष्ण पक्ष)", en: "Pratipada (Krishna Paksha)" },
-      { hi: "द्वितीया (कृष्ण पक्ष)", en: "Dwitiya (Krishna Paksha)" },
-      { hi: "तृतीया (कृष्ण पक्ष)", en: "Tritiya (Krishna Paksha)" },
-      { hi: "चतुर्थी (कृष्ण पक्ष)", en: "Chaturthi (Krishna Paksha)" },
-      { hi: "पंचमी (कृष्ण पक्ष)", en: "Panchami (Krishna Paksha)" },
-    ];
-    const nakshatras = [
-      { hi: "रोहिणी", en: "Rohini" },
-      { hi: "मृगशिरा", en: "Mrigashira" },
-      { hi: "आर्द्रा", en: "Ardra" },
-      { hi: "पुनर्वसु", en: "Punarvasu" },
-      { hi: "पुष्य", en: "Pushya" },
-      { hi: "अश्लेषा", en: "Ashlesha" },
-      { hi: "मघा", en: "Magha" },
-    ];
-    return {
-      tithi: tithis[day % tithis.length],
-      nakshatra: nakshatras[day % nakshatras.length],
-      rahuKaal: day === 0 ? "04:30 PM - 06:00 PM" : day === 1 ? "07:30 AM - 09:00 AM" : "01:30 PM - 03:00 PM",
-    };
-  }, [today]);
+  // Trigger voice recognition automatically if opened via /search?voice=1
+  useEffect(() => {
+    if (shouldAutoVoice) {
+      const timer = setTimeout(() => {
+        startSpeechRecognition();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAutoVoice]);
 
+  const today = new Date();
   const popularBhajansList = useMemo(() => {
-    return bhajans.filter(b => [1, 2, 3, 6].includes(b.id));
+    return bhajans.filter(b => [1, 2, 3, 4, 6, 9].includes(Number(b.id)));
   }, []);
+
+  const currentShloka = useMemo(() => {
+    const day = today.getDate();
+    return DAILY_SHLOKAS[day % DAILY_SHLOKAS.length];
+  }, [today]);
 
   const scrollDeities = (direction: 'left' | 'right') => {
     if (deityScrollRef.current) {
       const containerWidth = deityScrollRef.current.clientWidth;
-      const scrollAmt = direction === 'left' ? -containerWidth : containerWidth;
+      const scrollAmt = direction === 'left' ? -containerWidth * 0.8 : containerWidth * 0.8;
       deityScrollRef.current.scrollBy({ left: scrollAmt, behavior: 'smooth' });
     }
   };
 
-  // Deity-Specific Portal calculations
-  const selectedDeityItem = useMemo(() => {
-    if (!selectedDeity) return null;
-    return allDeities.find(d => {
-      if (d.isCustom) {
-        return d.name.toLowerCase().replace(/\s+/g, '-') === selectedDeity;
-      }
-      return deities.find(pd => pd.id === d.id)?.slug === selectedDeity;
-    });
-  }, [selectedDeity, allDeities]);
-
-  const deityBhajans = useMemo(() => {
-    if (!selectedDeityItem) return [];
-    return results; // results list is already filtered by selectedDeity
-  }, [results, selectedDeityItem]);
-
-  const bhajanCategoryMap = useMemo(() => {
-    const map = {
-      bhajan: [] as typeof results,
-      aarti: [] as typeof results,
-      mantra: [] as typeof results,
-      kirtan: [] as typeof results,
-      chalisa: [] as typeof results,
-    };
-
-    deityBhajans.forEach(b => {
-      const title = (b.titleHindi + " " + b.title + " " + b.lyricsHindi).toLowerCase();
-      if (title.includes("आरती") || title.includes("aarti")) {
-        map.aarti.push(b);
-      } else if (title.includes("मंत्र") || title.includes("mantra") || title.includes("ॐ")) {
-        map.mantra.push(b);
-      } else if (title.includes("चालीसा") || title.includes("chalisa")) {
-        map.chalisa.push(b);
-      } else if (title.includes("कीर्तन") || title.includes("kirtan") || title.includes("धुन")) {
-        map.kirtan.push(b);
-      } else {
-        map.bhajan.push(b);
-      }
-    });
-
-    return map;
-  }, [deityBhajans]);
-
-  const bhajansCount = bhajanCategoryMap.bhajan.length;
-  const aartiCount = bhajanCategoryMap.aarti.length;
-  const mantraCount = bhajanCategoryMap.mantra.length;
-  const kirtanCount = bhajanCategoryMap.kirtan.length;
-
-  const categories = ["सभी", "भजन", "आरती", "मंत्र", "चालीसा", "कीर्तन", "वॉलपेपर", "पोस्टर"];
-  const [activeCategory, setActiveCategory] = useState("सभी");
-
-  // Dynamic wallpapers list for selected deity
-  const deityWallpapers = useMemo(() => {
-    if (!selectedDeityItem) return [];
-    
-    // Find all static wallpapers matching this deity name
-    const matches = WALLPAPERS_LIST.filter(w => 
-      w.deity.toLowerCase() === selectedDeityItem.name.toLowerCase() ||
-      selectedDeityItem.name.toLowerCase().includes(w.deity.toLowerCase()) ||
-      w.deity.toLowerCase().includes(selectedDeityItem.name.toLowerCase())
-    );
-    
-    // If no matching wallpapers are found, fallback to generating mock wallpapers from the deity profile image
-    if (matches.length === 0) {
-      return [1, 2, 3].map(num => ({
-        id: `mock-wp-${selectedDeityItem.id}-${num}`,
-        name: `${selectedDeityItem.name} Wallpaper ${num}`,
-        nameHindi: `${selectedDeityItem.nameHindi || selectedDeityItem.name} वॉलपेपर ${num}`,
-        imageUrl: selectedDeityItem.imageUrl || "",
-      }));
-    }
-    
-    return matches;
-  }, [selectedDeityItem]);
-
-  // Dynamic posters list for selected deity
-  const deityPosters = useMemo(() => {
-    if (!selectedDeityItem) return [];
-    
-    // Find all poster templates matching this deity name
-    const matches = POSTER_TEMPLATES.filter(p => 
-      p.title.toLowerCase().includes(selectedDeityItem.name.toLowerCase()) ||
-      selectedDeityItem.name.toLowerCase().includes(p.title.toLowerCase()) ||
-      (p.titleHindi && p.titleHindi.includes(selectedDeityItem.nameHindi || ""))
-    );
-    
-    // If no matching posters are found, fallback to generating mock posters from the deity profile image
-    if (matches.length === 0) {
-      return [1, 2, 3].map(num => ({
-        id: `mock-poster-${selectedDeityItem.id}-${num}`,
-        title: `${selectedDeityItem.name} Poster ${num}`,
-        titleHindi: `${selectedDeityItem.nameHindi || selectedDeityItem.name} पोस्टर ${num}`,
-        imageUrl: selectedDeityItem.imageUrl || "",
-      }));
-    }
-    
-    return matches;
-  }, [selectedDeityItem]);
-
-  const categoryFilteredBhajans = useMemo(() => {
-    if (activeCategory === "सभी") return deityBhajans;
-    if (activeCategory === "भजन") return bhajanCategoryMap.bhajan;
-    if (activeCategory === "आरती") return bhajanCategoryMap.aarti;
-    if (activeCategory === "मंत्र") return bhajanCategoryMap.mantra;
-    if (activeCategory === "चालीसा") return bhajanCategoryMap.chalisa;
-    if (activeCategory === "कीर्तन") return bhajanCategoryMap.kirtan;
-    return [];
-  }, [activeCategory, deityBhajans, bhajanCategoryMap]);
-
-  const deityCategoryContent = useMemo(() => {
-    if (activeCategory === "वॉलपेपर" || activeCategory === "पोस्टर") {
-      const list = activeCategory === "वॉलपेपर" ? deityWallpapers : deityPosters;
-      return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {list.map((item, idx) => {
-            const titleText = activeCategory === "वॉलपेपर" 
-              ? (language === 'hi' ? item.nameHindi || item.name : item.name)
-              : (language === 'hi' ? (item as any).titleHindi || item.title : item.title);
-            const downloadUrl = item.imageUrl || selectedDeityItem?.imageUrl || "";
-            const slug = selectedDeityItem ? getDeitySlug(selectedDeityItem) : 'deity';
-
-            return (
-              <div key={item.id} className="rounded-2xl overflow-hidden relative aspect-[9/16] group border border-amber-500/10 shadow-lg">
-                {downloadUrl ? (
-                  <img src={downloadUrl} alt={titleText} className="w-full h-full object-cover" loading="lazy" />
-                ) : (
-                  <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">ॐ</div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-white tracking-wide line-clamp-2 text-left">{titleText}</span>
-                  <button
-                    onClick={() => downloadImage(downloadUrl, `${slug}_${activeCategory === 'वॉलपेपर' ? 'wallpaper' : 'poster'}_${idx + 1}`)}
-                    className="w-full py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-sans text-[10px] font-black uppercase rounded-lg transition-all cursor-pointer shadow-md shadow-amber-500/25"
-                  >
-                    {language === 'hi' ? "डाउनलोड करें" : "Download"}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-
-    if (categoryFilteredBhajans.length > 0) {
-      return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-          {categoryFilteredBhajans.map((bhajan) => (
-            <div key={`${bhajan.source}-${bhajan.sourceKey}`} className="min-w-0">
-              <BhajanCard
-                bhajan={bhajan}
-                onCardClick={(clickedBhajan) => {
-                  setSelectedBhajanForDetail(clickedBhajan);
-                  setIsDetailModalOpen(true);
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <div className="text-center py-10 bg-muted/20 border border-dashed border-border/80 rounded-2xl">
-        <p className="text-xs text-muted-foreground font-semibold">
-          {language === 'hi' ? "इस श्रेणी में कोई भजन उपलब्ध नहीं है।" : "No items available in this category."}
-        </p>
-      </div>
-    );
-  }, [activeCategory, deityWallpapers, deityPosters, categoryFilteredBhajans, language, selectedDeityItem]);
-
-  const downloadImage = (url: string, name: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${name}.webp`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success(language === 'hi' ? 'वॉलपेपर डाउनलोड होना शुरू हो गया है।' : 'Wallpaper download started!');
+  const copyShlokaToClipboard = () => {
+    const textToCopy = `✨ ${currentShloka.source} ✨\n\n"${currentShloka.sanskrit}"\n\nभावार्थ: ${currentShloka.hindi}\n\n🙏 Raghavam - Divine Melodies`;
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedShloka(true);
+    toast.success(language === 'hi' ? 'श्लोक कॉपी हो गया!' : 'Shloka copied to clipboard!');
+    setTimeout(() => setCopiedShloka(false), 2000);
   };
 
-  const playShaniMantra = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    openPlayer({
-      id: "vQ8zD4G_7qE",
-      title: "Shani Gayatri Mantra",
-      channel: "Divine Melodies",
-    });
-    toast.success(language === 'hi' ? 'शनि गायत्री मंत्र शुरू हो गया है।' : 'Playing Shani Gayatri Mantra!');
+  // SEO Schema
+  const jsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Raghavam",
+    "url": "https://raghavam.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://raghavam.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FCF8F2] via-[#F8F3EC] to-[#FDFBF8] dark:from-background dark:via-background/95 dark:to-background pb-12 text-[#32251E] dark:text-[#FFFDF8]">
+    <div className="min-h-screen bg-[#FFFDF8] dark:bg-background pb-16 text-[#3A2418] dark:text-[#FFFDF8]">
       <SEO
-        title="खोजें (Search Bhajans & Aartis)"
-        description="Search devotional bhajans, aartis, chalisa, and artists on Raghavam."
-        noindex={true}
+        title={
+          query.trim()
+            ? `"${query}" के परिणाम | खोजें - Raghavam`
+            : "खोजें - भजन, आरती, चालीसा एवं देव संग्रह (Search Bhajans) | Raghavam"
+        }
+        description="भगवान कृष्ण, शिव, राम, हनुमान, खाटू श्याम के मधुर भजन, नित्य आरतियां, चालीसा, मंत्र खोजें।"
+        noindex={false}
+        jsonLd={jsonLdData}
       />
+
       {/* Hide scrollbars style utility */}
       <style dangerouslySetInnerHTML={{__html: `
         .no-scrollbar::-webkit-scrollbar {
@@ -579,22 +426,22 @@ export default function SearchPage() {
         }
       `}} />
 
-      {/* Search Header Bar (No line/border at bottom) */}
-      <header className="sticky top-0 z-40 bg-[#FCF8F2]/90 dark:bg-background/90 backdrop-blur-xl px-1.5 py-2.5 sm:py-4 md:py-5 md:px-4">
-        <div className="container mx-auto max-w-5xl flex items-center gap-1 sm:gap-3">
+      {/* Sticky Search Header (Back Button + Full Search Input) */}
+      <header className="sticky top-0 z-40 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-xl border-b border-[#E8D8C4]/60 dark:border-[#D4A437]/25 px-2 py-2.5 sm:px-4 sm:py-3.5 md:px-6 shadow-[0_4px_16px_rgba(95,72,38,0.03)]">
+        <div className="container mx-auto max-w-5xl flex items-center gap-1.5 sm:gap-3">
           <button
             onClick={() => {
-              if (query.trim() || selectedDeity) {
+              if (query.trim() || selectedDeityFilter) {
                 setQuery("");
-                setSelectedDeity("");
+                setSelectedDeityFilter("");
               } else {
                 navigate(-1);
               }
             }}
-            className="p-2 -ml-1 sm:-ml-2 rounded-full hover:bg-muted text-foreground transition-colors cursor-pointer shrink-0"
+            className="p-2 -ml-1 rounded-full hover:bg-[#651317]/8 text-[#651317] dark:text-[#E8B15C] transition-colors cursor-pointer shrink-0"
             aria-label="Back"
           >
-            <ArrowLeft className="w-6 h-6 sm:w-5 sm:h-5" />
+            <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
           
           <div className="flex-1 min-w-0">
@@ -609,15 +456,17 @@ export default function SearchPage() {
               }}
               placeholder={
                 activeMode === 'bhajans'
-                  ? (language === 'hi' ? 'भजन, कीर्तन या कलाकार खोजें...' : 'Search bhajans, artists or tags...')
+                  ? (language === 'hi' ? 'भजन, आरती, चालीसा या देव खोजें...' : 'Search bhajans, aartis, chalisas, deities...')
                   : (language === 'hi' ? 'यूट्यूब पर भजन खोजें...' : 'Search bhajans on YouTube...')
               }
               isListening={isListening}
               onMicClick={startSpeechRecognition}
               autoFocus
+              enableAutocomplete={false}
               onClear={() => {
                 setQuery("");
                 setYoutubeQuery("");
+                setSelectedDeityFilter("");
               }}
             />
           </div>
@@ -625,731 +474,437 @@ export default function SearchPage() {
       </header>
 
       {/* Main Content Area */}
-      <div className="container mx-auto max-w-5xl px-4 pt-1.5 pb-4 sm:py-4">
+      <main className="container mx-auto max-w-5xl px-3.5 sm:px-4 pt-3.5 pb-12 sm:py-5">
         <AnimatePresence mode="wait">
-          {!query.trim() && !selectedDeity ? (
-            /* EXPLORE DASHBOARD (When not searching) */
-            <div className="space-y-8">
-              {/* Section 1: अपने आराध्य चुनें (Deities Row inside White floating card) */}
-              <div className="bg-white dark:bg-[#1E1710] rounded-[28px] border border-[#EFE4D7] dark:border-zinc-800/80 p-3.5 sm:p-5 shadow-[0_12px_40px_rgba(80,45,20,0.06)] relative overflow-hidden space-y-3 sm:space-y-4">
-                <img src={mandalaGold} className="absolute -left-6 -bottom-6 w-24 h-24 opacity-[0.02] pointer-events-none object-contain rotate-12" alt="" />
-                
-                <div className="flex items-center justify-between px-0.5 sm:px-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#D4A44A] text-[10px] sm:text-xs font-bold">✦</span>
-                    <h2 className="font-serif text-[15px] sm:text-[17px] font-bold text-[#32251E] dark:text-[#FFFDF8]">
+          {!query.trim() ? (
+            /* =========================================================================
+               EXPLORE DASHBOARD
+               (Order: 1. Apne Aradhya Chune -> 2. Spiritual Services -> 3. Time Devotion -> 4. Shloka -> 5. Bhajans)
+               ========================================================================= */
+            <div className="space-y-7 sm:space-y-9">
+              
+              {/* SECTION 1: अपने आराध्य चुनें (Immediately Below Header - 0 Unrelated Content Above) */}
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#D4A437] via-[#651317] to-[#D4A437] p-0.5 shadow-xs flex items-center justify-center shrink-0">
+                      <img src={omWhiteSvg} alt="ॐ" className="w-full h-full object-contain" />
+                    </div>
+                    <h2 className="font-serif text-lg sm:text-xl md:text-2xl font-bold text-[#3A2418] dark:text-[#FFFDF8]">
                       {language === 'hi' ? 'अपने आराध्य चुनें' : 'Choose Your Deity'}
                     </h2>
-                    <span className="text-[#D4A44A] text-[10px] sm:text-xs font-bold">✦</span>
+                    <span className="text-[#D4A437] text-xs">✦</span>
                   </div>
-                  <button 
-                    onClick={() => setShowAllDeities(prev => !prev)}
-                    className="text-[11px] sm:text-xs font-bold text-[#6A2C2A] hover:text-[#58211F] transition-colors cursor-pointer"
+                  <Link 
+                    to="/all-deities"
+                    className="text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:underline transition-colors cursor-pointer"
                   >
-                    {language === 'hi' ? 'सभी देखें →' : 'View All →'}
-                  </button>
+                    {language === 'hi' ? 'सभी देव देखें →' : 'View All Deities →'}
+                  </Link>
                 </div>
                 
-                {/* Horizontal Scrolling Deities list */}
+                {/* Horizontal Scrolling Deity Deck */}
                 <div className="relative flex items-center group/carousel">
-                  {/* Left arrow on desktop */}
                   <button 
                     onClick={() => scrollDeities('left')}
-                    className="absolute -left-4 z-10 p-1.5 rounded-full bg-white dark:bg-zinc-800 border border-[#EFE4D7] dark:border-zinc-700 text-[#6A2C2A] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-sm"
+                    className="absolute -left-3.5 z-10 p-2 rounded-full bg-[#FFFDF8] dark:bg-zinc-800 border border-[#E8D8C4] dark:border-zinc-700 text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-md"
+                    aria-label="Scroll left"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
- 
+
                   <div 
                     ref={deityScrollRef}
-                    className="flex overflow-x-auto pb-1.5 pt-1 no-scrollbar scroll-smooth snap-x snap-mandatory touch-pan-x w-full"
+                    className="flex gap-3 sm:gap-4 overflow-x-auto pb-2.5 pt-1 no-scrollbar scroll-smooth snap-x snap-mandatory touch-pan-x w-full -mx-3.5 px-3.5 sm:mx-0 sm:px-0"
                   >
-                    {(() => {
-                      const groups = [];
-                      for (let i = 0; i < allDeities.length; i += 4) {
-                        groups.push(allDeities.slice(i, i + 4));
-                      }
-                      return groups.map((group, groupIdx) => (
-                        <div 
-                          key={`group-${groupIdx}`} 
-                          className="w-full shrink-0 snap-start grid grid-cols-4 gap-1.5 md:gap-3"
+                    {allDeities.map((deity) => {
+                      const slug = getDeitySlug(deity);
+                      const floralSvg = getDeityFloralSvg(slug);
+                      const count = getDeityCount(deity.id || 0);
+
+                      return (
+                        <div
+                          key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
+                          onClick={() => {
+                            // Canonical direct navigation to /deity/:slug
+                            navigate(getDeityUrl(deity));
+                          }}
+                          className="w-[125px] sm:w-[145px] md:w-[160px] shrink-0 snap-start rounded-[22px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/80 dark:border-[#D4A437]/25 p-3.5 flex flex-col items-center text-center shadow-[0_4px_16px_rgba(95,72,38,0.05)] hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer relative overflow-hidden select-none"
                         >
-                          {group.map((deity) => {
-                            const slug = getDeitySlug(deity);
-                            const bgClass = getDeityBg(slug);
-                            const isActive = selectedDeity === slug;
-                            return (
-                              <button
-                                key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
-                                onClick={() => {
-                                  handleDeityFilter(slug);
-                                  setActiveMode('bhajans');
-                                }}
-                                className="flex flex-col items-center gap-1.5 group focus:outline-none cursor-pointer w-full"
-                              >
-                                <div className={cn(
-                                  "w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-full transition-all duration-300 relative flex items-center justify-center shadow-[0_8px_20px_rgba(80,45,20,0.04)] sm:shadow-none",
-                                  isActive 
-                                    ? "p-[2.5px] bg-[#6A2C2A] dark:bg-[#E8B15C] scale-105 shadow-[0_8px_24px_rgba(106,44,42,0.2)] sm:p-0 sm:bg-transparent sm:border-2 sm:border-[#D4A44A] sm:ring-4 sm:ring-[#D4A44A]/20 sm:scale-105" 
-                                    : "p-[2.5px] bg-[#6A2C2A]/20 dark:bg-zinc-800 hover:bg-[#6A2C2A] dark:hover:bg-[#E8B15C] sm:p-0 sm:bg-transparent sm:border-2 sm:border-[#EFE4D7] sm:dark:border-zinc-800 sm:hover:border-[#D4A44A]/60",
-                                  bgClass
-                                )}>
-                                  <div className="w-full h-full rounded-full p-[2px] sm:p-0 bg-white dark:bg-[#1E1710] sm:bg-transparent flex items-center justify-center overflow-hidden relative">
-                                    {deity.imageUrl ? (
-                                      <img
-                                        src={deity.imageUrl}
-                                        alt={deity.name}
-                                        className="w-full h-full object-cover rounded-full"
-                                      />
-                                    ) : (
-                                      <span className="text-2xl sm:text-3xl select-none">{deity.emoji}</span>
-                                    )}
-                                    
-                                    {/* Card gradient overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none rounded-full" />
-                                  </div>
-                                </div>
-                                
-                                <span className={cn(
-                                  "text-[13px] font-bold tracking-normal text-center max-w-[80px] truncate transition-colors mt-0.5 sm:text-xs sm:font-semibold sm:max-w-[90px] sm:mt-0",
-                                  isActive 
-                                    ? "text-[#6A2C2A] dark:text-[#E8B15C] font-extrabold sm:font-bold" 
-                                    : "text-[#7A6B60] dark:text-muted-foreground group-hover:text-[#6A2C2A]"
-                                )}>
-                                  {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
-                                </span>
-                              </button>
-                            );
-                          })}
+                          {/* Deity Portrait with Gold Halo Ring */}
+                          <div className="w-[74px] h-[74px] sm:w-[86px] sm:h-[86px] rounded-full p-[2.5px] bg-gradient-to-b from-[#D4A437] via-[#651317] to-[#D4A437] shadow-md overflow-hidden relative">
+                            <div className="w-full h-full rounded-full bg-[#FFFDF8] dark:bg-[#1A120B] flex items-center justify-center overflow-hidden">
+                              {deity.imageUrl ? (
+                                <img
+                                  src={deity.imageUrl}
+                                  alt={deity.name}
+                                  className="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <span className="text-3xl select-none">{deity.emoji}</span>
+                              )}
+                            </div>
+
+                            {/* Floral motif watermark */}
+                            {floralSvg && (
+                              <img 
+                                src={floralSvg} 
+                                alt="" 
+                                className="absolute -bottom-1 -right-1 w-5 h-5 drop-shadow-sm pointer-events-none opacity-90 transition-transform group-hover:rotate-12" 
+                              />
+                            )}
+                          </div>
+
+                          {/* Deity Name */}
+                          <h3 className="font-serif text-sm sm:text-base font-bold text-[#3A2418] dark:text-[#FFFDF8] group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors mt-2.5 truncate w-full">
+                            {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
+                          </h3>
+
+                          {/* Batched Bhajan Count Tag */}
+                          <span className="px-2 py-0.5 rounded-full bg-[#651317]/8 dark:bg-[#D4A437]/15 text-[#651317] dark:text-[#E8B15C] text-[10px] sm:text-[11px] font-bold mt-1">
+                            {count > 0 ? `${count} भजन` : "भजन संग्रह"}
+                          </span>
                         </div>
-                      ));
-                    })()}
+                      );
+                    })}
                   </div>
- 
-                  {/* Right arrow on desktop */}
+
                   <button 
                     onClick={() => scrollDeities('right')}
-                    className="absolute -right-4 z-10 p-1.5 rounded-full bg-white dark:bg-zinc-800 border border-[#EFE4D7] dark:border-zinc-700 text-[#6A2C2A] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-sm"
+                    className="absolute -right-3.5 z-10 p-2 rounded-full bg-[#FFFDF8] dark:bg-zinc-800 border border-[#E8D8C4] dark:border-zinc-700 text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 hidden md:flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover/carousel:opacity-100 shadow-md"
+                    aria-label="Scroll right"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-                {/* Swipe Helper text */}
-                <p className="text-xs font-semibold text-center text-[#7A6B60]/70 dark:text-amber-500/40 tracking-wider">
-                  {language === 'hi' ? "← स्वाइप करें और अधिक देखें →" : "← Swipe to see more deities →"}
-                </p>
-              </div>
- 
-              {/* Expand deities grid if "सभी देखें" is active */}
-              {showAllDeities && (
-                <div 
-                  className="bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-[28px] p-5 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4 shadow-[0_12px_40px_rgba(80,45,20,0.06)]"
-                >
-                  {allDeities.map((deity) => {
-                    const slug = getDeitySlug(deity);
-                    const bgClass = getDeityBg(slug);
-                    return (
-                      <button
-                        key={`expand-${deity.id}`}
-                        onClick={() => {
-                          handleDeityFilter(slug);
-                          setShowAllDeities(false);
-                        }}
-                        className="flex flex-col items-center gap-1.5 focus:outline-none cursor-pointer group"
-                      >
-                        <div className={cn("w-14 h-14 rounded-2xl border border-[#EFE4D7] dark:border-white/10 hover:border-[#D4A44A]/60 flex items-center justify-center overflow-hidden relative shadow-sm", bgClass)}>
-                          {deity.imageUrl ? (
-                            <img src={deity.imageUrl} alt={deity.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xl">{deity.emoji}</span>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
-                        </div>
-                        <span className="text-xs font-semibold text-[#7A6B60] group-hover:text-[#6A2C2A] truncate max-w-[65px] transition-colors">
-                          {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
- 
-              {/* Section 2: त्वरित सेवाएं (Grid Cards with 2 columns) */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-3.5 mb-2">
-                  <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4A44A]/60" />
-                  <span className="text-[#D4A44A] text-xs font-bold">✦</span>
-                  <h2 className="font-serif text-[17px] md:text-[20px] font-bold text-[#32251E] dark:text-[#FFFDF8]">
-                    {language === 'hi' ? 'त्वरित सेवाएं' : 'Quick Services'}
-                  </h2>
-                  <span className="text-[#D4A44A] text-xs font-bold">✦</span>
-                  <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4A44A]/60" />
-                </div>
- 
-                <div className="grid grid-cols-2 gap-3.5 sm:gap-4 max-w-2xl mx-auto">
-                  {/* Card 1: ध्यान करें */}
-                  <div 
-                    onClick={() => navigate('/meditation')}
-                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
-                  >
-                    {/* Full Hero Image */}
-                    <img 
-                      src={meditationImage} 
-                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
-                      alt="" 
-                    />
-                    {/* Dark mode overlay */}
-                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
-                    
-                    {/* Mandala watermark */}
-                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-12 transition-transform duration-700 group-hover:rotate-[45deg] z-[1]" alt="" />
+              </section>
 
-                    {/* Top Artwork Spacer - pushes text down below the artwork */}
-                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
-
-                    {/* Content at lower area */}
-                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
-                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
-                        {language === 'hi' ? "ध्यान करें" : "Meditate"}
-                      </h3>
-                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
-                        {language === 'hi' ? "मन को शांति दें और आत्मिक संतुलन पाएं।" : "Calm your mind and find inner balance."}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-0.5">
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ शांत संगीत</span>
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 5-30 मिनट</span>
-                      </div>
-                      <div className="flex justify-end pt-1">
-                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
-                          <ChevronRight className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
+              {/* Trending Devotional Search Chips */}
+              <div className="p-3.5 sm:p-4 rounded-[20px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/70 dark:border-[#D4A437]/20 shadow-[0_2px_8px_rgba(95,72,38,0.03)]">
+                <div className="flex items-center gap-2 mb-2.5 text-xs font-bold text-[#786252] dark:text-stone-400">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#D4A437] via-[#651317] to-[#D4A437] p-0.5 shadow-2xs flex items-center justify-center shrink-0">
+                    <img src={omWhiteSvg} alt="ॐ" className="w-full h-full object-contain" />
                   </div>
-
-                  {/* Card 2: नाम जप करें */}
-                  <div 
-                    onClick={() => navigate('/meditation')}
-                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
-                  >
-                    {/* Full Hero Image */}
-                    <img 
-                      src={malaBeadsImage} 
-                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
-                      alt="" 
-                    />
-                    {/* Dark mode overlay */}
-                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
-
-                    {/* Mandala watermark */}
-                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-45 transition-transform duration-700 group-hover:rotate-[90deg] z-[1]" alt="" />
-
-                    {/* Top Artwork Spacer */}
-                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
-
-                    {/* Content at lower area */}
-                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
-                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
-                        {language === 'hi' ? "नाम जप करें" : "Mantra Chanting"}
-                      </h3>
-                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
-                        {language === 'hi' ? "नाम स्मरण से बढ़े आत्मिक शांति और प्रेम।" : "Grow inner peace through mantra chanting."}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-0.5">
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 108 जाप</span>
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ माला काउंटर</span>
-                      </div>
-                      <div className="flex justify-end pt-1">
-                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
-                          <ChevronRight className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 3: प्रार्थना करें */}
-                  <div 
-                    onClick={() => navigate('/blessings')}
-                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
-                  >
-                    {/* Full Hero Image */}
-                    <img 
-                      src={devotionalImage} 
-                      className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
-                      alt="" 
-                    />
-                    {/* Dark mode overlay */}
-                    <div className="absolute inset-0 bg-black/0 dark:bg-black/40 pointer-events-none transition-colors" />
-
-                    {/* Mandala watermark */}
-                    <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-90 transition-transform duration-700 group-hover:rotate-[135deg] z-[1]" alt="" />
-
-                    {/* Top Artwork Spacer */}
-                    <div className="w-full h-[155px] sm:h-[185px] shrink-0 pointer-events-none" />
-
-                    {/* Content at lower area */}
-                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
-                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
-                        {language === 'hi' ? "प्रार्थना करें" : "Prayers"}
-                      </h3>
-                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
-                        {language === 'hi' ? "ईश्वर से जुड़ें और आशीर्वाद प्राप्त करें।" : "Connect with the divine and receive blessings."}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-0.5">
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ आरती संग्रह</span>
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ आशीर्वाद</span>
-                      </div>
-                      <div className="flex justify-end pt-1">
-                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
-                          <ChevronRight className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 4: भजन सुनें */}
-                  <div 
-                    onClick={() => navigate('/all-bhajans')}
-                    className="bg-[#FAF2E8] dark:bg-[#1E1710] rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-1.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.13)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[340px]"
-                  >
-                    {/* Hero Image — manjira SVG centred on top matching warm bg */}
-                    <div className="relative w-full h-[155px] sm:h-[185px] overflow-hidden rounded-t-[24px] shrink-0 flex items-center justify-center p-4 pt-5">
-                      <img src={manjiraSvg} className="w-full h-full max-h-[135px] sm:max-h-[155px] object-contain transition-transform duration-700 group-hover:scale-110 drop-shadow-sm" alt="" />
-                      <img src={mandalaBeige} className="absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.15] dark:opacity-[0.08] pointer-events-none object-contain rotate-[180deg] transition-transform duration-700 group-hover:rotate-[225deg]" alt="" />
-                    </div>
-
-                    {/* Content at lower area */}
-                    <div className="flex flex-col justify-end px-3.5 sm:px-4 pb-3.5 sm:pb-4 pt-1 gap-1.5 relative z-[2] mt-auto">
-                      <h3 className="text-[14.5px] sm:text-[17px] font-extrabold text-[#32251E] dark:text-[#FFFDF8] leading-snug">
-                        {language === 'hi' ? "भजन सुनें" : "Listen to Bhajans"}
-                      </h3>
-                      <p className="text-[11px] sm:text-[12.5px] text-[#6E5E53] dark:text-[#D4C5B9] font-medium leading-snug line-clamp-2">
-                        {language === 'hi' ? "भजनों के साथ भक्ति में लीन हों।" : "Immerse yourself in devotion with sacred hymns."}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 mt-0.5">
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ 500+ भजन</span>
-                        <span className="px-2 py-0.5 text-[9.5px] sm:text-[11px] font-bold bg-[#FAF2E8]/95 dark:bg-amber-950/70 text-[#6A2C2A] dark:text-[#E8B15C] border border-[#EFE4D7] dark:border-amber-950/50 rounded-full backdrop-blur-[2px] shadow-sm">✦ प्लेलिस्ट</span>
-                      </div>
-                      <div className="flex justify-end pt-1">
-                        <button className="w-7.5 h-7.5 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] text-white flex items-center justify-center transition-all shadow-[0_4px_10px_rgba(106,44,42,0.25)] cursor-pointer">
-                          <ChevronRight className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 3: Today's Panchang (Wide dashboard card) */}
-              <div className="space-y-4">
-                <div 
-                  onClick={() => navigate('/panchang')}
-                  className="bg-white dark:bg-[#1E1710] rounded-[28px] border border-[#EFE4D7] dark:border-zinc-800/80 p-5 md:p-6 text-left shadow-[0_12px_40px_rgba(80,45,20,0.06)] hover:-translate-y-0.5 hover:shadow-[0_18px_48px_rgba(80,45,20,0.10)] transition-all duration-300 cursor-pointer relative overflow-hidden group/card"
-                >
-                  <img src={mandalaGold} className="absolute -right-8 -bottom-8 w-28 h-28 opacity-[0.01] pointer-events-none object-contain rotate-12" alt="" />
-                  
-                  <div className="flex items-center justify-between gap-4 mb-6">
-                    <div className="flex flex-col text-left">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[#D4A44A] text-xs font-bold">✦</span>
-                        <h3 className="font-serif text-[17px] md:text-[20px] font-bold text-[#6A2C2A] dark:text-[#E8B15C]">
-                          आज का पंचांग
-                        </h3>
-                        <span className="text-[#D4A44A] text-xs font-bold">✦</span>
-                      </div>
-                      <p className="text-xs text-[#7A6B60] dark:text-stone-300 font-semibold mt-1 pl-4 sm:pl-0">
-                        {today.toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                      </p>
-                    </div>
-                    
-                    {/* Navigation arrow button */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate('/panchang');
-                      }}
-                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gradient-to-b from-[#7A2D28] to-[#5A1F1A] hover:from-[#8A3E39] hover:to-[#6A2F2A] active:scale-[0.98] text-white flex items-center justify-center transition-all shadow-[0_3px_8px_rgba(106,44,42,0.2)] sm:shadow-[0_4px_12px_rgba(106,44,42,0.2)] shrink-0 cursor-pointer"
-                    >
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    </button>
-                  </div>
-                  
-                  {/* Dashboard row of boxes */}
-                  <div className="flex sm:grid sm:grid-cols-5 overflow-x-auto sm:overflow-visible gap-3 pb-3 sm:pb-0 snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-                    {/* Pill 1: Tithi */}
-                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
-                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M12 3a9 9 0 1 0 9 9 9.75 9.75 0 0 0-9-9z" fill="#D4A44A" opacity="0.1" />
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#D4A44A" strokeWidth="1.5" />
-                      </svg>
-                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'तिथि' : 'Tithi'}</span>
-                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">{language === 'hi' ? panchangData.tithi.hi : panchangData.tithi.en}</span>
-                    </div>
-                    
-                    {/* Pill 2: Nakshatra */}
-                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
-                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="#D4A44A" strokeWidth="1.5" />
-                      </svg>
-                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'नक्षत्र' : 'Nakshatra'}</span>
-                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">{language === 'hi' ? panchangData.nakshatra.hi : panchangData.nakshatra.en}</span>
-                    </div>
-                    
-                    {/* Pill 3: Sunrise */}
-                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
-                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M17 18a5 5 0 0 0-10 0" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
-                        <path d="M12 2v3M4.93 4.93l1.41 1.41M19.07 4.93l-1.41 1.41M2 18h20M12 9v5M8 12.5a4 4 0 0 1 8 0" stroke="#D4A44A" strokeWidth="1.5" />
-                      </svg>
-                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'सूर्योदय' : 'Sunrise'}</span>
-                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">05:48 AM</span>
-                    </div>
-                    
-                    {/* Pill 4: Sunset */}
-                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
-                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M12 18a4 4 0 0 0-4-4H8a4 4 0 0 0 8 0" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
-                        <path d="M2 18h20M12 22v-3M4.93 17.07l1.41-1.41M19.07 17.07l-1.41-1.41M12 10v4M8 13.5a4 4 0 0 0 8 0" stroke="#D4A44A" strokeWidth="1.5" />
-                      </svg>
-                      <span className="text-[11px] md:text-xs text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'सूर्यास्त' : 'Sunset'}</span>
-                      <span className="text-xs md:text-sm font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">07:15 PM</span>
-                    </div>
-                    
-                    {/* Pill 5: Rahukaal */}
-                    <div className="bg-white dark:bg-black/20 border border-[#EFE4D7] dark:border-white/5 rounded-[20px] p-3 flex flex-col items-center justify-center text-center shadow-xs min-h-[120px] w-[110px] sm:w-full shrink-0 snap-align-start">
-                      <svg className="w-6 h-6 text-[#D4A44A] mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <circle cx="12" cy="12" r="4" stroke="#D4A44A" strokeWidth="1.5" fill="#D4A44A" opacity="0.1" />
-                        <path d="M2 17c5-5 15-5 20 0M5 12c3-3 11-3 14 0" stroke="#D4A44A" strokeWidth="1.5" />
-                      </svg>
-                      <span className="text-[13px] text-[#7A6B60] font-semibold mb-1">{language === 'hi' ? 'राहुकाल' : 'Rahu Kaal'}</span>
-                      <span className="text-[11px] md:text-xs font-bold text-[#6A2C2A] dark:text-[#E8B15C] leading-tight">
-                        01:30 PM
-                        <span className="block text-[10px] md:text-[11px] font-semibold text-[#7A6B60] dark:text-stone-400 mt-0.5">
-                          – 03:00 PM
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 4: Popular Bhajans (Scrollbar hidden) */}
-              <div className="space-y-4">
-                <h2 className="font-serif text-lg font-extrabold text-foreground tracking-wide flex items-center gap-1.5">
-                  🔥 {language === 'hi' ? 'लोकप्रिय भजन' : 'Popular Bhajans'}
-                </h2>
-
-                <div className="flex gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar snap-x touch-pan-x -mx-4 px-4 sm:mx-0 sm:px-0">
-                  {popularBhajansList.map((bhajan) => {
-                    const deity = getDeityById(bhajan.deityId);
-                    return (
-                      <div
-                        key={`popular-${bhajan.id}`}
-                        onClick={() => {
-                          setSelectedBhajanForDetail(bhajan);
-                          setIsDetailModalOpen(true);
-                        }}
-                        className="w-[140px] sm:w-[160px] aspect-[3/4.2] rounded-3xl overflow-hidden relative shadow-lg shadow-black/40 group shrink-0 snap-start cursor-pointer border border-border/5"
-                      >
-                        {/* Background cover image */}
-                        {deity?.imageUrl ? (
-                          <img
-                            src={deity.imageUrl}
-                            alt={bhajan.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-stone-900 flex items-center justify-center text-4xl">
-                            ॐ
-                          </div>
-                        )}
- 
-                        {/* Soft Vignette overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
- 
-                        {/* Title text overlay at the bottom */}
-                        <div className="absolute inset-x-0 bottom-0 p-3.5 flex flex-col justify-end text-left">
-                          <span className="text-[8px] uppercase font-sans font-black text-amber-500 tracking-wider">
-                            {deity?.nameHindi || deity?.name || "प्रभु"}
-                          </span>
-                          <h4 className="font-serif text-xs font-bold text-white tracking-wide mt-1.5 leading-tight line-clamp-2 drop-shadow-md">
-                            {bhajan.titleHindi || bhajan.title}
-                          </h4>
-                        </div>
- 
-                        {/* Circular Play Button on hover */}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center">
-                          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20 scale-100">
-                            <Play className="w-4 h-4 fill-current ml-0.5" />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          ) : selectedDeity && !query.trim() ? (
-            /* DEITY PORTAL DASHBOARD (When a deity is clicked) */
-            <div className="space-y-6">
-              {/* Deity Title & Back action */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-amber-500/5 to-orange-500/5 border border-amber-500/10 rounded-3xl p-5 shadow-inner">
-                <div className="space-y-1 text-left">
-                  <span className="text-[10px] uppercase font-sans font-black text-amber-500 tracking-wider">
-                    {language === 'hi' ? "विशेष देव लोक" : "Divine Portal"}
+                  <span className="font-serif font-bold text-sm text-[#3A2418] dark:text-[#FFFDF8]">
+                    {language === 'hi' ? 'लोकप्रिय खोजें' : 'Trending Searches'}
                   </span>
-                  <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-amber-500 tracking-wide">
-                    श्री {selectedDeityItem?.nameHindi || selectedDeityItem?.name} के भजन
+                  <span className="text-[#D4A437] text-xs">✦</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {TRENDING_SEARCHES.map((item) => (
+                    <button
+                      key={item.query}
+                      onClick={() => setQuery(item.query)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF2E8]/70 dark:bg-[#251A10] border border-[#E8D8C4] dark:border-zinc-800 text-[#651317] dark:text-[#E8B15C] text-xs font-bold hover:border-[#C89B3C] hover:bg-[#FAF2E8] shadow-2xs transition-all cursor-pointer active:scale-95"
+                    >
+                      <span className="text-xs">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* SECTION 2: त्वरित आध्यात्मिक सेवाएं (8 Feature Grid) */}
+              <section className="space-y-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#D4A437] via-[#651317] to-[#D4A437] p-0.5 shadow-xs flex items-center justify-center shrink-0">
+                    <img src={omWhiteSvg} alt="ॐ" className="w-full h-full object-contain" />
+                  </div>
+                  <h2 className="font-serif text-lg sm:text-xl font-bold text-[#3A2418] dark:text-[#FFFDF8]">
+                    {language === 'hi' ? 'त्वरित आध्यात्मिक सेवाएं' : 'Devotional Services'}
                   </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {language === 'hi' ? "मधुर भजनों, आरतियों और मंत्रों का दिव्य संग्रह" : "A divine collection of melodious bhajans, aartis, and mantras"}
-                  </p>
+                  <span className="text-[#D4A437] text-xs">✦</span>
                 </div>
-                <button
-                  onClick={() => setSelectedDeity("")}
-                  className="px-4 py-2 rounded-full border border-amber-500/20 text-amber-500 hover:bg-amber-500/10 text-xs font-bold font-sans uppercase tracking-wider transition-all self-start md:self-center cursor-pointer"
-                >
-                  {language === 'hi' ? "← सभी देव देखें" : "← All Deities"}
-                </button>
-              </div>
 
-              {/* Deity Sub-Category Tabs Row */}
-              <div className="flex gap-2 overflow-x-auto pb-2 pt-1 no-scrollbar border-b border-border/40">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => {
-                      if (cat === "वॉलपेपर") {
-                        const deityName = selectedDeityItem?.name || "";
-                        navigate(`/wallpaper?tab=wallpapers&deity=${encodeURIComponent(deityName)}`);
-                      } else if (cat === "पोस्टर") {
-                        const deityName = selectedDeityItem?.name || "";
-                        navigate(`/wallpaper?tab=maker&deity=${encodeURIComponent(deityName)}`);
-                      } else {
-                        setActiveCategory(cat);
-                      }
-                    }}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-xs font-bold font-sans tracking-wide transition-all whitespace-nowrap cursor-pointer",
-                      activeCategory === cat
-                        ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20"
-                        : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              {/* Deity Custom Interactive Grid (Matching Krishna Interaction mockup) */}
-              {activeCategory === "सभी" && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Left Column: Large Deity Card */}
-                  <div 
-                    className="md:col-span-1 rounded-3xl p-5 relative overflow-hidden flex flex-col justify-between min-h-[260px] border border-amber-500/10 shadow-lg"
-                    style={{
-                      background: 'linear-gradient(180deg, rgba(30,20,5,0.7) 0%, rgba(15,8,2,0.95) 100%)'
-                    }}
-                  >
-                    {selectedDeityItem?.imageUrl && (
-                      <img 
-                        src={selectedDeityItem.imageUrl} 
-                        alt={selectedDeityItem.name} 
-                        className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none mix-blend-overlay"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none" />
-                    
-                    <div className="z-10">
-                      <span className="text-[9px] uppercase font-sans font-black text-amber-500 tracking-wider">
-                        {language === 'hi' ? "विशेष प्रस्तुति" : "Featured Devotion"}
-                      </span>
-                      <h3 className="font-serif text-lg font-bold text-amber-100 mt-1">
-                        {selectedDeityItem?.nameHindi || selectedDeityItem?.name} {language === 'hi' ? "संग्रह" : "Divine Portal"}
-                      </h3>
-                    </div>
-
-                    <div className="space-y-2.5 z-10 w-full mt-6">
-                      <button 
-                        onClick={() => setActiveCategory("भजन")}
-                        className="w-full flex items-center justify-between p-3 rounded-2xl bg-amber-500 text-black font-sans text-xs font-black uppercase transition-all hover:bg-amber-400 active:scale-95 shadow-md shadow-amber-500/10 cursor-pointer"
-                      >
-                        <span>{language === 'hi' ? `${selectedDeityItem?.nameHindi || selectedDeityItem?.name} भजन` : `${selectedDeityItem?.name} Bhajans`}</span>
-                        <div className="flex items-center gap-1.5 text-[10px]">
-                          <span className="font-bold opacity-80">{bhajansCount} {language === 'hi' ? "भजन" : "songs"}</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </div>
-                      </button>
-
-                      <button 
-                        onClick={() => setActiveCategory("आरती")}
-                        className="w-full flex items-center justify-between p-3 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 text-white font-sans text-xs font-bold uppercase transition-all cursor-pointer"
-                      >
-                        <span>{language === 'hi' ? `${selectedDeityItem?.nameHindi || selectedDeityItem?.name} आरती` : `${selectedDeityItem?.name} Aarti`}</span>
-                        <div className="flex items-center gap-1.5 text-[10px] text-amber-400">
-                          <span className="font-bold">{aartiCount} {language === 'hi' ? "आरती" : "aarti"}</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Right Column: 2x2 Category Cards Grid */}
-                  <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                    {/* Card 1: मंत्र */}
-                    <div 
-                      onClick={() => setActiveCategory("मंत्र")}
-                      className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
-                      style={{ background: 'linear-gradient(135deg, rgba(38,15,6,0.9) 0%, rgba(20,7,1,0.98) 100%)' }}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                  {[
+                    { title: language === 'hi' ? 'भजन संग्रह' : 'Bhajan Sangrah', path: '/all-bhajans', imageSrc: manjiraSvg, badge: '500+ भजन', desc: 'मधुर संकीर्तन व धुनें' },
+                    { title: language === 'hi' ? 'नित्य आरती' : 'Daily Aarti', path: '/live-aarti', imageSrc: liveArtiWebp, badge: 'दीप आरती', desc: 'आरती संग्रह व दीप वंदना' },
+                    { title: language === 'hi' ? 'चालीसा संग्रह' : 'Chalisa & Stotras', path: '/chalisa', imageSrc: bookSvg, badge: 'पवित्र पाठ', desc: 'हनुमान चालीसा, स्तोत्र' },
+                    { title: language === 'hi' ? 'नाम जप साधना' : 'Mantra Japa', path: '/meditation/mantra-japa', imageSrc: japWebp, badge: '108 माला', desc: 'माला काउंटर एवं जप' },
+                    { title: language === 'hi' ? 'लाइव दर्शन' : 'Live Darshan', path: '/live-aarti', imageSrc: darshanWebp, badge: 'तीर्थ दर्शन', desc: 'प्रमुख तीर्थों के दर्शन' },
+                    { title: language === 'hi' ? 'पोस्टर मेकर' : 'Poster Maker', path: '/wallpaper?tab=maker', imageSrc: posterWebp, badge: 'शुभ पोस्टर', desc: 'सुप्रभात व भक्ति पोस्टर' },
+                    { title: language === 'hi' ? 'पवित्र ध्यान' : 'Meditation', path: '/meditation', imageSrc: meditationWebp, badge: 'मन की शांति', desc: 'आत्मिक संतुलन एवं संगीत' },
+                    { title: language === 'hi' ? 'प्रार्थना संग्रह' : 'Prayers & Blessings', path: '/blessings', imageSrc: prayerSvg, badge: 'आशीर्वाद', desc: 'प्रभु से जुड़ें व प्रार्थना करें' },
+                  ].map((item) => (
+                    <div
+                      key={item.title}
+                      onClick={() => navigate(item.path)}
+                      className="rounded-[20px] md:rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4]/70 dark:border-[#D4A437]/25 shadow-[0_4px_12px_rgba(95,72,38,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_28px_rgba(95,72,38,0.09)] hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group flex flex-col justify-between p-3.5 sm:p-4 text-center min-h-[145px] md:min-h-[180px] relative overflow-hidden select-none"
                     >
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/5 rounded-full blur-2xl group-hover:bg-orange-500/10 transition-all duration-500" />
-                      <div className="text-xl text-orange-400">🔥</div>
-                      <div className="mt-4">
-                        <h4 className="font-serif text-sm font-bold text-orange-100">{language === 'hi' ? `${selectedDeityItem?.nameHindi || selectedDeityItem?.name} मंत्र` : `${selectedDeityItem?.name} Mantras`}</h4>
-                        <span className="text-[10px] font-sans font-medium text-orange-400 block mt-1">{mantraCount} {language === 'hi' ? "पवित्र मंत्र" : "holy mantras"}</span>
+                      <div className="relative w-full h-[65px] md:h-[95px] flex items-center justify-center overflow-hidden shrink-0">
+                        <img
+                          src={item.imageSrc}
+                          alt={item.title}
+                          className="max-w-full max-h-full object-contain object-center group-hover:scale-108 transition-transform duration-300 pointer-events-none drop-shadow-[0_4px_8px_rgba(0,0,0,0.06)]"
+                          loading="lazy"
+                        />
+                      </div>
+
+                      <div className="w-full mt-2">
+                        <h3 className="text-[13.5px] sm:text-[15px] md:text-[16px] font-bold font-serif text-[#3A2418] dark:text-[#FFFDF8] leading-tight group-hover:text-[#651317] dark:group-hover:text-[#D4A437] transition-colors truncate">
+                          {item.title}
+                        </h3>
+                        <p className="text-[10.5px] sm:text-[11.5px] text-[#786252] dark:text-stone-400 mt-0.5 truncate">
+                          {item.desc}
+                        </p>
                       </div>
                     </div>
-
-                    {/* Card 2: वॉलपेपर */}
-                    <div 
-                      onClick={() => {
-                        const deityName = selectedDeityItem?.name || "";
-                        navigate(`/wallpaper?tab=wallpapers&deity=${encodeURIComponent(deityName)}`);
-                      }}
-                      className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
-                      style={{ background: 'linear-gradient(135deg, rgba(16,28,48,0.9) 0%, rgba(7,14,28,0.98) 100%)' }}
-                    >
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-sky-500/5 rounded-full blur-2xl group-hover:bg-sky-500/10 transition-all duration-500" />
-                      <div className="text-xl text-sky-400">🌸</div>
-                      <div className="mt-4">
-                        <h4 className="font-serif text-sm font-bold text-sky-100">{language === 'hi' ? "दिव्य वॉलपेपर" : "Wallpapers"}</h4>
-                        <span className="text-[10px] font-sans font-medium text-sky-400 block mt-1">{language === 'hi' ? "दर्शन व डाउनलोड" : "View & Download"}</span>
-                      </div>
-                    </div>
-
-                    {/* Card 3: कीर्तन */}
-                    <div 
-                      onClick={() => setActiveCategory("कीर्तन")}
-                      className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
-                      style={{ background: 'linear-gradient(135deg, rgba(30,12,38,0.9) 0%, rgba(14,5,20,0.98) 100%)' }}
-                    >
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/5 rounded-full blur-2xl group-hover:bg-purple-500/10 transition-all duration-500" />
-                      <div className="text-xl text-purple-400">🎶</div>
-                      <div className="mt-4">
-                        <h4 className="font-serif text-sm font-bold text-purple-100">{language === 'hi' ? `${selectedDeityItem?.nameHindi || selectedDeityItem?.name} कीर्तन` : `${selectedDeityItem?.name} Kirtans`}</h4>
-                        <span className="text-[10px] font-sans font-medium text-purple-400 block mt-1">{kirtanCount} {language === 'hi' ? "मधुर धुनें" : "kirtans & tunes"}</span>
-                      </div>
-                    </div>
-
-                    {/* Card 4: पोस्टर */}
-                    <div 
-                      onClick={() => {
-                        const deityName = selectedDeityItem?.name || "";
-                        navigate(`/wallpaper?tab=maker&deity=${encodeURIComponent(deityName)}`);
-                      }}
-                      className="rounded-3xl p-5 text-left flex flex-col justify-between border border-amber-500/10 hover:border-amber-500/30 transition-all cursor-pointer relative overflow-hidden group"
-                      style={{ background: 'linear-gradient(135deg, rgba(48,16,28,0.9) 0%, rgba(28,7,14,0.98) 100%)' }}
-                    >
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-all duration-500" />
-                      <div className="text-xl text-rose-400">🎨</div>
-                      <div className="mt-4">
-                        <h4 className="font-serif text-sm font-bold text-rose-100">{language === 'hi' ? "शुभ पोस्टर" : "Posters"}</h4>
-                        <span className="text-[10px] font-sans font-medium text-rose-400 block mt-1">{language === 'hi' ? "दर्शन व शेयर" : "View & Share"}</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </section>
 
-              {/* Deity Category Content Results */}
-              <div className="space-y-4">
-                <h3 className="font-serif text-lg font-bold text-foreground text-left">
-                  {activeCategory === "सभी" 
-                    ? (language === 'hi' ? `सभी भजन संग्रह (${deityBhajans.length})` : `All Devotions (${deityBhajans.length})`)
-                    : (language === 'hi' ? `${activeCategory} परिणाम` : `${activeCategory} Results`)}
-                </h3>
+              {/* SECTION 3: समय अनुसार भक्ति (Time of Day Curated Sadhana) */}
+              <section className="bg-[#FFFDF8] dark:bg-[#1A120B] rounded-[24px] border border-[#E8D8C4]/80 dark:border-[#D4A437]/25 p-4 sm:p-6 shadow-[0_8px_24px_rgba(95,72,38,0.05)] text-left relative overflow-hidden">
+                <img src={mandalaGold} className="absolute -right-6 -bottom-6 w-24 h-24 opacity-[0.02] pointer-events-none object-contain" alt="" />
                 
-                {/* Deity Category Content Results */}
-                {deityCategoryContent}
-              </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#D4A437]" />
+                    <h2 className="font-serif text-base sm:text-lg md:text-xl font-bold text-[#3A2418] dark:text-[#FFFDF8]">
+                      {language === 'hi' ? 'समय अनुसार पावन भक्ति' : 'Time-of-Day Devotion'}
+                    </h2>
+                    <span className="text-[#D4A437] text-xs">✦</span>
+                  </div>
+                  <span className="text-xs text-[#786252] dark:text-stone-400 font-medium">
+                    {language === 'hi' ? 'वर्तमान समय के अनुकूल साधना' : 'Curated for this moment'}
+                  </span>
+                </div>
+
+                {/* 4 Time Slots Bar */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+                  {[
+                    { id: 'morning', label: 'प्रातःकाल (4-11 AM)', emoji: '🌅', desc: 'प्रभाती व गायत्री' },
+                    { id: 'afternoon', label: 'मध्याह्न (11-4 PM)', emoji: '☀️', desc: 'राम नाम व शांति' },
+                    { id: 'evening', label: 'संध्याकाल (4-8 PM)', emoji: '🌆', desc: 'संध्या आरती व दीप' },
+                    { id: 'night', label: 'रात्रि (8-4 AM)', emoji: '🌙', desc: 'शयन व मानसिक जप' },
+                  ].map((slot) => (
+                    <button
+                      key={slot.id}
+                      onClick={() => setSelectedTimeSlot(slot.id as any)}
+                      className={cn(
+                        "p-3 rounded-2xl border text-left transition-all cursor-pointer",
+                        selectedTimeSlot === slot.id
+                          ? "bg-[#FAF2E8] dark:bg-[#251A10] border-[#D4A437] shadow-xs"
+                          : "bg-[#FFFDF8] dark:bg-[#1A120B] border-[#E8D8C4]/60 dark:border-zinc-800 hover:border-[#D4A437]/50"
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#651317] dark:text-[#E8B15C]">
+                        <span>{slot.emoji}</span>
+                        <span className="truncate">{slot.label}</span>
+                      </div>
+                      <span className="text-[10px] text-[#786252] dark:text-stone-400 block mt-0.5 truncate">{slot.desc}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Slot Suggestion Details */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FAF2E8]/60 dark:bg-black/20 border border-[#E8D8C4] dark:border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">
+                      {selectedTimeSlot === 'morning' ? '🌅' : selectedTimeSlot === 'afternoon' ? '☀️' : selectedTimeSlot === 'evening' ? '🌆' : '🌙'}
+                    </span>
+                    <div className="text-left">
+                      <h4 className="font-serif font-bold text-xs sm:text-sm text-[#3A2418] dark:text-[#FFFDF8]">
+                        {selectedTimeSlot === 'morning' && (language === 'hi' ? 'प्रातः साधना: गायत्री मंत्र, हनुमान चालीसा व प्रभाती भजन' : 'Morning Sadhana: Gayatri Mantra & Hanuman Chalisa')}
+                        {selectedTimeSlot === 'afternoon' && (language === 'hi' ? 'मध्याह्न शांति: श्री राम जय राम, शांत कीर्तन व नाम जप' : 'Afternoon Peace: Sri Ram Naam & Relaxing Kirtan')}
+                        {selectedTimeSlot === 'evening' && (language === 'hi' ? 'संध्या वंदन: आरती कुंजबिहारी की, शिव तांडव व दीप आरती' : 'Evening Devotion: Aarti Kunj Bihari & Shiv Tandav')}
+                        {selectedTimeSlot === 'night' && (language === 'hi' ? 'रात्रि ध्यान: शयन आरती, सुखद निद्रा मंत्र व मानसिक शांति' : 'Night Calm: Sleep Aarti & Peaceful Meditation')}
+                      </h4>
+                      <span className="text-[11px] text-[#786252] dark:text-stone-400">
+                        {language === 'hi' ? 'क्लिक करके तुरंत सुनें व पाठ करें' : 'Click to explore & listen instantly'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {selectedTimeSlot === 'morning' && (
+                      <>
+                        <button onClick={() => setQuery("हनुमान चालीसा")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          हनुमान चालीसा
+                        </button>
+                        <button onClick={() => setQuery("गायत्री मंत्र")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          गायत्री मंत्र
+                        </button>
+                      </>
+                    )}
+                    {selectedTimeSlot === 'afternoon' && (
+                      <>
+                        <button onClick={() => setQuery("राम")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          श्री राम भजन
+                        </button>
+                        <button onClick={() => setQuery("कृष्ण")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          कृष्ण भजन
+                        </button>
+                      </>
+                    )}
+                    {selectedTimeSlot === 'evening' && (
+                      <>
+                        <button onClick={() => setQuery("आरती")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          संध्या आरती
+                        </button>
+                        <button onClick={() => setQuery("शिव")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          शिव स्तोत्र
+                        </button>
+                      </>
+                    )}
+                    {selectedTimeSlot === 'night' && (
+                      <>
+                        <button onClick={() => setQuery("ध्यान")} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          शांति ध्यान
+                        </button>
+                        <button onClick={() => navigate('/meditation')} className="px-3.5 py-1.5 bg-white dark:bg-zinc-800 rounded-full border border-[#D4A437]/40 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 cursor-pointer shadow-2xs">
+                          माला जप
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              {/* SECTION 4: आज का पावन विचार एवं श्लोक (Vedic Shloka Card) */}
+              <section className="bg-gradient-to-br from-amber-500/10 via-[#FFFDF8] to-orange-500/10 dark:from-amber-950/20 dark:via-[#1A120B] dark:to-orange-950/20 border border-[#D4A437]/40 rounded-[24px] p-4 sm:p-6 shadow-[0_8px_24px_rgba(95,72,38,0.05)] relative overflow-hidden text-left">
+                <img src={mandalaGold} className="absolute -left-8 -top-8 w-28 h-28 opacity-[0.06] dark:opacity-[0.03] pointer-events-none object-contain" alt="" />
+                
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <img src={bookSvg} alt="" className="w-5 h-5 object-contain" />
+                    <h3 className="font-serif text-base sm:text-lg font-bold text-[#651317] dark:text-[#E8B15C]">
+                      {language === 'hi' ? 'आज का पावन विचार एवं श्लोक' : 'Vedic Shloka of the Day'}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={copyShlokaToClipboard}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-zinc-800 border border-[#D4A437]/30 text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:bg-stone-50 transition-all cursor-pointer shadow-2xs active:scale-95"
+                  >
+                    {copiedShloka ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedShloka ? (language === 'hi' ? 'कॉपी हुआ' : 'Copied') : (language === 'hi' ? 'शेयर करें' : 'Share')}</span>
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/90 dark:bg-black/30 border border-[#D4A437]/25 backdrop-blur-2xs space-y-2.5">
+                  <p className="font-serif text-sm sm:text-base font-bold text-[#651317] dark:text-[#E8B15C] leading-relaxed italic">
+                    "{currentShloka.sanskrit}"
+                  </p>
+                  <p className="text-xs sm:text-sm text-[#554338] dark:text-stone-300 font-medium leading-relaxed">
+                    <span className="font-bold text-[#651317] dark:text-[#E8B15C]">{language === 'hi' ? 'भावार्थ:' : 'Meaning:'}</span> {currentShloka.hindi}
+                  </p>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#E8D8C4]/60 dark:border-zinc-800 text-xs text-[#786252] dark:text-stone-400 font-semibold">
+                    <span>स्रोत: {currentShloka.source}</span>
+                    <span className="text-[#D4A437]">✦ {currentShloka.deity} ✦</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* SECTION 5: लोकप्रिय भजन संग्रह (Direct Link to All Bhajans & Bhajan Pages) */}
+              <section className="space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#651317] to-[#80181D] p-1.5 shadow-xs flex items-center justify-center shrink-0">
+                      <img src={headphoneSvg} alt="" className="w-full h-full object-contain invert brightness-200" />
+                    </div>
+                    <h2 className="font-serif text-lg sm:text-xl font-bold text-[#3A2418] dark:text-[#FFFDF8]">
+                      {language === 'hi' ? 'लोकप्रिय भजन संग्रह' : 'Popular Bhajans'}
+                    </h2>
+                    <span className="text-[#D4A437] text-xs">✦</span>
+                  </div>
+                  <Link to="/all-bhajans" className="text-xs font-bold text-[#651317] dark:text-[#E8B15C] hover:underline">
+                    {language === 'hi' ? 'सभी 500+ भजन →' : 'View All →'}
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
+                  {popularBhajansList.map((bhajan) => (
+                    <div key={`popular-${bhajan.id}`} className="min-w-0">
+                      <BhajanCard bhajan={bhajan} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+
             </div>
           ) : (
-            /* SEARCH RESULTS VIEW (When query text search is active) */
+            /* =========================================================================
+               SEARCH RESULTS VIEW (When query search is active)
+               ========================================================================= */
             <div className="space-y-6">
-              {/* Toggle search mode tabs */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* Dual Mode Switch */}
+              <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => setActiveMode('bhajans')}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm md:text-base font-bold tracking-wide transition-all shadow-sm cursor-pointer ${
+                  className={cn(
+                    "inline-flex items-center gap-2 px-5 py-2 rounded-full border text-xs sm:text-sm font-bold tracking-wide transition-all shadow-2xs cursor-pointer",
                     activeMode === 'bhajans'
-                      ? 'bg-[#5C1D0C] text-white border-[#5C1D0C] shadow-md shadow-[#5C1D0C]/10'
-                      : 'bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800'
-                  }`}
+                      ? 'bg-[#651317] text-white border-[#651317] shadow-xs'
+                      : 'bg-[#FFFDF8] dark:bg-[#1A120B] text-[#651317] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800 hover:bg-[#FAF2E8]'
+                  )}
                 >
-                  <BookText className="w-4 h-4" /> {language === 'hi' ? 'भजन' : 'Bhajans In App'}
+                  <BookText className="w-4 h-4" />
+                  <span>{language === 'hi' ? 'भजन व आरतियाँ' : 'In-App Bhajans'}</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-mono">{results.length}</span>
                 </button>
                 <button
                   onClick={() => setActiveMode('youtube')}
-                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-sm md:text-base font-bold tracking-wide transition-all shadow-sm cursor-pointer ${
+                  className={cn(
+                    "inline-flex items-center gap-2 px-5 py-2 rounded-full border text-xs sm:text-sm font-bold tracking-wide transition-all shadow-2xs cursor-pointer",
                     activeMode === 'youtube'
-                      ? 'bg-[#5C1D0C] text-white border-[#5C1D0C] shadow-md shadow-[#5C1D0C]/10'
-                      : 'bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800'
-                  }`}
+                      ? 'bg-red-700 text-white border-red-700 shadow-xs'
+                      : 'bg-[#FFFDF8] dark:bg-[#1A120B] text-[#651317] dark:text-[#E8D8C4] border-[#E8D8C4] dark:border-zinc-800 hover:bg-[#FAF2E8]'
+                  )}
                 >
-                  <Youtube className="w-4 h-4" /> {language === 'hi' ? 'यूट्यूब' : 'YouTube Discovery'}
+                  <Youtube className="w-4 h-4 text-red-500 group-hover:text-white" />
+                  <span>{language === 'hi' ? 'यूट्यूब खोज' : 'YouTube Discovery'}</span>
                 </button>
               </div>
 
               {activeMode === 'bhajans' ? (
                 <>
                   {/* Matched Features Banner */}
-                  {query.trim() && matchedFeatures.length > 0 && (
-                    <div className="space-y-3 bg-[#FAF2E8]/80 dark:bg-[#1E1710] p-3 sm:p-5 rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-xs overflow-hidden w-full max-w-full">
-                      <div className="flex items-center gap-2.5 px-1">
-                        <div className="w-7 h-7 rounded-full bg-amber-500/10 dark:bg-amber-400/10 flex items-center justify-center shrink-0">
-                          <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <h3 className="font-serif text-base sm:text-lg font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
-                          {language === 'hi' ? 'मिलती-जुलती विशेषताएं एवं सेवाएं' : 'Matching Features & Tools'}
+                  {debouncedQuery.trim() && matchedFeatures.length > 0 && (
+                    <div className="space-y-3 bg-gradient-to-r from-amber-500/10 via-[#FAF2E8] to-amber-500/5 dark:from-amber-950/20 dark:via-[#1A120B] dark:to-amber-950/10 p-4 sm:p-5 rounded-[24px] border border-[#D4A437]/30 shadow-2xs overflow-hidden w-full">
+                      <div className="flex items-center gap-2 px-1">
+                        <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <h3 className="font-serif text-sm sm:text-base font-extrabold text-[#3A2418] dark:text-[#FFFDF8]">
+                          {language === 'hi' ? 'मिलती-जुलती सेवाएं एवं सुविधाएं' : 'Matching Features & Tools'}
                         </h3>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                         {matchedFeatures.map((feat) => (
                           <div
                             key={feat.id}
                             onClick={() => navigate(feat.path)}
-                            className="bg-white dark:bg-black/30 border border-[#EFE4D7] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2.5 group relative overflow-hidden text-left w-full min-w-0"
+                            className="bg-[#FFFDF8] dark:bg-black/30 border border-[#E8D8C4] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2.5 group text-left"
                           >
-                            <div className="flex items-start justify-between gap-2 w-full min-w-0">
+                            <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-center shrink-0 shadow-xs">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                                   {renderFeatureIcon(feat.iconName)}
                                 </div>
                                 <div className="flex flex-col min-w-0 flex-1">
-                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm md:text-base text-[#32251E] dark:text-foreground truncate leading-snug">
+                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm text-[#3A2418] dark:text-foreground truncate leading-snug">
                                     {language === 'hi' ? feat.titleHindi : feat.title}
                                   </h4>
-                                  <span className="text-[10px] font-semibold text-[#7A6B60] dark:text-muted-foreground/70 truncate">
-                                    {language === 'hi' ? 'विशेषता / सेवा' : 'Feature / Tool'}
+                                  <span className="text-[10px] font-semibold text-[#786252] dark:text-muted-foreground/70 truncate">
+                                    {language === 'hi' ? 'सुविधा / टूल' : 'Feature / Tool'}
                                   </span>
                                 </div>
                               </div>
 
-                              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 shrink-0">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-amber-100 dark:bg-amber-950/70 text-amber-900 dark:text-amber-300 border border-amber-200 shrink-0">
                                 {language === 'hi' ? feat.badgeHindi : feat.badge}
                               </span>
                             </div>
 
-                            <p className="text-[11px] sm:text-xs text-[#6E5E53] dark:text-muted-foreground/80 leading-relaxed line-clamp-2 min-w-0">
+                            <p className="text-[11px] sm:text-xs text-[#786252] dark:text-muted-foreground/80 leading-relaxed line-clamp-2">
                               {language === 'hi' ? feat.descriptionHindi : feat.description}
                             </p>
 
-                            <div className="flex items-center justify-end pt-1.5 border-t border-[#EFE4D7]/60 dark:border-zinc-800/60 w-full">
-                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#6A2C2A] text-white dark:bg-[#E8B15C] dark:text-black text-[11px] sm:text-xs font-bold shadow-xs group-hover:scale-[1.02] transition-transform">
+                            <div className="flex items-center justify-end pt-1.5 border-t border-[#E8D8C4]/60 dark:border-zinc-800/60 w-full">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#651317] text-white dark:bg-[#D4A437] dark:text-black text-[11px] font-bold shadow-2xs group-hover:scale-[1.02] transition-transform">
                                 <span>{language === 'hi' ? 'शुरू करें' : 'Launch'}</span>
-                                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                <ArrowRight className="w-3 h-3" />
                               </span>
                             </div>
                           </div>
@@ -1359,56 +914,54 @@ export default function SearchPage() {
                   )}
 
                   {/* Matched Aartis & Chalisas */}
-                  {query.trim() && matchedAartis.length > 0 && (
-                    <div className="space-y-3 bg-[#FAF2E8]/60 dark:bg-[#1E1710]/60 p-3 sm:p-5 rounded-[24px] border border-[#EFE4D7] dark:border-zinc-800/80 shadow-xs overflow-hidden w-full max-w-full">
-                      <div className="flex items-center gap-2.5 px-1">
-                        <div className="w-7 h-7 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-                          <Flame className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        </div>
-                        <h3 className="font-serif text-base sm:text-lg font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
+                  {debouncedQuery.trim() && matchedAartis.length > 0 && (
+                    <div className="space-y-3 bg-red-500/5 dark:bg-red-950/15 p-4 sm:p-5 rounded-[24px] border border-red-500/20 shadow-2xs overflow-hidden w-full">
+                      <div className="flex items-center gap-2 px-1">
+                        <Flame className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        <h3 className="font-serif text-sm sm:text-base font-extrabold text-[#3A2418] dark:text-[#FFFDF8]">
                           {language === 'hi' ? 'आरती एवं चालीसा परिणाम' : 'Matching Aartis & Chalisas'}
                         </h3>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full min-w-0">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
                         {matchedAartis.map((ac) => (
                           <div
                             key={ac.id}
                             onClick={() => navigate(ac.path || `/aarti-chalisa`)}
-                            className="bg-white dark:bg-black/30 border border-[#EFE4D7] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2.5 group relative overflow-hidden text-left w-full min-w-0"
+                            className="bg-[#FFFDF8] dark:bg-black/30 border border-[#E8D8C4] dark:border-zinc-800 rounded-[20px] p-3.5 sm:p-4 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-2 group text-left"
                           >
-                            <div className="flex items-start justify-between gap-2 w-full min-w-0">
+                            <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 shadow-xs">
-                                  <Flame className="w-4.5 h-4.5 text-red-600 dark:text-red-400" />
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                                  <Flame className="w-4 h-4 text-red-600 dark:text-red-400" />
                                 </div>
                                 <div className="flex flex-col min-w-0 flex-1">
-                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm md:text-base text-[#32251E] dark:text-foreground truncate leading-snug">
+                                  <h4 className="font-serif font-extrabold text-xs sm:text-sm text-[#3A2418] dark:text-foreground truncate leading-snug">
                                     {language === 'hi' ? ac.titleHindi : ac.title}
                                   </h4>
                                   {ac.singerName && (
-                                    <span className="text-[10px] font-semibold text-[#7A6B60] dark:text-muted-foreground/70 truncate">
+                                    <span className="text-[10px] font-semibold text-[#786252] dark:text-muted-foreground/70 truncate">
                                       {ac.singerName}
                                     </span>
                                   )}
                                 </div>
                               </div>
 
-                              <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider bg-red-100 text-red-900 dark:bg-red-950/70 dark:text-red-300 border border-red-200 dark:border-red-800/60 shrink-0">
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-red-100 text-red-900 dark:bg-red-950/70 dark:text-red-300 border border-red-200 shrink-0">
                                 {ac.type === 'chalisa' ? (language === 'hi' ? 'चालीसा' : 'Chalisa') : (language === 'hi' ? 'आरती' : 'Aarti')}
                               </span>
                             </div>
 
                             {ac.lyricsSnippet && (
-                              <p className="text-[11px] sm:text-xs text-[#6E5E53] dark:text-muted-foreground/80 leading-relaxed line-clamp-2 italic font-serif min-w-0">
+                              <p className="text-[11px] text-[#786252] dark:text-muted-foreground/80 leading-relaxed line-clamp-2 italic font-serif">
                                 "{ac.lyricsSnippet}"
                               </p>
                             )}
 
-                            <div className="flex items-center justify-end pt-1.5 border-t border-[#EFE4D7]/60 dark:border-zinc-800/60 w-full">
-                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#6A2C2A] text-white dark:bg-[#E8B15C] dark:text-black text-[11px] sm:text-xs font-bold shadow-xs group-hover:scale-[1.02] transition-transform">
+                            <div className="flex items-center justify-end pt-1.5 border-t border-[#E8D8C4]/60 dark:border-zinc-800/60 w-full">
+                              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#651317] text-white dark:bg-[#D4A437] dark:text-black text-[11px] font-bold shadow-2xs">
                                 <span>{language === 'hi' ? 'पढ़ें एवं देखें' : 'Read & View'}</span>
-                                <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                <ArrowRight className="w-3 h-3" />
                               </span>
                             </div>
                           </div>
@@ -1417,33 +970,31 @@ export default function SearchPage() {
                     </div>
                   )}
 
-
-                  {/* Matched Deities */}
-                  {query.trim() && matchedDeities.length > 0 && (
-                    <div className="space-y-3">
+                  {/* Matched Deities (Direct Canonical Navigation to /deity/:slug) */}
+                  {debouncedQuery.trim() && matchedDeities.length > 0 && (
+                    <div className="space-y-2.5">
                       <div className="flex items-center gap-2">
                         <span className="text-base select-none">🕉️</span>
-                        <h3 className="font-serif text-base font-extrabold text-[#32251E] dark:text-[#FFFDF8]">
+                        <h3 className="font-serif text-sm sm:text-base font-extrabold text-[#3A2418] dark:text-[#FFFDF8]">
                           {language === 'hi' ? 'संबंधित आराध्य देवता' : 'Matching Deities'}
                         </h3>
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                         {matchedDeities.map((d) => (
                           <div
                             key={d.id}
                             onClick={() => {
-                              setSelectedDeity(d.slug);
-                              setQuery("");
+                              navigate(getDeityUrl(d));
                             }}
-                            className="bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800/80 rounded-2xl p-3 flex items-center gap-3 shadow-xs hover:shadow-md cursor-pointer transition-all group"
+                            className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-zinc-800/80 rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5 shadow-2xs hover:shadow-md cursor-pointer transition-all group"
                           >
                             <span className="text-2xl shrink-0 select-none">{d.emoji}</span>
                             <div className="flex flex-col min-w-0 text-left">
-                              <span className="font-bold text-xs text-[#32251E] dark:text-foreground truncate group-hover:text-[#6A2C2A] dark:group-hover:text-[#E8B15C]">
+                              <span className="font-bold text-xs text-[#3A2418] dark:text-foreground truncate group-hover:text-[#651317] dark:group-hover:text-[#D4A437]">
                                 {language === 'hi' ? d.nameHindi : d.name}
                               </span>
-                              <span className="text-[10px] text-[#7A6B60] dark:text-muted-foreground truncate">
-                                {language === 'hi' ? 'देव लोक देखें →' : 'View Portal →'}
+                              <span className="text-[10px] text-[#786252] dark:text-muted-foreground truncate">
+                                {language === 'hi' ? 'देव लोक देखें →' : 'View Profile →'}
                               </span>
                             </div>
                           </div>
@@ -1451,17 +1002,18 @@ export default function SearchPage() {
                       </div>
                     </div>
                   )}
-                  {/* Deity Filter buttons row */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-sans font-black tracking-widest text-[#5C1D0C] dark:text-muted-foreground uppercase">
+
+                  {/* Clean Scrollable Deity Filter Bar */}
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-sans font-black tracking-wider text-[#651317] dark:text-[#D4A437] uppercase">
                         ⚡ {language === 'hi' ? 'देवता द्वारा फ़िल्टर करें' : 'Filter by Deity'}
                       </span>
-                      {(query || selectedDeity) && (
+                      {(query || selectedDeityFilter) && (
                         <button
                           onClick={() => {
                             setQuery("");
-                            setSelectedDeity("");
+                            setSelectedDeityFilter("");
                           }}
                           className="text-xs font-sans font-bold text-[#FF6A00] hover:underline cursor-pointer"
                         >
@@ -1469,55 +1021,52 @@ export default function SearchPage() {
                         </button>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-2 pt-1">
+                    
+                    <div 
+                      ref={filterPillsRef}
+                      className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 no-scrollbar scroll-smooth w-full"
+                    >
                       <button
-                        onClick={() => setSelectedDeity("")}
-                        className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm ${
-                          !selectedDeity
-                            ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
-                            : "bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800"
-                        }`}
+                        onClick={() => setSelectedDeityFilter("")}
+                        className={cn(
+                          "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0",
+                          !selectedDeityFilter
+                            ? "bg-[#651317] text-white"
+                            : "bg-[#FFFDF8] dark:bg-[#1A120B] text-[#651317] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800 hover:bg-[#FAF2E8]"
+                        )}
                       >
                         All
                       </button>
-                      {visibleDeities.map((deity) => {
+                      {allDeities.map((deity) => {
                         const deitySlug = getDeitySlug(deity);
+                        const isSelected = selectedDeityFilter === deitySlug;
                         return (
                           <button
                             key={`${deity.isCustom ? 'custom' : 'preset'}-${deity.id}`}
-                            onClick={() => handleDeityFilter(deitySlug)}
-                            className={`px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm ${
-                              selectedDeity === deitySlug
-                                ? "bg-[#5C1D0C] text-white border-transparent shadow-md"
-                                : "bg-white dark:bg-[#1E1710] text-[#5C1D0C] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800/80 hover:bg-[#FFF9F2] dark:hover:bg-zinc-800"
-                            }`}
+                            onClick={() => setSelectedDeityFilter(isSelected ? "" : deitySlug)}
+                            className={cn(
+                              "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0",
+                              isSelected
+                                ? "bg-[#651317] text-white"
+                                : "bg-[#FFFDF8] dark:bg-[#1A120B] text-[#651317] dark:text-[#E8D8C4] border border-[#E8D8C4] dark:border-zinc-800 hover:bg-[#FAF2E8]"
+                            )}
                           >
                             {language === 'hi' ? (deity.nameHindi || deity.name) : deity.name}
                           </button>
                         );
                       })}
                     </div>
-                    {isMobile && allDeities.length > 5 && (
-                      <div className="mt-3">
-                        <button
-                          onClick={() => setShowAllDeities((prev) => !prev)}
-                          className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-muted text-foreground hover:bg-muted/80 transition-all touch-target"
-                        >
-                          {showAllDeities ? (language === 'hi' ? 'कम देखें' : 'View less') : (language === 'hi' ? 'और देखें' : 'View more')}
-                        </button>
-                      </div>
-                    )}
                   </div>
 
                   {/* Results Count Header */}
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-foreground">
+                  <div className="pt-2 text-left">
+                    <h3 className="font-serif text-base sm:text-lg font-bold text-foreground">
                       {language === 'hi' ? 'खोज परिणाम' : 'Search Results'}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      <span className="text-primary font-bold">{results.length}</span> {language === 'hi' ? 'भजन मिले' : 'bhajans found'}
-                      {query.trim() && (
-                        <> {language === 'hi' ? 'के लिए' : 'for'} "<span className="text-foreground font-semibold">{query}</span>"</>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <span className="text-[#651317] dark:text-[#D4A437] font-bold">{results.length}</span> {language === 'hi' ? 'भजन मिले' : 'bhajans found'}
+                      {debouncedQuery.trim() && (
+                        <> {language === 'hi' ? 'के लिए' : 'for'} "<span className="text-foreground font-semibold">{debouncedQuery}</span>"</>
                       )}
                     </p>
                   </div>
@@ -1525,24 +1074,17 @@ export default function SearchPage() {
                   {/* Search Results Grid */}
                   {results.length > 0 ? (
                     <>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-5">
                         {results.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((bhajan) => (
                           <div
                             key={`${bhajan.source}-${bhajan.sourceKey}`}
                             className="min-w-0"
                           >
-                            <BhajanCard
-                              bhajan={bhajan}
-                              onCardClick={(clickedBhajan) => {
-                                setSelectedBhajanForDetail(clickedBhajan);
-                                setIsDetailModalOpen(true);
-                              }}
-                            />
+                            <BhajanCard bhajan={bhajan} />
                           </div>
                         ))}
                       </div>
 
-                      {/* Google-Style Page Numbers Pagination */}
                       <Pagination
                         currentPage={currentPage}
                         totalPages={Math.ceil(results.length / pageSize)}
@@ -1550,64 +1092,52 @@ export default function SearchPage() {
                       />
                     </>
                   ) : (
-                    /* Fallbacks when no local results found */
+                    /* Fallback Empty State */
                     <div className="space-y-6 py-10">
-                      <div className="text-center py-6">
-                        <p className="text-muted-foreground text-sm font-semibold hindi-text mb-2">
-                          कोई भजन नहीं मिला • No bhajans found
+                      <div className="text-center py-6 bg-[#FFFDF8] dark:bg-[#1A120B] border border-dashed border-[#E8D8C4] dark:border-zinc-800 rounded-[24px] p-6">
+                        <span className="text-3xl mb-2 block">🪷</span>
+                        <p className="text-muted-foreground text-sm font-semibold mb-1">
+                          {language === 'hi' ? 'कोई भजन नहीं मिला' : 'No bhajans found'}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          Try a different search or clear the filters
+                        <p className="text-xs text-muted-foreground mb-4">
+                          {language === 'hi' ? 'कृपया अन्य नाम से खोजें या अपनी वैदिक कुंडली देखें' : 'Try searching another name or check your Vedic Kundli'}
                         </p>
-                      </div>
-
-                      {showFallbackLyrics && (
-                        <div className="bg-gradient-warm/5 border border-primary/20 rounded-3xl p-6">
-                          <div className="flex items-center gap-2 mb-4">
-                            <BookText className="w-5 h-5 text-primary" />
-                            <h3 className="font-serif text-base font-bold text-foreground">
-                              Search Results from External Sources
-                            </h3>
-                          </div>
-
-                          {lyricsFallback.isLoading ? (
-                            <div className="flex items-center justify-center py-8 gap-2">
-                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                              <span className="text-xs text-muted-foreground">Searching lyrics databases...</span>
-                            </div>
-                          ) : lyricsFallback.error ? (
-                            <div className="bg-destructive/5 border border-destructive/15 rounded-xl p-4">
-                              <p className="text-xs text-destructive">{lyricsFallback.error}</p>
-                            </div>
-                          ) : lyricsFallback.result?.lyrics ? (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs text-muted-foreground">Source:</span>
-                                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
-                                  {lyricsFallback.result.source || 'Unknown'}
-                                </span>
-                              </div>
-                              <pre className="whitespace-pre-wrap text-xs leading-relaxed max-h-[300px] overflow-y-auto p-4 rounded-xl bg-muted/40 font-sans">
-                                {lyricsFallback.result.lyrics}
-                              </pre>
-                            </div>
-                          ) : null}
+                        
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => {
+                              setQuery("");
+                              setSelectedDeityFilter("");
+                            }}
+                            className="px-4 py-2 rounded-full bg-[#651317] text-white text-xs font-bold cursor-pointer"
+                          >
+                            {language === 'hi' ? 'सभी भजन देखें' : 'View All Bhajans'}
+                          </button>
+                          <Link
+                            to="/kundli"
+                            className="px-4 py-2 rounded-full border border-[#D4A437] text-[#651317] dark:text-[#E8B15C] text-xs font-bold inline-flex items-center gap-1"
+                          >
+                            <span>{language === 'hi' ? 'वैदिक कुंडली देखें' : 'Vedic Kundli'}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
                 </>
               ) : (
-                /* YouTube discovery list */
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-card border border-border/80 rounded-3xl p-5">
+                /* YouTube Discovery Grid */
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-zinc-800/80 rounded-[24px] p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <Youtube className="w-5 h-5 text-primary" />
-                      <h3 className="font-serif text-base font-bold text-foreground">YouTube Search Results</h3>
+                      <Youtube className="w-5 h-5 text-red-600" />
+                      <h3 className="font-serif text-sm sm:text-base font-bold text-foreground">
+                        {language === 'hi' ? 'यूट्यूब भजन परिणाम' : 'YouTube Search Results'}
+                      </h3>
                     </div>
                     {youtubeLoading ? (
                       <div className="py-12 flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        <Loader2 className="w-6 h-6 animate-spin text-[#651317]" />
                       </div>
                     ) : youtubeError ? (
                       <div className="space-y-3">
@@ -1617,26 +1147,26 @@ export default function SearchPage() {
                             href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery.trim())}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl border border-border hover:border-primary"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl border border-border hover:border-[#651317]"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" /> Search directly on YouTube
+                            <ExternalLink className="w-3.5 h-3.5" /> Direct on YouTube
                           </a>
                         )}
                       </div>
                     ) : youtubeResults.length > 0 ? (
-                      <div className="space-y-3.5 max-h-[550px] overflow-y-auto pr-1">
+                      <div className="space-y-3 max-h-[550px] overflow-y-auto pr-1">
                         {youtubeResults.map((video) => {
                           const thumbUrl = video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
                           return (
                             <div
                               key={video.id}
-                              className={`p-3.5 rounded-2xl border transition-all flex gap-3.5 items-center ${
+                              className={cn(
+                                "p-3 rounded-2xl border transition-all flex gap-3 items-center",
                                 selectedVideo?.id === video.id
-                                  ? 'border-[#5C1D0C] bg-[#5C1D0C]/5 dark:bg-[#E8B15C]/10 shadow-sm'
-                                  : 'border-border/80 hover:border-[#5C1D0C]/50 bg-white dark:bg-[#1E1710]'
-                              }`}
+                                  ? 'border-[#651317] bg-[#651317]/5 dark:bg-[#E8B15C]/10 shadow-xs'
+                                  : 'border-[#E8D8C4] dark:border-zinc-800 bg-[#FFFDF8] dark:bg-[#1A120B] hover:border-[#651317]/50'
+                              )}
                             >
-                              {/* Video Thumbnail */}
                               <div 
                                 onClick={() => {
                                   setSelectedVideo(video);
@@ -1646,7 +1176,7 @@ export default function SearchPage() {
                                     channel: video.channel,
                                   });
                                 }}
-                                className="w-28 sm:w-36 aspect-video rounded-xl overflow-hidden relative shrink-0 bg-stone-900 cursor-pointer group/thumb shadow-sm"
+                                className="w-24 sm:w-32 aspect-video rounded-xl overflow-hidden relative shrink-0 bg-stone-900 cursor-pointer group/thumb shadow-2xs"
                               >
                                 <img
                                   src={thumbUrl}
@@ -1655,19 +1185,18 @@ export default function SearchPage() {
                                   loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-black/20 group-hover/thumb:bg-black/40 transition-colors flex items-center justify-center">
-                                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md">
-                                    <Play className="w-4 h-4 fill-current ml-0.5" />
+                                  <div className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md">
+                                    <PlayCircle className="w-4 h-4 text-white" />
                                   </div>
                                 </div>
                                 {video.duration && (
-                                  <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[9px] font-bold text-white">
+                                  <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 text-[8.5px] font-bold text-white">
                                     {video.duration}
                                   </span>
                                 )}
                               </div>
 
-                              {/* Title, Channel & Action Buttons */}
-                              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch">
+                              <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch text-left">
                                 <button
                                   onClick={() => {
                                     setSelectedVideo(video);
@@ -1679,10 +1208,10 @@ export default function SearchPage() {
                                   }}
                                   className="text-left group/title cursor-pointer"
                                 >
-                                  <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover/title:text-[#5C1D0C] dark:group-hover/title:text-[#E8B15C] line-clamp-2 leading-snug">
+                                  <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover/title:text-[#651317] dark:group-hover/title:text-[#E8B15C] line-clamp-2 leading-snug">
                                     {video.title}
                                   </h4>
-                                  <p className="text-[11px] text-muted-foreground mt-1 font-medium truncate">
+                                  <p className="text-[10.5px] text-muted-foreground mt-0.5 font-medium truncate">
                                     {video.channel} {video.viewsText ? `• ${video.viewsText}` : ''}
                                   </p>
                                 </button>
@@ -1697,20 +1226,20 @@ export default function SearchPage() {
                                         channel: video.channel,
                                       });
                                     }}
-                                    className="inline-flex items-center gap-1 px-3 py-1 text-[11px] rounded-full bg-[#5C1D0C] dark:bg-[#E8B15C] text-white dark:text-black font-bold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[10.5px] rounded-full bg-[#651317] dark:bg-[#D4A437] text-white dark:text-black font-bold shadow-2xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
                                   >
                                     <PlayCircle className="w-3.5 h-3.5 shrink-0" />
-                                    {language === 'hi' ? 'चलाएं' : 'Play'}
+                                    <span>{language === 'hi' ? 'चलाएं' : 'Play'}</span>
                                   </button>
 
                                   <a
                                     href={`https://www.youtube.com/watch?v=${video.id}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 px-3 py-1 text-[11px] rounded-full border border-border hover:border-[#5C1D0C] text-muted-foreground hover:text-foreground font-semibold transition-all"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-[10.5px] rounded-full border border-border hover:border-[#651317] text-muted-foreground hover:text-foreground font-semibold transition-all"
                                   >
                                     <ExternalLink className="w-3 h-3 shrink-0" />
-                                    {language === 'hi' ? 'यूट्यूब पर देखें' : 'YouTube'}
+                                    <span>YouTube</span>
                                   </a>
                                 </div>
                               </div>
@@ -1719,38 +1248,30 @@ export default function SearchPage() {
                         })}
                       </div>
                     ) : (
-                      <div className="py-8 space-y-3">
+                      <div className="py-8 space-y-3 text-center">
                         <p className="text-xs text-muted-foreground">
-                          Search a bhajan name to discover videos on YouTube.
+                          {language === 'hi' ? 'यूट्यूब पर भजन खोजने के लिए नाम लिखें' : 'Search a bhajan name to discover videos on YouTube.'}
                         </p>
-                        {youtubeQuery.trim().length >= 2 && (
-                          <a
-                            href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery.trim())}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl border border-border hover:border-primary"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" /> Search directly on YouTube
-                          </a>
-                        )}
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-card border border-border/80 rounded-3xl p-5 flex flex-col justify-between">
+                  <div className="bg-[#FFFDF8] dark:bg-[#1A120B] border border-[#E8D8C4] dark:border-zinc-800/80 rounded-[24px] p-4 sm:p-5 flex flex-col justify-between text-left">
                     <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <Music2 className="w-5 h-5 text-primary" />
-                        <h3 className="font-serif text-base font-bold text-foreground">Playback Info</h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Music2 className="w-5 h-5 text-[#651317] dark:text-[#E8B15C]" />
+                        <h3 className="font-serif text-sm sm:text-base font-bold text-foreground">
+                          {language === 'hi' ? 'प्लेबैक जानकारी' : 'Playback Info'}
+                        </h3>
                       </div>
                       <div className="text-xs text-muted-foreground space-y-2 leading-relaxed">
-                        <p>In-app audio playbacks are ad-free and support background listening.</p>
-                        <p>YouTube discovery streams directly from YouTube and may include ads.</p>
+                        <p>✦ {language === 'hi' ? 'ऐप में ऑडियो बिना विज्ञापन के बैकग्राउंड में सुन सकते हैं।' : 'In-app audio playbacks are ad-free and support background listening.'}</p>
+                        <p>✦ {language === 'hi' ? 'यूट्यूब डिस्कवरी सीधे यूट्यूब प्लेयर से स्ट्रीम होती है।' : 'YouTube discovery streams directly from YouTube.'}</p>
                       </div>
                     </div>
 
                     {selectedVideo ? (
-                      <div className="mt-6 p-4 bg-muted/40 rounded-2xl border border-border/40 space-y-3">
+                      <div className="mt-6 p-4 bg-[#FAF2E8]/60 dark:bg-black/30 rounded-2xl border border-[#E8D8C4] dark:border-zinc-800 space-y-2.5">
                         <p className="text-xs font-semibold text-foreground line-clamp-2">{selectedVideo.title}</p>
                         <p className="text-[10px] text-muted-foreground">{selectedVideo.channel}</p>
                         <button
@@ -1761,14 +1282,15 @@ export default function SearchPage() {
                               channel: selectedVideo.channel,
                             })
                           }
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shadow-md cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#651317] text-white text-xs font-bold shadow-2xs cursor-pointer"
                         >
-                          <PlayCircle className="w-4 h-4" /> Start Playback
+                          <PlayCircle className="w-4 h-4" />
+                          <span>{language === 'hi' ? 'प्लेबैक शुरू करें' : 'Start Playback'}</span>
                         </button>
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground py-8 text-center bg-muted/30 border border-dashed border-border/80 rounded-2xl">
-                        Select a YouTube video from the results to control playback.
+                      <p className="text-xs text-muted-foreground py-8 text-center bg-[#FAF2E8]/30 dark:bg-black/10 border border-dashed border-[#E8D8C4] dark:border-zinc-800 rounded-2xl mt-4">
+                        {language === 'hi' ? 'प्लेबैक नियंत्रित करने के लिए परिणाम में से कोई वीडियो चुनें।' : 'Select a YouTube video from results to control playback.'}
                       </p>
                     )}
                   </div>
@@ -1777,18 +1299,7 @@ export default function SearchPage() {
             </div>
           )}
         </AnimatePresence>
-      </div>
-
-      {/* Detail Modal */}
-      <BhajanDetailModal
-        bhajan={selectedBhajanForDetail}
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedBhajanForDetail(null);
-        }}
-        allBhajans={results}
-      />
+      </main>
     </div>
   );
 }

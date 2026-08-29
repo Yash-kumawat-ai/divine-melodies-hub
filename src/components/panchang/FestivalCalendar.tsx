@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Flame, Moon, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -358,6 +359,12 @@ export default function FestivalCalendar() {
           reminders={reminders}
           onToggleReminder={toggleFestivalReminder}
         />
+        <Link
+          to="/kundli"
+          className="mt-3 inline-flex text-sm font-semibold text-[#651317]"
+        >
+          {lang === 'hi' ? 'अपनी वैदिक कुंडली देखें' : 'View your Vedic Kundli'}
+        </Link>
       </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -374,6 +381,9 @@ export default function FestivalCalendar() {
               reminders={reminders}
               onToggleReminder={toggleFestivalReminder}
             />
+            <Link to="/kundli" className="mt-3 inline-flex text-sm font-semibold text-[#651317]">
+              {lang === 'hi' ? 'अपनी वैदिक कुंडली देखें' : 'View your Vedic Kundli'}
+            </Link>
           </div>
         </SheetContent>
       </Sheet>

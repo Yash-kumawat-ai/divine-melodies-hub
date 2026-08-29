@@ -11,6 +11,7 @@ import DeityGrid from '@/components/DeityGrid';
 import BhajanCard from '@/components/BhajanCard';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
+import { getContentUrl } from '@/lib/contentUrls';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useBhajanCounts } from '@/hooks/useBhajanCounts';
@@ -284,6 +285,7 @@ export default function Home() {
           {/* Grid Layout: 4 columns on all device sizes (mobile, tablet, desktop) */}
           <div className="grid grid-cols-3 min-[420px]:grid-cols-4 gap-2.5 min-[420px]:gap-3 md:gap-6 justify-items-center max-w-[832px] mx-auto">
             {([
+              { title: isHi ? 'गुरु जी कुंडली' : 'Guru Ji Kundli', path: '/ask-guru-ji', imageSrc: '/images/narad-ai.webp' },
               { title: isHi ? 'भजन' : 'Bhajans', path: '/all-bhajans', imageSrc: manjiraSvg },
               { title: isHi ? 'आरती' : 'Live Aarti', path: '/live-aarti', imageSrc: liveArtiWebp },
               { title: isHi ? 'पंचांग' : 'Panchang', path: '/panchang', imageSrc: panchangWebp },
@@ -295,8 +297,7 @@ export default function Home() {
               { title: isHi ? 'नाम जप' : 'Japa Counter', path: '/meditation/mantra-japa', imageSrc: japWebp },
               { title: isHi ? 'समुदाय' : 'Community', path: '/community', imageSrc: communityWebp },
               { title: isHi ? 'शॉर्ट्स' : 'Shorts', path: '/shorts', imageSrc: shortsWebp },
-              { title: isHi ? 'दर्शन' : 'Darshan', path: '/search', imageSrc: darshanWebp },
-            ]).slice(0, featurePage * FEATURE_PAGE_SIZE).map((item, i) => (
+            ]).map((item, i) => (
               <m.button
                 key={item.title}
                 onClick={() => navigate(item.path)}
@@ -431,7 +432,7 @@ export default function Home() {
                   <BhajanCard
                     key={bhajan.id}
                     bhajan={convertedBhajan}
-                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                    onCardClick={(b) => navigate(getContentUrl(b))}
                   />
                 );
               })}

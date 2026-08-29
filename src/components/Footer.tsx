@@ -134,15 +134,15 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/live-aarti" className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors flex items-center gap-1">
+                <Link to="/aarti" className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors flex items-center gap-1">
                   <ChevronRight className="w-3 h-3 opacity-40" />
                   <span>{isHi ? 'आरती संग्रह' : 'Aarti Collection'}</span>
                 </Link>
               </li>
               <li>
-                <Link to="/aarti-chalisa" className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors flex items-center gap-1">
+                <Link to="/chalisa" className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors flex items-center gap-1">
                   <ChevronRight className="w-3 h-3 opacity-40" />
-                  <span>{isHi ? 'चालीसा व स्तुति' : 'Chalisa & Stuti'}</span>
+                  <span>{isHi ? 'चालीसा व पाठ' : 'Chalisa & Paath'}</span>
                 </Link>
               </li>
               <li>

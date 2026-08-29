@@ -6,6 +6,13 @@ export const ROUTES = {
   CHALISA: '/chalisa',
   AARTI: '/aarti',
   KATHA: '/katha',
+  STOTRA: '/stotra',
+  ASHTAKAM: '/ashtakam',
+  KAVACH: '/kavach',
+  DOHA: '/doha',
+  MANTRA: '/mantra',
+  SHLOKA: '/shloka',
+  RACHANA: '/rachana',
   MANTRAS: '/mantras',
   AUDIO: '/audio',
   SHORTS: '/shorts',
@@ -16,7 +23,8 @@ export const ROUTES = {
   PANCHANG: '/panchang',
   TEMPLE: '/temple',
   KIRTAN_AI: '/kirtan-ai',
-  NARAD_AI: '/narad-ai',
+  KUNDLI: '/kundli',
+  KUNDLI_SETUP: '/kundli/setup',
   SEARCH: '/search',
 
   // Personal
@@ -32,6 +40,7 @@ export const ROUTES = {
   PROFILE: '/account',
   AUTH_LOGIN: '/auth/login',
   AUTH_SIGNUP: '/auth/signup',
+  AUTH_COMPLETE_PROFILE: '/auth/complete-profile',
 
   // Settings
   SETTINGS: '/account',

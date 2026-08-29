@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { getBirthProfile } from '@/lib/astrology/astrologyClient';
+import { completeProfileUrl, safeAppPath } from '@/lib/astrology/completeProfileRedirect';
 
 function getSafeNext(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) {
-    return '/upload-bhajan';
-  }
-  return value;
+  return safeAppPath(value, '/upload-bhajan');
+}
+
+async function nextAfterAuth(userId: string, next: string) {
+  const birth = await getBirthProfile(userId);
+  if (!birth?.date_of_birth) return completeProfileUrl(next);
+  return next;
 }
 
 export default function AuthCallback() {
@@ -43,9 +48,9 @@ export default function AuthCallback() {
               },
               { onConflict: 'id' },
             );
+            navigate(await nextAfterAuth(data.user.id, next), { replace: true });
+            return;
           }
-          navigate(next, { replace: true });
-          return;
         }
 
         const {
@@ -55,8 +60,8 @@ export default function AuthCallback() {
 
         if (error) throw error;
 
-        if (session) {
-          navigate(next, { replace: true });
+        if (session?.user) {
+          navigate(await nextAfterAuth(session.user.id, next), { replace: true });
           return;
         }
 

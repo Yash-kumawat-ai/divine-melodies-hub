@@ -1,4 +1,5 @@
 import { smartSearchBhajans } from '@/lib/searchAlgorithm';
+import { resolveDeityBySlug } from '@/lib/deityUrls';
 
 import deityKrishna from '@/assets/deities/krishna.webp';
 import deityShiva from '@/assets/deities/shiva.webp';
@@ -38,6 +39,8 @@ export interface Bhajan {
   featured: boolean;
   videoEmbedId?: string;
   youtubeUrl?: string;
+  contentType?: 'bhajan' | 'aarti' | 'chalisa' | 'katha' | 'other';
+  subType?: string;
 }
 
 export const deities: Deity[] = [
@@ -55,6 +58,7 @@ export const deities: Deity[] = [
 export const bhajans: Bhajan[] = [
   {
     id: 1, slug: 'hare-krishna-mahamantra', title: 'Hare Krishna Mahamantra', titleHindi: 'हरे कृष्ण महामंत्र',
+    contentType: 'bhajan',
     deityId: 1, singerName: 'Jagjit Singh', playCount: 125000, rating: 4.9, featured: true,
     tags: ['morning', 'meditative', 'peaceful'],
     lyricsHindi: 'हरे कृष्ण हरे कृष्ण\nकृष्ण कृष्ण हरे हरे\nहरे राम हरे राम\nराम राम हरे हरे\n\nहरे कृष्ण हरे कृष्ण\nकृष्ण कृष्ण हरे हरे\nहरे राम हरे राम\nराम राम हरे हरे',
@@ -62,6 +66,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 2, slug: 'om-jai-shiv-omkara', title: 'Om Jai Shiv Omkara', titleHindi: 'ॐ जय शिव ओमकारा',
+    contentType: 'aarti',
     deityId: 2, singerName: 'Anuradha Paudwal', playCount: 98000, rating: 4.8, featured: true,
     tags: ['evening', 'aarti'],
     lyricsHindi: 'ॐ जय शिव ओमकारा\nस्वामी जय शिव ओमकारा\nब्रह्मा विष्णु सदाशिव\nअर्धांगी धारा\nॐ जय शिव ओमकारा\n\nएकानन चतुरानन पंचानन राजे\nहंसासन गरुड़ासन वृषवाहन साजे\nॐ जय शिव ओमकारा',
@@ -69,6 +74,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 3, slug: 'hanuman-chalisa', title: 'Hanuman Chalisa', titleHindi: 'हनुमान चालीसा',
+    contentType: 'chalisa',
     deityId: 3, singerName: 'Hariharan', playCount: 250000, rating: 5.0, featured: true,
     tags: ['morning', 'energetic', 'festival'],
     lyricsHindi: 'श्रीगुरु चरन सरोज रज, निज मनु मुकुरु सुधारि।\nबरनउँ रघुबर बिमल जसु, जो दायकु फल चारि।।\n\nबुद्धिहीन तनु जानिके, सुमिरौं पवन-कुमार।\nबल बुद्धि विद्या देहु मोहिं, हरहु कलेस विकार।।\n\nजय हनुमान ज्ञान गुन सागर।\nजय कपीस तिहुँ लोक उजागर।।',
@@ -76,6 +82,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 4, slug: 'raghupati-raghav-raja-ram', title: 'Raghupati Raghav Raja Ram', titleHindi: 'रघुपति राघव राजा राम',
+    contentType: 'bhajan',
     deityId: 4, singerName: 'Lata Mangeshkar', playCount: 180000, rating: 4.7, featured: true,
     tags: ['peaceful', 'evening', 'meditative'],
     lyricsHindi: 'रघुपति राघव राजा राम\nपतित पावन सीता राम\nसीता राम सीता राम\nभज प्यारे तू सीता राम\n\nईश्वर अल्लाह तेरो नाम\nसबको सन्मति दे भगवान',
@@ -83,6 +90,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 5, slug: 'jai-ambe-gauri', title: 'Jai Ambe Gauri', titleHindi: 'जय अम्बे गौरी',
+    contentType: 'aarti',
     deityId: 5, singerName: 'Anuradha Paudwal', playCount: 85000, rating: 4.6, featured: false,
     tags: ['aarti', 'navratri', 'festival'],
     lyricsHindi: 'जय अम्बे गौरी, मैया जय श्यामा गौरी।\nतुमको निशिदिन ध्यावत, हरि ब्रह्मा शिवरी।।\nजय अम्बे गौरी।\n\nमांग सिन्दूर विराजत, टीको मृगमद को।\nउज्ज्वल से दोउ नैना, चन्द्रवदन नीको।।',
@@ -90,6 +98,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 6, slug: 'ganesh-aarti', title: 'Jai Ganesh Deva', titleHindi: 'जय गणेश देवा',
+    contentType: 'aarti',
     deityId: 6, singerName: 'SP Balasubrahmanyam', playCount: 142000, rating: 4.8, featured: true,
     tags: ['aarti', 'morning', 'festival'],
     lyricsHindi: 'जय गणेश जय गणेश जय गणेश देवा।\nमाता जाकी पार्वती पिता महादेवा।।\n\nएकदन्त दयावन्त चार भुजाधारी।\nमाथे पर तिलक सोहे मूसे की सवारी।।',
@@ -97,6 +106,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 7, slug: 'sai-baba-aarti', title: 'Sai Baba Aarti', titleHindi: 'साईं बाबा आरती',
+    contentType: 'aarti',
     deityId: 7, singerName: 'Suresh Wadkar', playCount: 72000, rating: 4.5, featured: false,
     tags: ['aarti', 'evening'],
     lyricsHindi: 'आरती साईं बाबा, सौख्यदातारा जीवा\nचरणरजातली ध्यावा, दासां विसावा\nभक्तां विसावा\nआरती साईं बाबा',
@@ -104,6 +114,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 8, slug: 'om-jai-lakshmi-mata', title: 'Om Jai Lakshmi Mata', titleHindi: 'ॐ जय लक्ष्मी माता',
+    contentType: 'aarti',
     deityId: 8, singerName: 'Anuradha Paudwal', playCount: 95000, rating: 4.7, featured: false,
     tags: ['aarti', 'diwali', 'festival'],
     lyricsHindi: 'ॐ जय लक्ष्मी माता, मैया जय लक्ष्मी माता।\nतुमको निशिदिन सेवत, हरि विष्णु विधाता।।\nॐ जय लक्ष्मी माता।',
@@ -111,6 +122,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 9, slug: 'achyutam-keshavam', title: 'Achyutam Keshavam', titleHindi: 'अच्युतम् केशवम्',
+    contentType: 'bhajan',
     deityId: 1, singerName: 'Madhav Shivpuri', playCount: 110000, rating: 4.8, featured: false,
     tags: ['morning', 'peaceful', 'janmashtami'],
     lyricsHindi: 'अच्युतम् केशवम् रामनारायणम्\nकृष्णदामोदरम् वासुदेवम् हरिम्\nश्रीधरम् माधवम् गोपिकावल्लभम्\nजानकीनायकम् रामचन्द्रम् भजे',
@@ -118,6 +130,8 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 10, slug: 'shiv-tandav-stotram', title: 'Shiv Tandav Stotram', titleHindi: 'शिव तांडव स्तोत्रम्',
+    contentType: 'other',
+    subType: 'stotra',
     deityId: 2, singerName: 'Shankar Mahadevan', playCount: 200000, rating: 4.9, featured: true,
     tags: ['energetic', 'morning', 'festival'],
     lyricsHindi: 'जटाटवीगलज्जलप्रवाहपावितस्थले\nगलेऽवलम्ब्यलम्बितां भुजंगतुंगमालिकाम्।\nडमड्डमड्डमड्डमन्निनादवड्डमर्वयं\nचकार चण्डताण्डवं तनोतु नः शिवः शिवम्।।',
@@ -125,6 +139,8 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 11, slug: 'bajrang-baan', title: 'Bajrang Baan', titleHindi: 'बजरंग बाण',
+    contentType: 'chalisa',
+    subType: 'path',
     deityId: 3, singerName: 'Gulshan Kumar', playCount: 160000, rating: 4.7, featured: false,
     tags: ['energetic', 'morning'],
     lyricsHindi: 'निश्चय प्रेम प्रतीति ते, विनय करें सनमान।\nतेहि के कारज सकल शुभ, सिद्ध करें हनुमान।।\n\nजय हनुमन्त संत हितकारी\nसुन लीजै प्रभु अरज हमारी',
@@ -132,6 +148,7 @@ export const bhajans: Bhajan[] = [
   },
   {
     id: 12, slug: 'ram-dhun', title: 'Ram Dhun', titleHindi: 'राम धुन',
+    contentType: 'bhajan',
     deityId: 4, singerName: 'Anup Jalota', playCount: 75000, rating: 4.5, featured: false,
     tags: ['meditative', 'peaceful', 'evening'],
     lyricsHindi: 'श्री राम जय राम जय जय राम\nश्री राम जय राम जय जय राम\n\nसीता राम सीता राम\nसीता राम जय सीता राम',
@@ -1002,10 +1019,14 @@ export const bhajans: Bhajan[] = [
 ];
 
 export function getDeityById(id: number): Deity | undefined {
+  const profile = resolveDeityBySlug(id);
+  if (profile) return profile as unknown as Deity;
   return deities.find(d => d.id === id);
 }
 
 export function getDeityBySlug(slug: string): Deity | undefined {
+  const profile = resolveDeityBySlug(slug);
+  if (profile) return profile as unknown as Deity;
   return deities.find(d => d.slug === slug);
 }
 

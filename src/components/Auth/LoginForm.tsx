@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,9 @@ import { Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 import { loginSchema, type LoginInput } from '@/schemas';
 import { useLanguage } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
+import { getBirthProfile } from '@/lib/astrology/astrologyClient';
+import { completeProfileUrl } from '@/lib/astrology/completeProfileRedirect';
+import { markBirthProfileReady } from '@/components/Auth/BirthProfileGate';
 
 const loginCopy = {
   en: {
@@ -81,12 +84,29 @@ export default function LoginForm() {
   const [canResendConfirmation, setCanResendConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signInWithGoogle, resendEmailConfirmation } = useAuth();
+  const { signIn, signInWithGoogle, resendEmailConfirmation, user } = useAuth();
   const { language } = useLanguage();
   const copy = language === 'hi' ? loginCopy.hi : loginCopy.en;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || searchParams.get('next') || '/';
+  const fromRegistration = searchParams.get('from') === 'registration';
+
+  const routeAfterAuth = async (userId: string) => {
+    const birth = await getBirthProfile(userId);
+    if (!birth?.date_of_birth) {
+      navigate(completeProfileUrl(redirectUrl), { replace: true });
+      return;
+    }
+    markBirthProfileReady(userId);
+    navigate(redirectUrl.startsWith('/auth/') ? '/' : redirectUrl, { replace: true });
+  };
+
+  useEffect(() => {
+    if (!user || fromRegistration) return;
+    void routeAfterAuth(user.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, fromRegistration]);
   
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -99,7 +119,7 @@ export default function LoginForm() {
     setLastEmail(data.email);
     setLoading(true);
 
-    const { error } = await signIn(data.email, data.password);
+    const { data: signInData, error } = await signIn(data.email, data.password);
     if (error) {
       const errMessage = (error as any)?.message || '';
       setError(toFriendlyError(errMessage || copy.loginFailed));
@@ -111,7 +131,12 @@ export default function LoginForm() {
     }
 
     toast.success(language === 'hi' ? 'सफलतापूर्वक लॉगिन हो गया! 🙏' : 'Logged in successfully! 🙏');
-    navigate(redirectUrl, { replace: true });
+    const userId = (signInData as { user?: { id?: string } } | null)?.user?.id;
+    if (userId) {
+      await routeAfterAuth(userId);
+    } else {
+      navigate(redirectUrl, { replace: true });
+    }
     setLoading(false);
   };
 
@@ -241,6 +266,22 @@ export default function LoginForm() {
         )}
       </div>
 
+      {user && fromRegistration ? (
+        <Button
+          type="button"
+          disabled={loading}
+          size="lg"
+          onClick={async () => {
+            setLoading(true);
+            await routeAfterAuth(user.id);
+            setLoading(false);
+          }}
+          className="mt-3.5 md:mt-4 h-11 sm:h-12 md:h-11 w-full rounded-xl bg-[#6B1D16] hover:bg-[#541611] dark:bg-[#7A1C20] dark:hover:bg-[#651317] text-white font-extrabold tracking-wide text-sm sm:text-base shadow-[0_6px_18px_rgba(107,29,22,0.22)] hover:shadow-[0_8px_20px_rgba(107,29,22,0.3)] transition-all flex items-center justify-center cursor-pointer active:scale-[0.99]"
+        >
+          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" /> : null}
+          {copy.submit}
+        </Button>
+      ) : (
       <Button
         type="submit"
         disabled={loading}
@@ -250,6 +291,7 @@ export default function LoginForm() {
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" /> : null}
         {copy.submit}
       </Button>
+      )}
 
       <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">

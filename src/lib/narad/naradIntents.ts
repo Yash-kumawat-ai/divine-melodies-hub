@@ -8,6 +8,7 @@ export type NaradIntentType =
   | "show_favorites"
   | "search_bhajan"
   | "offer_flower"
+  | "open_kundli"
   | "unknown";
 
 export type NaradIntent = {
@@ -134,6 +135,15 @@ export function parseNaradIntent(rawText: string): NaradIntent {
     return { type: "offer_flower", confidence: 0.9, rawText: normalizedRaw, entities };
   }
 
+  if (
+    !hasSongCue(normalizedRaw) &&
+    /kundli|kundali|janampatri|horoscope|shaadi|vivah|\bcareer\b|\bmarriage\b|\bnaukri\b|\u0915\u0941\u0902\u0921\u0932\u0940|\u091c\u094d\u092f\u094b\u0924\u093f\u0937/i.test(
+      normalizedRaw,
+    )
+  ) {
+    return { type: "open_kundli", confidence: 0.88, rawText: normalizedRaw, entities };
+  }
+
   if (/japa|jaap|jap|chant|108|\u092e\u093e\u0932\u093e|\u091c\u092a|\u091c\u093e\u092a/i.test(normalizedRaw)) {
     return { type: "start_japa", confidence: 0.94, rawText: normalizedRaw, entities };
   }
@@ -208,6 +218,19 @@ export function createNaradActionResult(intent: NaradIntent): NaradActionResult 
 
   const mantra = intent.entities.mantra ?? defaultMantraForDeity(intent.entities.deity);
   const deityFields = withDeity(intent);
+
+  if (intent.type === "open_kundli") {
+    return {
+      kind: "route",
+      intentType: intent.type,
+      title: "Vedic Kundli",
+      displayText: "Open your Vedic Kundli to view your planetary chart and insights.",
+      spokenText: "Opening your Vedic Kundli.",
+      primaryLabel: "View Kundli",
+      route: "/kundli",
+      ...deityFields,
+    };
+  }
 
   if (intent.type === "start_japa") {
     return {

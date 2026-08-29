@@ -11,6 +11,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useRateLimitTimer } from '@/hooks/useRateLimitTimer';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabaseClient';
+import { completeProfileUrl } from '@/lib/astrology/completeProfileRedirect';
 
 const signupCopy = {
   en: {
@@ -149,7 +150,7 @@ export default function SignupForm() {
           ? `स्वागत है ${data.name}! आपका खाता सफलतापूर्वक बन गया है। 🙏`
           : `Welcome ${data.name}! Your account is ready and you are logged in. 🙏`
       );
-      navigate(redirectUrl, { replace: true });
+      navigate(completeProfileUrl(redirectUrl), { replace: true });
       setLoading(false);
       return;
     }

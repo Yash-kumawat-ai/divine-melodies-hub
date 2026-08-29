@@ -12,12 +12,21 @@ const staticRoutes = [
   { loc: '/', changefreq: 'daily', priority: '1.0' },
   { loc: '/live-aarti', changefreq: 'hourly', priority: '0.95' },
   { loc: '/all-bhajans', changefreq: 'daily', priority: '0.9' },
-  { loc: '/aarti-chalisa', changefreq: 'daily', priority: '0.9' },
-  { loc: '/katha', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/aarti', changefreq: 'daily', priority: '0.9' },
+  { loc: '/chalisa', changefreq: 'daily', priority: '0.9' },
+  { loc: '/katha', changefreq: 'weekly', priority: '0.85' },
+  { loc: '/stotra', changefreq: 'weekly', priority: '0.85' },
+  { loc: '/ashtakam', changefreq: 'weekly', priority: '0.85' },
+  { loc: '/kavach', changefreq: 'weekly', priority: '0.85' },
+  { loc: '/doha', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/mantra', changefreq: 'weekly', priority: '0.85' },
+  { loc: '/shloka', changefreq: 'weekly', priority: '0.8' },
+  { loc: '/rachana', changefreq: 'weekly', priority: '0.8' },
   { loc: '/recent-bhajans', changefreq: 'daily', priority: '0.8' },
   { loc: '/meditation', changefreq: 'daily', priority: '0.85' },
   { loc: '/meditation/mantra-japa', changefreq: 'daily', priority: '0.85' },
   { loc: '/panchang', changefreq: 'daily', priority: '0.8' },
+  { loc: '/kundli', changefreq: 'daily', priority: '0.85' },
   { loc: '/temple', changefreq: 'daily', priority: '0.8' },
   { loc: '/shorts', changefreq: 'daily', priority: '0.8' },
   { loc: '/wallpaper', changefreq: 'weekly', priority: '0.7' },
@@ -43,6 +52,18 @@ const canonicalMantraSlugs = [
   'shri-ganesha-mantra',
 ];
 
+// Content item classification for static catalogue
+const subtypePrefixMap = {
+  'om-jai-shiv-omkara': '/aarti',
+  'jai-ambe-gauri': '/aarti',
+  'ganesh-aarti': '/aarti',
+  'sai-baba-aarti': '/aarti',
+  'om-jai-lakshmi-mata': '/aarti',
+  'hanuman-chalisa': '/chalisa',
+  'bajrang-baan': '/chalisa',
+  'shiv-tandav-stotram': '/stotra',
+};
+
 async function run() {
   console.log('Generating sitemap.xml for', BASE_URL);
 
@@ -59,7 +80,7 @@ async function run() {
 
   const entries = [];
 
-  // 1. Core Landing Pages
+  // 1. Core Landing & Hub Pages
   for (const r of staticRoutes) {
     entries.push(`  <url><loc>${BASE_URL}${r.loc}</loc><changefreq>${r.changefreq}</changefreq><priority>${r.priority}</priority></url>`);
   }
@@ -69,9 +90,10 @@ async function run() {
     entries.push(`  <url><loc>${BASE_URL}/deity/${d}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`);
   }
 
-  // 3. Static Bhajans
+  // 3. Subtype Canonical Devotional Content Pages
   for (const slug of staticSlugs) {
-    entries.push(`  <url><loc>${BASE_URL}/bhajan/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`);
+    const prefix = subtypePrefixMap[slug] || '/bhajan';
+    entries.push(`  <url><loc>${BASE_URL}${prefix}/${slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>`);
   }
 
   // 4. Mantra Japa Canonical Pages

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp } from 'lucide-react';
 import BhajanCard from '@/components/BhajanCard';
+import { getContentUrl } from '@/lib/contentUrls';
 
 interface BhajanData {
   id: number;
@@ -12,6 +13,8 @@ interface BhajanData {
   deityId: number;
   play_count?: number;
   average_rating?: number;
+  contentType?: string;
+  subType?: string;
 }
 
 interface TrendingSectionProps {
@@ -103,8 +106,10 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
                   rating: bhajan.average_rating ?? 0,
                   tags: [],
                   featured: false,
+                  contentType: bhajan.contentType as any,
+                  subType: bhajan.subType,
                 }}
-                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                onCardClick={(b) => navigate(getContentUrl(b))}
               />
               
               {/* Play Count */}

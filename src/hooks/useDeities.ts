@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { deities as presetDeities } from '@/data/bhajans';
 
@@ -85,43 +85,49 @@ function mapPresetToDeity(d: (typeof presetDeities)[number]): Deity {
   };
 }
 
-export function useDeities() {
-  const [deities, setDeities] = useState<Deity[]>(() => deduplicateDeities(presetDeities.map(mapPresetToDeity)));
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function fetchCustomDeities(): Promise<Deity[]> {
+  try {
+    const { data, error } = await supabase
+      .from('custom_deities')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  useEffect(() => {
-    const fetchCustomDeities = async () => {
-      try {
-        const { data, error: dbError } = await supabase
-          .from('custom_deities')
-          .select('*')
-          .order('created_at', { ascending: false });
+    if (error) {
+      console.warn('Error fetching custom deities:', error);
+      return deduplicateDeities(presetDeities.map(mapPresetToDeity));
+    }
 
-        if (dbError) throw dbError;
+    const customDeities: Deity[] = (data ?? []).map((d: any) => ({
+      id: d.id,
+      emoji: d.emoji || '🙏',
+      name: d.name,
+      description: d.description,
+      imageUrl: d.image_url,
+      isCustom: true,
+    }));
 
-        const customDeities: Deity[] = (data ?? []).map((d: any) => ({
-          id: d.id,
-          emoji: d.emoji || '🙏',
-          name: d.name,
-          description: d.description,
-          imageUrl: d.image_url,
-          isCustom: true,
-        }));
-
-        const combined = [...presetDeities.map(mapPresetToDeity), ...customDeities];
-        setDeities(deduplicateDeities(combined));
-      } catch (err: any) {
-        console.error('Error fetching custom deities:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomDeities();
-  }, []);
-
-  return { deities, loading, error };
+    const combined = [...presetDeities.map(mapPresetToDeity), ...customDeities];
+    return deduplicateDeities(combined);
+  } catch (err) {
+    console.error('Unexpected error in fetchCustomDeities:', err);
+    return deduplicateDeities(presetDeities.map(mapPresetToDeity));
+  }
 }
 
+export function useDeities() {
+  const query = useQuery({
+    queryKey: ['custom_deities_combined'],
+    queryFn: fetchCustomDeities,
+    initialData: () => deduplicateDeities(presetDeities.map(mapPresetToDeity)),
+    staleTime: 10 * 60 * 1000, // 10 minutes cache
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    deities: query.data,
+    loading: query.isLoading && !query.data,
+    error: query.error ? String(query.error) : null,
+    refetch: query.refetch,
+  };
+}

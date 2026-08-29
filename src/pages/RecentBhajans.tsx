@@ -4,6 +4,7 @@ import BhajanCard from '@/components/BhajanCard';
 import { Loader2 } from 'lucide-react';
 import { getRecentApprovedBhajans } from '@/lib/supabaseQueries';
 import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
+import { getContentUrl } from '@/lib/contentUrls';
 
 interface RecentBhajan {
   id: string;
@@ -62,7 +63,7 @@ export default function RecentBhajans() {
                   <BhajanCard
                     key={bhajan.id}
                     bhajan={mappedBhajan}
-                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                    onCardClick={(b) => navigate(getContentUrl(b))}
                   />
                 );
               })}

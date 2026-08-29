@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { getTrendingBhajans, queryUserUploads } from '@/lib/supabaseQueries';
 import { mapUserUploadToBhajan } from '@/lib/mapUserUpload';
+import { getContentUrl } from '@/lib/contentUrls';
 
 interface UserBhajan {
   id: string;
@@ -86,7 +87,7 @@ export const TrendingPage = () => {
 
             <BhajanCard
               bhajan={mapUserUploadToBhajan(bhajan)}
-              onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+              onCardClick={(b) => navigate(getContentUrl(b))}
             />
 
             {/* Stats */}

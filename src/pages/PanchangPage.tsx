@@ -1105,6 +1105,16 @@ export default function PanchangPage() {
               </div>
             </div>
 
+            <Link
+              to="/kundli"
+              className="mt-4 flex w-full max-w-5xl items-center justify-between rounded-2xl border border-brand-gold-border bg-surface-raised/90 px-4 py-3 text-left shadow-1"
+            >
+              <span className="text-sm font-semibold text-foreground">
+                {lang === 'hi' ? 'यह पंचांग आपकी कुंडली पर लागू करना चाहते हैं?' : 'Want this personalized to your Kundli?'}
+              </span>
+              <span className="text-xs font-bold text-brand-primary">{lang === 'hi' ? 'वैदिक कुंडली देखें' : 'View Vedic Kundli'}</span>
+            </Link>
+
             {/* 3 Top Cards Grid (Sacred Date, Vikram Samvat, Sunrise & Sunset) */}
             <div className="grid grid-cols-1 gap-3.5 w-full max-w-5xl min-[480px]:grid-cols-2 lg:grid-cols-3">
               {/* Sacred Date Display Card */}

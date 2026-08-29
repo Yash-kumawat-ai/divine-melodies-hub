@@ -40,6 +40,7 @@ interface SearchBarProps {
   onMicClick?: () => void;
   autoFocus?: boolean;
   readOnly?: boolean;
+  enableAutocomplete?: boolean;
   onClick?: () => void;
   onClear?: () => void;
   onVoiceResult?: (transcript: string) => void;
@@ -54,6 +55,7 @@ export default function SearchBar({
   onMicClick,
   autoFocus = false,
   readOnly = false,
+  enableAutocomplete = true,
   onClick,
   onClear,
   onVoiceResult,
@@ -86,7 +88,7 @@ export default function SearchBar({
   }, []);
 
   // Compute live multi-category suggestions (Features, Aartis, Deities, Bhajans)
-  const activeSuggestions = getUnifiedAutocompleteSuggestions(value, bhajans, isHi, 8);
+  const activeSuggestions = enableAutocomplete ? getUnifiedAutocompleteSuggestions(value, bhajans, isHi, 8) : [];
 
   // Reset selected keyboard index when search value changes
   useEffect(() => {
@@ -231,7 +233,21 @@ export default function SearchBar({
         <span className="flex-1 min-w-0 text-xs sm:text-base font-medium text-[#7A6B60] dark:text-muted-foreground/70 whitespace-nowrap overflow-hidden text-ellipsis leading-normal pt-0.5">
           {placeholder || defaultPlaceholder}
         </span>
-        <Mic className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#6A2C2A] dark:text-[#E8B15C] shrink-0 ml-auto pointer-events-none" />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onMicClick) {
+              onMicClick();
+            } else {
+              navigate("/search?voice=1");
+            }
+          }}
+          className="p-1.5 rounded-full hover:bg-stone-100 dark:hover:bg-white/10 text-[#6A2C2A] dark:text-[#E8B15C] shrink-0 ml-auto cursor-pointer transition-colors"
+          title="Voice Search"
+        >
+          <Mic className="w-4.5 h-4.5 sm:w-5 sm:h-5 shrink-0" />
+        </button>
       </div>
     );
   }
@@ -246,11 +262,13 @@ export default function SearchBar({
           <input
             type="text"
             value={value}
-            onFocus={() => setShowSuggestions(true)}
+            onFocus={() => {
+              if (enableAutocomplete) setShowSuggestions(true);
+            }}
             onKeyDown={handleKeyDown}
             onChange={(e) => {
               if (onChange) onChange(e.target.value);
-              setShowSuggestions(true);
+              if (enableAutocomplete) setShowSuggestions(true);
             }}
             placeholder={placeholder || defaultPlaceholder}
             className="flex-1 min-w-0 w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 text-[#32251E] dark:text-foreground text-xs sm:text-base font-medium placeholder:text-[#7A6B60]/70 py-2"
@@ -277,22 +295,22 @@ export default function SearchBar({
             type="button"
             onClick={handleMicClick}
             className={cn(
-              "inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-all shrink-0 cursor-pointer text-[#6A2C2A] dark:text-[#E8B15C] hover:bg-stone-100 dark:hover:bg-white/10",
-              activeListening && "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400"
+              "w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#651317]/8 dark:bg-amber-400/10 flex items-center justify-center transition-all shrink-0 cursor-pointer text-[#6A2C2A] dark:text-[#E8B15C] hover:bg-[#651317]/15 dark:hover:bg-amber-400/20 active:scale-95",
+              activeListening && "bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 animate-pulse ring-2 ring-red-500/30"
             )}
             title="Voice Search"
           >
             {activeListening ? (
-              <Loader2 className="w-4.5 h-4.5 animate-spin text-red-600" />
+              <Loader2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 animate-spin text-red-600" />
             ) : (
-              <Mic className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+              <Mic className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#6A2C2A] dark:text-[#E8B15C]" />
             )}
           </button>
         </div>
       </form>
 
-      {/* Multi-Category Unified Autocomplete Suggestions Dropdown - Bounds strictly to left-0 right-0 w-full */}
-      {showSuggestions && activeSuggestions.length > 0 && (
+      {/* Multi-Category Unified Autocomplete Suggestions Dropdown */}
+      {enableAutocomplete && showSuggestions && activeSuggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-[#1E1710] border border-[#EFE4D7] dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-200 divide-y divide-stone-100 dark:divide-zinc-800/60 max-h-[380px] overflow-y-auto w-full min-w-0">
           {activeSuggestions.map((item, idx) => {
             const isSelected = idx === selectedIndex;

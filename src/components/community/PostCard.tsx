@@ -25,6 +25,7 @@ import { type CommunityPost, type PostComment, type EventRsvpStatus } from "@/li
 import { EditPostDialog } from "@/components/community/EditPostDialog";
 import { CommunityPostImage } from "@/components/community/CommunityMedia";
 import { cn } from "@/lib/utils";
+import { getContentUrl } from "@/lib/contentUrls";
 
 // Deity Avatars
 import durgaImg from "@/assets/deities/durga.webp";
@@ -467,7 +468,7 @@ export function PostCard({
                   </span>
                   {post.resolved_bhajan_id && (
                     <Link 
-                      to={"/bhajan/" + post.resolved_bhajan_id}
+                      to={getContentUrl({ slug: post.resolved_bhajan_id })}
                       className="underline text-emerald-600 dark:text-emerald-400 ml-auto flex items-center gap-1 shrink-0"
                     >
                       View <ChevronRight className="w-3.5 h-3.5" />
@@ -646,7 +647,7 @@ export function PostCard({
                       <span className="text-xs font-bold truncate block text-[#32251E] dark:text-stone-200">{isHi ? "भजन संदर्भ" : "Bhajan Reference"}</span>
                     </div>
                     <Link 
-                      to={"/bhajan/" + post.linked_bhajan_id}
+                      to={getContentUrl({ slug: post.linked_bhajan_id })}
                       className="bg-[#FAF0E4] dark:bg-[#2B1F14] text-[#651317] dark:text-amber-300 text-xs px-2.5 py-1 rounded-lg font-bold flex items-center gap-0.5 hover:scale-98 transition-all shrink-0"
                     >
                       {isHi ? "बोल" : "Lyrics"} <ChevronRight className="w-3 h-3" />

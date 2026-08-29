@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import SearchBar from "@/components/SearchBar";
 import { HeroInsightCards } from "@/components/HeroInsightCards";
 import { LiveAartiIcon } from "@/components/LiveAartiIcon";
+import { prefetchSearchPage } from "@/lib/prefetchSearch";
 
 const HERO_MOBILE = "/hero-lcp-mobile.webp";
 const HERO_DESKTOP = "/hero-lcp-desktop.webp";
@@ -28,12 +31,31 @@ interface HeroSectionProps {
 export function HeroSection({ stats }: HeroSectionProps) {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { profile, user } = useAuth();
   const isHi = language === "hi";
+  const firstName = (profile?.name || user?.user_metadata?.full_name || user?.user_metadata?.name || "")
+    .toString()
+    .trim()
+    .split(/\s+/)[0];
+  const mobileGreeting = firstName
+    ? isHi
+      ? `नमस्ते, ${firstName}`
+      : `Namaste, ${firstName}`
+    : isHi
+      ? "नमस्ते"
+      : "Namaste";
+
+  useEffect(() => {
+    prefetchSearchPage();
+  }, []);
 
   return (
     <LazyMotion features={domAnimation}>
     <section className="hero-section w-full px-4 sm:px-6 md:px-8 lg:px-10 pt-3.5 pb-1 md:py-8 bg-[#FFFDF8] dark:bg-background md:bg-background">
       <div className="md:hidden flex flex-col w-full text-left">
+        <p className="px-0.5 pt-0.5 pb-2 font-serif text-[22px] font-bold leading-tight text-[#3A2418] dark:text-[#FFFDF8]">
+          {mobileGreeting}
+        </p>
         <PromotionalCarousel />
 
         <div className="w-full mt-3.5 p-3.5 rounded-[24px] bg-[#FFFDF8] dark:bg-[#1A1208] border border-[#E8D8C4] dark:border-zinc-800/80 shadow-[0_6px_14px_rgba(74,14,18,0.04)] flex flex-col gap-3">
@@ -113,9 +135,15 @@ export function HeroSection({ stats }: HeroSectionProps) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.42 }}
+              onMouseEnter={() => prefetchSearchPage()}
+              onTouchStart={() => prefetchSearchPage()}
               className="w-full max-w-md mb-4 relative shrink-0 text-left cursor-pointer"
             >
-              <SearchBar readOnly onClick={() => navigate("/search")} />
+              <SearchBar 
+                readOnly 
+                onClick={() => navigate("/search")} 
+                onMicClick={() => navigate("/search?voice=1")}
+              />
             </m.div>
 
             <m.div

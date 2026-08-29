@@ -9,6 +9,7 @@ import { mapUserUploadToBhajan } from "@/lib/mapUserUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { getContentUrl } from "@/lib/contentUrls";
 
 interface UserBhajan {
   id: string;
@@ -113,7 +114,7 @@ const Index = () => {
               <BhajanCard 
                 key={bhajan.id} 
                 bhajan={bhajan} 
-                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                onCardClick={(b) => navigate(getContentUrl(b))}
               />
             ))}
           </div>
@@ -137,7 +138,7 @@ const Index = () => {
                   <BhajanCard 
                     key={bhajan.id} 
                     bhajan={convertedBhajan} 
-                    onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                    onCardClick={(b) => navigate(getContentUrl(b))}
                   />
                 );
               })}

@@ -8,6 +8,7 @@ import { Loader2, User, CheckCircle2, AlertTriangle, Video, FileText, ExternalLi
 import { useLanguage } from '@/hooks/useLanguage';
 import { CHALISA_SUB_TYPES, OTHER_SUB_TYPES } from '@/constants/uploadCategories';
 import { generateBhajanSlug } from '@/lib/slugUtils';
+import { getContentUrl } from '@/lib/contentUrls';
 
 interface BhajanFormProps {
   lyrics: string;
@@ -194,9 +195,9 @@ export default function BhajanForm({
         setPotentialDuplicate({
           title: item.title,
           titleHindi: item.titleHindi,
-          url: `/bhajan/${item.slug}`,
+          url: getContentUrl(item),
           singer: item.singerName,
-          category: 'bhajan',
+          category: item.contentType || 'bhajan',
           similarity: Math.max(simEn, simHi),
         });
         return;
@@ -220,7 +221,7 @@ export default function BhajanForm({
           setPotentialDuplicate({
             title: match.title,
             titleHindi: match.title_hindi,
-            url: match.content_type === 'katha' ? `/katha` : match.content_type === 'aarti' ? `/aarti` : `/all-bhajans`,
+            url: getContentUrl({ slug: match.slug, contentType: match.content_type, subType: match.sub_type }),
             singer: match.singer_name,
             category: match.content_type,
             similarity: 0.8,

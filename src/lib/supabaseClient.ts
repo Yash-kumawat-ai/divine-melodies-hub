@@ -19,9 +19,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY ?? '',
     autoRefreshToken: true,
     detectSessionInUrl: false,
     flowType: 'pkce',
-    lock: typeof window !== 'undefined' && 'navigator' in window && 'locks' in navigator
-      ? undefined
-      : async (_name, _acquireTimeout, fn) => fn(),
+    lock: async (_name, _acquireTimeout, fn) => {
+      return await fn();
+    },
   },
 });
 

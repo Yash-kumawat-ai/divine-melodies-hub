@@ -4,6 +4,7 @@ import BhajanCard from '@/components/BhajanCard';
 import { useLikedBhajans } from '@/hooks/useLikedBhajans';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
+import { getContentUrl } from '@/lib/contentUrls';
 
 export default function LikedBhajansPage() {
   const { user, likedBhajans, loading } = useLikedBhajans();
@@ -22,11 +23,13 @@ export default function LikedBhajansPage() {
         >
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
-        <div className="flex items-center gap-2">
-          <Heart className="h-6 w-6 fill-red-500 text-red-500" />
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
-            {isHi ? "पसंदीदा भजन" : t('likedBhajans')}
+        <div>
+          <h1 className="font-display text-2xl font-bold text-foreground">
+            {isHi ? "मेरे पसंदीदा भजन" : t('likedBhajans')}
           </h1>
+          <p className="text-xs text-muted-foreground">
+            {likedBhajans.length} {isHi ? "भजन सहेजे गए" : t('savedToFavorites')}
+          </p>
         </div>
       </div>
 
@@ -39,14 +42,16 @@ export default function LikedBhajansPage() {
           </Button>
         </div>
       ) : loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#5C1D0C] dark:text-[#E8B15C]" />
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : likedBhajans.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-12 text-center max-w-md mx-auto bg-card">
-          <Heart className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+        <div className="text-center py-16 bg-card border rounded-2xl p-8 max-w-md mx-auto">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/40 text-red-500 flex items-center justify-center mx-auto mb-3">
+            <Heart className="w-6 h-6" />
+          </div>
           <h3 className="text-lg font-bold text-foreground mb-1">
-            {isHi ? "कोई पसंदीदा भजन नहीं" : "No Liked Bhajans"}
+            {isHi ? "कोई पसंदीदा भजन नहीं" : t('noLikedBhajans')}
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             {isHi ? "किसी भी भजन पर दिल ❤️ का बटन दबाकर यहाँ सहेजें" : t('noLikedBhajans')}
@@ -61,7 +66,7 @@ export default function LikedBhajansPage() {
             <div key={bhajan.id} className="min-w-0">
               <BhajanCard
                 bhajan={bhajan}
-                onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                onCardClick={(b) => navigate(getContentUrl(b))}
               />
             </div>
           ))}

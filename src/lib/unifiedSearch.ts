@@ -22,6 +22,7 @@ import {
 import { deities, Bhajan } from "@/data/bhajans";
 import { normalizeSearchText, extractWords, calculateSimilarity, bhajanMatchesQuery } from "./searchAlgorithm";
 import { latinQueryMatchesHindiTitle } from "./hinglishTransliterate";
+import { getContentUrl, resolveCanonicalType, getCanonicalTypeLabel } from "./contentUrls";
 
 export type SearchCategory = 'feature' | 'aarti_chalisa' | 'deity' | 'bhajan';
 
@@ -294,7 +295,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 3,
     singerName: 'Hariharan / Gulshan Kumar',
     lyricsSnippet: 'जय हनुमान ज्ञान गुन सागर, जय कपीस तिहुँ लोक उजागर...',
-    path: '/bhajan/hanuman-chalisa'
+    path: '/chalisa/hanuman-chalisa'
   },
   {
     id: 'ac-2',
@@ -305,7 +306,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 2,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'ॐ जय शिव ओमकारा, स्वामी जय शिव ओमकारा, ब्रह्मा विष्णु सदाशिव अर्धांगी धारा...',
-    path: '/bhajan/om-jai-shiv-omkara'
+    path: '/aarti/om-jai-shiv-omkara'
   },
   {
     id: 'ac-3',
@@ -316,7 +317,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 6,
     singerName: 'SP Balasubrahmanyam',
     lyricsSnippet: 'जय गणेश जय गणेश जय गणेश देवा, माता जाकी पार्वती पिता महादेवा...',
-    path: '/bhajan/ganesh-aarti'
+    path: '/aarti/ganesh-aarti'
   },
   {
     id: 'ac-4',
@@ -327,7 +328,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 5,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'जय अम्बे गौरी, मैया जय श्यामा गौरी। तुमको निशिदिन ध्यावत, हरि ब्रह्मा शिवरी...',
-    path: '/bhajan/jai-ambe-gauri'
+    path: '/aarti/jai-ambe-gauri'
   },
   {
     id: 'ac-5',
@@ -338,7 +339,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 1,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'ॐ जय जगदीश हरे, स्वामी जय जगदीश हरे, भक्त जनों के संकट क्षण में दूर करे...',
-    path: '/aarti-chalisa?q=Om+Jai+Jagdish+Hare'
+    path: '/aarti?q=Om+Jai+Jagdish+Hare'
   },
   {
     id: 'ac-6',
@@ -349,7 +350,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 4,
     singerName: 'Lata Mangeshkar',
     lyricsSnippet: 'श्री रामचंद्र कृपालु भजु मन हरण भवभय दारुणम्...',
-    path: '/aarti-chalisa?q=Ram+Stuti'
+    path: '/stotra?q=Ram+Stuti'
   },
   {
     id: 'ac-7',
@@ -360,7 +361,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 2,
     singerName: 'Ravan Stuti / Shankar Mahadevan',
     lyricsSnippet: 'जटाटवीगलज्जलप्रवाहपावितस्थले गलेऽवलम्ब्य लम्बितां भुजङ्गतुङ्गमालिकाम्...',
-    path: '/aarti-chalisa?q=Shiv+Tandav'
+    path: '/stotra/shiv-tandav-stotram'
   },
   {
     id: 'ac-8',
@@ -371,7 +372,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 5,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'नमो नमो दुर्गे सुख करनी, नमो नमो अम्बे दुःख हरनी...',
-    path: '/aarti-chalisa?q=Durga+Chalisa'
+    path: '/chalisa?q=Durga+Chalisa'
   },
   {
     id: 'ac-9',
@@ -382,7 +383,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 8,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'ॐ जय लक्ष्मी माता, मैया जय लक्ष्मी माता। तुमको निशिदिन सेवत, हर विष्णु विधाता...',
-    path: '/aarti-chalisa?q=Lakshmi+Aarti'
+    path: '/aarti/om-jai-lakshmi-mata'
   },
   {
     id: 'ac-10',
@@ -393,7 +394,7 @@ export const FAMOUS_AARTIS_CHALISAS: AartiChalisaSearchItem[] = [
     deityId: 1,
     singerName: 'Anuradha Paudwal',
     lyricsSnippet: 'ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्...',
-    path: '/aarti-chalisa?q=Gayatri+Mantra'
+    path: '/mantra?q=Gayatri+Mantra'
   }
 ];
 
@@ -591,10 +592,14 @@ export function getUnifiedAutocompleteSuggestions(
     }
   }
 
-  // 4. Check Bhajan Matches
+  // 4. Check Devotional Content Matches
   for (const b of bhajansList) {
     if (bhajanMatchesQuery(b, q)) {
-      const bhajanPath = `/bhajan/${b.slug}`;
+      const bhajanPath = getContentUrl(b);
+      const canonicalType = resolveCanonicalType(b);
+      const badgeEn = getCanonicalTypeLabel(canonicalType, false);
+      const badgeHi = getCanonicalTypeLabel(canonicalType, true);
+
       if (!seenPaths.has(bhajanPath)) {
         seenPaths.add(bhajanPath);
         suggestions.push({
@@ -603,8 +608,8 @@ export function getUnifiedAutocompleteSuggestions(
           title: b.title,
           titleHindi: b.titleHindi,
           subtitle: b.singerName ? `${b.singerName}` : undefined,
-          badge: 'Bhajan',
-          badgeHindi: 'भजन',
+          badge: badgeEn,
+          badgeHindi: badgeHi,
           iconName: 'Music2',
           path: bhajanPath,
           rawItem: {

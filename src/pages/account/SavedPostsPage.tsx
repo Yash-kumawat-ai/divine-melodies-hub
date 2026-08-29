@@ -11,6 +11,7 @@ import { communityApi, type CommunityPost, type PostComment, type EventRsvpStatu
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { SEO } from '@/components/SEO';
+import { getContentUrl } from '@/lib/contentUrls';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function SavedPostsPage() {
@@ -457,7 +458,7 @@ export default function SavedPostsPage() {
                     <BhajanCard
                       key={bhajan.id}
                       bhajan={bhajan}
-                      onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                      onCardClick={(b) => navigate(getContentUrl(b))}
                     />
                   ))}
                 </div>

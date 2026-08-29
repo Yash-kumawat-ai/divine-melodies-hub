@@ -25,8 +25,10 @@ export const OTHER_SUB_TYPES: SubTypeOption[] = [
   { labelHindi: 'अष्टकम', value: 'ashtakam' },
   { labelHindi: 'कवच', value: 'kavach' },
   { labelHindi: 'दोहा', value: 'doha' },
+  { labelHindi: 'मंत्र', value: 'mantra' },
+  { labelHindi: 'श्लोक', value: 'shloka' },
   { labelHindi: 'भजन-कविता', value: 'bhajan_kavita' },
-  { labelHindi: 'अन्य', value: 'other' },
+  { labelHindi: 'अन्य (कस्टम रचना)', value: 'custom' },
 ];
 
 // Extended Deity list for Bhajan / Aarti / Chalisa / Other

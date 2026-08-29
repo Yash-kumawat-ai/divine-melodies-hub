@@ -19,12 +19,13 @@ export default function AppShell() {
   const resolvedPath = pathname === "/" && window.location.pathname !== "/" ? window.location.pathname : pathname;
 
   const isKirtanAi = resolvedPath === "/kirtan-ai" || resolvedPath === "/narad-ai";
+  const isKundliSetup = resolvedPath === "/kundli/setup";
   const isTemplePage = resolvedPath === "/temple";
   const activePracticeId = searchParams.get("practice");
   const isMantraJapaSection = resolvedPath.startsWith("/meditation/mantra-japa");
   const isOtherMeditationSession = resolvedPath === "/meditation/breathing" || resolvedPath === "/meditation/meditation-timer" || resolvedPath === "/meditation/naam-japa" || resolvedPath === "/meditation/mala";
   const isRunningPracticeSession = isOtherMeditationSession || (resolvedPath === "/meditation" && (activePracticeId === "mantra_japa_counter" || (activePracticeId != null && activePracticeId !== "" && activePracticeId !== "mantra_jap_home")));
-  const isFullScreenApp = isKirtanAi || isTemplePage || isRunningPracticeSession;
+  const isFullScreenApp = isKirtanAi || isKundliSetup || isTemplePage || isRunningPracticeSession;
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");

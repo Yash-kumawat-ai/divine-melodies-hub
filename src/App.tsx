@@ -21,6 +21,7 @@ import LoginForm from "./components/Auth/LoginForm";
 import SignupTabs from "./components/Auth/SignupTabs";
 import AuthShell from "./components/Auth/AuthShell";
 import AuthCallback from "./components/Auth/AuthCallback";
+import CompleteBirthProfilePage from "./pages/CompleteBirthProfilePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,6 +80,10 @@ const PosterMakerPage = lazy(() => import("./pages/PosterMakerPage"));
 const ShortsFeed = lazy(() => import("./pages/ShortsFeed"));
 const ChannelWhitelist = lazy(() => import("./pages/admin/ChannelWhitelist"));
 const DMCAPage = lazy(() => import("./pages/DMCAPage"));
+
+// Vedic Kundli Feature lazy loads
+const KundliPage = lazy(() => import("./pages/KundliPage"));
+const KundliSetupPage = lazy(() => import("./pages/KundliSetupPage"));
 
 
 function DeferredNaradWidget() {
@@ -166,6 +171,7 @@ function AppContent() {
               </AuthShell>
             }
           />
+          <Route path="/auth/complete-profile" element={<CompleteBirthProfilePage />} />
 
           <Route element={<AppShell />}>
             <Route path="/" element={<Home />} />
@@ -173,7 +179,18 @@ function AppContent() {
             <Route path="/recent-bhajans" element={<RecentBhajans />} />
             <Route path="/all-deities" element={<AllDeities />} />
             <Route path="/deity/:slug" element={<DeityPage />} />
-            <Route path="/bhajan/:slug" element={<BhajanPage />} />
+            <Route path="/bhajan/:slug" element={<BhajanPage expectedType="bhajan" />} />
+            <Route path="/aarti/:slug" element={<BhajanPage expectedType="aarti" />} />
+            <Route path="/chalisa/:slug" element={<BhajanPage expectedType="chalisa" />} />
+            <Route path="/katha/:slug" element={<BhajanPage expectedType="katha" />} />
+            <Route path="/stotra/:slug" element={<BhajanPage expectedType="stotra" />} />
+            <Route path="/ashtakam/:slug" element={<BhajanPage expectedType="ashtakam" />} />
+            <Route path="/ashtak/:slug" element={<BhajanPage expectedType="ashtakam" />} />
+            <Route path="/kavach/:slug" element={<BhajanPage expectedType="kavach" />} />
+            <Route path="/doha/:slug" element={<BhajanPage expectedType="doha" />} />
+            <Route path="/mantra/:slug" element={<BhajanPage expectedType="mantra" />} />
+            <Route path="/shloka/:slug" element={<BhajanPage expectedType="shloka" />} />
+            <Route path="/rachana/:slug" element={<BhajanPage expectedType="rachana" />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/meditation" element={<MeditationPage />} />
             <Route path="/meditation/mantra-japa" element={<MeditationPage />} />
@@ -187,9 +204,16 @@ function AppContent() {
             <Route path="/panchang/details" element={<PanchangDetailsPage />} />
             <Route path="/narad-ai" element={<KirtanAIPage />} />
             <Route path="/kirtan-ai" element={<RedirectKirtanToNarad />} />
-            <Route path="/chalisa" element={<AartiChalisaPage />} />
-            <Route path="/aarti" element={<AartiChalisaPage />} />
-            <Route path="/aarti-chalisa" element={<AartiChalisaPage />} />
+            <Route path="/chalisa" element={<AartiChalisaPage defaultTab="chalisa" />} />
+            <Route path="/aarti" element={<AartiChalisaPage defaultTab="aarti" />} />
+            <Route path="/stotra" element={<AartiChalisaPage defaultTab="stotra" />} />
+            <Route path="/ashtakam" element={<AartiChalisaPage defaultTab="ashtakam" />} />
+            <Route path="/kavach" element={<AartiChalisaPage defaultTab="kavach" />} />
+            <Route path="/doha" element={<AartiChalisaPage defaultTab="doha" />} />
+            <Route path="/mantra" element={<AartiChalisaPage defaultTab="mantra" />} />
+            <Route path="/shloka" element={<AartiChalisaPage defaultTab="shloka" />} />
+            <Route path="/rachana" element={<AartiChalisaPage defaultTab="all" />} />
+            <Route path="/aarti-chalisa" element={<AartiChalisaPage defaultTab="all" />} />
             <Route path="/katha" element={<KathaPage />} />
             <Route path="/live-aarti" element={<LiveAartiPage />} />
             <Route
@@ -216,6 +240,25 @@ function AppContent() {
             <Route path="/shorts" element={<ShortsFeed />} />
             <Route path="/shorts/:videoId" element={<ShortsFeed />} />
             <Route path="/dmca" element={<DMCAPage />} />
+
+            {/* Vedic Kundli Routes */}
+            <Route
+              path="/kundli"
+              element={
+                <ProtectedRoute>
+                  <KundliPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kundli/setup"
+              element={
+                <ProtectedRoute>
+                  <KundliSetupPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/ask-guru-ji/*" element={<KundliPage />} />
             <Route
               path="/admin/moderation"
               element={

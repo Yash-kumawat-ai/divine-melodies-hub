@@ -12,6 +12,15 @@ export interface YouTubePlayerVideo {
   id: string;
   title: string;
   channel?: string;
+  bhajanId?: string | number;
+  bhajanSlug?: string;
+  deityId?: number;
+  lyricsHindi?: string;
+  lyricsTransliteration?: string;
+  titleHindi?: string;
+  imageUrl?: string;
+  category?: string;
+  singerName?: string;
 }
 
 export interface PlaybackState {

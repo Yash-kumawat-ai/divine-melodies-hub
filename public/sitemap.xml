@@ -3,12 +3,21 @@
   <url><loc>https://raghavam.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
   <url><loc>https://raghavam.com/live-aarti</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
   <url><loc>https://raghavam.com/all-bhajans</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://raghavam.com/aarti-chalisa</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://raghavam.com/katha</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://raghavam.com/chalisa</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://raghavam.com/katha</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/stotra</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ashtakam</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/kavach</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/doha</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/mantra</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/shloka</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/rachana</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/recent-bhajans</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/meditation</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/meditation/mantra-japa</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/panchang</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/kundli</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/temple</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/shorts</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/wallpaper</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -26,16 +35,16 @@
   <url><loc>https://raghavam.com/deity/lakshmi</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/deity/khatu-shyam</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/bhajan/hare-krishna-mahamantra</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/om-jai-shiv-omkara</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/hanuman-chalisa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti/om-jai-shiv-omkara</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/chalisa/hanuman-chalisa</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/bhajan/raghupati-raghav-raja-ram</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/jai-ambe-gauri</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/ganesh-aarti</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/sai-baba-aarti</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/om-jai-lakshmi-mata</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti/jai-ambe-gauri</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti/ganesh-aarti</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti/sai-baba-aarti</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/aarti/om-jai-lakshmi-mata</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/bhajan/achyutam-keshavam</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/shiv-tandav-stotram</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://raghavam.com/bhajan/bajrang-baan</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/stotra/shiv-tandav-stotram</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://raghavam.com/chalisa/bajrang-baan</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/bhajan/ram-dhun</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/bhajan/hum-sab-bolenge-happy-birthday-to-you</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://raghavam.com/bhajan/bolo-to-sahi-bolo-to-sahi</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>

@@ -36,6 +36,7 @@ import { useYouTubePlayer } from '@/hooks/useYouTubePlayer';
 import { openYouTubeSearchFallback } from '@/lib/youtubeEmbedPopup';
 import { formatBhajanDisplayTitle } from '@/lib/slugUtils';
 import { getDeityById, bhajans as staticBhajans, type Bhajan } from '@/data/bhajans';
+import { getCanonicalUrl } from '@/lib/contentUrls';
 import { cn } from '@/lib/utils';
 import { useBhajanModalOpen } from '@/hooks/useBhajanModalOpen';
 
@@ -83,7 +84,7 @@ export default function BhajanDetailModal({
   const deity = getDeityById(bhajan.deityId);
 
   const handleShare = async (platform: 'whatsapp' | 'telegram' | 'email' | 'copy') => {
-    const fullUrl = window.location.href;
+    const fullUrl = getCanonicalUrl(bhajan);
     switch (platform) {
       case 'whatsapp':
         shareOnWhatsApp(bhajan.title, fullUrl);
@@ -180,6 +181,15 @@ export default function BhajanDetailModal({
       id: videoId,
       title: bhajan.titleHindi || bhajan.title,
       channel: bhajan.singerName,
+      bhajanId: bhajan.id,
+      bhajanSlug: bhajan.slug,
+      deityId: bhajan.deityId,
+      lyricsHindi: bhajan.lyricsHindi,
+      lyricsTransliteration: bhajan.lyricsTransliteration,
+      titleHindi: bhajan.titleHindi,
+      imageUrl: bhajan.imageUrl,
+      category: bhajan.contentType || bhajan.subType || 'bhajan',
+      singerName: bhajan.singerName,
     });
     onClose();
   };

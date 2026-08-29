@@ -5,6 +5,7 @@ import NotFound from '@/pages/NotFound';
 import { SEO } from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client';
 import { generateBhajanSlug, generateDeitySlug } from '@/lib/slugUtils';
+import { getDeityUrl } from '@/lib/deityUrls';
 import { getPublicSiteUrl } from '@/lib/env';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useLikedBhajans } from '@/hooks/useLikedBhajans';
@@ -14,6 +15,14 @@ import { shareOnWhatsApp, shareOnTelegram, copyShareLink } from '@/lib/shareUtil
 import BhajanCard from '@/components/BhajanCard';
 import AddToGroupDialog from '@/components/community/AddToGroupDialog';
 import youtubeSvgLogo from '@/pages/images/youtube-svgrepo-com.svg';
+import {
+  getContentUrl,
+  getCanonicalUrl,
+  resolveCanonicalType,
+  getCategoryCollectionUrl,
+  getCanonicalTypeLabel,
+  type DevotionalCanonicalType,
+} from '@/lib/contentUrls';
 import {
   Loader2,
   Music2,
@@ -34,7 +43,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function BhajanPage() {
+interface BhajanPageProps {
+  expectedType?: DevotionalCanonicalType;
+}
+
+export default function BhajanPage({ expectedType }: BhajanPageProps = {}) {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -107,6 +120,8 @@ export default function BhajanPage() {
             tags: data.occasion || data.mood_tags || [],
             featured: false,
             youtubeUrl: data.youtube_url,
+            contentType: data.content_type,
+            subType: data.sub_type,
           };
           setDbBhajan(mapped);
           setIsPreview(false);
@@ -137,6 +152,8 @@ export default function BhajanPage() {
                 tags: ownData.occasion || ownData.mood_tags || [],
                 featured: false,
                 youtubeUrl: ownData.youtube_url,
+                contentType: ownData.content_type,
+                subType: ownData.sub_type,
               };
               setDbBhajan(mapped);
               setIsPreview(true);
@@ -152,8 +169,8 @@ export default function BhajanPage() {
             .maybeSingle();
 
           if (redirectRow?.to_slug && isMounted) {
-            // Client-side SPA history replacement (not an HTTP 301 header)
-            navigate(`/bhajan/${redirectRow.to_slug}`, { replace: true });
+            // Client-side SPA history replacement to canonical target
+            navigate(getContentUrl({ slug: redirectRow.to_slug, contentType: expectedType }), { replace: true });
             return;
           }
         }
@@ -175,6 +192,20 @@ export default function BhajanPage() {
   }, [slug, staticFound, user?.id, navigate]);
 
   const resolvedBhajan = staticFound || dbBhajan;
+
+  const canonicalType = useMemo(() => {
+    if (!resolvedBhajan) return 'bhajan';
+    return resolveCanonicalType(resolvedBhajan);
+  }, [resolvedBhajan]);
+
+  // Self-healing canonical redirect if expectedType doesn't match canonicalType
+  useEffect(() => {
+    if (!resolvedBhajan) return;
+    if (expectedType && expectedType !== canonicalType) {
+      const canonicalPath = getContentUrl(resolvedBhajan);
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [resolvedBhajan, expectedType, canonicalType, navigate]);
 
   // Resolve YouTube Video ID asynchronously for playback
   useEffect(() => {
@@ -252,8 +283,11 @@ export default function BhajanPage() {
 
   const deity = getDeityById(resolvedBhajan.deityId);
   const deityName = deity ? (isHi ? deity.nameHindi : deity.name) : (isHi ? 'भगवान' : 'Divine');
-  const deitySlug = deity ? generateDeitySlug(deity.name) : '';
+  const deityUrl = deity ? getDeityUrl(deity) : '';
   const liked = isLiked(resolvedBhajan.id);
+  const typeLabel = getCanonicalTypeLabel(canonicalType, isHi);
+  const collectionUrl = getCategoryCollectionUrl(canonicalType);
+  const collectionLabel = isHi ? `${typeLabel} संग्रह` : `${typeLabel} Collection`;
 
   const cleanLyricsPreview = (resolvedBhajan.lyricsHindi || '')
     .replace(/\s+/g, ' ')
@@ -263,10 +297,10 @@ export default function BhajanPage() {
   const seoTitle = `${resolvedBhajan.titleHindi} (${resolvedBhajan.title}) - Lyrics & Video | Raghavam`;
   const seoDescription = cleanLyricsPreview
     ? `${resolvedBhajan.titleHindi} (${resolvedBhajan.title}) - ${cleanLyricsPreview}… Sung by ${resolvedBhajan.singerName || 'Traditional'}. Read sacred lyrics and listen on Raghavam.`
-    : `Listen to ${resolvedBhajan.title} (${resolvedBhajan.titleHindi}), a sacred devotional ${deityName} bhajan sung by ${resolvedBhajan.singerName || 'Traditional'} on Raghavam.`;
+    : `Listen to ${resolvedBhajan.title} (${resolvedBhajan.titleHindi}), a sacred devotional ${deityName} ${typeLabel.toLowerCase()} sung by ${resolvedBhajan.singerName || 'Traditional'} on Raghavam.`;
 
   const baseUrl = getPublicSiteUrl();
-  const canonicalUrl = `${baseUrl}/bhajan/${resolvedBhajan.slug}`;
+  const canonicalUrl = getCanonicalUrl(resolvedBhajan, baseUrl);
 
   // Content-conditional Schema.org structured data (Rule 9)
   const hasValidMedia = Boolean(resolvedBhajan.youtubeUrl || resolvedVideoId);
@@ -282,22 +316,22 @@ export default function BhajanPage() {
             name: isHi ? 'होम' : 'Home',
             item: baseUrl,
           },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: isHi ? 'सभी भजन' : 'All Bhajans',
-            item: `${baseUrl}/all-bhajans`,
-          },
           ...(deity
             ? [
                 {
                   '@type': 'ListItem',
-                  position: 3,
+                  position: 2,
                   name: deityName,
-                  item: `${baseUrl}/deity/${deitySlug}`,
+                  item: `${baseUrl}${deityUrl}`,
                 },
               ]
             : []),
+          {
+            '@type': 'ListItem',
+            position: deity ? 3 : 2,
+            name: collectionLabel,
+            item: `${baseUrl}${collectionUrl}`,
+          },
           {
             '@type': 'ListItem',
             position: deity ? 4 : 3,
@@ -411,28 +445,35 @@ export default function BhajanPage() {
         )}
 
         <div className="container mx-auto max-w-4xl px-3 sm:px-4 pt-4 sm:pt-6 space-y-6">
-          {/* Clean Breadcrumbs Header */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 flex-wrap text-xs font-semibold text-[#786252] dark:text-stone-400">
+          {/* Clean Breadcrumbs Header: Home → Deity → Category → Title */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 flex-wrap text-xs leading-normal font-normal text-[#786252] dark:text-stone-400 py-1">
             <Link
-              to="/all-bhajans"
-              className="inline-flex items-center gap-1 hover:text-[#651317] dark:hover:text-amber-300 transition-colors"
+              to="/"
+              className="inline-flex items-center gap-1 hover:text-[#651317] dark:hover:text-amber-300 transition-colors font-medium py-0.5"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>{isHi ? 'सभी भजन' : 'All Bhajans'}</span>
+              <span>{isHi ? 'होम' : 'Home'}</span>
             </Link>
             {deity && (
               <>
-                <ChevronRight className="w-3 h-3 opacity-60" />
+                <ChevronRight className="w-3 h-3 opacity-60 shrink-0" />
                 <Link
-                  to={`/deity/${deitySlug}`}
-                  className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors"
+                  to={deityUrl}
+                  className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors font-medium py-0.5"
                 >
                   {deityName}
                 </Link>
               </>
             )}
-            <ChevronRight className="w-3 h-3 opacity-60" />
-            <span className="text-[#3A2418] dark:text-amber-200 truncate max-w-[200px] sm:max-w-xs font-medium">
+            <ChevronRight className="w-3 h-3 opacity-60 shrink-0" />
+            <Link
+              to={collectionUrl}
+              className="hover:text-[#651317] dark:hover:text-amber-300 transition-colors font-medium py-0.5"
+            >
+              {collectionLabel}
+            </Link>
+            <ChevronRight className="w-3 h-3 opacity-60 shrink-0" />
+            <span className="text-[#3A2418] dark:text-amber-200 truncate max-w-[180px] sm:max-w-xs font-medium inline-block py-0.5 leading-normal">
               {breadcrumbTitle}
             </span>
           </nav>
@@ -442,11 +483,11 @@ export default function BhajanPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               {deity && (
                 <Link
-                  to={`/deity/${deitySlug}`}
+                  to={deityUrl}
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/50 text-[#651317] dark:text-amber-300 text-xs font-bold hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors shadow-2xs"
                 >
                   <span className="text-base">{deity.emoji}</span>
-                  <span>{deityName} भजन</span>
+                  <span>{deityName} {typeLabel}</span>
                 </Link>
               )}
 
@@ -742,7 +783,7 @@ export default function BhajanPage() {
                 </div>
 
                 <Link
-                  to={deity ? `/deity/${deitySlug}` : '/all-bhajans'}
+                  to={deityUrl || '/all-bhajans'}
                   className="text-xs font-bold text-[#651317] dark:text-amber-400 hover:underline"
                 >
                   {isHi ? 'सभी देखें →' : 'View All →'}
@@ -755,7 +796,7 @@ export default function BhajanPage() {
                     key={item.id}
                     bhajan={item}
                     onCardClick={(b) => {
-                      navigate(`/bhajan/${b.slug}`);
+                      navigate(getContentUrl(b));
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                   />

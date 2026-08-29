@@ -35,6 +35,15 @@ describe("parseNaradIntent", () => {
   it("does not treat today as devotion when the user named an aarti", () => {
     expect(parseNaradIntent("om jai jagdish aarti").type).toBe("search_bhajan");
   });
+
+  it("routes kundli and shaadi questions to Vedic Kundli", () => {
+    expect(parseNaradIntent("meri kundli dekho").type).toBe("open_kundli");
+    expect(parseNaradIntent("shaadi kab hogi").type).toBe("open_kundli");
+    expect(parseNaradIntent("career guidance").type).toBe("open_kundli");
+    const action = createNaradActionResult(parseNaradIntent("janampatri batao"));
+    expect(action?.kind).toBe("route");
+    expect(action?.route).toBe("/kundli");
+  });
 });
 
 describe("createNaradActionResult", () => {

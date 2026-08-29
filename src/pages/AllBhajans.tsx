@@ -11,6 +11,7 @@ import { SEO } from '@/components/SEO';
 import SearchBar from '@/components/SearchBar';
 import Pagination from '@/components/Pagination';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
+import { getContentUrl } from '@/lib/contentUrls';
 
 import { getPublicSiteUrl } from '@/lib/env';
 
@@ -203,7 +204,7 @@ export const AllBhajans = () => {
                     <div key={bhajan.id} className="min-w-0">
                       <BhajanCard
                         bhajan={mappedBhajan}
-                        onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                        onCardClick={(b) => navigate(getContentUrl(b))}
                       />
                     </div>
                   );

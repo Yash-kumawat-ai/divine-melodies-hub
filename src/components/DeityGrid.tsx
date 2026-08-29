@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { deities } from "@/data/bhajans";
+import { getDeityUrl } from "@/lib/deityUrls";
 import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useBhajanCounts } from "@/hooks/useBhajanCounts";
@@ -29,7 +30,7 @@ export default function DeityGrid() {
               transition={{ delay: i * 0.08, duration: 0.4 }}
             >
               <Link
-                to={`/deity/${deity.slug}`}
+                to={getDeityUrl(deity)}
                 className="group block rounded-xl bg-card p-6 shadow-temple hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center touch-target"
               >
                 <div className="relative mx-auto mb-3 aspect-[4/5] w-full max-h-[11rem] overflow-hidden rounded-xl bg-muted sm:max-h-[12.5rem]">

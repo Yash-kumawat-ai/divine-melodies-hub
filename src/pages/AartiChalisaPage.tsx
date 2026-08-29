@@ -11,6 +11,7 @@ import Pagination from '@/components/Pagination';
 import { generateBhajanSlug } from '@/lib/slugUtils';
 import { SEO } from '@/components/SEO';
 import devotionalBg from '@/pages/images/devotional_background (1).webp';
+import { getContentUrl, resolveCanonicalType, type DevotionalCanonicalType } from '@/lib/contentUrls';
 
 import { getPublicSiteUrl } from '@/lib/env';
 
@@ -19,7 +20,7 @@ interface AartiItem {
   slug?: string;
   title: string;
   titleHindi: string;
-  contentType: 'aarti' | 'chalisa' | 'path';
+  contentType: string;
   subType?: string;
   deityId?: number;
   deityName?: string;
@@ -31,17 +32,25 @@ interface AartiItem {
   playCount?: number;
 }
 
-export default function AartiChalisaPage() {
+interface AartiChalisaPageProps {
+  defaultTab?: 'all' | 'aarti' | 'chalisa' | 'stotra' | 'ashtakam' | 'kavach' | 'doha' | 'mantra' | 'shloka';
+}
+
+export default function AartiChalisaPage({ defaultTab = 'all' }: AartiChalisaPageProps) {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const isHi = language === 'hi';
 
-  const [activeTab, setActiveTab] = useState<'all' | 'aarti' | 'chalisa' | 'stotra'>('all');
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [search, setSearch] = useState('');
   const [userItems, setUserItems] = useState<AartiItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   useEffect(() => {
     fetchAartisAndChalisas();
@@ -58,13 +67,13 @@ export default function AartiChalisaPage() {
       if (error) throw error;
 
       const filtered = ((data || []) as any[])
-        .filter((item) => item.content_type === 'aarti' || item.content_type === 'chalisa')
+        .filter((item) => ['aarti', 'chalisa', 'other', 'stotra'].includes(item.content_type))
         .map((item) => ({
           id: item.id,
           slug: item.slug || generateBhajanSlug(item.title || ''),
           title: item.title,
           titleHindi: item.title_hindi,
-          contentType: item.content_type as 'aarti' | 'chalisa',
+          contentType: item.content_type,
           subType: item.sub_type,
           deityId: item.deity_id,
           singerName: item.singer_name || (item.content_type === 'aarti' ? 'पारंपरिक आरती' : 'पारंपरिक पाठ'),
@@ -87,18 +96,17 @@ export default function AartiChalisaPage() {
   const combinedItems = useMemo(() => {
     const staticMapped: AartiItem[] = staticBhajans
       .filter((b) => {
-        const titleLower = (b.title + ' ' + b.titleHindi).toLowerCase();
-        return titleLower.includes('chalisa') || titleLower.includes('aarti') || titleLower.includes('चालीसा') || titleLower.includes('आरती') || titleLower.includes('stotra') || titleLower.includes('स्तोत्र');
+        const type = resolveCanonicalType(b);
+        return type !== 'bhajan' && type !== 'katha';
       })
       .map((b) => {
-        const titleLower = (b.title + ' ' + b.titleHindi).toLowerCase();
-        const type = titleLower.includes('chalisa') || titleLower.includes('चालीसा') ? 'chalisa' : 'aarti';
         return {
           id: b.id,
           slug: b.slug || generateBhajanSlug(b.title),
           title: b.title,
           titleHindi: b.titleHindi,
-          contentType: type,
+          contentType: b.contentType || 'other',
+          subType: b.subType,
           deityId: b.deityId,
           singerName: b.singerName || 'पारंपरिक',
           composerName: b.composerName,
@@ -119,16 +127,24 @@ export default function AartiChalisaPage() {
   const filteredItems = useMemo(() => {
     return combinedItems.filter((item) => {
       // Tab filter
-      if (activeTab === 'aarti' && item.contentType !== 'aarti') return false;
-      if (activeTab === 'chalisa' && item.contentType !== 'chalisa') return false;
-      if (activeTab === 'stotra' && item.subType !== 'stotra' && item.subType !== 'ashtak' && item.subType !== 'kavach') return false;
+      if (activeTab !== 'all') {
+        const canonical = resolveCanonicalType(item);
+        if (activeTab === 'aarti' && canonical !== 'aarti') return false;
+        if (activeTab === 'chalisa' && canonical !== 'chalisa') return false;
+        if (activeTab === 'stotra' && canonical !== 'stotra') return false;
+        if (activeTab === 'ashtakam' && canonical !== 'ashtakam') return false;
+        if (activeTab === 'kavach' && canonical !== 'kavach') return false;
+        if (activeTab === 'doha' && canonical !== 'doha') return false;
+        if (activeTab === 'mantra' && canonical !== 'mantra') return false;
+        if (activeTab === 'shloka' && canonical !== 'shloka') return false;
+      }
 
       // Search filter
       if (search.trim()) {
         const q = search.toLowerCase().trim();
-        const matchTitle = item.title.toLowerCase().includes(q) || item.titleHindi.toLowerCase().includes(q);
-        const matchSinger = item.singerName.toLowerCase().includes(q);
-        const matchLyrics = item.lyricsHindi.toLowerCase().includes(q);
+        const matchTitle = (item.title || '').toLowerCase().includes(q) || (item.titleHindi || '').toLowerCase().includes(q);
+        const matchSinger = (item.singerName || '').toLowerCase().includes(q);
+        const matchLyrics = (item.lyricsHindi || '').toLowerCase().includes(q);
         return matchTitle || matchSinger || matchLyrics;
       }
       return true;
@@ -280,8 +296,10 @@ export default function AartiChalisaPage() {
                         rating: 5,
                         tags: [item.contentType, item.subType || ''].filter(Boolean),
                         featured: false,
+                        contentType: item.contentType as any,
+                        subType: item.subType,
                       }}
-                      onCardClick={(b) => navigate(`/bhajan/${b.slug}`)}
+                      onCardClick={(b) => navigate(getContentUrl(b))}
                     />
                   </div>
                 ))}

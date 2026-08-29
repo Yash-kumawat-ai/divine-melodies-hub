@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.0";
 import { CONTENT_FILTER, TEMPLES, type TempleConfig } from "./temples.ts";
 
 const corsHeaders: Record<string, string> = {
@@ -18,6 +18,14 @@ type StatusRow = {
   videoId: string | null;
   lastVerifiedAt: string;
   source?: "cache" | "youtube-api" | "scrape" | "fallback";
+};
+
+type CachedStatusRow = {
+  temple_id: string;
+  status: LiveStatus;
+  live_title: string | null;
+  video_id: string | null;
+  last_verified_at: string;
 };
 
 const DEFAULT_STALE_MS = 90_000; // 90s — protects YouTube quota
@@ -272,7 +280,7 @@ function rowFromDb(row: {
   };
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -314,8 +322,8 @@ Deno.serve(async (req) => {
     console.error("Cache read failed:", cacheError);
   }
 
-  const cacheMap = new Map(
-    (cachedRows ?? []).map((r) => [r.temple_id as string, r]),
+  const cacheMap = new Map<string, CachedStatusRow>(
+    ((cachedRows ?? []) as CachedStatusRow[]).map((r) => [r.temple_id, r]),
   );
 
   const results: StatusRow[] = [];
@@ -331,7 +339,7 @@ Deno.serve(async (req) => {
 
     if (cached && !forceRefresh) {
       // Always serve last known status immediately (stale-while-revalidate)
-      results.push(rowFromDb(cached as typeof cached & { status: LiveStatus }));
+      results.push(rowFromDb(cached));
       if (age >= staleMs) staleBackground.push(temple);
     } else {
       missing.push(temple);
@@ -342,7 +350,7 @@ Deno.serve(async (req) => {
     const cached = cacheMap.get(temple.id);
     const verified = await verifyTemple(
       temple,
-      (cached?.video_id as string | null) ?? null,
+      cached?.video_id ?? null,
       youtubeApiKey,
     );
     const { error: upsertError } = await admin.from("live_aarti_status").upsert({
