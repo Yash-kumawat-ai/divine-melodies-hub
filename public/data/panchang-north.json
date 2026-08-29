@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-28",
+  "date": "2026-08-29",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Poornima",
-  "tithi_number": 15,
-  "nakshatra": "Satabhisha - 1",
-  "yoga": "Atiganda",
-  "karana": "Bava",
-  "paksha": "Shukla",
+  "tithi": "Padyami",
+  "tithi_number": 0,
+  "nakshatra": "Poorvabhadra - 1",
+  "yoga": "Sukarma",
+  "karana": "Kaulava",
+  "paksha": "Krishna",
   "sunrise": "06:01 AM",
-  "sunset": "06:43 PM",
-  "rahu_kaal": "01:57 PM - 03:32 PM",
+  "sunset": "06:42 PM",
+  "rahu_kaal": "09:11 AM - 10:46 AM",
   "brahma_muhurat": "04:25 AM - 05:13 AM",
-  "vara": "Shukravaar",
-  "updated_at": "2026-08-28T12:29:41+05:30"
+  "vara": "Shanivaar",
+  "updated_at": "2026-08-29T09:45:54+05:30"
 }
