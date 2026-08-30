@@ -91,9 +91,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
 
           <div className="relative z-10 flex flex-col items-start w-full max-w-xl text-left">
             <m.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
               className="flex items-center gap-2.5 mb-3 select-none justify-start w-full"
             >
               <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#651317]/50" />
@@ -102,9 +102,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </m.div>
 
             <m.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.22, duration: 0.65 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.45 }}
               className="font-display text-3xl md:text-4xl lg:text-[42px] font-bold text-[#3A2418] dark:text-[#FFFDF8] leading-[1.2] mb-2 select-text tracking-normal"
             >
               {isHi ? (
@@ -123,18 +123,18 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </m.h1>
 
             <m.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.32, duration: 0.55 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.45 }}
               className="mb-4 text-[#786252] dark:text-stone-400 text-sm md:text-base font-normal tracking-normal max-w-md"
             >
               {isHi ? "सत्संग · भजन · साधना · सेवा" : "Satsang · Bhajan · Sadhana · Seva"}
             </m.p>
 
             <m.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.42 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
               onMouseEnter={() => prefetchSearchPage()}
               onTouchStart={() => prefetchSearchPage()}
               className="w-full max-w-md mb-4 relative shrink-0 text-left cursor-pointer"
@@ -147,9 +147,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
             </m.div>
 
             <m.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
               className="grid grid-cols-2 gap-2.5 w-full max-w-sm"
             >
               <button

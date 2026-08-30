@@ -143,60 +143,64 @@ export const MobileDrawer = memo(function MobileDrawer() {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <DrawerHeader onClose={closeDrawer} />
+        {isOpen && (
+          <>
+            <DrawerHeader onClose={closeDrawer} />
 
-        <div
-          className="flex-1 overflow-y-auto overscroll-contain pb-28"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <UserProfileCard onClose={closeDrawer} />
-          <SectionDivider />
+            <div
+              className="flex-1 overflow-y-auto overscroll-contain pb-28"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <UserProfileCard onClose={closeDrawer} />
+              <SectionDivider />
 
-          <SectionLabel label="Explore" />
-          <NavigationGroup label="">
-            {mainItems.map((item) => (
-              <NavigationItemComponent
-                key={item.id}
-                item={item}
-                isActive={isActive(item.route)}
-                onClose={closeDrawer}
-              />
-            ))}
-          </NavigationGroup>
+              <SectionLabel label="Explore" />
+              <NavigationGroup label="">
+                {mainItems.map((item) => (
+                  <NavigationItemComponent
+                    key={item.id}
+                    item={item}
+                    isActive={isActive(item.route)}
+                    onClose={closeDrawer}
+                  />
+                ))}
+              </NavigationGroup>
 
-          <SectionDivider />
+              <SectionDivider />
 
-          <SectionLabel label="Personal" />
-          <NavigationGroup label="">
-            {personalItems.map((item) => (
-              <NavigationItemComponent
-                key={item.id}
-                item={item}
-                isActive={isActive(item.route)}
-                onClose={closeDrawer}
-              />
-            ))}
-          </NavigationGroup>
+              <SectionLabel label="Personal" />
+              <NavigationGroup label="">
+                {personalItems.map((item) => (
+                  <NavigationItemComponent
+                    key={item.id}
+                    item={item}
+                    isActive={isActive(item.route)}
+                    onClose={closeDrawer}
+                  />
+                ))}
+              </NavigationGroup>
 
-          <SectionDivider />
-          <SectionLabel label="Language" />
-          <LanguageAccordion />
+              <SectionDivider />
+              <SectionLabel label="Language" />
+              <LanguageAccordion />
 
-          <SectionDivider />
-          <SectionLabel label="Settings" />
-          <SettingsGroup onClose={closeDrawer} />
+              <SectionDivider />
+              <SectionLabel label="Settings" />
+              <SettingsGroup onClose={closeDrawer} />
 
-          <SectionDivider />
-          <SectionLabel label="About" />
-          <AboutGroup onClose={closeDrawer} />
+              <SectionDivider />
+              <SectionLabel label="About" />
+              <AboutGroup onClose={closeDrawer} />
 
-          <SectionDivider />
-          <div className="mb-4 mt-2">
-            <DivineThoughtCard />
-          </div>
+              <SectionDivider />
+              <div className="mb-4 mt-2">
+                <DivineThoughtCard />
+              </div>
 
-          <DrawerFooter onClose={closeDrawer} />
-        </div>
+              <DrawerFooter onClose={closeDrawer} />
+            </div>
+          </>
+        )}
       </div>
 
       <style>{`

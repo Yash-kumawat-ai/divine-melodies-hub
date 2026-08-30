@@ -6,10 +6,12 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Light Devanagari weights first — reduces FOUT / heavy flash on Hindi pages -->
+    <!-- Light Devanagari weights — non-render-blocking with display=swap -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
     <link
       rel="stylesheet"
@@ -19,7 +21,7 @@
     />
     <noscript>
       <link
-        href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Faculty+Glyphic&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Tiro+Devanagari+Hindi:ital@0;1&family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
     </noscript>
@@ -27,19 +29,25 @@
     <meta name="description" content="Discover and share Hindu devotional songs (bhajans). Find lyrics, mantras, stotrams for Krishna, Shiva, Hanuman, Rama, and more deities." />
     <meta name="author" content="Raghavam" />
     <link rel="icon" type="image/png" href="/mandala-logo.png" />
-    <link rel="preload" href="/raghavam-logo.svg" as="image" type="image/svg+xml" fetchpriority="high" />
-    <script>
-      (function () {
-        var path = location.pathname;
-        if (path !== "/" && path !== "/index.html") return;
-        var isMobile = window.matchMedia("(max-width: 767px)").matches;
-        var link = document.createElement("link");
-        link.rel = "preload";
-        link.as = "image";
-        link.href = isMobile ? "/hero-lcp-mobile.webp" : "/hero-lcp-desktop.webp";
-        document.head.appendChild(link);
-      })();
-    </script>
+    <!-- Splash logo: standard priority (not the true LCP element) -->
+    <link rel="preload" href="/raghavam-logo.webp" as="image" type="image/webp" />
+    <!-- Responsive LCP Hero Image Preloads: Scanner-discoverable -->
+    <link
+      rel="preload"
+      href="/hero-lcp-mobile.webp"
+      as="image"
+      type="image/webp"
+      media="(max-width: 767px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      href="/hero-lcp-desktop.webp"
+      as="image"
+      type="image/webp"
+      media="(min-width: 768px)"
+      fetchpriority="high"
+    />
     <meta property="og:title" content="Raghavam - Indian Bhajans" />
     <meta property="og:description" content="Discover and share Hindu devotional songs. Find lyrics for Krishna, Shiva, Hanuman and more." />
     <meta property="og:type" content="website" />
@@ -50,419 +58,310 @@
     <meta name="twitter:image" content="/mandala-logo.png" />
   </head>
   <body>
-    <div id="root">
-      <!-- Premium Divine Reference Splash Screen Loader (Exact Replica of Reference Composition) -->
-      <div id="loading-splash" aria-hidden="true" style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; background-color: #FBF6EE; overflow: hidden; pointer-events: none; padding: 20px 16px; font-family: 'Cinzel', 'Noto Serif Devanagari', 'Martel', Georgia, serif;">
-        
-        <!-- Subtle Corner Mandalas (Watermarks) -->
-        <svg class="corner-mandala corner-tl" viewBox="0 0 200 200" aria-hidden="true">
-          <circle cx="0" cy="0" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
-          <circle cx="0" cy="0" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
-          <circle cx="0" cy="0" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
-        </svg>
-        <svg class="corner-mandala corner-tr" viewBox="0 0 200 200" aria-hidden="true">
-          <circle cx="200" cy="0" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
-          <circle cx="200" cy="0" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
-          <circle cx="200" cy="0" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
-        </svg>
-        <svg class="corner-mandala corner-br" viewBox="0 0 200 200" aria-hidden="true">
-          <circle cx="200" cy="200" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
-          <circle cx="200" cy="200" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
-          <circle cx="200" cy="200" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
-        </svg>
+    <!-- Premium Divine Reference Splash Screen Loader -->
+    <div id="loading-splash" aria-hidden="true" style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; background-color: #FBF6EE; overflow: hidden; pointer-events: none; padding: 20px 16px; font-family: 'Cinzel', 'Noto Serif Devanagari', 'Martel', Georgia, serif;">
+      
+      <!-- Subtle Corner Mandalas (Watermarks) -->
+      <svg class="corner-mandala corner-tl" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="0" cy="0" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
+        <circle cx="0" cy="0" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
+        <circle cx="0" cy="0" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
+      </svg>
+      <svg class="corner-mandala corner-tr" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="200" cy="0" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
+        <circle cx="200" cy="0" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
+        <circle cx="200" cy="0" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
+      </svg>
+      <svg class="corner-mandala corner-bl" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="0" cy="200" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
+        <circle cx="0" cy="200" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
+        <circle cx="0" cy="200" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
+      </svg>
+      <svg class="corner-mandala corner-br" viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="200" cy="200" r="140" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.18" stroke-dasharray="3,3" />
+        <circle cx="200" cy="200" r="100" fill="none" stroke="#651317" stroke-width="0.8" opacity="0.14" />
+        <circle cx="200" cy="200" r="60" fill="none" stroke="#C69A59" stroke-width="0.8" opacity="0.2" />
+      </svg>
 
-        <!-- Flowing Gold Wave Background Lines -->
-        <svg class="wave-bg" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M-100,280 C250,220 350,420 1100,320 M-100,310 C270,250 370,450 1100,350 M-100,340 C290,280 390,480 1100,380" fill="none" stroke="#D4AF37" stroke-width="0.65" opacity="0.14" />
-        </svg>
+      <!-- Flowing Gold Wave Background Lines -->
+      <svg class="wave-bg" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M-100,280 C250,220 350,420 1100,320 M-100,310 C270,250 370,450 1100,350 M-100,340 C290,280 390,480 1100,380" fill="none" stroke="#D4AF37" stroke-width="0.65" opacity="0.14" />
+      </svg>
 
-        <!-- CONTINUOUS VERTICAL SHAFT OF DIVINE LIGHT (Top Edge to Bottom Edge) -->
-        <div class="divine-light-shaft-outer"></div>
-        <div class="divine-light-shaft-core"></div>
-        <div class="divine-light-center-bloom"></div>
+      <!-- CONTINUOUS VERTICAL SHAFT OF DIVINE LIGHT (Top Edge to Bottom Edge) -->
+      <div class="divine-light-shaft-outer"></div>
+      <div class="divine-light-shaft-core"></div>
+      <div class="divine-light-center-bloom"></div>
 
-        <!-- MAIN CENTERED CONTENT CONTAINER -->
-        <div class="splash-center-content">
-          <!-- Raghavam Official Mandala Logo -->
-          <div class="logo-wrapper">
-            <img
-              src="/raghavam-logo.svg"
-              alt="Raghavam"
-              width="240"
-              height="240"
-              class="raghavam-mandala-logo"
-            />
-          </div>
-
-          <!-- Sacred Sanskrit Shloka -->
-          <div class="sacred-shloka">
-            <span class="shloka-line-1">भगवत् स्मरणं,</span>
-            <span class="shloka-line-2">जीवन पावनम्</span>
-          </div>
-
-          <!-- Golden Diamond Ornament Divider -->
-          <div class="ornament-divider">
-            <div class="ornament-line"></div>
-            <div class="ornament-diamond"></div>
-            <div class="ornament-line"></div>
-          </div>
-
-          <!-- 5 Sacred Devotional Pillars (Reference-Exact Replica of image-1787546165493.png) -->
-          <div class="devotional-pillars">
-            <!-- 1. Bhakti (Lotus) -->
-            <div class="pillar-item">
-              <svg class="pillar-icon" viewBox="0 0 40 40" fill="none" stroke="#B87B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Center Main Petal -->
-                <path d="M20 5 C17 12 17 22 20 28 C23 22 23 12 20 5 Z" />
-                <!-- Inner Left Petal -->
-                <path d="M20 10 C14 13 12 21 17 27 C18 24 19 20 20 17" />
-                <!-- Inner Right Petal -->
-                <path d="M20 10 C26 13 28 21 23 27 C22 24 21 20 20 17" />
-                <!-- Outer Left Petal -->
-                <path d="M17 15 C8 17 6 25 12 28 C15 27 16.5 25.5 18 24" />
-                <!-- Outer Right Petal -->
-                <path d="M23 15 C32 17 34 25 28 28 C25 27 23.5 25.5 22 24" />
-                <!-- Bottom Base Petals / Cradle -->
-                <path d="M9 29 C14 32 26 32 31 29 C28 27.5 24 28 20 28 C16 28 12 27.5 9 29 Z" />
-              </svg>
-              <span class="pillar-label">भक्ति</span>
-            </div>
-
-            <div class="pillar-sep"></div>
-
-            <!-- 2. Smaran (Pranam / Folded Hands with Cuffs) -->
-            <div class="pillar-item">
-              <svg class="pillar-icon" viewBox="0 0 40 40" fill="none" stroke="#B87B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Left Hand Profile -->
-                <path d="M20 5 C18.5 8 17 13 15.5 19 L13 24 C12 26.5 12 28.5 14.5 29.5 L18 26 L19.5 22" />
-                <!-- Right Hand Profile -->
-                <path d="M20 5 C21.5 8 23 13 24.5 19 L27 24 C28 26.5 28 28.5 25.5 29.5 L22 26 L20.5 22" />
-                <!-- Center Joined Line -->
-                <line x1="20" y1="5" x2="20" y2="26" />
-                <!-- Left Sleeve / Cuff Angle -->
-                <path d="M11 29.5 L14.5 33 L17.5 30 L14 26.5 Z" />
-                <!-- Right Sleeve / Cuff Angle -->
-                <path d="M29 29.5 L25.5 33 L22.5 30 L26 26.5 Z" />
-              </svg>
-              <span class="pillar-label">स्मरण</span>
-            </div>
-
-            <div class="pillar-sep"></div>
-
-            <!-- 3. Gyaan (Open Scripture Book / Granth with Lines) -->
-            <div class="pillar-item">
-              <svg class="pillar-icon" viewBox="0 0 40 40" fill="none" stroke="#B87B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Outer Pages & Spine Contour -->
-                <path d="M20 10 C15 7.5 8.5 8.5 5 11 L5 27 C8.5 24.5 15 23.5 20 26 C25 23.5 31.5 24.5 35 27 L35 11 C31.5 8.5 25 7.5 20 10 Z" />
-                <!-- Center Book Spine Fold -->
-                <line x1="20" y1="10" x2="20" y2="26" />
-                <!-- Left Page Text Script Lines (4 lines) -->
-                <line x1="9" y1="14" x2="16.5" y2="13" stroke-width="1.3" />
-                <line x1="9" y1="17.5" x2="16.5" y2="16.5" stroke-width="1.3" />
-                <line x1="9" y1="21" x2="16.5" y2="20" stroke-width="1.3" />
-                <line x1="9" y1="24.5" x2="16.5" y2="23.5" stroke-width="1.3" />
-                <!-- Right Page Text Script Lines (4 lines) -->
-                <line x1="23.5" y1="13" x2="31" y2="14" stroke-width="1.3" />
-                <line x1="23.5" y1="16.5" x2="31" y2="17.5" stroke-width="1.3" />
-                <line x1="23.5" y1="20" x2="31" y2="21" stroke-width="1.3" />
-                <line x1="23.5" y1="23.5" x2="31" y2="24.5" stroke-width="1.3" />
-              </svg>
-              <span class="pillar-label">ज्ञान</span>
-            </div>
-
-            <div class="pillar-sep"></div>
-
-            <!-- 4. Sangh (Community / 3 Devotees) -->
-            <div class="pillar-item">
-              <svg class="pillar-icon" viewBox="0 0 40 40" fill="none" stroke="#B87B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Center Leader Figure Head -->
-                <circle cx="20" cy="11.5" r="3.8" />
-                <!-- Center Leader Body Arch -->
-                <path d="M13.5 29.5 L13.5 23.5 C13.5 19.5 16 17.5 20 17.5 C24 17.5 26.5 19.5 26.5 23.5 L26.5 29.5" />
-                <!-- Left Devotee Head -->
-                <circle cx="10" cy="16" r="3" />
-                <!-- Left Devotee Shoulder Arc -->
-                <path d="M5.5 29.5 C5.5 24.5 8 22.5 12.5 22" />
-                <!-- Right Devotee Head -->
-                <circle cx="30" cy="16" r="3" />
-                <!-- Right Devotee Shoulder Arc -->
-                <path d="M27.5 22 C32 22.5 34.5 24.5 34.5 29.5" />
-              </svg>
-              <span class="pillar-label">संग</span>
-            </div>
-
-            <div class="pillar-sep"></div>
-
-            <!-- 5. Samarpan (Traditional Brass Diya with Flame Core) -->
-            <div class="pillar-item">
-              <svg class="pillar-icon" viewBox="0 0 40 40" fill="none" stroke="#B87B22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <!-- Outer Flame Teardrop -->
-                <path d="M20 4.5 C16 10.5 15.5 15.5 20 19 C24.5 15.5 24 10.5 20 4.5 Z" />
-                <!-- Inner Flame Core Highlight -->
-                <path d="M20 8.5 C18 12 17.5 14.5 20 16.5 C22.5 14.5 22 12 20 8.5 Z" fill="#B87B22" fill-opacity="0.25" />
-                <!-- Diya Bowl Body (Filled) -->
-                <path d="M8 20.5 C8 26.5 12.5 30 20 30 C27.5 30 32 26.5 32 20.5 Z" fill="#B87B22" />
-                <!-- Flat Top Rim of Diya Bowl -->
-                <line x1="7" y1="20.5" x2="33" y2="20.5" stroke="#B87B22" stroke-width="2" />
-                <!-- Pedestal / Stand Base -->
-                <path d="M16 30 L15 32.5 L25 32.5 L24 30 Z" fill="#B87B22" />
-              </svg>
-              <span class="pillar-label">समर्पण</span>
-            </div>
-          </div>
-
-          <!-- Sacred Triple Dot Accent -->
-          <div class="sacred-dots">
-            <span></span>
-            <span class="center-dot"></span>
-            <span></span>
-          </div>
-
-          <!-- Devotional Bottom Subtitle -->
-          <p class="devotional-subtitle">
-            भजन, मंत्र, आरती, कथाएँ और सत्संग<br />
-            से अपने जीवन में प्रेम, शांति और आनंद पाना चाहते हैं।
-          </p>
+      <!-- MAIN CENTERED CONTENT CONTAINER -->
+      <div class="splash-center-content">
+        <!-- Raghavam Official Mandala Logo -->
+        <div class="logo-wrapper">
+          <img
+            src="/raghavam-logo.webp"
+            alt="Raghavam"
+            width="240"
+            height="240"
+            class="raghavam-mandala-logo"
+            fetchpriority="high"
+            decoding="sync"
+          />
         </div>
 
-        <style>
-          #loading-splash {
-            background-color: #FBF6EE;
-            color: #5C1D18;
-            transition: opacity 0.35s ease;
-          }
+        <!-- Sacred Sanskrit Shloka -->
+        <div class="sacred-shloka">
+          <span class="shloka-line-1">भगवत् स्मरणं,</span>
+          <span class="shloka-line-2">जीवन पावनम्</span>
+        </div>
 
-          .corner-mandala {
-            position: absolute;
-            width: min(180px, 35vw);
-            height: min(180px, 35vw);
-            pointer-events: none;
-            z-index: 1;
-          }
-          .corner-tl { top: -20px; left: -20px; }
-          .corner-tr { top: -20px; right: -20px; }
-          .corner-br { bottom: -20px; right: -20px; }
+        <!-- Golden Diamond Ornament Divider -->
+        <div class="ornament-divider">
+          <div class="ornament-line"></div>
+          <div class="ornament-diamond"></div>
+          <div class="ornament-line"></div>
+        </div>
 
-          .wave-bg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-          }
-
-          /* ================= CONTINUOUS VERTICAL SHAFT OF LIGHT ================= */
-          .divine-light-shaft-outer {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: min(140px, 38vw);
-            transform: translate3d(-50%, 0, 0);
-            background: linear-gradient(
-              90deg,
-              rgba(218, 165, 32, 0) 0%,
-              rgba(245, 193, 92, 0.22) 30%,
-              rgba(255, 235, 165, 0.55) 50%,
-              rgba(245, 193, 92, 0.22) 70%,
-              rgba(218, 165, 32, 0) 100%
-            );
-            filter: blur(14px);
-            pointer-events: none;
-            z-index: 2;
-            will-change: opacity;
-            animation: shaft-radiance-pulse 3s ease-in-out infinite;
-          }
-
-          .divine-light-shaft-core {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: min(24px, 6vw);
-            transform: translate3d(-50%, 0, 0);
-            background: linear-gradient(
-              90deg,
-              rgba(255, 255, 255, 0) 0%,
-              rgba(255, 245, 200, 0.6) 25%,
-              rgba(255, 255, 255, 0.98) 50%,
-              rgba(255, 245, 200, 0.6) 75%,
-              rgba(255, 255, 255, 0) 100%
-            );
-            filter: blur(2.5px);
-            pointer-events: none;
-            z-index: 3;
-            will-change: opacity;
-            animation: shaft-core-pulse 3s ease-in-out infinite;
-          }
-
-          .divine-light-center-bloom {
-            position: absolute;
-            top: 36%;
-            left: 50%;
-            width: min(360px, 80vw);
-            height: min(360px, 80vw);
-            transform: translate3d(-50%, -50%, 0);
-            border-radius: 50%;
-            background: radial-gradient(
-              circle at center,
-              rgba(255, 240, 180, 0.65) 0%,
-              rgba(245, 193, 92, 0.28) 40%,
-              rgba(251, 246, 238, 0) 72%
-            );
-            filter: blur(18px);
-            pointer-events: none;
-            z-index: 4;
-            will-change: transform, opacity;
-            animation: bloom-breathing 3s ease-in-out infinite;
-          }
-
-          @keyframes shaft-radiance-pulse {
-            0%, 100% { opacity: 0.78; }
-            50% { opacity: 1; }
-          }
-
-          @keyframes shaft-core-pulse {
-            0%, 100% { opacity: 0.85; }
-            50% { opacity: 1; }
-          }
-
-          @keyframes bloom-breathing {
-            0%, 100% { transform: translate3d(-50%, -50%, 0) scale(0.95); opacity: 0.85; }
-            50% { transform: translate3d(-50%, -50%, 0) scale(1.05); opacity: 1; }
-          }
-
-          /* ================= CENTER CONTENT ================= */
-          .splash-center-content {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            max-width: 480px;
-            width: 100%;
-          }
-
-          .logo-wrapper {
-            margin-bottom: clamp(12px, 2.5vh, 20px);
-          }
-
-          .raghavam-mandala-logo {
-            width: clamp(170px, 46vw, 240px);
-            height: auto;
-            display: block;
-            filter: drop-shadow(0 6px 20px rgba(100, 18, 16, 0.10));
-          }
-
-          .sacred-shloka {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #651317;
-            font-weight: 700;
-            font-size: clamp(17px, 4.2vw, 22px);
-            line-height: 1.35;
-            letter-spacing: 0.02em;
-            margin-bottom: clamp(10px, 2vh, 16px);
-          }
-
-          .ornament-divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: min(200px, 60vw);
-            margin-bottom: clamp(12px, 2.5vh, 18px);
-          }
-
-          .ornament-line {
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #C69A59, transparent);
-          }
-
-          .ornament-diamond {
-            width: 8px;
-            height: 8px;
-            background: #C69A59;
-            transform: rotate(45deg);
-            border-radius: 1px;
-          }
-
-          .devotional-pillars {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(4px, 1.8vw, 12px);
-            margin-bottom: clamp(14px, 2.5vh, 20px);
-            padding: 0 4px;
-          }
-
-          .pillar-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: clamp(52px, 14vw, 70px);
-            text-align: center;
-          }
-
-          .pillar-icon {
-            width: clamp(28px, 6.5vw, 36px);
-            height: clamp(28px, 6.5vw, 36px);
-            display: block;
-          }
-
-          .pillar-label {
-            font-size: clamp(12px, 3vw, 14.5px);
-            font-weight: 700;
-            color: #5C1418;
-            letter-spacing: 0.02em;
-            margin-top: clamp(4px, 1vh, 7px);
-          }
-
-          .pillar-sep {
-            width: 1px;
-            height: clamp(26px, 5.5vw, 34px);
-            background: linear-gradient(180deg, transparent 0%, rgba(184, 123, 34, 0.42) 30%, rgba(184, 123, 34, 0.42) 70%, transparent 100%);
-            margin: 0 clamp(2px, 0.8vw, 6px);
-          }
-
-          .sacred-dots {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: clamp(10px, 2vh, 14px);
-          }
-
-          .sacred-dots span {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #C69A59;
-          }
-
-          .sacred-dots .center-dot {
-            width: 6px;
-            height: 6px;
-            background: #E09F3E;
-            box-shadow: 0 0 6px rgba(224, 159, 62, 0.8);
-          }
-
-          .devotional-subtitle {
-            font-size: clamp(11.5px, 2.9vw, 13px);
-            line-height: 1.5;
-            color: #7A4B30;
-            font-weight: 500;
-            max-width: 360px;
-            margin: 0;
-            padding: 0 8px;
-          }
-        </style>
+        <!-- Animated 3-Dot Wave Indicator -->
+        <div class="splash-loading-dots" aria-label="Loading">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
+
+      <style>
+        #loading-splash {
+          background-color: #FBF6EE;
+          color: #5C1D18;
+          transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: opacity, transform;
+        }
+
+        #loading-splash.splash-fade-out {
+          opacity: 0 !important;
+          transform: scale(1.02);
+          pointer-events: none;
+        }
+
+        .corner-mandala {
+          position: absolute;
+          width: min(200px, 42vw);
+          height: min(200px, 42vw);
+          pointer-events: none;
+          z-index: 1;
+        }
+        .corner-tl { top: -20px; left: -20px; }
+        .corner-tr { top: -20px; right: -20px; }
+        .corner-bl { bottom: -20px; left: -20px; }
+        .corner-br { bottom: -20px; right: -20px; }
+
+        .wave-bg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        /* ================= CONTINUOUS VERTICAL SHAFT OF LIGHT ================= */
+        .divine-light-shaft-outer {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          width: min(160px, 42vw);
+          transform: translate3d(-50%, 0, 0);
+          background: linear-gradient(
+            90deg,
+            rgba(218, 165, 32, 0) 0%,
+            rgba(245, 193, 92, 0.06) 15%,
+            rgba(245, 193, 92, 0.18) 35%,
+            rgba(255, 235, 165, 0.45) 50%,
+            rgba(245, 193, 92, 0.18) 65%,
+            rgba(245, 193, 92, 0.06) 85%,
+            rgba(218, 165, 32, 0) 100%
+          );
+          pointer-events: none;
+          z-index: 2;
+          animation: shaft-radiance-pulse 3s ease-in-out infinite;
+        }
+
+        .divine-light-shaft-core {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          width: min(28px, 7vw);
+          transform: translate3d(-50%, 0, 0);
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 245, 200, 0.3) 20%,
+            rgba(255, 255, 255, 0.85) 50%,
+            rgba(255, 245, 200, 0.3) 80%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          pointer-events: none;
+          z-index: 3;
+          animation: shaft-core-pulse 3s ease-in-out infinite;
+        }
+
+        .divine-light-center-bloom {
+          position: absolute;
+          top: 36%;
+          left: 50%;
+          width: min(400px, 88vw);
+          height: min(400px, 88vw);
+          transform: translate3d(-50%, -50%, 0);
+          border-radius: 50%;
+          background: radial-gradient(
+            circle at center,
+            rgba(255, 240, 180, 0.55) 0%,
+            rgba(255, 230, 150, 0.35) 25%,
+            rgba(245, 193, 92, 0.18) 48%,
+            rgba(245, 193, 92, 0.06) 68%,
+            rgba(251, 246, 238, 0) 85%
+          );
+          pointer-events: none;
+          z-index: 4;
+          animation: bloom-breathing 3s ease-in-out infinite;
+        }
+
+        @keyframes shaft-radiance-pulse {
+          0%, 100% { opacity: 0.78; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes shaft-core-pulse {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes bloom-breathing {
+          0%, 100% { opacity: 0.80; }
+          50% { opacity: 1; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .divine-light-shaft-outer,
+          .divine-light-shaft-core,
+          .divine-light-center-bloom,
+          .splash-loading-dots span {
+            animation: none !important;
+          }
+        }
+
+        /* ================= CENTER CONTENT ================= */
+        .splash-center-content {
+          position: relative;
+          z-index: 10;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          max-width: 520px;
+          width: 100%;
+          margin: auto;
+        }
+
+        .logo-wrapper {
+          margin-bottom: clamp(14px, 2.5vh, 22px);
+        }
+
+        .raghavam-mandala-logo {
+          width: clamp(170px, min(48vw, 230px), 240px);
+          height: auto;
+          display: block;
+          filter: drop-shadow(0 6px 20px rgba(100, 18, 16, 0.10));
+        }
+
+        .sacred-shloka {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #651317;
+          font-weight: 700;
+          font-size: clamp(20px, min(5vw, 25px), 26px);
+          line-height: 1.35;
+          letter-spacing: 0.02em;
+          margin-bottom: clamp(12px, 2.2vh, 18px);
+        }
+
+        .ornament-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: min(220px, 60vw);
+          margin-bottom: clamp(12px, 2vh, 18px);
+        }
+
+        .ornament-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #C69A59, transparent);
+        }
+
+        .ornament-diamond {
+          width: 9px;
+          height: 9px;
+          background: #C69A59;
+          transform: rotate(45deg);
+          border-radius: 1px;
+          box-shadow: 0 0 6px rgba(198, 154, 89, 0.4);
+        }
+
+        /* ================= ANIMATED 3-DOT WAVE ================= */
+        .splash-loading-dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-top: clamp(24px, 5vh, 46px);
+          margin-bottom: 0;
+        }
+
+        .splash-loading-dots span {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #C69A59;
+          display: inline-block;
+          will-change: transform, opacity;
+          animation: splash-dot-pulse 1.4s ease-in-out infinite both;
+        }
+
+        .splash-loading-dots span:nth-child(1) {
+          animation-delay: 0s;
+        }
+        .splash-loading-dots span:nth-child(2) {
+          animation-delay: 0.22s;
+        }
+        .splash-loading-dots span:nth-child(3) {
+          animation-delay: 0.44s;
+        }
+
+        @keyframes splash-dot-pulse {
+          0%, 80%, 100% {
+            transform: scale(0.72);
+            opacity: 0.35;
+            background: #C69A59;
+            box-shadow: none;
+          }
+          40% {
+            transform: scale(1.35);
+            opacity: 1;
+            background: #B87B22;
+            box-shadow: 0 0 10px rgba(184, 123, 34, 0.75);
+          }
+        }
+      </style>
     </div>
+
+    <!-- React Root Application Container -->
+    <div id="root"></div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

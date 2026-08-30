@@ -19,41 +19,17 @@ export const NavigationItemComponent = memo(
   ) {
     const { primaryText, secondaryText, activeBg, hoverBg, iconBg, iconColor, accent, border } = useDrawerTheme();
 
-    const handleRipple = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-      const el = e.currentTarget;
-      const span = document.createElement('span');
-      const diameter = Math.max(el.clientWidth, el.clientHeight);
-      const radius = diameter / 2;
-      const rect = el.getBoundingClientRect();
-
-      span.style.cssText = `
-        position: absolute;
-        border-radius: 50%;
-        width: ${diameter}px;
-        height: ${diameter}px;
-        left: ${e.clientX - rect.left - radius}px;
-        top: ${e.clientY - rect.top - radius}px;
-        background: rgba(101,19,23,0.16);
-        transform: scale(0);
-        animation: drawer-ripple 480ms ease-out forwards;
-        pointer-events: none;
-      `;
-      el.appendChild(span);
-      setTimeout(() => span.remove(), 520);
-    }, []);
-
     const Icon = item.icon;
 
     return (
       <div ref={ref} role="listitem" className="px-1">
         <Link
           to={item.route}
-          onClick={(e) => {
-            handleRipple(e);
+          onClick={() => {
             setTimeout(onClose, 120);
           }}
           aria-current={isActive ? 'page' : undefined}
-          className="relative flex items-center gap-3 overflow-hidden rounded-2xl min-h-[52px] px-3.5 py-3 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651317]/50 border"
+          className="relative flex items-center gap-3 overflow-hidden rounded-2xl min-h-[52px] px-3.5 py-3 transition-all duration-150 active:scale-[0.98] active:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651317]/50 border"
           style={{
             background: isActive ? activeBg : 'transparent',
             borderColor: isActive ? 'rgba(101,19,23,0.18)' : border,

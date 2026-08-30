@@ -1,3 +1,4 @@
+import '@/styles/fullcalendar-overrides.css';
 import { motion } from 'framer-motion';
 import {
   CalendarDays,

@@ -4,13 +4,11 @@ import {
   ArrowLeft, 
   Music2, 
   Heart, 
-  Share2, 
-  Copy, 
-  Check, 
   BookOpen, 
   Sparkles, 
   ChevronRight, 
-  Play 
+  Play,
+  Loader2
 } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useYouTubePlayer } from "@/hooks/useYouTubePlayer";
@@ -22,12 +20,9 @@ import { buildYouTubeEmbedUrl } from "@/lib/youtubeSearch";
 import { cn } from "@/lib/utils";
 import { bhajans as staticBhajans, getDeityById, type Bhajan } from "@/data/bhajans";
 import { getContentUrl } from "@/lib/contentUrls";
-import { getDeityUrl, resolveDeityBySlug } from "@/lib/deityUrls";
 import { resolveBhajanYouTubePlayback } from "@/lib/youtubeEmbedPopup";
-import { getPublicSiteUrl } from "@/lib/env";
 import { toast } from "sonner";
 import devotionalHeroBg from "@/pages/images/devotional_background_high_quality(1).webp";
-import diyaSvg from "@/pages/images/svg/diya.svg";
 
 function getThumbnailUrl(videoId?: string) {
   return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "";
@@ -41,8 +36,6 @@ export default function YouTubePlayerHost() {
   const { user } = useAuth();
   const { isLiked, toggleLike } = useLikedBhajans();
 
-  const [activeTab, setActiveTab] = useState<"lyrics" | "upnext" | "deity">("lyrics");
-  const [copiedLink, setCopiedLink] = useState(false);
   const [switchingTrack, setSwitchingTrack] = useState<string | null>(null);
 
   const thumbnailUrl = getThumbnailUrl(video?.id);
@@ -64,7 +57,6 @@ export default function YouTubePlayerHost() {
 
   const deityId = video?.deityId || currentBhajan?.deityId;
   const deity = deityId ? getDeityById(deityId) : undefined;
-  const deityProfile = deity ? resolveDeityBySlug(deity.slug) : undefined;
 
   const isCurrentLiked = video?.bhajanId
     ? isLiked(video.bhajanId)
@@ -91,26 +83,6 @@ export default function YouTubePlayerHost() {
       return;
     }
     toggleLike(idToLike);
-  };
-
-  const handleShare = async () => {
-    const siteUrl = getPublicSiteUrl();
-    const bhajanSlug = video?.bhajanSlug || currentBhajan?.slug;
-    const url = bhajanSlug ? `${siteUrl}/bhajan/${bhajanSlug}` : window.location.href;
-    const title = video?.titleHindi || video?.title || "Devotional Bhajan";
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title, url });
-        return;
-      } catch {
-        // Fallback to clipboard
-      }
-    }
-    await navigator.clipboard.writeText(url);
-    setCopiedLink(true);
-    toast.success(isHi ? "लिंक कॉपी हो गया!" : "Link copied to clipboard!");
-    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const handlePlayRecommended = async (item: Bhajan) => {
@@ -149,10 +121,10 @@ export default function YouTubePlayerHost() {
     <Dialog open={isOpen} onOpenChange={(open) => !open && closePlayer()}>
       <DialogContent
         showClose={false}
-        overlayClassName="z-[160]"
+        overlayClassName="z-[250]"
         className={cn(
           mobileFullscreenDialog,
-          "!z-[161]",
+          "!z-[251]",
           "!flex !flex-col !min-h-0 !gap-0 !overflow-hidden border-border bg-[#FAF6F0] dark:bg-[#120E0A] p-0 text-foreground sm:max-w-4xl",
         )}
       >
@@ -162,9 +134,9 @@ export default function YouTubePlayerHost() {
           style={{ backgroundImage: `url(${devotionalHeroBg})` }}
         />
 
-        {/* Top Header Bar */}
-        <div className="relative z-10 flex shrink-0 items-center justify-between gap-3 border-b border-[#E8D8C4]/60 dark:border-zinc-800 bg-white/85 dark:bg-zinc-900/85 px-3.5 py-3 pt-[max(0.6rem,env(safe-area-inset-top))] backdrop-blur-md sm:px-5 sm:py-3.5">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* Stable Top Header Bar - Pure Back Button & Bhajan Title (No Share Button) */}
+        <div className="relative z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-[#E8D8C4]/60 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 px-3.5 sm:px-5 backdrop-blur-md">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <DialogClose
               type="button"
               aria-label={t("back")}
@@ -173,14 +145,8 @@ export default function YouTubePlayerHost() {
               <ArrowLeft className="h-4 w-4 text-[#651317] dark:text-amber-300" />
             </DialogClose>
 
-            <div className="min-w-0 text-left">
-              <div className="flex items-center gap-1.5">
-                <img src={diyaSvg} alt="" className="w-3 h-3 object-contain" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#7A2D28] dark:text-[#E8B15C]">
-                  {isHi ? "पावन भजन श्रवण" : "NOW PLAYING"}
-                </p>
-              </div>
-              <DialogTitle className="mt-0.5 font-serif text-sm font-bold leading-snug text-[#32251E] dark:text-[#FFFDF8] truncate max-w-[220px] sm:max-w-md">
+            <div className="min-w-0 text-left flex-1">
+              <DialogTitle className="font-serif text-sm sm:text-base font-bold leading-snug text-[#32251E] dark:text-[#FFFDF8] truncate max-w-[280px] sm:max-w-xl">
                 {video?.titleHindi || video?.title || "Bhajan Playback"}
               </DialogTitle>
               <DialogDescription className="sr-only">
@@ -188,21 +154,11 @@ export default function YouTubePlayerHost() {
               </DialogDescription>
             </div>
           </div>
-
-          {/* Quick Share Action */}
-          <button
-            onClick={handleShare}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E8D8C4] dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-xs font-bold text-[#651317] dark:text-amber-300 hover:bg-[#FAF0E4] dark:hover:bg-zinc-800 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-            title={isHi ? "शेयर करें" : "Share"}
-          >
-            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-            <span className="hidden sm:inline">{copiedLink ? (isHi ? "कॉपी हुआ" : "Copied") : (isHi ? "शेयर" : "Share")}</span>
-          </button>
         </div>
 
-        {/* Body Content */}
-        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-5">
-          <div className="mx-auto flex max-w-3xl flex-col gap-3.5">
+        {/* Body Content - Smooth Native Scroll */}
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain p-3.5 sm:p-5 pb-24 sm:pb-12">
+          <div className="mx-auto flex max-w-3xl flex-col gap-4">
             {/* YouTube Video Player Iframe */}
             <div className="aspect-video w-full overflow-hidden rounded-2xl border border-amber-900/15 dark:border-amber-400/20 bg-black shadow-lg ring-1 ring-amber-500/10">
               {video ? (
@@ -217,8 +173,8 @@ export default function YouTubePlayerHost() {
               ) : null}
             </div>
 
-            {/* Now Playing Info Bar & Action Strip */}
-            <div className="rounded-2xl border border-[#E8D8C4] dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 p-3.5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 select-none">
+            {/* Now Playing Info Bar & Primary Actions Strip */}
+            <div className="rounded-2xl border border-[#E8D8C4] dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 select-none">
               <div className="min-w-0 flex-1 flex items-center gap-3">
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-amber-500/10 shadow-xs border border-amber-500/20">
                   {thumbnailUrl ? (
@@ -251,19 +207,19 @@ export default function YouTubePlayerHost() {
               </div>
 
               {/* Action Buttons Row */}
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
                 {(video?.bhajanId || currentBhajan) && (
                   <button
                     onClick={handleLike}
                     className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95",
+                      "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-2xs active:scale-95 focus-visible:outline-none select-none",
                       isCurrentLiked
-                        ? "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400"
-                        : "bg-white dark:bg-zinc-800 border-[#E8D8C4] dark:border-zinc-700 text-[#786252] dark:text-stone-300 hover:border-rose-400 hover:text-rose-600"
+                        ? "bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 shadow-xs"
+                        : "bg-white dark:bg-zinc-800 border-[#E8D8C4] dark:border-zinc-700 text-[#786252] dark:text-stone-300 hover:bg-[#FAF0E4] dark:hover:bg-zinc-700/50"
                     )}
                     title={isHi ? "पसंद करें" : "Like"}
                   >
-                    <Heart className={cn("w-3.5 h-3.5", isCurrentLiked && "fill-current text-rose-600")} />
+                    <Heart className={cn("w-3.5 h-3.5", isCurrentLiked && "fill-current text-rose-600 dark:text-rose-400")} />
                     <span>{isCurrentLiked ? (isHi ? "पसंद किया" : "Liked") : (isHi ? "पसंद" : "Like")}</span>
                   </button>
                 )}
@@ -275,207 +231,100 @@ export default function YouTubePlayerHost() {
                       closePlayer();
                       navigate(currentBhajan ? getContentUrl(currentBhajan) : `/bhajan/${slug}`);
                     }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#651317] hover:bg-[#520f12] text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4.5 py-2 rounded-full bg-gradient-to-r from-[#7A2D28] to-[#520f12] hover:from-[#651317] hover:to-[#400c0e] text-white text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                   >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>{isHi ? "सम्पूर्ण पाठ" : "Lyrics & Details"}</span>
+                    <BookOpen className="w-4 h-4 text-amber-200" />
+                    <span>{isHi ? "सम्पूर्ण लिरिक्स व पाठ खोलें" : "Open Full Lyrics & Page"}</span>
+                    <ChevronRight className="w-4 h-4 text-amber-200/80" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Devotional Interactive Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-[#E8D8C4]/80 dark:border-zinc-800 pb-2">
-              <button
-                onClick={() => setActiveTab("lyrics")}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer",
-                  activeTab === "lyrics"
-                    ? "bg-[#651317] text-white shadow-xs"
-                    : "bg-white/80 dark:bg-zinc-900/80 border border-[#E8D8C4] dark:border-zinc-800 text-[#786252] dark:text-stone-300 hover:bg-[#FAF0E4]"
-                )}
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>{isHi ? "भजन बोल / पाठ" : "Lyrics & Chants"}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("upnext")}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer",
-                  activeTab === "upnext"
-                    ? "bg-[#651317] text-white shadow-xs"
-                    : "bg-white/80 dark:bg-zinc-900/80 border border-[#E8D8C4] dark:border-zinc-800 text-[#786252] dark:text-stone-300 hover:bg-[#FAF0E4]"
-                )}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{isHi ? "अगले पावन भजन" : "Up Next"}</span>
-                {recommendedBhajans.length > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 dark:bg-zinc-800 text-[#651317] dark:text-amber-300 font-bold">
-                    {recommendedBhajans.length}
-                  </span>
-                )}
-              </button>
-
-              {deityProfile && (
-                <button
-                  onClick={() => setActiveTab("deity")}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ml-auto",
-                    activeTab === "deity"
-                      ? "bg-[#651317] text-white shadow-xs"
-                      : "bg-white/80 dark:bg-zinc-900/80 border border-[#E8D8C4] dark:border-zinc-800 text-[#786252] dark:text-stone-300 hover:bg-[#FAF0E4]"
-                  )}
-                >
-                  <span>{isHi ? "देव महिमा" : "About Deity"}</span>
-                </button>
-              )}
-            </div>
-
-            {/* TAB CONTENT: 1. LYRICS & SACRED CHANTS */}
-            {activeTab === "lyrics" && (
-              <div className="rounded-2xl border border-[#E8D8C4] dark:border-zinc-800 bg-white/95 dark:bg-[#150f0b] p-4 sm:p-5 shadow-xs space-y-3">
-                <div className="flex items-center justify-between border-b border-[#E8D8C4]/60 dark:border-zinc-800/60 pb-2">
+            {/* Up Next / Related Bhajans List */}
+            {recommendedBhajans.length > 0 && (
+              <div className="mt-2 space-y-3">
+                <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <img src={diyaSvg} alt="" className="w-4 h-4 object-contain" />
+                    <Sparkles className="w-4 h-4 text-[#7A2D28] dark:text-amber-300" />
                     <h3 className="font-serif text-sm sm:text-base font-bold text-[#32251E] dark:text-amber-100">
-                      {isHi ? "पावन लिरिक्स व पाठ" : "Devotional Lyrics"}
+                      {isHi ? "अगले पावन भजन श्रृंखला" : "Up Next Devotional Songs"}
                     </h3>
                   </div>
-
-                  {lyricsText && (
-                    <button
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(lyricsText);
-                        toast.success(isHi ? "भजन बोल कॉपी हो गए!" : "Lyrics copied!");
-                      }}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#651317] dark:text-amber-300 hover:underline cursor-pointer"
-                    >
-                      <Copy className="w-3 h-3" />
-                      <span>{isHi ? "कॉपी करें" : "Copy Lyrics"}</span>
-                    </button>
-                  )}
-                </div>
-
-                {lyricsText ? (
-                  <div className="font-serif text-sm sm:text-base text-[#32251E] dark:text-amber-100/90 whitespace-pre-line leading-relaxed sm:leading-loose text-center max-w-xl mx-auto py-2">
-                    {lyricsText}
-                  </div>
-                ) : (
-                  /* Divine Mangalacharan Placeholder when full text is not provided */
-                  <div className="text-center py-6 space-y-3 max-w-md mx-auto">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#651317] dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
-                      <Sparkles className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="font-serif text-base sm:text-lg font-bold text-[#651317] dark:text-amber-300">
-                        ॥ श्री हरिः शरणम् ॥
-                      </p>
-                      <p className="text-xs sm:text-sm text-[#786252] dark:text-stone-300 font-serif leading-relaxed italic">
-                        "मंगल भवन अमंगल हारी। द्रवहु सुदसरथ अजिर बिहारी॥"
-                      </p>
-                    </div>
-                    <p className="text-[11px] text-[#786252] dark:text-stone-400">
-                      {isHi 
-                        ? "भक्तिभाव से श्रवण करें और प्रभु का ध्यान लगाएं।" 
-                        : "Listen with pure devotion and meditate on the divine melody."}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB CONTENT: 2. UP NEXT & RECOMMENDED PLAYLIST */}
-            {activeTab === "upnext" && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-xs font-bold text-[#786252] dark:text-stone-400 uppercase tracking-wider">
-                    {isHi ? "पावन भजन शृंखला (अगला भजन चुनें)" : "Devotional Playlist (Select to play)"}
-                  </p>
+                  <span className="text-[11px] font-bold text-[#786252] dark:text-stone-400">
+                    {recommendedBhajans.length} {isHi ? "भजन" : "songs"}
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {recommendedBhajans.map((rec) => {
-                    const isBusy = switchingTrack === String(rec.id);
+                  {recommendedBhajans.map((item) => {
+                    const isTrackPlaying = video?.id === item.videoEmbedId || String(currentBhajan?.id) === String(item.id);
+                    const isSwitching = switchingTrack === String(item.id);
+
                     return (
                       <div
-                        key={rec.id}
-                        onClick={() => !isBusy && handlePlayRecommended(rec)}
-                        className="group flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/90 dark:bg-zinc-900/90 border border-[#E8D8C4] dark:border-zinc-800 hover:border-amber-400 dark:hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-zinc-800/60 transition-all cursor-pointer shadow-2xs select-none"
+                        key={item.id}
+                        className={cn(
+                          "group rounded-2xl border p-3 transition-all duration-200 shadow-2xs flex flex-col justify-between gap-2.5",
+                          isTrackPlaying
+                            ? "border-amber-500/60 bg-amber-50/80 dark:bg-amber-950/30 ring-1 ring-amber-500/30"
+                            : "border-[#E8D8C4] dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 hover:border-amber-400/50 hover:bg-amber-50/40 dark:hover:bg-zinc-800/60"
+                        )}
                       >
-                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-amber-500/10 border border-[#E8D8C4]">
-                          {rec.imageUrl ? (
-                            <img src={rec.imageUrl} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                              <Music2 className="h-5 w-5 text-[#651317] dark:text-amber-300" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Play className="w-5 h-5 text-white fill-current" />
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            {item.imageUrl ? (
+                              <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center">
+                                <Music2 className="h-4 w-4 text-[#7A2D28] dark:text-[#E8B15C]" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block rounded-full bg-amber-100 dark:bg-zinc-800 px-2 py-0.2 text-[9px] font-bold text-[#7A2D28] dark:text-amber-300 mb-0.5">
+                              {isHi ? "पावन भजन" : "Bhajan"}
+                            </span>
+                            <h4 className="line-clamp-1 font-serif text-xs sm:text-sm font-bold text-[#32251E] dark:text-amber-100">
+                              {item.titleHindi || item.title}
+                            </h4>
+                            <p className="truncate text-[11px] text-[#786252] dark:text-stone-400">
+                              {item.singerName || "Traditional"}
+                            </p>
                           </div>
                         </div>
 
-                        <div className="min-w-0 flex-1">
-                          <h4 className="text-xs sm:text-sm font-bold font-serif text-[#32251E] dark:text-[#FFFDF8] truncate group-hover:text-[#651317] dark:group-hover:text-amber-300 transition-colors">
-                            {rec.titleHindi || rec.title}
-                          </h4>
-                          <p className="text-[11px] text-[#786252] dark:text-stone-400 truncate mt-0.5">
-                            {rec.singerName || "Traditional"}
-                          </p>
-                        </div>
+                        {/* Dual Action Buttons */}
+                        <div className="flex items-center gap-2 pt-1 border-t border-[#E8D8C4]/50 dark:border-zinc-800/60">
+                          <button
+                            onClick={() => {
+                              closePlayer();
+                              navigate(getContentUrl(item));
+                            }}
+                            className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-xl border border-[#E8D8C4] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[11px] font-bold text-[#786252] dark:text-stone-300 hover:bg-amber-50 dark:hover:bg-zinc-700 transition-all cursor-pointer select-none active:scale-95"
+                          >
+                            <BookOpen className="w-3 h-3 text-[#651317] dark:text-amber-300" />
+                            <span>{isHi ? "पाठ व विवरण" : "Lyrics"}</span>
+                          </button>
 
-                        <button
-                          type="button"
-                          className="h-8 w-8 rounded-full bg-[#651317]/10 dark:bg-amber-400/10 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0 group-hover:bg-[#651317] group-hover:text-white transition-colors"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                        </button>
+                          <button
+                            onClick={() => handlePlayRecommended(item)}
+                            disabled={isSwitching}
+                            className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-[#651317] hover:bg-[#520f12] text-white text-[11px] font-bold transition-all shadow-2xs active:scale-95 cursor-pointer select-none disabled:opacity-50"
+                          >
+                            {isSwitching ? (
+                              <Loader2 className="w-3 h-3 animate-spin text-amber-300" />
+                            ) : (
+                              <Play className="w-3 h-3 fill-current text-amber-300" />
+                            )}
+                            <span>{isTrackPlaying ? (isHi ? "चल रहा है" : "Playing") : (isHi ? "चलाएं" : "Play")}</span>
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-              </div>
-            )}
-
-            {/* TAB CONTENT: 3. ABOUT DEITY */}
-            {activeTab === "deity" && deityProfile && (
-              <div className="rounded-2xl border border-[#E8D8C4] dark:border-zinc-800 bg-white/95 dark:bg-[#150f0b] p-4 sm:p-5 shadow-xs space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-amber-200 to-amber-500 shadow-xs shrink-0">
-                    <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-stone-900 flex items-center justify-center">
-                      {deityProfile.imageUrl ? (
-                        <img src={deityProfile.imageUrl} alt={deityProfile.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-2xl">{deityProfile.emoji}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-serif text-base sm:text-lg font-bold text-[#32251E] dark:text-[#FFFDF8]">
-                      {isHi ? deityProfile.nameHindi : deityProfile.name}
-                    </h3>
-                    <p className="text-xs text-[#651317] dark:text-amber-300 font-semibold truncate">
-                      {deityProfile.titleHindi || deityProfile.description}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      closePlayer();
-                      navigate(getDeityUrl(deityProfile));
-                    }}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#651317] hover:bg-[#520f12] text-white text-xs font-bold cursor-pointer shrink-0"
-                  >
-                    <span>{isHi ? "दर्शन करें" : "Visit Portal"}</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <p className="text-xs sm:text-sm text-[#543D2B] dark:text-stone-300 leading-relaxed font-serif">
-                  {isHi ? deityProfile.aboutHindi : deityProfile.aboutEnglish}
-                </p>
               </div>
             )}
           </div>

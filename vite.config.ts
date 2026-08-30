@@ -187,8 +187,11 @@ DirectoryIndex index.html
   <FilesMatch "\\.(?:js|css)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
-  <FilesMatch "\\.(?:webp|avif|png|jpg|jpeg|gif|svg|woff2|woff)$">
-    Header set Cache-Control "public, max-age=604800"
+  <FilesMatch "\\.(?:woff2|woff)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\\.(?:webp|avif|png|jpg|jpeg|gif|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
   </FilesMatch>
 </IfModule>
 

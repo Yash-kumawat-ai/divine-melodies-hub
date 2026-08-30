@@ -248,7 +248,8 @@ export default function Header() {
       )}
     >
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
-        <div className="flex items-center gap-1 min-w-0 flex-1 md:flex-initial md:mr-2 lg:mr-4">
+        {/* ── 1. Left: Brand Logo + Mobile Hamburger ── */}
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
           {/* Hamburger — mobile left corner */}
           <span className="inline-flex md:hidden">
             <HamburgerButton />
@@ -256,72 +257,14 @@ export default function Header() {
           <Link 
             to="/" 
             className="flex items-center flex-shrink-0 min-w-0 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:left-auto md:top-auto md:translate-x-0 md:translate-y-0 z-10"
-            style={{ height: '44px', display: 'flex', alignItems: 'center' }}
+            style={{ height: '40px', display: 'flex', alignItems: 'center' }}
           >
-            <AnimatedBrandLogo height={40} />
+            <AnimatedBrandLogo height={38} />
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
-          {user && <UserNotificationBell userId={user.id} />}
-          <DropdownMenu modal={false} open={mobileLanguageOpen} onOpenChange={handleMobileLanguageOpenChange}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
-                aria-label={t('language')}
-              >
-                <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
-                <span className="absolute -bottom-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[8px] font-bold uppercase leading-none text-primary-foreground border border-background shadow-sm">
-                  {language}
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44 rounded-xl">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                {t('language')}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {languageOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.code}
-                  onClick={() => {
-                    handleLanguageChange(option.code);
-                  }}
-                  className={cn(
-                    'cursor-pointer font-medium',
-                    language === option.code && 'bg-primary/10 text-primary',
-                  )}
-                >
-                  <Languages className="mr-2 h-4 w-4 opacity-70" />
-                  {option.label}
-                  {language === option.code ? (
-                    <span className="ml-auto text-xs text-primary">✓</span>
-                  ) : null}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <button
-            type="button"
-            onClick={() => setProfileHubOpen(true)}
-            className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
-            aria-label={t('accountMenu')}
-          >
-            {user ? (
-              <Avatar className="h-8 w-8 border-none">
-                <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className="h-4 w-4 text-primary" strokeWidth={2.25} />
-            )}
-          </button>
-          <ProfileHubSheet open={profileHubOpen} onOpenChange={setProfileHubOpen} />
-        </div>
-
-        {/* ── Desktop Nav ─────────────────────────────────── */}
-        <nav className="hidden md:flex flex-1 justify-center items-center gap-1 text-[13px] font-medium">
+        {/* ── 2. Center: Desktop Primary Nav Links ── */}
+        <nav className="hidden md:flex flex-1 justify-center items-center gap-1 text-[13px] font-medium px-2">
           {/* Primary links */}
           <Link to="/" className={getLinkClass('/')}>
             <Home className="w-3.5 h-3.5" />
@@ -425,7 +368,69 @@ export default function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+        </nav>
 
+        {/* ── 3. Right: Mobile Controls ── */}
+        <div className="flex items-center gap-2 md:hidden">
+          {user && <UserNotificationBell userId={user.id} />}
+          <DropdownMenu modal={false} open={mobileLanguageOpen} onOpenChange={handleMobileLanguageOpenChange}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
+                aria-label={t('language')}
+              >
+                <Languages className="h-4 w-4 text-primary" strokeWidth={2.25} />
+                <span className="absolute -bottom-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[8px] font-bold uppercase leading-none text-primary-foreground border border-background shadow-sm">
+                  {language}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 rounded-xl">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                {t('language')}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {languageOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.code}
+                  onClick={() => {
+                    handleLanguageChange(option.code);
+                  }}
+                  className={cn(
+                    'cursor-pointer font-medium',
+                    language === option.code && 'bg-primary/10 text-primary',
+                  )}
+                >
+                  <Languages className="mr-2 h-4 w-4 opacity-70" />
+                  {option.label}
+                  {language === option.code ? (
+                    <span className="ml-auto text-xs text-primary">✓</span>
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <button
+            type="button"
+            onClick={() => setProfileHubOpen(true)}
+            className="relative h-8 w-8 rounded-full border border-border/80 bg-[#FFFDF8]/50 dark:bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all flex items-center justify-center p-0 focus:outline-none"
+            aria-label={t('accountMenu')}
+          >
+            {user ? (
+              <Avatar className="h-8 w-8 border-none">
+                <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+              </Avatar>
+            ) : (
+              <User className="h-4 w-4 text-primary" strokeWidth={2.25} />
+            )}
+          </button>
+          <ProfileHubSheet open={profileHubOpen} onOpenChange={setProfileHubOpen} />
+        </div>
+
+        {/* ── 4. Right: Desktop Utilities & Profile ── */}
+        <div className="hidden md:flex items-center justify-end gap-2 shrink-0 min-w-[200px]">
           {/* Search */}
           <Link 
             to="/search" 
@@ -509,20 +514,20 @@ export default function Header() {
                   <ChevronDown className="h-3.5 w-3.5 opacity-60" />
                 </button>
               </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">
-              <DropdownMenuLabel className="bg-gradient-to-br from-amber-50 via-background to-orange-50 p-4 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 border border-primary/25">
-                    <AvatarImage src={profile?.avatar_url} alt={displayName} />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user?.email || t('guestDevotee')}</p>
-                    <p className="mt-1 text-[11px] font-medium text-primary">{user ? t('signedInDevotee') : t('guestDevotee')}</p>
+              <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">
+                <DropdownMenuLabel className="bg-gradient-to-br from-amber-50 via-background to-orange-50 p-4 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12 border border-primary/25">
+                      <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                      <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{displayName}</p>
+                      <p className="truncate text-xs text-muted-foreground">{user?.email || t('guestDevotee')}</p>
+                      <p className="mt-1 text-[11px] font-medium text-primary">{user ? t('signedInDevotee') : t('guestDevotee')}</p>
+                    </div>
                   </div>
-                </div>
-              </DropdownMenuLabel>
+                </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
                 <>
@@ -582,7 +587,7 @@ export default function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
           </div>
-        </nav>
+        </div>
 
       </div>
 

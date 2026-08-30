@@ -1,0 +1,73 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   FESTIVAL CALENDAR STYLES
+   (third-party FullCalendar — scoped to Panchang / Calendar routes)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.festival-calendar .fc {
+  --fc-border-color: hsl(var(--border));
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: hsl(var(--muted) / 0.35);
+  --fc-today-bg-color: hsl(var(--brand-gold) / 0.12);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: hsl(var(--primary-foreground));
+  font-family: var(--font-sans);
+}
+.festival-calendar .fc-toolbar { align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.festival-calendar .fc-toolbar-title {
+  color: hsl(var(--foreground));
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 4.2vw, 1.35rem);
+  font-weight: 800;
+}
+.festival-calendar .fc-button {
+  border: 1px solid hsl(var(--brand-gold) / 0.28) !important;
+  border-radius: var(--radius-full) !important;
+  background: hsl(var(--brand-gold) / 0.10) !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: none !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  padding: 0.38rem 0.62rem !important;
+  text-transform: capitalize !important;
+}
+.festival-calendar .fc-button:hover,
+.festival-calendar .fc-button:focus {
+  border-color: hsl(var(--brand-gold) / 0.48) !important;
+  background: hsl(var(--brand-gold) / 0.20) !important;
+}
+.festival-calendar .fc-scrollgrid,
+.festival-calendar .fc-theme-standard td,
+.festival-calendar .fc-theme-standard th { border-color: hsl(var(--border) / 0.62); }
+.festival-calendar .fc-col-header-cell { background: hsl(var(--brand-gold) / 0.08); padding: 0.35rem 0; }
+.festival-calendar .fc-col-header-cell-cushion,
+.festival-calendar .fc-daygrid-day-number { color: hsl(var(--foreground)); text-decoration: none; }
+.festival-calendar .fc-daygrid-day-number { padding: 0.35rem; font-size: 0.8rem; font-weight: 700; }
+.festival-calendar .fc-daygrid-day-frame { min-height: 4.4rem; background: hsl(var(--background) / 0.46); }
+.festival-calendar .fc-daygrid-event { margin: 0.12rem 0.2rem; border-radius: var(--radius-full); padding: 0.13rem 0.38rem; font-size: 0.7rem; font-weight: 700; line-height: 1.25; }
+.festival-calendar .festival-vrat  { background: linear-gradient(135deg, hsl(var(--warning)), hsl(var(--accent))); }
+.festival-calendar .festival-parva { background: linear-gradient(135deg, hsl(var(--destructive)), hsl(var(--warning))); }
+.festival-calendar .festival-utsav { background: linear-gradient(135deg, hsl(var(--brand-primary)), hsl(var(--warning))); }
+
+@media (max-width: 480px) {
+  .festival-calendar .fc-toolbar { display: grid; grid-template-columns: 1fr auto; }
+  .festival-calendar .fc-toolbar-chunk:nth-child(2) { grid-column: 1 / -1; grid-row: 1; }
+  .festival-calendar .fc-toolbar-chunk:first-child { grid-row: 2; }
+  .festival-calendar .fc-toolbar-chunk:last-child { grid-row: 2; justify-self: end; }
+  .festival-calendar .fc-daygrid-day-frame { min-height: 3.85rem; }
+  .festival-calendar .fc-daygrid-event { font-size: 0.65rem; padding-inline: 0.25rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PANCHANG BACKGROUND STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.panchang-temple-bg {
+  background-image:
+    radial-gradient(circle at top left, hsl(var(--brand-gold) / 0.10), transparent 34%),
+    radial-gradient(circle at 20% 80%, hsl(var(--accent) / 0.12), transparent 42%),
+    linear-gradient(180deg, hsl(36 55% 93%) 0%, hsl(36 50% 96%) 45%, hsl(34 45% 91%) 100%);
+}
+.dark .panchang-temple-bg {
+  background-image:
+    radial-gradient(circle at top left, hsl(var(--brand-gold) / 0.14), transparent 34%),
+    radial-gradient(circle at 20% 80%, hsl(var(--accent) / 0.18), transparent 42%),
+    linear-gradient(180deg, hsl(20 25% 7%) 0%, hsl(20 25% 5%) 45%, hsl(20 25% 8%) 100%);
+}

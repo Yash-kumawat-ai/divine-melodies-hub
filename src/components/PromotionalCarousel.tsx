@@ -174,7 +174,9 @@ export function PromotionalCarousel() {
           }
 
           const isActive = index === currentIndex;
-          const isVisible = true;
+          // Windowing: only mount slides within ±2 of active position, plus always mount slide 0 (hero/LCP)
+          const shouldMount = index === 0 || Math.abs(offset) <= 2;
+          if (!shouldMount) return null;
 
           return (
             <div 
@@ -188,8 +190,8 @@ export function PromotionalCarousel() {
               )}
               style={{
                 transform: `translate3d(calc(-50% + ${offset} * (var(--slide-width) + var(--slide-gap)) + ${dragOffset}px), 0, 0)`,
-                visibility: isVisible ? 'visible' : 'hidden',
-                pointerEvents: isVisible ? 'auto' : 'none',
+                visibility: 'visible',
+                pointerEvents: 'auto',
                 transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >

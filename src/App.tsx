@@ -17,11 +17,11 @@ import { YouTubePlayerProvider, useYouTubePlayer } from "@/hooks/useYouTubePlaye
 import { BhajanModalOpenProvider } from "@/hooks/useBhajanModalOpen";
 import { DrawerProvider } from "@/context/DrawerContext";
 import { MobileDrawer } from "@/components/navigation/MobileDrawer";
-import LoginForm from "./components/Auth/LoginForm";
-import SignupTabs from "./components/Auth/SignupTabs";
-import AuthShell from "./components/Auth/AuthShell";
-import AuthCallback from "./components/Auth/AuthCallback";
-import CompleteBirthProfilePage from "./pages/CompleteBirthProfilePage";
+const LoginForm = lazy(() => import("./components/Auth/LoginForm"));
+const SignupTabs = lazy(() => import("./components/Auth/SignupTabs"));
+const AuthShell = lazy(() => import("./components/Auth/AuthShell"));
+const AuthCallback = lazy(() => import("./components/Auth/AuthCallback"));
+const CompleteBirthProfilePage = lazy(() => import("./pages/CompleteBirthProfilePage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -146,6 +146,22 @@ function AppContent() {
     document.documentElement.classList.add(`lang-${language}`);
   }, [language]);
 
+  useEffect(() => {
+    // Smoothly fade out and remove initial loading splash screen once React mounts
+    const splash = document.getElementById('loading-splash');
+    if (splash && !splash.classList.contains('splash-fade-out')) {
+      const animFrame = requestAnimationFrame(() => {
+        splash.classList.add('splash-fade-out');
+        setTimeout(() => {
+          if (splash && splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 400);
+      });
+      return () => cancelAnimationFrame(animFrame);
+    }
+  }, []);
+
   return (
     <>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -154,24 +170,39 @@ function AppContent() {
           <Route
             path="/auth/login"
             element={
-              <AuthShell mode="login">
-                <LoginForm />
-              </AuthShell>
+              <Suspense fallback={<SuspenseFallback />}>
+                <AuthShell mode="login">
+                  <LoginForm />
+                </AuthShell>
+              </Suspense>
             }
           />
           <Route
             path="/auth/callback"
-            element={<AuthCallback />}
+            element={
+              <Suspense fallback={<SuspenseFallback />}>
+                <AuthCallback />
+              </Suspense>
+            }
           />
           <Route
             path="/auth/signup"
             element={
-              <AuthShell mode="signup">
-                <SignupTabs />
-              </AuthShell>
+              <Suspense fallback={<SuspenseFallback />}>
+                <AuthShell mode="signup">
+                  <SignupTabs />
+                </AuthShell>
+              </Suspense>
             }
           />
-          <Route path="/auth/complete-profile" element={<CompleteBirthProfilePage />} />
+          <Route
+            path="/auth/complete-profile"
+            element={
+              <Suspense fallback={<SuspenseFallback />}>
+                <CompleteBirthProfilePage />
+              </Suspense>
+            }
+          />
 
           <Route element={<AppShell />}>
             <Route path="/" element={<Home />} />
@@ -340,14 +371,15 @@ function AppContent() {
         </Routes>
 
         <DeferredNaradWidget />
+        {isOpen && (
+          <AssistantContextProvider>
+            <Suspense fallback={null}>
+              <AIAssistantModalHost />
+            </Suspense>
+          </AssistantContextProvider>
+        )}
+        <DeferredYouTubePlayerHost />
       </BrowserRouter>
-
-      {isOpen && (
-        <Suspense fallback={null}>
-          <AIAssistantModalHost />
-        </Suspense>
-      )}
-      <DeferredYouTubePlayerHost />
     </>
   );
 }
@@ -358,21 +390,19 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
         <LanguageProvider>
-          <AssistantContextProvider>
-            <AIModalProvider>
-              <YouTubePlayerProvider>
-                <BhajanModalOpenProvider>
-                <DrawerProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <AppContent />
-                </TooltipProvider>
-                </DrawerProvider>
-                </BhajanModalOpenProvider>
-              </YouTubePlayerProvider>
-            </AIModalProvider>
-          </AssistantContextProvider>
+          <AIModalProvider>
+            <YouTubePlayerProvider>
+              <BhajanModalOpenProvider>
+              <DrawerProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <AppContent />
+              </TooltipProvider>
+              </DrawerProvider>
+              </BhajanModalOpenProvider>
+            </YouTubePlayerProvider>
+          </AIModalProvider>
         </LanguageProvider>
         </AuthProvider>
       </ThemeProvider>

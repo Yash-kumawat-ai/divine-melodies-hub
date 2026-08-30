@@ -6,14 +6,12 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
   const isHi = language === 'hi';
   const aspectRatio = isHi ? 2.25 : 2.94;
 
-  const leftPadding = 16; // 16px left padding to prevent cut off at screen edges
   const containerStyle: React.CSSProperties = height ? {
     height: height,
-    width: typeof height === 'number' ? `${height * aspectRatio + leftPadding}px` : `calc(${height} * ${aspectRatio} + ${leftPadding}px)`,
-    display: 'inline-flex',
+    width: typeof height === 'number' ? `${Math.round(height * aspectRatio)}px` : `calc(${height} * ${aspectRatio})`,
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: `${leftPadding}px`,
     ...style
   } : style;
 
@@ -25,11 +23,17 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
       {/* Glow pulse stylesheet */}
       <style dangerouslySetInnerHTML={{__html: `
         .animated-brand-logo {
-          animation: logoGlowPulse 4s ease-in-out infinite;
+          filter: drop-shadow(0 2px 10px rgba(251,191,36,0.35)) drop-shadow(0 0 15px rgba(249,115,22,0.15));
+          animation: logoOpacityPulse 4s ease-in-out infinite;
         }
-        @keyframes logoGlowPulse {
-          0%, 100% { filter: drop-shadow(0 2px 10px rgba(251,191,36,0.35)) drop-shadow(0 0 15px rgba(249,115,22,0.15)); }
-          50% { filter: drop-shadow(0 4px 22px rgba(251,191,36,0.7)) drop-shadow(0 0 25px rgba(249,115,22,0.35)); }
+        @keyframes logoOpacityPulse {
+          0%, 100% { opacity: 0.88; }
+          50% { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animated-brand-logo {
+            animation: none !important;
+          }
         }
       `}} />
 
@@ -52,15 +56,13 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
           viewBox="0 0 7819.67 3473.78"
         >
           <defs>
-            {/* Native animated gold metallic shimmer gradient */}
-            <linearGradient id="goldGradientShimmerHi" gradientUnits="userSpaceOnUse" x1="-100%" y1="0%" x2="0%" y2="0%">
+            {/* Native static gold metallic shimmer gradient */}
+            <linearGradient id="goldGradientShimmerHi" gradientUnits="userSpaceOnUse" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#b45309" />
               <stop offset="25%" stopColor="#d97706" />
               <stop offset="50%" stopColor="#fef3c7" />
               <stop offset="75%" stopColor="#d97706" />
               <stop offset="100%" stopColor="#b45309" />
-              <animate attributeName="x1" from="-100%" to="100%" dur="3.8s" repeatCount="indefinite" />
-              <animate attributeName="x2" from="0%" to="200%" dur="3.8s" repeatCount="indefinite" />
             </linearGradient>
             <style type="text/css">
               {`
@@ -141,15 +143,13 @@ export function AnimatedBrandLogo({ className = '', style = {}, height }: { clas
           viewBox="0 0 8042.32 2735.92"
         >
           <defs>
-            {/* Native animated gold metallic shimmer gradient */}
-            <linearGradient id="goldGradientShimmerEn" gradientUnits="userSpaceOnUse" x1="-100%" y1="0%" x2="0%" y2="0%">
+            {/* Native static gold metallic shimmer gradient */}
+            <linearGradient id="goldGradientShimmerEn" gradientUnits="userSpaceOnUse" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#b45309" />
               <stop offset="25%" stopColor="#d97706" />
               <stop offset="50%" stopColor="#fef3c7" />
               <stop offset="75%" stopColor="#d97706" />
               <stop offset="100%" stopColor="#b45309" />
-              <animate attributeName="x1" from="-100%" to="100%" dur="3.8s" repeatCount="indefinite" />
-              <animate attributeName="x2" from="0%" to="200%" dur="3.8s" repeatCount="indefinite" />
             </linearGradient>
             <style type="text/css">
               {`
