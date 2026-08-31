@@ -84,6 +84,7 @@ const DMCAPage = lazy(() => import("./pages/DMCAPage"));
 // Vedic Kundli Feature lazy loads
 const KundliPage = lazy(() => import("./pages/KundliPage"));
 const KundliSetupPage = lazy(() => import("./pages/KundliSetupPage"));
+const AskGuruJiPage = lazy(() => import("./pages/AskGuruJiPage"));
 
 
 function DeferredNaradWidget() {
@@ -289,7 +290,14 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/ask-guru-ji/*" element={<KundliPage />} />
+            <Route
+              path="/ask-guru-ji/*"
+              element={
+                <ProtectedRoute>
+                  <AskGuruJiPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin/moderation"
               element={

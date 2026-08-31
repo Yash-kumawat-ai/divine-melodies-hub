@@ -20,12 +20,13 @@ export default function AppShell() {
 
   const isKirtanAi = resolvedPath === "/kirtan-ai" || resolvedPath === "/narad-ai";
   const isKundliSetup = resolvedPath === "/kundli/setup";
+  const isAskGuruJi = resolvedPath.startsWith("/ask-guru-ji");
   const isTemplePage = resolvedPath === "/temple";
   const activePracticeId = searchParams.get("practice");
   const isMantraJapaSection = resolvedPath.startsWith("/meditation/mantra-japa");
   const isOtherMeditationSession = resolvedPath === "/meditation/breathing" || resolvedPath === "/meditation/meditation-timer" || resolvedPath === "/meditation/naam-japa" || resolvedPath === "/meditation/mala";
   const isRunningPracticeSession = isOtherMeditationSession || (resolvedPath === "/meditation" && (activePracticeId === "mantra_japa_counter" || (activePracticeId != null && activePracticeId !== "" && activePracticeId !== "mantra_jap_home")));
-  const isFullScreenApp = isKirtanAi || isKundliSetup || isTemplePage || isRunningPracticeSession;
+  const isFullScreenApp = isKirtanAi || isKundliSetup || isAskGuruJi || isTemplePage || isRunningPracticeSession;
   const isWallpaperPage = resolvedPath === "/wallpaper";
   const isSearchPage = resolvedPath === "/search";
   const isShortsPage = resolvedPath.startsWith("/shorts");
@@ -46,7 +47,7 @@ export default function AppShell() {
   const isNotifications = resolvedPath === "/notifications";
   const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage || isBhajanModalOpen;
 
-  const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath === "/meditation") && !isBhajanModalOpen;
+  const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath === "/meditation") && !isBhajanModalOpen && !isAskGuruJi;
 
   useEffect(() => {
     clearRadixBodyLocks();

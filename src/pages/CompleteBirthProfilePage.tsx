@@ -148,6 +148,7 @@ export default function CompleteBirthProfilePage() {
         admin1: place.admin1,
         lat: place.lat,
         lng: place.lng,
+        elevation: place.elevation,
         timezone_iana: place.timezone_iana,
         utc_offset_at_birth: place.utc_offset_at_birth,
       });

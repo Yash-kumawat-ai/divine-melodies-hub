@@ -194,6 +194,10 @@ export default function NaradFloatingWidget() {
     onVoiceQuery: goNaradChat,
   };
 
+  if (pathname.startsWith("/ask-guru-ji") || pathname === "/kirtan-ai" || pathname === "/narad-ai") {
+    return null;
+  }
+
   return (
     <>
       <AnimatePresence>

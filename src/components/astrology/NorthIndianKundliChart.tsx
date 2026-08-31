@@ -1,188 +1,366 @@
-import React from 'react';
-import { Info } from 'lucide-react';
-import type { NormalizedPlanet } from '@/lib/astrology/types';
+import React, { memo } from 'react';
+import { Info, Sparkles } from 'lucide-react';
+import type { NormalizedPlanet, VedicAscendant } from '@/lib/astrology/types';
 
-interface NorthIndianKundliChartProps {
+export interface NorthIndianKundliChartProps {
   planets: Record<string, NormalizedPlanet>;
-  lagnaSign?: string;
+  lagna?: VedicAscendant | string;
   isUnknownTime?: boolean;
+  vargas?: Record<string, any>;
+  activeVarga?: 'd1' | 'd9' | 'd10';
   className?: string;
 }
 
-const PLANET_SYMBOLS: Record<string, string> = {
-  Sun: 'Su (सूर्य)',
-  Moon: 'Mo (चन्द्र)',
-  Mars: 'Ma (मंगल)',
-  Mercury: 'Me (बुध)',
-  Jupiter: 'Ju (गुरु)',
-  Venus: 'Ve (शुक्र)',
-  Saturn: 'Sa (शनि)',
-  Rahu: 'Ra (राहु)',
-  Ketu: 'Ke (केतु)',
+// ── Only the 9 classical Vedic Grahas ────────────────────────────────────────
+const VEDIC_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+
+const PLANET_PALETTE: Record<string, { hi: string; short: string; bg: string; fill: string; border: string }> = {
+  Sun:     { hi: 'सूर्य', short: 'सू', bg: '#FEF3C7', fill: '#92400E', border: '#F59E0B' },
+  Moon:    { hi: 'चन्द्र', short: 'चं', bg: '#DBEAFE', fill: '#1D4ED8', border: '#3B82F6' },
+  Mars:    { hi: 'मंगल', short: 'मं', bg: '#FEE2E2', fill: '#B91C1C', border: '#EF4444' },
+  Mercury: { hi: 'बुध',   short: 'बु', bg: '#D1FAE5', fill: '#065F46', border: '#10B981' },
+  Jupiter: { hi: 'गुरु',  short: 'गु', bg: '#FEF9C3', fill: '#854D0E', border: '#EAB308' },
+  Venus:   { hi: 'शुक्र', short: 'शु', bg: '#FCE7F3', fill: '#9D174D', border: '#EC4899' },
+  Saturn:  { hi: 'शनि',  short: 'श',  bg: '#EDE9FE', fill: '#3730A3', border: '#6366F1' },
+  Rahu:    { hi: 'राहु',  short: 'रा', bg: '#F3E8FF', fill: '#6B21A8', border: '#A855F7' },
+  Ketu:    { hi: 'केतु',  short: 'के', bg: '#F5F5F4', fill: '#44403C', border: '#78716C' },
 };
 
-/**
- * Authentic North Indian Diamond Vedic Kundli Chart SVG Component
- * Houses are fixed in the North Indian layout:
- * - House 1: Top Center Diamond
- * - House 2: Top Left Triangle
- * - House 3: Far Left Triangle
- * - House 4: Left Center Diamond
- * - House 5: Bottom Left Triangle
- * - House 6: Bottom Left Inner Triangle
- * - House 7: Bottom Center Diamond
- * - House 8: Bottom Right Inner Triangle
- * - House 9: Bottom Right Triangle
- * - House 10: Right Center Diamond
- * - House 11: Far Right Triangle
- * - House 12: Top Right Triangle
- */
-export const NorthIndianKundliChart: React.FC<NorthIndianKundliChartProps> = ({
+// ── Mathematically exact geometric centroids for 400×400 canvas ───────────────
+// Rashi numbers are placed along outer perimeter edges.
+// Planet clusters are centered at the true geometric centroids of each house.
+const HOUSE_RASHI_POS: Record<number, [number, number]> = {
+  1:  [200,  44],   // Top diamond apex
+  2:  [135,  24],   // Top-left outer triangle (upper edge)
+  3:  [ 24, 135],   // Top-left outer triangle (left edge)
+  4:  [ 44, 200],   // Left diamond apex
+  5:  [ 24, 265],   // Bottom-left outer triangle (left edge)
+  6:  [135, 376],   // Bottom-left outer triangle (bottom edge)
+  7:  [200, 356],   // Bottom diamond apex
+  8:  [265, 376],   // Bottom-right outer triangle (bottom edge)
+  9:  [376, 265],   // Bottom-right outer triangle (right edge)
+  10: [356, 200],   // Right diamond apex
+  11: [376, 135],   // Top-right outer triangle (right edge)
+  12: [265,  24],   // Top-right outer triangle (upper edge)
+};
+
+const HOUSE_PLANET_CENTERS: Record<number, [number, number]> = {
+  1:  [200, 115],   // Top diamond core
+  2:  [100,  48],   // Top-left upper triangle centroid
+  3:  [ 48, 100],   // Top-left left triangle centroid
+  4:  [115, 200],   // Left diamond core
+  5:  [ 48, 300],   // Bottom-left left triangle centroid
+  6:  [100, 352],   // Bottom-left bottom triangle centroid
+  7:  [200, 285],   // Bottom diamond core
+  8:  [300, 352],   // Bottom-right bottom triangle centroid
+  9:  [352, 300],   // Bottom-right right triangle centroid
+  10: [285, 200],   // Right diamond core
+  11: [352, 100],   // Top-right right triangle centroid
+  12: [300,  48],   // Top-right top triangle centroid
+};
+
+const NorthIndianKundliChartInner: React.FC<NorthIndianKundliChartProps> = ({
   planets = {},
-  lagnaSign = 'Aries',
+  lagna,
   isUnknownTime = false,
+  vargas = {},
+  activeVarga = 'd1',
   className = '',
 }) => {
   if (isUnknownTime) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 bg-amber-50/60 rounded-2xl border border-amber-200/80 text-center">
-        <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 mb-3 shadow-inner">
-          <Info className="h-6 w-6" />
+      <div className="temple-panel-soft flex flex-col items-center justify-center p-8 text-center">
+        <div className="h-12 w-12 rounded-full bg-brand-primary/10 flex items-center justify-center mb-3">
+          <Info className="h-6 w-6 text-brand-primary" />
         </div>
-        <h4 className="font-serif font-bold text-base text-[#651317]">
+        <h4 className="font-display font-bold text-base text-brand-primary">
           लग्न चक्र उपलब्ध नहीं (Lagna Chart Omitted)
         </h4>
-        <p className="text-xs text-stone-600 max-w-sm mt-1 leading-relaxed">
-          सटीक जन्म समय ज्ञात न होने के कारण भाव-विशिष्ट लग्न चक्र को नहीं बनाया गया है। नीचे ग्रहों की चंद्र राशि स्थिति देखें।
+        <p className="text-xs text-muted-foreground max-w-sm mt-1 leading-relaxed">
+          सटीक जन्म समय ज्ञात न होने के कारण भाव-विशिष्ट लग्न चक्र नहीं बनाया गया है।
         </p>
       </div>
     );
   }
 
-  // Group planets by house (1 to 12)
-  const housePlanets: Record<number, string[]> = {
-    1: [], 2: [], 3: [], 4: [], 5: [], 6: [],
-    7: [], 8: [], 9: [], 10: [], 11: [], 12: [],
-  };
+  // ── Active varga resolution ─────────────────────────────────────────────
+  let activePlanets = planets;
+  let lagnaRashiIndex = 0;
 
-  for (const [pName, pData] of Object.entries(planets)) {
-    if (pData?.house && pData.house >= 1 && pData.house <= 12) {
-      const label = PLANET_SYMBOLS[pName] || pName;
-      const retro = pData.isRetrograde ? '(R)' : '';
-      housePlanets[pData.house].push(`${label.split(' ')[0]}${retro}`);
+  if (typeof lagna === 'object' && lagna && 'rashi' in lagna) {
+    lagnaRashiIndex = (lagna as VedicAscendant).rashi;
+  }
+
+  if (activeVarga !== 'd1' && vargas?.[activeVarga]) {
+    const vargaData = vargas[activeVarga];
+    if (vargaData.ascendant?.rashi != null) lagnaRashiIndex = vargaData.ascendant.rashi;
+    if (vargaData.planets) {
+      const mapped: Record<string, NormalizedPlanet> = {};
+      for (const [pName, pVal] of Object.entries(vargaData.planets as Record<string, any>)) {
+        if (!pVal || !VEDIC_PLANETS.includes(pName)) continue;
+        const rIndex = pVal.rashi ?? 0;
+        mapped[pName] = {
+          name: pName,
+          sign: pVal.rashiName || '',
+          signNumber: rIndex,
+          degree: pVal.longitude ? pVal.longitude % 30 : 0,
+          isRetrograde: false,
+          house: ((rIndex - lagnaRashiIndex + 12) % 12) + 1,
+          nakshatra: pVal.nakshatra,
+        };
+      }
+      activePlanets = mapped;
     }
   }
 
-  return (
-    <div className={`relative w-full max-w-[420px] mx-auto select-none ${className}`}>
-      {/* Outer Glow & Card Container */}
-      <div className="bg-gradient-to-b from-amber-50/70 via-white to-amber-50/40 p-4 sm:p-6 rounded-2xl border-2 border-amber-300/80 shadow-md">
-        <div className="text-center mb-3">
-          <span className="text-[11px] font-serif font-semibold text-amber-900 uppercase tracking-widest bg-amber-100/80 px-3 py-0.5 rounded-full border border-amber-200">
-            लग्न कुण्डली (Ascendant Chart)
-          </span>
-        </div>
+  // ── Group planets by house (only Vedic 9) ───────────────────────────────
+  const housePlanets: Record<number, Array<{ hi: string; short: string; isRetro: boolean; bg: string; fill: string; border: string }>> = {};
+  for (let i = 1; i <= 12; i++) housePlanets[i] = [];
 
-        {/* SVG North Indian Diamond Chart */}
+  for (const [pName, pData] of Object.entries(activePlanets)) {
+    if (!VEDIC_PLANETS.includes(pName)) continue;
+    const h = pData?.house;
+    if (h && h >= 1 && h <= 12) {
+      const p = PLANET_PALETTE[pName] ?? { hi: pName.slice(0, 2), short: pName.slice(0, 2), bg: '#F5F5F4', fill: '#292524', border: '#D6D3D1' };
+      housePlanets[h].push({
+        hi: p.hi,
+        short: p.short,
+        isRetro: Boolean(pData.isRetrograde),
+        bg: p.bg,
+        fill: p.fill,
+        border: p.border,
+      });
+    }
+  }
+
+  const getHouseRashiNum = (h: number) => ((lagnaRashiIndex + h - 1) % 12) + 1;
+
+  // ── Multi-planet geometry-aware rendering ────────────────────────────────
+  const renderHousePlanets = (house: number) => {
+    const list = housePlanets[house];
+    if (!list || list.length === 0) return null;
+    const [cx, cy] = HOUSE_PLANET_CENTERS[house];
+    const isDiamond = house === 1 || house === 4 || house === 7 || house === 10;
+    const count = list.length;
+
+    // 1 Planet
+    if (count === 1) {
+      const p = list[0];
+      const bw = isDiamond ? 30 : 24;
+      const bh = isDiamond ? 12.5 : 11;
+      const bx = cx - bw / 2;
+      const by = cy - bh / 2;
+      return (
+        <g key={`h${house}-p`}>
+          <rect x={bx} y={by} width={bw} height={bh} rx={3}
+            fill={p.bg} stroke={p.border} strokeWidth="0.8" opacity="0.96" />
+          <text x={cx} y={by + bh - 3} textAnchor="middle"
+            fontSize={isDiamond ? "8.5" : "7.5"} fontWeight="700" fill={p.fill} fontFamily="serif">
+            {p.hi}{p.isRetro ? '°' : ''}
+          </text>
+        </g>
+      );
+    }
+
+    // 2 Planets
+    if (count === 2) {
+      const bw = isDiamond ? 28 : 22;
+      const bh = isDiamond ? 11 : 9.5;
+      const gap = 1.5;
+      const totalH = 2 * bh + gap;
+      const startY = cy - totalH / 2;
+      return (
+        <g key={`h${house}-p`}>
+          {list.map((p, i) => {
+            const by = startY + i * (bh + gap);
+            const bx = cx - bw / 2;
+            return (
+              <g key={i}>
+                <rect x={bx} y={by} width={bw} height={bh} rx={2.5}
+                  fill={p.bg} stroke={p.border} strokeWidth="0.7" opacity="0.96" />
+                <text x={cx} y={by + bh - 2.5} textAnchor="middle"
+                  fontSize={isDiamond ? "8" : "7"} fontWeight="700" fill={p.fill} fontFamily="serif">
+                  {p.hi}{p.isRetro ? '°' : ''}
+                </text>
+              </g>
+            );
+          })}
+        </g>
+      );
+    }
+
+    // 3 Planets
+    if (count === 3) {
+      const bw = isDiamond ? 26 : 20;
+      const bh = isDiamond ? 10.5 : 9;
+      const gap = 1.2;
+      const totalH = 3 * bh + 2 * gap;
+      const startY = cy - totalH / 2;
+      return (
+        <g key={`h${house}-p`}>
+          {list.map((p, i) => {
+            const by = startY + i * (bh + gap);
+            const bx = cx - bw / 2;
+            return (
+              <g key={i}>
+                <rect x={bx} y={by} width={bw} height={bh} rx={2}
+                  fill={p.bg} stroke={p.border} strokeWidth="0.6" opacity="0.96" />
+                <text x={cx} y={by + bh - 2.2} textAnchor="middle"
+                  fontSize={isDiamond ? "7.5" : "6.5"} fontWeight="700" fill={p.fill} fontFamily="serif">
+                  {p.hi}{p.isRetro ? '°' : ''}
+                </text>
+              </g>
+            );
+          })}
+        </g>
+      );
+    }
+
+    // 4 or more planets: 2-column compact grid
+    const bw = isDiamond ? 22 : 18;
+    const bh = isDiamond ? 10 : 8.5;
+    const gapX = 1.5;
+    const gapY = 1.5;
+    const cols = 2;
+    const rows = Math.ceil(count / cols);
+    const totalW = cols * bw + gapX;
+    const totalH = rows * bh + (rows - 1) * gapY;
+    const startX = cx - totalW / 2;
+    const startY = cy - totalH / 2;
+
+    return (
+      <g key={`h${house}-p`}>
+        {list.map((p, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const bx = startX + col * (bw + gapX);
+          const by = startY + row * (bh + gapY);
+          return (
+            <g key={i}>
+              <rect x={bx} y={by} width={bw} height={bh} rx={2}
+                fill={p.bg} stroke={p.border} strokeWidth="0.5" opacity="0.96" />
+              <text x={bx + bw / 2} y={by + bh - 2} textAnchor="middle"
+                fontSize={isDiamond ? "7" : "6"} fontWeight="700" fill={p.fill} fontFamily="serif">
+                {p.short}{p.isRetro ? '°' : ''}
+              </text>
+            </g>
+          );
+        })}
+      </g>
+    );
+  };
+
+  return (
+    <div className={`relative w-full mx-auto select-none ${className}`}>
+      {/* ── Ornate Vedic Kundli Canvas ───────────────────────────────────── */}
+      <div className="temple-panel p-3 sm:p-4 relative overflow-hidden bg-gradient-to-br from-[#FFFDF9] via-[#FFFBF2] to-[#FFF6E5] rounded-2xl shadow-sm border border-brand-gold-border/40">
+        {/* Corner sacred ornaments */}
+        {['top-2 left-2', 'top-2 right-2', 'bottom-2 left-2', 'bottom-2 right-2'].map((pos) => (
+          <div key={pos} className={`absolute ${pos} text-[#C89B3C] text-[10px] opacity-40 select-none pointer-events-none`}>❖</div>
+        ))}
+
         <svg
           viewBox="0 0 400 400"
-          className="w-full h-auto drop-shadow-sm font-sans"
-          style={{ shapeRendering: 'geometricPrecision' }}
+          className="w-full h-auto"
+          style={{ shapeRendering: 'geometricPrecision', overflow: 'visible' }}
+          aria-label="North Indian Vedic Kundli chart"
+          role="img"
         >
-          {/* Background fill */}
-          <rect x="2" y="2" width="396" height="396" fill="#FFFDF8" stroke="#651317" strokeWidth="3" rx="8" />
+          <defs>
+            <linearGradient id="kundliBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#FFFDF9" />
+              <stop offset="100%" stopColor="#FFF6E5" />
+            </linearGradient>
+            <linearGradient id="diamondBg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#FFF8ED" />
+              <stop offset="100%" stopColor="#FEF0D4" />
+            </linearGradient>
+          </defs>
 
-          {/* Main Diamond Frame (connecting midpoints) */}
-          <polygon points="200,2 398,200 200,398 2,200" fill="#FFF9ED" stroke="#651317" strokeWidth="2" />
+          {/* Outer temple border */}
+          <rect x="3" y="3" width="394" height="394" fill="url(#kundliBg)"
+            stroke="#5C1D0C" strokeWidth="2.2" rx="12" />
+          
+          {/* Gold inner filigree accent */}
+          <rect x="7" y="7" width="386" height="386" fill="none"
+            stroke="#C89B3C" strokeWidth="0.8" strokeDasharray="5 3" rx="9" opacity="0.6" />
+
+          {/* Sacred Om watermark */}
+          <text x="200" y="212" textAnchor="middle" fill="#5C1D0C"
+            fontSize="32" opacity="0.05" fontFamily="serif" fontWeight="bold">ॐ</text>
+
+          {/* Central main diamond */}
+          <polygon points="200,4 396,200 200,396 4,200"
+            fill="url(#diamondBg)" stroke="#5C1D0C" strokeWidth="1.8" />
 
           {/* Diagonals */}
-          <line x1="2" y1="2" x2="398" y2="398" stroke="#651317" strokeWidth="2" />
-          <line x1="398" y1="2" x2="2" y2="398" stroke="#651317" strokeWidth="2" />
+          <line x1="4" y1="4" x2="396" y2="396" stroke="#5C1D0C" strokeWidth="1.8" />
+          <line x1="396" y1="4" x2="4" y2="396" stroke="#5C1D0C" strokeWidth="1.8" />
 
-          {/* Inner Corner Diamonds & Lines */}
-          <line x1="200" y1="2" x2="2" y2="200" stroke="#651317" strokeWidth="2" />
-          <line x1="200" y1="2" x2="398" y2="200" stroke="#651317" strokeWidth="2" />
-          <line x1="2" y1="200" x2="200" y2="398" stroke="#651317" strokeWidth="2" />
-          <line x1="398" y1="200" x2="200" y2="398" stroke="#651317" strokeWidth="2" />
+          {/* Diamond perimeter lines */}
+          <line x1="200" y1="4"   x2="4"   y2="200" stroke="#5C1D0C" strokeWidth="1.8" />
+          <line x1="200" y1="4"   x2="396" y2="200" stroke="#5C1D0C" strokeWidth="1.8" />
+          <line x1="4"   y1="200" x2="200" y2="396" stroke="#5C1D0C" strokeWidth="1.8" />
+          <line x1="396" y1="200" x2="200" y2="396" stroke="#5C1D0C" strokeWidth="1.8" />
 
-          {/* House 1 (Top Center Diamond) */}
-          <text x="200" y="70" textAnchor="middle" fill="#651317" fontSize="13" fontWeight="bold" fontFamily="serif">1 (लग्न)</text>
-          <text x="200" y="105" textAnchor="middle" fill="#B45309" fontSize="11" fontWeight="600">
-            {housePlanets[1].join(' ')}
-          </text>
+          {/* Inner gold decorative diamond */}
+          <polygon points="200,14 386,200 200,386 14,200"
+            fill="none" stroke="#C89B3C" strokeWidth="0.6" opacity="0.3" />
 
-          {/* House 2 (Top Left Triangle) */}
-          <text x="95" y="45" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">2</text>
-          <text x="95" y="75" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[2].join(' ')}
-          </text>
+          {/* ── 12 House Rashi Numbers ─────────────────────────────────── */}
+          {[1,2,3,4,5,6,7,8,9,10,11,12].map((h) => {
+            const [rx, ry] = HOUSE_RASHI_POS[h];
+            const isLagna = h === 1;
+            const rashiNum = getHouseRashiNum(h);
 
-          {/* House 3 (Far Left Upper Triangle) */}
-          <text x="45" y="95" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">3</text>
-          <text x="45" y="125" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[3].join(' ')}
-          </text>
+            return (
+              <g key={`h${h}-num`}>
+                {isLagna ? (
+                  <g>
+                    <rect x={rx - 15} y={ry - 9} width="30" height="17" rx="3.5"
+                      fill="#5C1D0C" opacity="0.10" stroke="#5C1D0C" strokeWidth="0.6" />
+                    <text x={rx - 3.5} y={ry + 3.5} textAnchor="middle"
+                      fill="#5C1D0C" fontSize="11" fontWeight="800" fontFamily="serif">
+                      {rashiNum}
+                    </text>
+                    <text x={rx + 7.5} y={ry + 3} textAnchor="middle"
+                      fill="#854D0E" fontSize="7" fontWeight="700" fontFamily="serif">
+                      लग्न
+                    </text>
+                  </g>
+                ) : (
+                  <text
+                    x={rx} y={ry + 3.5}
+                    textAnchor="middle"
+                    fill="#7C4A1E"
+                    fontSize="10"
+                    fontWeight="700"
+                    fontFamily="serif"
+                  >
+                    {rashiNum}
+                  </text>
+                )}
+              </g>
+            );
+          })}
 
-          {/* House 4 (Left Center Diamond) */}
-          <text x="100" y="200" textAnchor="middle" fill="#651317" fontSize="13" fontWeight="bold" fontFamily="serif">4</text>
-          <text x="100" y="235" textAnchor="middle" fill="#B45309" fontSize="11" fontWeight="600">
-            {housePlanets[4].join(' ')}
-          </text>
-
-          {/* House 5 (Far Left Lower Triangle) */}
-          <text x="45" y="305" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">5</text>
-          <text x="45" y="335" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[5].join(' ')}
-          </text>
-
-          {/* House 6 (Bottom Left Triangle) */}
-          <text x="95" y="355" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">6</text>
-          <text x="95" y="380" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[6].join(' ')}
-          </text>
-
-          {/* House 7 (Bottom Center Diamond) */}
-          <text x="200" y="330" textAnchor="middle" fill="#651317" fontSize="13" fontWeight="bold" fontFamily="serif">7</text>
-          <text x="200" y="300" textAnchor="middle" fill="#B45309" fontSize="11" fontWeight="600">
-            {housePlanets[7].join(' ')}
-          </text>
-
-          {/* House 8 (Bottom Right Triangle) */}
-          <text x="305" y="355" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">8</text>
-          <text x="305" y="380" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[8].join(' ')}
-          </text>
-
-          {/* House 9 (Far Right Lower Triangle) */}
-          <text x="355" y="305" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">9</text>
-          <text x="355" y="335" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[9].join(' ')}
-          </text>
-
-          {/* House 10 (Right Center Diamond) */}
-          <text x="300" y="200" textAnchor="middle" fill="#651317" fontSize="13" fontWeight="bold" fontFamily="serif">10</text>
-          <text x="300" y="235" textAnchor="middle" fill="#B45309" fontSize="11" fontWeight="600">
-            {housePlanets[10].join(' ')}
-          </text>
-
-          {/* House 11 (Far Right Upper Triangle) */}
-          <text x="355" y="95" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">11</text>
-          <text x="355" y="125" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[11].join(' ')}
-          </text>
-
-          {/* House 12 (Top Right Triangle) */}
-          <text x="305" y="45" textAnchor="middle" fill="#78350F" fontSize="11" fontWeight="bold">12</text>
-          <text x="305" y="75" textAnchor="middle" fill="#B45309" fontSize="10" fontWeight="600">
-            {housePlanets[12].join(' ')}
-          </text>
+          {/* ── 12 House Planet Clusters ──────────────────────────────── */}
+          {[1,2,3,4,5,6,7,8,9,10,11,12].map((h) => renderHousePlanets(h))}
         </svg>
 
-        <div className="mt-3 flex items-center justify-between text-[11px] text-stone-500 border-t border-amber-200/60 pt-2 px-1">
-          <span>लग्नेश: {lagnaSign}</span>
-          <span className="text-amber-800 font-medium">लाहिरी अयनांश (Lahiri)</span>
+        {/* Footer meta */}
+        <div className="mt-3 flex items-center justify-between text-[11px] border-t border-brand-gold-border/40 pt-2 px-1">
+          <span className="flex items-center gap-1.5 font-medium text-brand-primary dark:text-brand-gold">
+            <Sparkles className="h-3 w-3 text-[#C89B3C]" />
+            {activeVarga.toUpperCase()} कुण्डली चक्र
+          </span>
+          <span className="text-brand-primary dark:text-brand-gold font-semibold bg-brand-primary/8 px-2 py-0.5 rounded-full border border-brand-gold-border/40 text-[10px]">
+            लाहिरी अयनांश
+          </span>
         </div>
       </div>
     </div>
   );
 };
+
+export const NorthIndianKundliChart = memo(NorthIndianKundliChartInner);
