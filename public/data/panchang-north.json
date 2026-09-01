@@ -1,17 +1,17 @@
 {
-  "date": "2026-08-31",
+  "date": "2026-09-01",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Tadiya",
+  "tithi": "Chavithi",
   "tithi_number": 0,
-  "nakshatra": "Revathi - 1",
-  "yoga": "Ganda",
-  "karana": "Visti",
+  "nakshatra": "Aswini - 1",
+  "yoga": "Vriddha",
+  "karana": "Balava",
   "paksha": "Krishna",
   "sunrise": "06:02 AM",
-  "sunset": "06:40 PM",
-  "rahu_kaal": "07:37 AM - 09:12 AM",
+  "sunset": "06:39 PM",
+  "rahu_kaal": "03:30 PM - 05:04 PM",
   "brahma_muhurat": "04:26 AM - 05:14 AM",
-  "vara": "Somvaar",
-  "updated_at": "2026-08-31T06:56:51+05:30"
+  "vara": "Mangalvaar",
+  "updated_at": "2026-09-01T07:26:40+05:30"
 }
