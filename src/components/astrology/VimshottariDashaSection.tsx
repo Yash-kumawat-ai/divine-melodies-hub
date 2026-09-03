@@ -38,29 +38,29 @@ const VimshottariDashaSectionInner: React.FC<VimshottariDashaSectionProps> = ({ 
 
   return (
     <section id="dasha" className="scroll-mt-32 space-y-3">
-      <div className="border-b border-brand-gold-border/30 pb-2">
+      <div className="border-b border-brand-gold-border/30 pb-2.5">
         <h2 className="text-base sm:text-lg font-display font-bold text-foreground flex items-center gap-2">
           <Clock className="h-4 w-4 text-brand-gold shrink-0" />
           <span>{isHi ? 'विंशोत्तरी दशा समय-चक्र' : 'Vimshottari Dasha Timeline'}</span>
         </h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          {isHi ? '१२० वर्षीय महादशा एवं वर्तमान सक्रिय ग्रह काल' : '120-year planetary cycle and current active influence'}
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {isHi ? '120 वर्षीय महादशा एवं वर्तमान सक्रिय ग्रह काल' : '120-year planetary cycle and current active influence'}
         </p>
       </div>
 
       {/* Active Period Card (Level 2 Information Group) */}
-      <div className="rounded-xl bg-surface-raised/40 border border-brand-gold-border/40 p-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+      <div className="rounded-xl bg-gradient-to-br from-amber-500/10 via-surface-raised to-brand-primary/10 border border-brand-gold-border/40 p-4 sm:p-5 shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-[10px] font-bold text-brand-gold uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               {isHi ? 'वर्तमान सक्रिय ग्रह काल' : 'Current Active Planetary Period'}
             </span>
-            <h3 className="text-base sm:text-lg font-display font-bold text-brand-primary dark:text-brand-gold leading-tight mt-0.5">
-              {dasha.currentMahadasha?.planetHi || dasha.current_mahadasha || '—'} महादशा
-              {dasha.currentAntardasha?.planetHi && ` · ${dasha.currentAntardasha.planetHi} अंतर्दशा`}
+            <h3 className="font-display font-bold text-sm sm:text-base text-brand-primary dark:text-brand-gold leading-tight mt-0.5">
+              {dasha.currentMahadasha?.planetHi || dasha.current_mahadasha || '—'} {isHi ? 'महादशा' : 'Mahadasha'}
+              {dasha.currentAntardasha?.planetHi && ` · ${dasha.currentAntardasha.planetHi} ${isHi ? 'अंतर्दशा' : 'Antardasha'}`}
             </h3>
             {dasha.currentMahadasha?.endTime && (
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-1 tabular-nums font-medium">
                 {isHi ? 'समाप्ति तिथि:' : 'Until:'} {fmtDate(dasha.currentMahadasha.endTime)}
               </p>
             )}
@@ -70,18 +70,26 @@ const VimshottariDashaSectionInner: React.FC<VimshottariDashaSectionProps> = ({ 
           </span>
         </div>
 
-        {/* Dynamic Progress Bar */}
-        <div className="w-full bg-muted/60 h-2.5 rounded-full overflow-hidden border border-brand-gold-border/30 p-[1px]">
+        {/* Dynamic Progress Bar (Golden Amber to Temple Crimson Gradient) */}
+        <div
+          className="w-full h-2.5 rounded-full overflow-hidden border border-brand-gold-border/35 p-[1px]"
+          style={{
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, #ffffff 50%, rgba(101, 19, 23, 0.12) 100%)',
+          }}
+        >
           <div
-            className="bg-gradient-to-r from-[#C89B3C] via-[#9B6A1F] to-[#5C1D0C] h-full rounded-full transition-all duration-700 shadow-sm"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-700 shadow-2xs"
+            style={{
+              width: `${progress}%`,
+              background: 'linear-gradient(90deg, #F59E0B 0%, #D97706 45%, #651317 100%)',
+            }}
             role="progressbar"
             aria-valuenow={progress}
             aria-valuemin={0}
             aria-valuemax={100}
           />
         </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1 px-0.5 font-mono">
+        <div className="flex justify-between text-xs text-muted-foreground px-0.5 tabular-nums font-medium">
           <span>{fmtDate(dasha.currentMahadasha?.startTime)}</span>
           <span>{fmtDate(dasha.currentMahadasha?.endTime)}</span>
         </div>
@@ -95,7 +103,7 @@ const VimshottariDashaSectionInner: React.FC<VimshottariDashaSectionProps> = ({ 
             onClick={() => setIsFullCycleOpen(!isFullCycleOpen)}
             className="flex items-center justify-between w-full p-3 rounded-xl bg-surface-raised/40 border border-brand-gold-border/30 text-xs font-semibold text-foreground hover:bg-brand-primary/5 transition-all"
           >
-            <span>{isHi ? 'संपूर्ण १२० वर्षीय महादशा चक्र देखें' : 'View Full 120-Year Mahadasha Sequence'}</span>
+            <span>{isHi ? 'संपूर्ण 120 वर्षीय महादशा चक्र देखें' : 'View Full 120-Year Mahadasha Sequence'}</span>
             {isFullCycleOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
           </button>
 
@@ -108,7 +116,7 @@ const VimshottariDashaSectionInner: React.FC<VimshottariDashaSectionProps> = ({ 
                 return (
                   <div
                     key={idx}
-                    className={`p-2.5 rounded-xl border text-xs transition-all ${
+                    className={`p-3 rounded-xl border text-xs transition-all ${
                       isCurrent
                         ? 'border-brand-primary bg-brand-primary/10 font-bold shadow-sm'
                         : isPast
@@ -121,13 +129,13 @@ const VimshottariDashaSectionInner: React.FC<VimshottariDashaSectionProps> = ({ 
                         {item.planetHi || item.planet} महादशा
                       </span>
                       {isCurrent && (
-                        <span className="badge-brand text-[8px] px-1.5 py-0.5 shrink-0 font-bold">
+                        <span className="badge-brand text-[9px] px-2 py-0.5 shrink-0 font-bold">
                           {isHi ? 'सक्रिय' : 'Active'}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground/80 mt-1 font-mono">
-                      {fmtDate(item.startTime)} — {fmtDate(item.endTime)}
+                    <p className="text-xs text-muted-foreground mt-1 tabular-nums font-medium">
+                      {fmtDate(item.startTime)} – {fmtDate(item.endTime)}
                     </p>
                   </div>
                 );

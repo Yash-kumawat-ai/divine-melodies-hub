@@ -95,6 +95,9 @@ export default function Header() {
   const { isBhajanModalOpen } = useBhajanModalOpen();
   const [profileHubOpen, setProfileHubOpen] = useState(false);
   const [mobileLanguageOpen, setMobileLanguageOpen] = useState(false);
+  const [desktopLanguageOpen, setDesktopLanguageOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const { user, profile, isAdmin, isSuperAdmin, signOut, updateProfile } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -103,6 +106,51 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isHome = location.pathname === "/";
+
+  // Track trigger elements for accessible focus restoration without page scroll jumps
+  const moreTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const desktopLanguageTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const accountTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const isClosedByScrollRef = useRef<boolean>(false);
+  const closeReasonRef = useRef<"keyboard" | "pointer" | "scroll">("pointer");
+  const [isScrollDismissed, setIsScrollDismissed] = useState(false);
+  const openScrollYRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (desktopLanguageOpen || moreMenuOpen || accountMenuOpen) {
+      openScrollYRef.current = window.scrollY;
+      isClosedByScrollRef.current = false;
+      closeReasonRef.current = "pointer";
+      setIsScrollDismissed(false);
+
+      const handleThresholdScroll = () => {
+        if (openScrollYRef.current !== null) {
+          const delta = Math.abs(window.scrollY - openScrollYRef.current);
+          if (delta > 5) {
+            closeReasonRef.current = "scroll";
+            isClosedByScrollRef.current = true;
+            setIsScrollDismissed(true);
+            setDesktopLanguageOpen(false);
+            setMoreMenuOpen(false);
+            setAccountMenuOpen(false);
+          }
+        }
+      };
+
+      window.addEventListener('scroll', handleThresholdScroll, { passive: true });
+      return () => window.removeEventListener('scroll', handleThresholdScroll);
+    } else {
+      openScrollYRef.current = null;
+    }
+  }, [desktopLanguageOpen, moreMenuOpen, accountMenuOpen]);
+
+  // Auto-close dropdowns when route changes
+  useEffect(() => {
+    setDesktopLanguageOpen(false);
+    setMoreMenuOpen(false);
+    setAccountMenuOpen(false);
+    setMobileLanguageOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (isAdmin) prefetchAdminPages();
@@ -157,7 +205,8 @@ export default function Header() {
     "/aarti",
     "/live-aarti",
     "/poster-maker",
-    "/notifications"
+    "/notifications",
+    "/kundli"
   ];
   const showBack = !isHome && !isBhajanModalOpen && !primaryRoutes.includes(location.pathname);
 
@@ -177,6 +226,7 @@ export default function Header() {
   const handleLanguageChange = (nextLanguage: typeof language) => {
     setLanguage(nextLanguage);
     setMobileLanguageOpen(false);
+    setDesktopLanguageOpen(false);
     clearRadixBodyLocks();
   };
 
@@ -238,13 +288,15 @@ export default function Header() {
   ];
 
   const isNavVisible = useScrollDirection();
+  const isAnyMenuOpen = desktopLanguageOpen || moreMenuOpen || accountMenuOpen || mobileLanguageOpen;
+  const isHeaderHidden = !isNavVisible && !isAnyMenuOpen;
 
   return (
     <header
       className={cn(
         "sticky top-0 z-50 bg-[#FFFDF8]/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30 transition-transform duration-300 ease-in-out will-change-transform",
-        !isNavVisible && "-translate-y-full shadow-none",
-        isNavVisible && "translate-y-0 shadow-xs"
+        isHeaderHidden && "-translate-y-full shadow-none",
+        !isHeaderHidden && "translate-y-0 shadow-xs"
       )}
     >
       <div className="header-container container mx-auto px-4 flex items-center justify-between h-14 relative">
@@ -298,19 +350,46 @@ export default function Header() {
           </Link>
 
           {/* More ▼ dropdown — styled matching standard nav items */}
-          <DropdownMenu modal={false}>
+          <DropdownMenu modal={false} open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button
+                ref={moreTriggerRef}
                 type="button"
                 className={getDropdownTriggerClass(
-                  ['/pricing', '/about', '/wallpaper', '/shorts', '/recent-bhajans', '/upload-bhajan'].some(path => location.pathname.startsWith(path))
+                  ['/kundli', '/pricing', '/about', '/wallpaper', '/shorts', '/recent-bhajans', '/upload-bhajan'].some(path => location.pathname.startsWith(path))
                 )}
               >
                 <span>{language === 'hi' ? 'और' : 'More'}</span>
                 <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-75" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-56 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">
+            <DropdownMenuContent
+              align="center"
+              onCloseAutoFocus={(e) => {
+                e.preventDefault();
+                if (closeReasonRef.current !== "scroll" && !isClosedByScrollRef.current) {
+                  moreTriggerRef.current?.focus({ preventScroll: true });
+                }
+                isClosedByScrollRef.current = false;
+                closeReasonRef.current = "pointer";
+                setIsScrollDismissed(false);
+              }}
+              className={cn(
+                "w-56 overflow-hidden rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl motion-reduce:data-[state=closed]:animate-none",
+                isScrollDismissed
+                  ? "data-[state=closed]:duration-0 data-[state=closed]:animate-none"
+                  : "duration-100 ease-out"
+              )}
+            >
+              <DropdownMenuItem asChild>
+                <Link to="/kundli" className={getMoreDropdownItemClass('/kundli')}>
+                  <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="font-bold text-[13px]">{language === 'hi' ? 'जन्म कुंडली' : 'Kundli'}</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto text-stone-400 opacity-60 shrink-0" />
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/pricing" className={getMoreDropdownItemClass('/pricing')}>
                   <div className="w-7 h-7 rounded-full bg-[#651317]/10 dark:bg-amber-500/20 text-[#651317] dark:text-amber-300 flex items-center justify-center shrink-0">
@@ -453,9 +532,10 @@ export default function Header() {
           {user && <UserNotificationBell userId={user.id} />}
 
           {/* Language dropdown (Desktop Custom Dropdown with Border) */}
-          <DropdownMenu modal={false}>
+          <DropdownMenu modal={false} open={desktopLanguageOpen} onOpenChange={setDesktopLanguageOpen}>
             <DropdownMenuTrigger asChild>
               <button
+                ref={desktopLanguageTriggerRef}
                 type="button"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 transition-all text-[13.5px] font-bold text-stone-800 dark:text-stone-200 hover:text-[#651317] dark:hover:text-amber-300 bg-white/80 dark:bg-stone-900/80 hover:bg-[#FAF0E4] dark:hover:bg-amber-950/30 border border-[#E8D8C4] dark:border-stone-700 hover:border-[#651317]/40 dark:hover:border-amber-400/40 rounded-full shadow-2xs focus:outline-none cursor-pointer shrink-0"
               >
@@ -464,7 +544,24 @@ export default function Header() {
                 <ChevronDown className="w-3.5 h-3.5 opacity-70" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl">
+            <DropdownMenuContent
+              align="end"
+              onCloseAutoFocus={(e) => {
+                e.preventDefault();
+                if (closeReasonRef.current !== "scroll" && !isClosedByScrollRef.current) {
+                  desktopLanguageTriggerRef.current?.focus({ preventScroll: true });
+                }
+                isClosedByScrollRef.current = false;
+                closeReasonRef.current = "pointer";
+                setIsScrollDismissed(false);
+              }}
+              className={cn(
+                "w-52 overflow-hidden rounded-2xl p-2 bg-[#FFFDF8] dark:bg-[#1A1108] border border-[#E8D8C4] dark:border-stone-800 shadow-xl motion-reduce:data-[state=closed]:animate-none",
+                isScrollDismissed
+                  ? "data-[state=closed]:duration-0 data-[state=closed]:animate-none"
+                  : "duration-100 ease-out"
+              )}
+            >
               {languageOptions.map((option) => (
                 <DropdownMenuItem
                   key={option.code}
@@ -493,9 +590,10 @@ export default function Header() {
           {/* Avatar + name dropdown */}
           <div className="flex items-center gap-1.5 shrink-0">
             {staffRole && <AdminRoleBadge role={staffRole} className="hidden sm:inline-flex" />}
-            <DropdownMenu modal={false}>
+            <DropdownMenu modal={false} open={accountMenuOpen} onOpenChange={setAccountMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <button
+                  ref={accountTriggerRef}
                   type="button"
                   className="flex items-center justify-center gap-1.5 rounded-full border border-border/80 bg-background/50 text-foreground hover:bg-brand/5 hover:text-brand hover:border-brand/30 transition-all h-8 pl-1 pr-2.5 focus:outline-none shrink-0"
                   aria-label={t('accountMenu')}
@@ -514,7 +612,24 @@ export default function Header() {
                   <ChevronDown className="h-3.5 w-3.5 opacity-60" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl">
+              <DropdownMenuContent
+                align="end"
+                onCloseAutoFocus={(e) => {
+                  e.preventDefault();
+                  if (closeReasonRef.current !== "scroll" && !isClosedByScrollRef.current) {
+                    accountTriggerRef.current?.focus({ preventScroll: true });
+                  }
+                  isClosedByScrollRef.current = false;
+                  closeReasonRef.current = "pointer";
+                  setIsScrollDismissed(false);
+                }}
+                className={cn(
+                  "w-72 overflow-hidden rounded-xl border-border/80 p-0 shadow-xl motion-reduce:data-[state=closed]:animate-none",
+                  isScrollDismissed
+                    ? "data-[state=closed]:duration-0 data-[state=closed]:animate-none"
+                    : "duration-100 ease-out"
+                )}
+              >
                 <DropdownMenuLabel className="bg-gradient-to-br from-amber-50 via-background to-orange-50 p-4 dark:from-amber-950/30 dark:via-background dark:to-orange-950/20">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12 border border-primary/25">

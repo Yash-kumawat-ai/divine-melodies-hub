@@ -114,7 +114,7 @@ export default function DMCAPage() {
 
             <p className="text-xs text-[#8C6D53] dark:text-stone-500 pt-4">
               {isHi
-                ? 'अंतिम अद्यतन: जुलाई २०२६'
+                ? 'अंतिम अद्यतन: जुलाई 2026'
                 : 'Last Updated: July 2026'}
             </p>
           </div>

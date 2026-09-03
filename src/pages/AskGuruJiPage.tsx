@@ -28,6 +28,7 @@ import { GuruJiKundliSidebar } from '@/components/guruJi/GuruJiKundliSidebar';
 import { GuruJiMessageCard, type GuruJiMessageItem } from '@/components/guruJi/GuruJiMessageCard';
 import { GuruJiHoroscopeDrawer } from '@/components/guruJi/GuruJiHoroscopeDrawer';
 import { generateGuruJiResponse } from '@/lib/astrology/guruJiEngine';
+import { streamGuruJiChat } from '@/lib/astrology/guruJiStreamingClient';
 import {
   loadGuruJiChatSessions,
   saveGuruJiChatSessions,
@@ -254,49 +255,87 @@ export default function AskGuruJiPage() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
-      const updatedWithUser = [...messages, userMsg];
+      const assistantId = `guru-${Date.now()}`;
+      const placeholderAssistantMsg: GuruJiMessageItem = {
+        id: assistantId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      const updatedWithUser = [...messages, userMsg, placeholderAssistantMsg];
       setMessages(updatedWithUser);
       setInputText('');
       setIsTyping(true);
 
-      // Synthesize Vedic Astrological Answer
-      setTimeout(() => {
-        const res = generateGuruJiResponse(query, kundli, isHi);
+      let accumulatedText = '';
 
-        const assistantMsg: GuruJiMessageItem = {
-          id: `guru-${Date.now()}`,
-          role: 'assistant',
-          content: res.reply,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          mantraCard: res.mantraCard,
-          bhajanRec: res.bhajanRec,
-          domain: res.domain,
-          followUps: res.followUps,
-        };
-
-        const finalMessages = [...updatedWithUser, assistantMsg];
-        setMessages(finalMessages);
-        setIsTyping(false);
-
-        // Update sessions state & persist
-        setSessions((prevSessions) => {
-          const now = Date.now();
-          const targetSessionId = activeSessionId || prevSessions[0]?.id;
-          const updated = prevSessions.map((s) => {
-            if (s.id === targetSessionId) {
-              return {
-                ...s,
-                messages: finalMessages,
-                title: deriveGuruJiChatTitle(finalMessages),
-                updatedAt: now,
-              };
+      await streamGuruJiChat({
+        messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
+        kundli,
+        language: isHi ? 'hi' : 'en',
+        onDelta: (delta: string) => {
+          accumulatedText += delta;
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last && last.id === assistantId) {
+              return [...prev.slice(0, -1), { ...last, content: accumulatedText }];
             }
-            return s;
+            return prev;
           });
-          saveGuruJiChatSessions(updated);
-          return updated;
-        });
-      }, 550);
+        },
+        onDone: ({ mode, fullText, action }) => {
+          setIsTyping(false);
+          const finalReply = fullText || accumulatedText;
+          const isServiceUnavailable = mode === 'service_unavailable';
+
+          // Compute companion mantra card and recommendations
+          const offlineRes = generateGuruJiResponse(query, kundli, isHi);
+          const isAstroOrDevotional = !isServiceUnavailable &&
+            offlineRes.domain !== 'APP_META' &&
+            offlineRes.domain !== 'OUT_OF_SCOPE' &&
+            offlineRes.domain !== 'UNINTELLIGIBLE' &&
+            offlineRes.domain !== 'THIRD_PARTY_NOTICE';
+
+          const finalAssistantMsg: GuruJiMessageItem = {
+            id: assistantId,
+            role: 'assistant',
+            content: finalReply,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            mantraCard: isAstroOrDevotional ? offlineRes.mantraCard : undefined,
+            bhajanRec: isAstroOrDevotional ? offlineRes.bhajanRec : undefined,
+            domain: isServiceUnavailable ? 'SERVICE_UNAVAILABLE' : offlineRes.domain,
+            followUps: isServiceUnavailable ? undefined : offlineRes.followUps,
+            isServiceUnavailable,
+          };
+
+          const finalMessages = [...messages, userMsg, finalAssistantMsg];
+          setMessages(finalMessages);
+
+          // Update sessions state & persist
+          setSessions((prevSessions) => {
+            const now = Date.now();
+            const targetSessionId = activeSessionId || prevSessions[0]?.id;
+            const updated = prevSessions.map((s) => {
+              if (s.id === targetSessionId) {
+                return {
+                  ...s,
+                  messages: finalMessages,
+                  title: deriveGuruJiChatTitle(finalMessages),
+                  updatedAt: now,
+                };
+              }
+              return s;
+            });
+            saveGuruJiChatSessions(updated);
+            return updated;
+          });
+        },
+        onError: (errText: string) => {
+          setIsTyping(false);
+          toast.error(errText);
+        },
+      });
     },
     [inputText, isTyping, kundli, isHi, messages, activeSessionId]
   );

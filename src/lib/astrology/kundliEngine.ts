@@ -10,6 +10,7 @@ import {
   getPanchangam,
   checkMangalDosha,
   getAyanamsa,
+  getPlanetaryPosition,
 } from '@ishubhamx/panchangam-js';
 
 import { resolveHistoricalUtcOffset } from './geocodePlace';
@@ -438,6 +439,207 @@ export function determineIshtaDevata(
 }
 
 /**
+ * Live Dynamic Sade Sati Calculation (Never hardcoded dates)
+ * Evaluates transit Saturn's real-time position against natal Moon sign.
+ */
+export interface SadeSatiCalculationResult {
+  isInSadeSati: boolean;
+  phase: 'rising' | 'peak' | 'setting' | null;
+  phaseName?: string;
+  phaseNameHi?: string;
+  saturnTransitRashi: string;
+  saturnTransitRashiHi: string;
+  saturnTransitLongitude: number;
+  description: string;
+  descriptionHi: string;
+  remedies: string[];
+  remediesHi: string[];
+}
+
+export function checkSadeSati(
+  natalMoonRashi: number,
+  currentDate: Date = new Date()
+): SadeSatiCalculationResult {
+  const ay = getAyanamsa(currentDate);
+  const transitSaturn = getPlanetaryPosition('Saturn' as any, currentDate, ay);
+  const saturnRashi = transitSaturn.rashi;
+  const saturnMeta = RASHI_NAMES[saturnRashi] || RASHI_NAMES[0];
+
+  // Difference from Moon to Saturn (Whole Sign):
+  // 11 = 12th from Moon (Rising)
+  // 0  = 1st from Moon / Conjunct Moon (Peak / Janma Shani)
+  // 1  = 2nd from Moon (Setting)
+  const diff = (saturnRashi - natalMoonRashi + 12) % 12;
+
+  let isInSadeSati = false;
+  let phase: 'rising' | 'peak' | 'setting' | null = null;
+  let phaseName = 'Inactive';
+  let phaseNameHi = 'निष्क्रिय';
+  let description = 'Currently not experiencing Sade Sati.';
+  let descriptionHi = 'वर्तमान समय में साढ़े साती का प्रभाव नहीं है।';
+
+  if (diff === 11) {
+    isInSadeSati = true;
+    phase = 'rising';
+    phaseName = 'Rising Phase (Phase 1)';
+    phaseNameHi = 'उदय चरण (प्रथम चरण)';
+    description = `Sade Sati Phase 1 (Rising): Transit Saturn is in ${saturnMeta.en} (12th house from natal Moon). Focus on disciplined planning and emotional balance.`;
+    descriptionHi = `साढ़े साती प्रथम चरण (उदय चरण): गोचर शनि ${saturnMeta.hi} में (जन्म चन्द्रमा से 12वें भाव में) स्थित है। योजनाबद्ध अनुशासन व मानसिक संतुलन बनाए रखें।`;
+  } else if (diff === 0) {
+    isInSadeSati = true;
+    phase = 'peak';
+    phaseName = 'Peak Phase (Phase 2 / Janma Shani)';
+    phaseNameHi = 'शिखर चरण (द्वितीय चरण / जन्म शनि)';
+    description = `Sade Sati Phase 2 (Peak / Janma Shani): Transit Saturn is in ${saturnMeta.en} conjunct natal Moon. Requires patience, perseverance, and spiritual grounding.`;
+    descriptionHi = `साढ़े साती द्वितीय चरण (शिखर चरण / जन्म शनि): गोचर शनि ${saturnMeta.hi} में जन्म चन्द्रमा के ऊपर गोचर कर रहा है। धैर्य, निष्ठा और भगवान शिव/शनि देव की नियमित साधना कल्याणकारी है।`;
+  } else if (diff === 1) {
+    isInSadeSati = true;
+    phase = 'setting';
+    phaseName = 'Setting Phase (Phase 3)';
+    phaseNameHi = 'अस्त चरण (तृतीय चरण)';
+    description = `Sade Sati Phase 3 (Setting): Transit Saturn is in ${saturnMeta.en} (2nd house from natal Moon). Financial prudence and speech moderation bring relief.`;
+    descriptionHi = `साढ़े साती तृतीय चरण (अस्त चरण / उतरती साढ़े साती): गोचर शनि ${saturnMeta.hi} में (जन्म चन्द्रमा से द्वितीय भाव में) है। वाणी संयम व वित्तीय सतर्कता से राहत प्राप्त होती है।`;
+  }
+
+  return {
+    isInSadeSati,
+    phase,
+    phaseName,
+    phaseNameHi,
+    saturnTransitRashi: saturnMeta.en,
+    saturnTransitRashiHi: saturnMeta.hi,
+    saturnTransitLongitude: transitSaturn.longitude,
+    description,
+    descriptionHi,
+    remedies: [
+      'Chant Hanuman Chalisa or Dasharatha Shani Stotram on Saturdays',
+      'Offer mustard oil or sesame seeds in service',
+      'Practice honesty, humility, and assist the needy',
+    ],
+    remediesHi: [
+      'प्रतिदिन श्री हनुमान चालीसा या शनिवार को दशरथ कृत शनि स्तोत्र का पाठ करें',
+      'शनिवार को काले तिल या सरसों के तेल का दीप प्रज्वलित करें',
+      'सत्यनिष्ठा, विनम्रता बनाए रखें और जरूरतमंदों की सेवा करें',
+    ],
+  };
+}
+
+/**
+ * Parashari Kaal Sarp Yoga Check
+ * Evaluates whether physical Grahas are hemmed on one side of Rahu-Ketu axis.
+ */
+export function checkKaalSarpDosha(planets: Record<string, NormalizedPlanet>): {
+  hasDosha: boolean;
+  isPartial: boolean;
+  type: 'full' | 'partial' | 'none';
+  description: string;
+  descriptionHi: string;
+} {
+  const rahu = planets.Rahu;
+  const ketu = planets.Ketu;
+  if (!rahu || !ketu || rahu.longitude === undefined || ketu.longitude === undefined) {
+    return { hasDosha: false, isPartial: false, type: 'none', description: 'Nodal positions unavailable', descriptionHi: 'राहु-केतु स्थिति अनुपलब्ध' };
+  }
+
+  const rahuLong = rahu.longitude % 360;
+  const ketuLong = ketu.longitude % 360;
+  const physical7 = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
+  let side1Count = 0;
+  let side2Count = 0;
+
+  for (const pName of physical7) {
+    const p = planets[pName];
+    if (!p || p.longitude === undefined) continue;
+    const long = p.longitude % 360;
+    
+    let inSide1 = false;
+    if (rahuLong < ketuLong) {
+      inSide1 = long >= rahuLong && long <= ketuLong;
+    } else {
+      inSide1 = long >= rahuLong || long <= ketuLong;
+    }
+
+    if (inSide1) {
+      side1Count++;
+    } else {
+      side2Count++;
+    }
+  }
+
+  if (side1Count === 7 || side2Count === 7) {
+    return {
+      hasDosha: true,
+      isPartial: false,
+      type: 'full',
+      description: 'Full Kaal Sarp Yoga: All 7 physical Grahas are hemmed between the Rahu-Ketu nodal axis.',
+      descriptionHi: 'पूर्ण काल सर्प योग: सभी 7 भौतिक ग्रह राहु-केतु अक्ष के एक ओर स्थित हैं।',
+    };
+  } else if (side1Count === 6 || side2Count === 6) {
+    return {
+      hasDosha: true,
+      isPartial: true,
+      type: 'partial',
+      description: 'Anshik (Partial) Kaal Sarp Yoga: 6 physical Grahas are hemmed between Rahu and Ketu with 1 planet outside.',
+      descriptionHi: 'आंशिक काल सर्प योग: 6 ग्रह राहु-केतु अक्ष के एक ओर हैं तथा 1 ग्रह बाहर है।',
+    };
+  }
+
+  return {
+    hasDosha: false,
+    isPartial: false,
+    type: 'none',
+    description: 'No Kaal Sarp Yoga present in the birth chart.',
+    descriptionHi: 'कुण्डली में काल सर्प योग उपस्थित नहीं है।',
+  };
+}
+
+/**
+ * Parashari Pitra Dosha Check
+ * Checks Surya affliction by Rahu/Ketu within 12° or 9th house affliction.
+ */
+export function checkPitraDosha(
+  planets: Record<string, NormalizedPlanet>,
+  ascendant: VedicAscendant
+): {
+  hasDosha: boolean;
+  severity: 'mild' | 'moderate' | 'strong' | 'none';
+  description: string;
+  descriptionHi: string;
+} {
+  const sun = planets.Sun;
+  const rahu = planets.Rahu;
+  const ketu = planets.Ketu;
+
+  if (!sun || !rahu || !ketu || sun.longitude === undefined || rahu.longitude === undefined) {
+    return { hasDosha: false, severity: 'none', description: 'Planetary data unavailable', descriptionHi: 'ग्रह स्थिति अनुपलब्ध' };
+  }
+
+  const sunLong = sun.longitude % 360;
+  const rahuLong = rahu.longitude % 360;
+  const ketuLong = (ketu.longitude ?? (rahuLong + 180)) % 360;
+
+  const diffRahu = Math.min(Math.abs(sunLong - rahuLong), 360 - Math.abs(sunLong - rahuLong));
+  const diffKetu = Math.min(Math.abs(sunLong - ketuLong), 360 - Math.abs(sunLong - ketuLong));
+
+  if (diffRahu <= 12 || diffKetu <= 12) {
+    return {
+      hasDosha: true,
+      severity: diffRahu <= 6 || diffKetu <= 6 ? 'strong' : 'moderate',
+      description: `Surya Grahan / Pitra Dosha: Sun is conjunct ${diffRahu <= 12 ? 'Rahu' : 'Ketu'} within close degree orb (${(diffRahu <= 12 ? diffRahu : diffKetu).toFixed(1)}°).`,
+      descriptionHi: `पितृ दोष (सूर्य ग्रहण योग): सूर्य देव ${diffRahu <= 12 ? 'राहु' : 'केतु'} के समीप स्थित हैं। नियमित गायत्री मंत्र व पितृ तर्पण शुभ फलदायी है।`,
+    };
+  }
+
+  return {
+    hasDosha: false,
+    severity: 'none',
+    description: 'No significant Pitra Dosha observed.',
+    descriptionHi: 'कुण्डली में कोई प्रमुख पितृ दोष नहीं पाया गया।',
+  };
+}
+
+/**
  * Generate Vedic life predictions based on Lagna, Moon, and planetary configurations
  */
 function generateVedicPredictions(
@@ -539,6 +741,8 @@ export function calculateCompleteKundli(input: BirthProfileInput): CompleteKundl
     nakshatra: ascRaw.nakshatra || '',
     nakshatraLord: ascRaw.nakshatraLord || '',
     pada: ascRaw.pada || 1,
+    lord: ascRashiMeta.lord,
+    lordHi: ascRashiMeta.lordHi,
   };
 
   // 3. Normalized Planets (9 Navagrahas + Outer planets)
@@ -945,6 +1149,9 @@ export function calculateCompleteKundli(input: BirthProfileInput): CompleteKundl
     vargas: rawKundli.vargas || {},
     mangalDosha,
     ishtaDevata,
+    kaalSarpDosha: checkKaalSarpDosha(planets),
+    pitraDosha: checkPitraDosha(planets, ascendant),
+    sadeSati: planets.Moon?.rashi !== undefined ? checkSadeSati(planets.Moon.rashi, new Date()) : undefined,
     panchanga,
     predictions,
     ayanamsa: ayanamsaName,

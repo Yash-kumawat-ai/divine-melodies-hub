@@ -40,12 +40,12 @@ const BhavAnalysisSectionInner: React.FC<BhavAnalysisSectionProps> = ({ houses, 
 
   return (
     <section id="houses" className="scroll-mt-32 space-y-3">
-      <div className="border-b border-brand-gold-border/30 pb-2">
+      <div className="border-b border-brand-gold-border/30 pb-2.5">
         <h2 className="text-base sm:text-lg font-display font-bold text-foreground flex items-center gap-2">
           <Compass className="h-4 w-4 text-brand-gold shrink-0" />
           <span>{isHi ? 'द्वादश भाव विश्लेषण (12 Houses)' : '12 Bhavas (House Analysis)'}</span>
         </h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p className="text-xs text-muted-foreground mt-0.5">
           {isHi ? 'प्रत्येक भाव की राशि, भावेश (अधिपति) और स्थित ग्रह' : 'Rashi, lord, occupants, and significance per house'}
         </p>
       </div>

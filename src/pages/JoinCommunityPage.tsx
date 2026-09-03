@@ -1563,9 +1563,9 @@ export default function JoinCommunityPage() {
               {/* Quick tap round values */}
               <div className="grid grid-cols-3 gap-2 mt-2">
                 {[
-                  { label: isHi ? "१ माला (१०८)" : "1 Mala (108)", val: 108 },
-                  { label: isHi ? "५ माला (५४०)" : "5 Malas (540)", val: 540 },
-                  { label: isHi ? "११ माला (११८८)" : "11 Malas (1188)", val: 1188 }
+                  { label: isHi ? "1 माला (108)" : "1 Mala (108)", val: 108 },
+                  { label: isHi ? "5 माला (540)" : "5 Malas (540)", val: 540 },
+                  { label: isHi ? "11 माला (1188)" : "11 Malas (1188)", val: 1188 }
                 ].map(opt => (
                   <button
                     key={opt.val}

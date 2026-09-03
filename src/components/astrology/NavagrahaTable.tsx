@@ -22,13 +22,13 @@ const PLANET_ICONS: Record<string, any> = {
 };
 
 const DIGNITY_BADGES: Record<string, { hi: string; en: string; cls: string }> = {
-  exalted:      { hi: 'उच्च',        en: 'Exalted',       cls: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/40' },
-  moolatrikona: { hi: 'मूलत्रिकोण',  en: 'Moolatrikona',  cls: 'bg-teal-500/15 text-teal-800 dark:text-teal-300 border-teal-500/40' },
-  own:          { hi: 'स्वराशि',     en: 'Own Sign',      cls: 'bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/40' },
-  friend:       { hi: 'मित्र',       en: 'Friend',        cls: 'bg-sky-500/10 text-sky-800 dark:text-sky-300 border-sky-500/25' },
-  neutral:      { hi: 'सम',          en: 'Neutral',       cls: 'bg-stone-500/10 text-stone-600 dark:text-stone-300 border-stone-500/20' },
-  enemy:        { hi: 'शत्रु',       en: 'Enemy',         cls: 'bg-amber-500/15 text-amber-900 dark:text-amber-300 border-amber-500/40' },
-  debilitated:  { hi: 'नीच',         en: 'Debilitated',   cls: 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/40' },
+  exalted:      { hi: 'उच्च',        en: 'Exalted',       cls: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30' },
+  moolatrikona: { hi: 'मूलत्रिकोण',  en: 'Moolatrikona',  cls: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/30' },
+  own:          { hi: 'स्वराशि',     en: 'Own Sign',      cls: 'bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/30' },
+  friend:       { hi: 'मित्र',       en: 'Friend',        cls: 'bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/30' },
+  neutral:      { hi: 'सम',          en: 'Neutral',       cls: 'bg-muted/80 text-foreground/80 border-border/40' },
+  enemy:        { hi: 'शत्रु',       en: 'Enemy',         cls: 'bg-rose-500/10 text-rose-800 dark:text-rose-300 border-rose-500/30' },
+  debilitated:  { hi: 'नीच',         en: 'Debilitated',   cls: 'bg-rose-500/15 text-rose-900 dark:text-rose-200 border-rose-500/40' },
 };
 
 const NavagrahaTableInner: React.FC<NavagrahaTableProps> = ({ planets, isHi }) => {
@@ -42,14 +42,14 @@ const NavagrahaTableInner: React.FC<NavagrahaTableProps> = ({ planets, isHi }) =
 
   return (
     <section id="planets" className="scroll-mt-32 space-y-3">
-      <div className="flex items-center justify-between gap-2 border-b border-brand-gold-border/30 pb-2">
+      <div className="flex items-center justify-between gap-2 border-b border-brand-gold-border/30 pb-2.5">
         <div>
           <h2 className="text-base sm:text-lg font-display font-bold text-foreground flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-brand-gold shrink-0" />
             <span>{isHi ? 'नवग्रह स्थिति एवं खगोलीय विवरण' : 'Navagraha Planetary Positions'}</span>
           </h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {isHi ? '९ शास्त्रीय वैदिक ग्रहों की राशि, अंश, नक्षत्र, भाव और गरिमा' : 'Detailed astronomical placement for all 9 Vedic Grahas'}
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {isHi ? '9 शास्त्रीय वैदिक ग्रहों की राशि, अंश, नक्षत्र, भाव और गरिमा' : 'Detailed astronomical placement for all 9 Vedic Grahas'}
           </p>
         </div>
       </div>

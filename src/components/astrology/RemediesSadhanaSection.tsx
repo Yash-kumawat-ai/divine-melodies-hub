@@ -26,12 +26,12 @@ const RemediesSadhanaSectionInner: React.FC<RemediesSadhanaSectionProps> = ({
 
   return (
     <section id="remedies" className="scroll-mt-32 space-y-4">
-      <div className="border-b border-brand-gold-border/30 pb-2">
+      <div className="border-b border-brand-gold-border/30 pb-2.5">
         <h2 className="text-base sm:text-lg font-display font-bold text-foreground flex items-center gap-2">
           <Heart className="h-4 w-4 text-brand-gold shrink-0" />
           <span>{isHi ? 'इष्ट देव, साधना एवं वैदिक उपाय' : 'Devotional Sadhana & Remedies'}</span>
         </h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p className="text-xs text-muted-foreground mt-0.5">
           {isHi ? 'आत्मकारक व कारकांश आधारित इष्ट देव, सिद्ध मंत्र एवं जीवन संकेत' : 'Jaimini Karakamsha deity alignment, consecrated mantras, and life guidance'}
         </p>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, memo } from 'react';
-import { Sparkles, Volume2, VolumeX, Copy, Check, Music, ArrowRight, Play, MessageSquarePlus } from 'lucide-react';
+import { Sparkles, Volume2, VolumeX, Copy, Check, Music, ArrowRight, Play, MessageSquarePlus, AlertTriangle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { GuruJiMantraCard, GuruJiBhajanRec } from '@/lib/astrology/guruJiEngine';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ export interface GuruJiMessageItem {
   bhajanRec?: GuruJiBhajanRec;
   domain?: string;
   followUps?: string[];
+  isServiceUnavailable?: boolean;
 }
 
 interface GuruJiMessageCardProps {
@@ -66,12 +67,22 @@ const GuruJiMessageCardInner: React.FC<GuruJiMessageCardProps> = ({
         {/* Header Ribbon */}
         <div className="flex items-center justify-between gap-2 border-b border-border pb-2.5 text-[11px]">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 min-h-[28px] min-w-[28px] max-h-[28px] max-w-[28px] rounded-xl bg-gradient-brand flex items-center justify-center text-primary-foreground text-xs shadow-2xs border border-brand-gold/50 p-1 shrink-0 overflow-hidden">
-              <img src={omWhiteSvg} alt="Om" className="h-full w-full max-h-full max-w-full object-contain aspect-square pointer-events-none select-none" />
+            <div className={`h-7 w-7 min-h-[28px] min-w-[28px] max-h-[28px] max-w-[28px] rounded-xl flex items-center justify-center text-primary-foreground text-xs shadow-2xs border p-1 shrink-0 overflow-hidden ${message.isServiceUnavailable ? 'bg-amber-500/20 border-amber-500/40 text-amber-600 dark:text-amber-400' : 'bg-gradient-brand border-brand-gold/50'}`}>
+              {message.isServiceUnavailable ? (
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              ) : (
+                <img src={omWhiteSvg} alt="Om" className="h-full w-full max-h-full max-w-full object-contain aspect-square pointer-events-none select-none" />
+              )}
             </div>
             <div>
               <p className="font-display font-bold text-brand-primary dark:text-amber-400 leading-tight">
-                {isHi ? 'गुरु जी (वैदिक ज्योतिष मार्गदर्शन)' : 'Guru Ji (Vedic Guidance)'}
+                {message.isServiceUnavailable ? (
+                  <span className="text-amber-600 dark:text-amber-400 inline-flex items-center gap-1 font-sans font-medium text-xs">
+                    {isHi ? 'तकनीकी सूचना' : 'Technical Notice'}
+                  </span>
+                ) : (
+                  <span>{isHi ? 'गुरु जी (वैदिक ज्योतिष मार्गदर्शन)' : 'Guru Ji (Vedic Guidance)'}</span>
+                )}
               </p>
               <span className="text-[10px] text-muted-foreground">{message.timestamp}</span>
             </div>
@@ -79,18 +90,20 @@ const GuruJiMessageCardInner: React.FC<GuruJiMessageCardProps> = ({
 
           <div className="flex items-center gap-1">
             {/* TTS Audio Speak Button */}
-            <button
-              type="button"
-              onClick={() => onSpeakToggle(message.content, message.id)}
-              className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
-                isSpeaking
-                  ? 'bg-brand-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-brand-primary hover:bg-[#651317]/10 dark:hover:bg-white/10'
-              }`}
-              title={isHi ? 'वाणी द्वारा सुनें' : 'Listen with Audio'}
-            >
-              {isSpeaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-            </button>
+            {!message.isServiceUnavailable && (
+              <button
+                type="button"
+                onClick={() => onSpeakToggle(message.content, message.id)}
+                className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${
+                  isSpeaking
+                    ? 'bg-brand-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-brand-primary hover:bg-[#651317]/10 dark:hover:bg-white/10'
+                }`}
+                title={isHi ? 'वाणी द्वारा सुनें' : 'Listen with Audio'}
+              >
+                {isSpeaking ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+              </button>
+            )}
 
             {/* Copy Button */}
             <button
@@ -105,7 +118,7 @@ const GuruJiMessageCardInner: React.FC<GuruJiMessageCardProps> = ({
         </div>
 
         {/* Message Content with Markdown-style readability */}
-        <div className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-sans text-foreground/95 space-y-2">
+        <div className={`text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-sans space-y-2 ${message.isServiceUnavailable ? 'p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-foreground/90' : 'text-foreground/95'}`}>
           {message.content}
         </div>
 

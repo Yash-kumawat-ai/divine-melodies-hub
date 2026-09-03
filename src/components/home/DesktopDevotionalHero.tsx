@@ -141,7 +141,7 @@ export function DesktopDevotionalHero() {
 
         {/* Primary Devotional Tagline */}
         <div className="mt-5 sm:mt-6 md:mt-8">
-          <h1 className="font-serif font-bold text-2xl sm:text-3xl md:text-4xl lg:text-[44px] text-[#581418] dark:text-amber-100 tracking-wide leading-[1.25] text-center drop-shadow-xs">
+          <h1 className="font-hindi font-bold text-2xl sm:text-3xl md:text-4xl lg:text-[44px] text-[#581418] dark:text-amber-100 tracking-wide leading-[1.25] text-center drop-shadow-xs">
             {isHi ? (
               <>
                 भगवत् स्मरण,

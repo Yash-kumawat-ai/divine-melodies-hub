@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raghavam UI Font Test (400 vs 700)</title>
+  <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/noto-sans-devanagari-var.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&display=swap" />
+
+  <style>
+    @font-face {
+      font-family: 'Raghavam UI';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('/fonts/inter-latin-var.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Raghavam UI';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('/fonts/noto-sans-devanagari-var.woff2') format('woff2');
+      unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+    }
+
+    body {
+      font-family: 'Raghavam UI', 'Inter', 'Noto Sans Devanagari', sans-serif;
+      margin: 0;
+      padding: 32px 20px;
+      background: #FBF8F3;
+      color: #1F1916;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: #5C1D0C;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #E5D5C3;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(92, 29, 12, 0.05);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #5C1D0C;
+      margin-top: 0;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #F0E2D2;
+      padding-bottom: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #F4E8DB;
+      color: #5C1D0C;
+      margin-bottom: 8px;
+    }
+
+    .weight-400 { font-weight: 400; }
+    .weight-500 { font-weight: 500; }
+    .weight-600 { font-weight: 600; }
+    .weight-700 { font-weight: 700; }
+
+    .sample-box {
+      background: #FAF6F0;
+      border: 1px solid #EADBCC;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 18px;
+    }
+
+    .tiro-font {
+      font-family: 'Tiro Devanagari Hindi', serif;
+    }
+
+    .tabular {
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+
+    .baseline-guide {
+      position: relative;
+      display: inline-block;
+      border-bottom: 2px solid #E11D48;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Raghavam UI Composite Font Test Harness</h1>
+    <p>Verification of <code>@font-face</code> + <code>unicode-range</code> (Inter Latin + Noto Sans Devanagari) at weights 400, 500, 600, 700.</p>
+
+    <!-- Test 1: Weight 400 vs 700 on Kundli Metadata Line -->
+    <div class="card">
+      <h2 class="card-title">1. Kundli Metadata Mixed-Script (Weight 400 vs 700)</h2>
+      <div class="row">
+        <div class="col">
+          <span class="badge">Weight 400 (Regular)</span>
+          <div class="sample-box weight-400">
+            <div><strong>जन्म स्थान:</strong> 📍 Jaipur, Rajasthan, India</div>
+            <div><strong>जन्म समय:</strong> 📅 2005-02-05 • 15:00:00 (Lahiri)</div>
+            <div><strong>लग्न & नक्षत्र:</strong> मेष (Aries) • अश्विनी (Ashwini 12° 34' 56")</div>
+          </div>
+        </div>
+        <div class="col">
+          <span class="badge">Weight 700 (Bold — True Variable Font, Not Synthetic)</span>
+          <div class="sample-box weight-700">
+            <div><strong>जन्म स्थान:</strong> 📍 Jaipur, Rajasthan, India</div>
+            <div><strong>जन्म समय:</strong> 📅 2005-02-05 • 15:00:00 (Lahiri)</div>
+            <div><strong>लग्न & नक्षत्र:</strong> मेष (Aries) • अश्विनी (Ashwini 12° 34' 56")</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 2: Weight Gradient across 400, 500, 600, 700 -->
+    <div class="card">
+      <h2 class="card-title">2. True Weight Range Gradient (Devanagari & Latin)</h2>
+      <div class="sample-box" style="line-height: 2.2;">
+        <div class="weight-400"><strong>400:</strong> श्री गणेशाय नमः • 108 माला जप • Jaipur 2026 • 120-Year Mahadasha</div>
+        <div class="weight-500"><strong>500:</strong> श्री गणेशाय नमः • 108 माला जप • Jaipur 2026 • 120-Year Mahadasha</div>
+        <div class="weight-600"><strong>600:</strong> श्री गणेशाय नमः • 108 माला जप • Jaipur 2026 • 120-Year Mahadasha</div>
+        <div class="weight-700"><strong>700:</strong> श्री गणेशाय नमः • 108 माला जप • Jaipur 2026 • 120-Year Mahadasha</div>
+      </div>
+    </div>
+
+    <!-- Test 3: Before & After (Tiro vs Raghavam UI Numbers) -->
+    <div class="card">
+      <h2 class="card-title">3. Visual Proof: Old "Zig-Zag" vs Clean Level Baseline</h2>
+      <div class="row">
+        <div class="col">
+          <span class="badge" style="background:#FFE4E6; color:#9F1239;">BEFORE: Tiro Devanagari Hindi (Old-Style Zig-Zag)</span>
+          <div class="sample-box tiro-font" style="font-size: 22px;">
+            <p>0 1 2 <span class="baseline-guide">3 4 5</span> <span style="border-top:2px solid #2563EB;">6</span> <span class="baseline-guide">7</span> <span style="border-top:2px solid #2563EB;">8</span> <span class="baseline-guide">9</span></p>
+            <p>2005-02-05 • 15:00:00</p>
+            <p>108 Malas • 120 Years • ₹540</p>
+          </div>
+        </div>
+        <div class="col">
+          <span class="badge" style="background:#DCFCE7; color:#166534;">AFTER: Raghavam UI (Flat Lining Baseline)</span>
+          <div class="sample-box tabular" style="font-size: 22px;">
+            <p><span class="baseline-guide">0 1 2 3 4 5 6 7 8 9</span></p>
+            <p>2005-02-05 • 15:00:00</p>
+            <p>108 Malas • 120 Years • ₹540</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

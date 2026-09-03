@@ -68,6 +68,8 @@ export interface VedicAscendant {
   nakshatra: string;
   nakshatraLord: string;
   pada: number;
+  lord?: string;
+  lordHi?: string;
 }
 
 export interface MangalDoshaResult {
@@ -225,6 +227,9 @@ export interface CompleteKundliData {
   vargas?: Record<string, any>;
   mangalDosha?: MangalDoshaResult;
   ishtaDevata?: IshtaDevataResult;
+  kaalSarpDosha?: { hasDosha: boolean; isPartial: boolean; type: 'full' | 'partial' | 'none'; description: string; descriptionHi: string };
+  pitraDosha?: { hasDosha: boolean; severity: 'mild' | 'moderate' | 'strong' | 'none'; description: string; descriptionHi: string };
+  sadeSati?: any;
   panchanga?: JanmaPanchangam;
   predictions?: Record<string, string[]>;
   ayanamsa: string;

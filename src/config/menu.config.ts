@@ -132,6 +132,17 @@ export const MAIN_NAV_ITEMS: NavigationItem[] = [
     visible: true,
   },
   {
+    id: 'kundli',
+    titleKey: 'kundli',
+    titleFallback: 'Kundli (कुंडली)',
+    route: ROUTES.KUNDLI,
+    icon: Sparkles,
+    group: 'main',
+    badge: 'new',
+    permission: 'public',
+    visible: true,
+  },
+  {
     id: 'kirtanAi',
     titleKey: 'kirtanAi',
     titleFallback: 'Narad AI',

@@ -1,4 +1,6 @@
 import type { CompleteKundliData, NormalizedPlanet } from './types';
+import { RASHI_NAMES } from './kundliEngine';
+import { classifyGuruJiIntent } from '../guru-ji/classifyIntent';
 
 export interface GuruJiMantraCard {
   mantra: string;
@@ -48,6 +50,148 @@ export function generateGuruJiResponse(
   isHi: boolean
 ): GuruJiResponse {
   const lower = query.toLowerCase().trim();
+  const classification = classifyGuruJiIntent(query);
+
+  // 0. Unintelligible
+  if (classification.mainIntent === 'unintelligible') {
+    return {
+      reply: isHi
+        ? `🙏 **नमो नारायण!**\n\nमैं आपका संदेश स्पष्ट रूप से समझ नहीं पाया। कृपया अपने प्रश्न को स्पष्ट शब्दों में लिखें, जैसे अपनी जन्म कुंडली, करियर, विवाह, ग्रह दशा, या पूजा-साधना के बारे में पूछें।`
+        : `🙏 **Namo Narayana!**\n\nI could not clearly understand your message. Please rephrase your query clearly regarding your birth chart, career, marriage, active dasha, or spiritual practices.`,
+      domain: 'UNINTELLIGIBLE',
+      followUps: isHi
+        ? ['मेरी कुंडली के मुख्य योग बताएं', 'मेरी राशि और लग्न क्या है?', 'दैनिक साधना नियम']
+        : ['What are the key yogas in my chart?', 'What are my Ascendant and Moon signs?', 'Daily spiritual practices'],
+    };
+  }
+
+  // 0.1 App Meta / AI Identity
+  if (classification.mainIntent === 'app_meta') {
+    return {
+      reply: isHi
+        ? `🙏 **नमो नारायण!**\n\nमैं 'गुरु जी' (Guru Ji) हूँ — राघवम (Raghavam) का एक समर्पित एआई-सहायक वैदिक ज्योतिष एवं आध्यात्मिक मार्गदर्शक।\n\nमैं प्रामाणिक वैदिक ज्योतिष गणनाओं एवं आधुनिक भाषा मॉडल्स की सहायता से आपकी जन्म कुंडली, ग्रह दशा एवं साधना सम्बन्धी प्रश्नों में मार्गदर्शन करता हूँ। आप मुझसे अपनी कुंडली, करियर, विवाह, ग्रह प्रभाव या इष्ट देव के बारे में पूछ सकते हैं।`
+        : `🙏 **Namo Narayana!**\n\nI am 'Guru Ji' — an AI-assisted Vedic Astrological and Spiritual Guide developed for Raghavam.\n\nI combine canonical Vedic Jyotish calculations with modern language models to provide guidance on your birth chart, planetary dashas, and spiritual sadhana. Please feel free to ask about your career, marriage, dasha timing, or personal horoscope.`,
+      domain: 'APP_META',
+      followUps: isHi
+        ? ['मेरी कुंडली का विश्लेषण करें', 'वर्तमान महादशा का प्रभाव बताएं', 'मेरे इष्ट देव कौन हैं?']
+        : ['Analyze my birth chart', 'Explain my current Mahadasha', 'Who is my Ishta Devata?'],
+    };
+  }
+
+  // 0.2 Out of Scope
+  if (classification.mainIntent === 'out_of_scope') {
+    return {
+      reply: isHi
+        ? `🙏 **नमो नारायण!**\n\nमेरा ज्ञान और मार्गदर्शन केवल वैदिक ज्योतिष, कुंडली विश्लेषण, धर्मशास्त्र एवं आध्यात्मिक साधना तक ही सीमित है।\n\nकृपया अपनी जन्म कुंडली, ग्रह दशा, करियर, विवाह या दैनिक पूजा-साधना से संबंधित प्रश्न पूछें — मुझे आपका मार्गदर्शन करने में अत्यंत प्रसन्नता होगी।`
+        : `🙏 **Namo Narayana!**\n\nMy guidance is dedicated exclusively to Vedic astrology, birth chart analysis, sacred scriptures, and spiritual sadhana.\n\nPlease ask questions related to your horoscope, dasha timing, career, relationships, or spiritual practices — I will be glad to assist you.`,
+      domain: 'OUT_OF_SCOPE',
+      followUps: isHi
+        ? ['मेरी कुंडली के अनुसार करियर', 'मेरी वर्तमान महादशा क्या है?', 'मानसिक शांति के लिए उपाय']
+        : ['Career prospects according to my chart', 'What is my active Mahadasha?', 'Remedies for peace of mind'],
+    };
+  }
+
+  // 1. Third-Party Request -> Explain-and-stop notice with zero chart facts
+  if (classification.isThirdPartyRequest) {
+    return {
+      reply: isHi
+        ? `🙏 **नमो नारायण!**\n\nमेरे पास केवल आपकी अपनी सहेजी गई कुंडली का विवरण है, इसलिए अभी मैं केवल आपकी कुंडली के आधार पर ही मार्गदर्शन दे सकता हूँ। किसी अन्य सदस्य की कुंडली का विश्लेषण अभी उपलब्ध नहीं है — यह जल्द ही एक अलग फीचर के रूप में आएगा।`
+        : `🙏 **Namo Narayana!**\n\nI currently have access only to your own saved birth chart on record, so guidance can be provided solely based on your personal horoscope. Analysis for other family members is not available yet — it will arrive soon as a separate feature.`,
+      domain: 'THIRD_PARTY_NOTICE',
+      followUps: isHi
+        ? ['मेरी कुंडली के अनुसार करियर कैसा रहेगा?', 'मेरे इष्ट देव कौन हैं?', 'सक्रिय दशा का प्रभाव बताएं']
+        : ['How is my career?', 'Who is my Ishta Devata?', 'Tell me about my active Dasha'],
+    };
+  }
+
+  // 2. Devotional / Bhakti Intent -> Return pure spiritual & mantra guidance with ZERO chart facts
+  if (classification.mainIntent === 'devotional') {
+    const isHanuman = lower.includes('hanuman') || lower.includes('हनुमान') || lower.includes('chalisa') || lower.includes('चालीसा');
+    const isShiva = lower.includes('shiv') || lower.includes('शिव') || lower.includes('mahadev') || lower.includes('महादेव');
+    const isKrishna = lower.includes('krishna') || lower.includes('कृष्ण') || lower.includes('radha') || lower.includes('राधा');
+
+    if (isHanuman) {
+      return {
+        reply: isHi
+          ? `🙏 **जय श्री राम! जय बजरंग बली!**\n\nश्री हनुमान चालीसा का पाठ अत्यंत फलदायी और संकटमोचक है:\n\n• **सर्वोत्तम समय**: प्रातःकाल ब्रह्म मुहूर्त (स्नानोपरांत) अथवा संध्याकाल सूर्यास्त के समय।\n• **विशेष दिवस**: मंगलवार एवं शनिवार को लाल आसन पर बैठकर पूर्व या उत्तर दिशा की ओर मुख करके पाठ करना विशेष शुभ माना जाता है।\n• **फल**: भय, नकारात्मक ऊर्जा एवं मानसिक तनाव से मुक्ति मिलती है तथा आत्मबल में अभूतपूर्व वृद्धि होती है।`
+          : `🙏 **Jai Shree Ram! Jai Bajrang Bali!**\n\nChanting the Sri Hanuman Chalisa is profoundly uplifting and dispels all anxieties:\n\n• **Best Timing**: Morning during Brahma Muhurta (after bathing) or in the evening during twilight (Sandhya Kaal).\n• **Special Days**: Tuesdays and Saturdays are particularly auspicious. Sit facing East or North on a clean mat.\n• **Spiritual Benefits**: Eradicates fear, enhances inner courage, and grants steadfast peace of mind.`,
+        domain: 'DEVOTIONAL_HANUMAN',
+        mantraCard: {
+          mantra: 'ॐ हं हनुमते नमः',
+          mantraHi: 'ॐ हं हनुमते नमः',
+          transliteration: 'Om Ham Hanumate Namaha',
+          deity: 'Lord Hanuman',
+          deityHi: 'श्री हनुमान जी',
+          repetitions: 108,
+          timing: 'Tuesday/Saturday morning or evening',
+          timingHi: 'मंगलवार/शनिवार प्रातः या संध्याकाल',
+          japaSlug: 'jai-shree-ram',
+        },
+        bhajanRec: {
+          title: 'Shri Hanuman Chalisa (श्री हनुमान चालीसा)',
+          deityName: 'Hanuman',
+          searchQuery: 'Hanuman Chalisa',
+        },
+        followUps: isHi
+          ? ['बजरंग बाण का पाठ कब करना चाहिए?', 'हनुमान जी की आरती सुनाएं', 'सुंदरकांड पाठ के नियम']
+          : ['When should Bajrang Baan be recited?', 'Show Sri Hanuman Aarti', 'Rules for Sundarkand recitation'],
+      };
+    }
+
+    if (isShiva) {
+      return {
+        reply: isHi
+          ? `🙏 **हर हर महादेव! ॐ नमः शिवाय!**\n\nभगवान शिव की आराधना सर्वकल्याणकारी एवं आत्मिक शांति प्रदाता है:\n\n• **साधना समय**: प्रातःकाल ब्रह्म मुहूर्त अथवा प्रदोष काल (सूर्यास्त के समय)।\n• **साधना विधि**: शुद्ध जल या पंचामृत से शिवलिंग का अभिषेक करें एवं बिल्वपत्र अर्पित करें।\n• **मंत्र जप**: रुद्राक्ष की माला से पंचाक्षर मंत्र 'ॐ नमः शिवाय' का 108 बार जप करें।`
+          : `🙏 **Har Har Mahadev! Om Namah Shivaya!**\n\nWorship of Lord Shiva brings profound tranquility and spiritual liberation:\n\n• **Auspicious Time**: Early morning during Brahma Muhurta or during Pradosha Kaal (sunset).\n• **Sacred Practice**: Offer pure water or Bilva leaves with devotional reverence.\n• **Japa**: Chant the sacred Panchakshari mantra 'Om Namah Shivaya' 108 times using a Rudraksha mala.`,
+        domain: 'DEVOTIONAL_SHIVA',
+        mantraCard: {
+          mantra: 'ॐ नमः शिवाय',
+          mantraHi: 'ॐ नमः शिवाय',
+          transliteration: 'Om Namah Shivaya',
+          deity: 'Lord Shiva',
+          deityHi: 'भगवान शिव',
+          repetitions: 108,
+          timing: 'Morning or Pradosha Kaal',
+          timingHi: 'प्रातःकाल अथवा प्रदोष काल',
+          japaSlug: 'om-namah-shivaya',
+        },
+        bhajanRec: {
+          title: 'Shiv Tandav Stotram (शिव ताण्डव स्तोत्रम्)',
+          deityName: 'Shiva',
+          searchQuery: 'Shiv Tandav Stotram',
+        },
+        followUps: isHi
+          ? ['महामृत्युंजय मंत्र का अर्थ क्या है?', 'शिव चालीसा का पाठ कैसे करें?', 'प्रदोष व्रत की विधि']
+          : ['Meaning of Mahamrityunjaya Mantra', 'How to chant Shiv Chalisa?', 'Rules for Pradosha Vrat'],
+      };
+    }
+
+    return {
+      reply: isHi
+        ? `🙏 **नमो नारायण!**\n\nभक्ति और नाम-जप कलयुग में आत्मिक शांति का सर्वोत्तम साधन है।\n\n• **नित्य नियम**: प्रातःकाल स्नानोपरांत शांत चित्त से अपने इष्ट का ध्यान करें।\n• **साधना**: श्री विष्णु सहस्रनाम, महामंत्र या गायत्री मंत्र का श्रद्धापूर्वक जप अंतःकरण को शुद्ध करता है।\n• **सद्भाव**: सत्य, दया और निःस्वार्थ सेवा ही सच्ची ईश्वर सेवा है।`
+        : `🙏 **Namo Narayana!**\n\nPure devotion (Bhakti) and sacred chanting (Nama Japa) are the highest pathways to peace and spiritual elevation:\n\n• **Daily Practice**: Meditate upon the Supreme with a serene and loving heart after morning ablutions.\n• **Sacred Mantras**: Chanting divine names cleanses karmic burdens and brings joy.\n• **Dharma**: Cultivate compassion, truthfulness, and selfless service in daily living.`,
+      domain: 'DEVOTIONAL_GENERAL',
+      mantraCard: {
+        mantra: 'ॐ नमो भगवते वासुदेवाय',
+        mantraHi: 'ॐ नमो भगवते वासुदेवाय',
+        transliteration: 'Om Namo Bhagavate Vasudevaya',
+        deity: 'Lord Vishnu / Krishna',
+        deityHi: 'भगवान श्री हरि विष्णु',
+        repetitions: 108,
+        timing: 'Morning at sunrise',
+        timingHi: 'प्रातः सूर्योदय के समय',
+        japaSlug: 'om-namo-narayanaya',
+      },
+      bhajanRec: {
+        title: 'Achyutam Keshavam (अच्युतम केशवम्)',
+        deityName: 'Krishna',
+        searchQuery: 'Achyutam Keshavam',
+      },
+      followUps: isHi
+        ? ['प्रतिदिन कौन सा मंत्र जपना चाहिए?', 'संध्या वंदन के क्या नियम हैं?', 'गीता के प्रमुख उपदेश']
+        : ['Which daily mantra should I chant?', 'Evening prayer rules', 'Key teachings of the Bhagavad Gita'],
+    };
+  }
 
   // If no Kundli data is present, provide gentle onboarding guidance
   if (!kundli) {
@@ -109,8 +253,8 @@ export function generateGuruJiResponse(
   const hasExactTime = kundli.birthDetails?.birthTimeAccuracy !== 'unknown';
   const lagnaName = kundli.ascendant?.rashiName || 'Ascendant';
   const lagnaNameHi = kundli.ascendant?.rashiNameHi || 'लग्न';
-  const lagnaLord = kundli.ascendant?.lord || 'Jupiter';
-  const lagnaLordHi = kundli.ascendant?.lordHi || VEDIC_PLANET_NAMES_HI[lagnaLord] || lagnaLord;
+  const lagnaLord = kundli.ascendant?.lord || (kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[kundli.ascendant.rashi]?.lord : 'Mercury') || 'Mercury';
+  const lagnaLordHi = kundli.ascendant?.lordHi || (kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[kundli.ascendant.rashi]?.lordHi : 'बुध') || VEDIC_PLANET_NAMES_HI[lagnaLord] || lagnaLord;
 
   const moonSign = kundli.planets.Moon?.sign || 'Moon Sign';
   const moonSignHi = kundli.planets.Moon?.rashiNameHindi || 'चन्द्र राशि';
@@ -167,8 +311,8 @@ export function generateGuruJiResponse(
           `• **दशम कर्म भाव विचार**: ${planetsIn10th} यह संकेत करता है कि आपकी आजीविका में योजनाबद्ध परिश्रम और धैर्य से निरंतर उन्नति के योग हैं।\n` +
           `• **सक्रिय विंशोत्तरी दशा प्रभाव**: वर्तमान में आप **${currentMDHi} महादशा** के अंतर्गत **${currentADHi} अंतर्दशा** के प्रभाव में हैं। यह समयावधि व्यावसायिक कौशल निखारने और नई जिम्मेदारियों को स्वीकार करने के लिए अत्यंत अनुकूल है।\n\n` +
           `**कल्याणकारी उपाय**:\n` +
-          `१. प्रतिदिन प्रातःकाल ताम्बे के पात्र से सूर्य देव को अर्घ्य दें।\n` +
-          `२. श्री विष्णु सहस्रनाम या 'ॐ नमो भगवते वासुदेवाय' का नियमित जप करें।`,
+          `1. प्रतिदिन प्रातःकाल ताम्बे के पात्र से सूर्य देव को अर्घ्य दें।\n` +
+          `2. श्री विष्णु सहस्रनाम या 'ॐ नमो भगवते वासुदेवाय' का नियमित जप करें।`,
         domain: 'CAREER',
         mantraCard: {
           mantra: 'ॐ नमो भगवते वासुदेवाय',
@@ -260,7 +404,7 @@ export function generateGuruJiResponse(
         },
         followUps: [
           'इष्ट मंत्र जप की सही विधि क्या है?',
-          '१०८ जप के क्या नियम हैं?',
+          '108 जप के क्या नियम हैं?',
           'दैनिक पूजा का समय क्या होना चाहिए?',
         ],
       };

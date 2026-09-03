@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "sitemap:generate": "node scripts/generateSitemap.mjs",
     "lint": "eslint .",
+    "lint:digits": "node scripts/lint-devanagari-digits.cjs",
     "preview": "vite preview",
     "festival:build": "node scripts/buildFestivalData.mjs",
     "panchang:fetch": "python scripts/fetch_panchang.py",

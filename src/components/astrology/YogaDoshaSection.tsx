@@ -12,7 +12,7 @@ const YogaDoshaSectionInner: React.FC<YogaDoshaSectionProps> = ({ mangalDosha, i
 
   return (
     <section id="dosha" className="scroll-mt-32 space-y-3">
-      <div className="border-b border-brand-gold-border/30 pb-2">
+      <div className="border-b border-brand-gold-border/30 pb-2.5">
         <h2 className="text-base sm:text-lg font-display font-bold text-foreground flex items-center gap-2">
           {mangalDosha.hasDosha ? (
             <Flame className="h-4 w-4 text-red-500 shrink-0" />
@@ -21,7 +21,7 @@ const YogaDoshaSectionInner: React.FC<YogaDoshaSectionProps> = ({ mangalDosha, i
           )}
           <span>{isHi ? 'दोष एवं योग विश्लेषण' : 'Yogas & Doshas Analysis'}</span>
         </h2>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p className="text-xs text-muted-foreground mt-0.5">
           {isHi ? 'मंगल दोष एवं प्रमुख ज्योतिषीय संयोगों की समीक्षा' : 'Evaluation of Mangal Dosha and planetary combinations'}
         </p>
       </div>

@@ -164,6 +164,30 @@ export function getPersonalMantraPath(personalId: string): string {
 }
 
 /**
+ * Resolves the official canonical slug for any mantra object or DB row.
+ * Ensures consistent canonical URLs even when DB rows lack a slug column.
+ */
+export function getCanonicalMantraSlug(row: { id?: string; name_english?: string; slug?: string }): string {
+  if (row.slug && row.slug.trim()) return row.slug.trim();
+  const english = (row.name_english || "").trim().toLowerCase();
+  const id = (row.id || "").trim().toLowerCase();
+  
+  const matched = CANONICAL_MANTRAS_LIST.find(
+    (c) =>
+      c.name_english.toLowerCase() === english ||
+      c.id.toLowerCase() === id ||
+      c.slug === slugify(english)
+  );
+  if (matched) return matched.slug;
+  
+  if (LEGACY_ID_TO_CANONICAL_SLUG[id]) return LEGACY_ID_TO_CANONICAL_SLUG[id];
+  if (LEGACY_ID_TO_CANONICAL_SLUG[english]) return LEGACY_ID_TO_CANONICAL_SLUG[english];
+  if (LEGACY_ID_TO_CANONICAL_SLUG[slugify(english)]) return LEGACY_ID_TO_CANONICAL_SLUG[slugify(english)];
+
+  return slugify(row.name_english || row.id || "mantra");
+}
+
+/**
  * Legacy Fallback Resolver
  * 
  * Invoked ONLY when a direct match (mantras.find(m => m.slug === slug)) fails.
@@ -183,7 +207,11 @@ export function resolveLegacyMantra(
   // 1. Check if the parameter matches a known legacy ID or alias
   const targetCanonicalSlug = LEGACY_ID_TO_CANONICAL_SLUG[normalized];
   if (targetCanonicalSlug) {
-    const found = mantras.find((m) => m.slug === targetCanonicalSlug);
+    const found = mantras.find(
+      (m) =>
+        m.slug === targetCanonicalSlug ||
+        getCanonicalMantraSlug(m) === targetCanonicalSlug
+    );
     if (found) return found;
   }
 
@@ -191,9 +219,12 @@ export function resolveLegacyMantra(
   const idMatch = mantras.find((m) => m.id === legacyParam || m.id.toLowerCase() === normalized);
   if (idMatch) return idMatch;
 
-  // 3. Check if parameter matches a slugified name_english
+  // 3. Check if parameter matches canonical slug or slugified name_english
   const nameMatch = mantras.find(
-    (m) => slugify(m.name_english) === normalized || m.name_english.toLowerCase() === normalized
+    (m) =>
+      getCanonicalMantraSlug(m) === normalized ||
+      slugify(m.name_english) === normalized ||
+      m.name_english.toLowerCase() === normalized
   );
   if (nameMatch) return nameMatch;
 

@@ -71,7 +71,7 @@ const JanmaPanchangCompactInner: React.FC<JanmaPanchangCompactProps> = ({ pancha
 
   return (
     <div id="panchang" className="scroll-mt-32 rounded-2xl bg-surface-raised border border-brand-gold-border/40 p-4 sm:p-5 shadow-sm space-y-3.5 h-full">
-      <h2 className="font-display font-bold text-base text-foreground flex items-center gap-2 border-b border-brand-gold-border/25 pb-2.5">
+      <h2 className="font-display font-bold text-base sm:text-lg text-foreground flex items-center gap-2 border-b border-brand-gold-border/25 pb-2.5">
         <CalendarDays className="h-4 w-4 text-brand-gold shrink-0" />
         <span>{isHi ? 'जन्म पंचांग' : 'Janma Panchanga'}</span>
       </h2>
@@ -79,11 +79,11 @@ const JanmaPanchangCompactInner: React.FC<JanmaPanchangCompactProps> = ({ pancha
       <div className="divide-y divide-brand-gold-border/20">
         {rows.map((row, idx) => (
           <div key={idx} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0 text-xs">
-            <div className="flex items-center gap-2 text-muted-foreground font-semibold">
+            <div className="flex items-center gap-2 text-muted-foreground font-medium">
               <span className="text-sm leading-none" aria-hidden="true">{row.icon}</span>
               <span>{isHi ? row.labelHi : row.labelEn}</span>
             </div>
-            <span className="font-bold text-foreground text-right truncate max-w-[140px]">
+            <span className="text-right truncate max-w-[150px] font-semibold text-foreground">
               {row.value}
             </span>
           </div>

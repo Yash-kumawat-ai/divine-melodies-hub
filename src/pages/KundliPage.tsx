@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Loader2, AlertCircle, ArrowLeft, Share2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { getOrComputeAstrologyProfile } from '@/lib/astrology/astrologyClient';
@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 // Modular Presentation Components (Pure Props / Zero independent astrology calculations)
 import { KundliHeroHeader } from '@/components/astrology/KundliHeroHeader';
-import { KundliStickyNav } from '@/components/astrology/KundliStickyNav';
+import { KundliTabBar, type KundliTabId, KUNDLI_TABS } from '@/components/astrology/KundliTabBar';
 import { KundliQuickSummary } from '@/components/astrology/KundliQuickSummary';
 import { KundliChartContainer } from '@/components/astrology/KundliChartContainer';
 import { JanmaPanchangCompact } from '@/components/astrology/JanmaPanchangCompact';
@@ -27,7 +27,25 @@ export default function KundliPage() {
   const { user, profile } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isHi = language === 'hi';
+
+  const tabParam = searchParams.get('tab') as KundliTabId | null;
+  const initialTab: KundliTabId = (tabParam && KUNDLI_TABS.some(t => t.id === tabParam)) ? tabParam : 'overview';
+  const [activeTab, setActiveTab] = useState<KundliTabId>(initialTab);
+
+  const handleTabChange = useCallback((tabId: KundliTabId) => {
+    setActiveTab(tabId);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tabId === 'overview') {
+        next.delete('tab');
+      } else {
+        next.set('tab', tabId);
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
 
   const [birth, setBirth] = useState<BirthProfile | null>(null);
   const [astro, setAstro] = useState<AstrologyProfile | null>(null);
@@ -113,6 +131,14 @@ export default function KundliPage() {
     }
   }, [profile?.name, user?.user_metadata?.name, isHi]);
 
+  const handleMobileBack = useCallback(() => {
+    if (window.history.length > 1 && document.referrer) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
+
   const handlePrint = useCallback(() => {
     window.print();
   }, []);
@@ -176,7 +202,34 @@ export default function KundliPage() {
         noindex={true}
       />
 
-      <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 py-4 space-y-4">
+      {/* Dedicated Mobile Top Header with Back, Title, and Share */}
+      <header className="block md:hidden sticky top-0 z-40 bg-[#FFFDF9]/95 dark:bg-stone-900/95 backdrop-blur-md border-b border-brand-gold-border/30 px-3.5 py-2.5">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleMobileBack}
+            aria-label={isHi ? 'पीछे जाएं' : 'Go back'}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-surface-raised border border-brand-gold-border/30 text-foreground active:scale-95 transition-transform cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+
+          <h1 className="font-display font-bold text-base text-foreground tracking-wide">
+            {isHi ? 'जन्म कुंडली' : 'Kundli'}
+          </h1>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label={isHi ? 'साझा करें' : 'Share Kundli'}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-surface-raised border border-brand-gold-border/30 text-foreground active:scale-95 transition-transform cursor-pointer"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 pt-2.5 sm:pt-4 pb-6 space-y-3.5 sm:space-y-4">
         {/* 1. HERO HEADER PROFILE BAR (Matching image reference) */}
         <KundliHeroHeader
           birth={birth}
@@ -187,62 +240,131 @@ export default function KundliPage() {
           isApproximate={isApproximate}
           ayanamsa={ayanamsa}
           isHi={isHi}
+          vara={panchanga?.varaHi || panchanga?.vara}
           onShare={handleShare}
           onEdit={() => navigate('/kundli/setup?edit=1')}
-          onBack={() => navigate('/')}
+          onBack={handleMobileBack}
           onPrint={handlePrint}
         />
 
-        {/* 2. STICKY SUB-NAVIGATION BAR (Locks to top-14 on scroll) */}
-        <KundliStickyNav isHi={isHi} />
+        {/* 2. MODERN HORIZONTAL TAB BAR */}
+        <KundliTabBar
+          activeTab={activeTab}
+          onChangeTab={handleTabChange}
+          isHi={isHi}
+        />
 
-        {/* 3. 3-COLUMN CORE DASHBOARD GRID (Matching image reference) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
-          {/* Left Column: Key Highlights (3 cols on lg) */}
-          <div className="lg:col-span-3">
-            {kundli && <KundliQuickSummary kundli={kundli} isHi={isHi} />}
-          </div>
+        {/* 3. DEDICATED TAB CONTENT VIEWS */}
+        <main className="pt-2 min-h-[500px]">
+          {/* TAB 1: OVERVIEW HUB (3-Column Dashboard + Key Insights Strip) */}
+          {activeTab === 'overview' && (
+            <div className="space-y-5">
+              {/* 3-Column Core Centerpiece */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+                {/* Left Column: Key Highlights */}
+                <div className="lg:col-span-3">
+                  {kundli && (
+                    <KundliQuickSummary
+                      kundli={kundli}
+                      isHi={isHi}
+                      onSelectTab={handleTabChange}
+                    />
+                  )}
+                </div>
 
-          {/* Center Column: Chart Visual Centerpiece (6 cols on lg) */}
-          <div className="lg:col-span-6">
-            <KundliChartContainer
-              planets={planets}
-              ascendant={ascendant}
-              isUnknownTime={isUnknown}
-              vargas={vargas}
-              isHi={isHi}
-            />
-          </div>
+                {/* Center Column: Chart Visual Centerpiece */}
+                <div className="lg:col-span-6">
+                  <KundliChartContainer
+                    planets={planets}
+                    ascendant={ascendant}
+                    isUnknownTime={isUnknown}
+                    vargas={vargas}
+                    isHi={isHi}
+                  />
+                </div>
 
-          {/* Right Column: Janma Panchang (3 cols on lg) */}
-          <div className="lg:col-span-3">
-            <JanmaPanchangCompact panchanga={panchanga} isHi={isHi} />
-          </div>
-        </div>
+                {/* Right Column: Janma Panchang */}
+                <div className="lg:col-span-3">
+                  <JanmaPanchangCompact panchanga={panchanga} isHi={isHi} />
+                </div>
+              </div>
 
-        {/* 4. DETAILED DEEP-DIVE SECTIONS */}
-        <main className="space-y-6 sm:space-y-7 pt-2">
-          {/* 4. NAVAGRAHA PLANETARY DATA TABLE */}
-          <NavagrahaTable planets={planets} isHi={isHi} />
+              {/* 2-Column Key Snapshot Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <VimshottariDashaSection dasha={dasha} isHi={isHi} />
+                <YogaDoshaSection mangalDosha={mangalDosha} isHi={isHi} />
+              </div>
 
-          {/* 5. 12 BHAV / HOUSE ANALYSIS */}
-          <BhavAnalysisSection houses={houses} isUnknownTime={isUnknown} isHi={isHi} />
+              {/* Guru Ji AI Deep Guidance */}
+              <GuruJiConsultationSection isHi={isHi} />
+            </div>
+          )}
 
-          {/* 6. VIMSHOTTARI DASHA TIMELINE */}
-          <VimshottariDashaSection dasha={dasha} isHi={isHi} />
+          {/* TAB 2: CHARTS & DIVISIONAL VARGAS */}
+          {activeTab === 'charts' && (
+            <div className="max-w-4xl mx-auto">
+              <KundliChartContainer
+                planets={planets}
+                ascendant={ascendant}
+                isUnknownTime={isUnknown}
+                vargas={vargas}
+                isHi={isHi}
+              />
+            </div>
+          )}
 
-          {/* 7. YOGAS & DOSHAS */}
-          <YogaDoshaSection mangalDosha={mangalDosha} isHi={isHi} />
+          {/* TAB 3: JANMA PANCHANG DETAILS */}
+          {activeTab === 'panchang' && (
+            <div className="max-w-2xl mx-auto">
+              <JanmaPanchangCompact panchanga={panchanga} isHi={isHi} />
+            </div>
+          )}
 
-          {/* 8. REMEDIES & DEVOTIONAL SADHANA */}
-          <RemediesSadhanaSection
-            ishtaDevata={ishtaDevata}
-            predictions={predictions}
-            isHi={isHi}
-          />
+          {/* TAB 4: NAVAGRAHA PLANETS TABLE */}
+          {activeTab === 'planets' && (
+            <div className="max-w-5xl mx-auto">
+              <NavagrahaTable planets={planets} isHi={isHi} />
+            </div>
+          )}
 
-          {/* 9. GURU JI DEEP CONSULTATION */}
-          <GuruJiConsultationSection isHi={isHi} />
+          {/* TAB 5: 12 BHAV / HOUSE ANALYSIS */}
+          {activeTab === 'houses' && (
+            <div className="max-w-5xl mx-auto">
+              <BhavAnalysisSection houses={houses} isUnknownTime={isUnknown} isHi={isHi} />
+            </div>
+          )}
+
+          {/* TAB 6: VIMSHOTTARI DASHA TIMELINE */}
+          {activeTab === 'dasha' && (
+            <div className="max-w-3xl mx-auto">
+              <VimshottariDashaSection dasha={dasha} isHi={isHi} />
+            </div>
+          )}
+
+          {/* TAB 7: YOGAS & DOSHAS */}
+          {activeTab === 'dosha' && (
+            <div className="max-w-3xl mx-auto">
+              <YogaDoshaSection mangalDosha={mangalDosha} isHi={isHi} />
+            </div>
+          )}
+
+          {/* TAB 8: REMEDIES & DEVOTIONAL SADHANA */}
+          {activeTab === 'remedies' && (
+            <div className="max-w-4xl mx-auto">
+              <RemediesSadhanaSection
+                ishtaDevata={ishtaDevata}
+                predictions={predictions}
+                isHi={isHi}
+              />
+            </div>
+          )}
+
+          {/* TAB 9: GURU JI CONSULTATION */}
+          {activeTab === 'guruji' && (
+            <div className="max-w-3xl mx-auto">
+              <GuruJiConsultationSection isHi={isHi} />
+            </div>
+          )}
         </main>
       </div>
     </div>

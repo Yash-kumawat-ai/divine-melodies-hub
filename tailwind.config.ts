@@ -15,6 +15,8 @@ export default {
     },
     extend: {
       fontFamily: {
+        ui: ['var(--font-ui)', 'sans-serif'],
+        devotional: ['var(--font-devotional)', 'serif'],
         display: ['var(--font-display)', 'sans-serif'],
         hindi: ['var(--font-hindi)', 'serif'],
         body: ['var(--font-body)', 'sans-serif'],

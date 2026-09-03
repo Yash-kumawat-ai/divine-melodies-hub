@@ -57,7 +57,8 @@ type FeatureItem = {
     | "about"
     | "profile"
     | "wallpaper"
-    | "community";
+    | "community"
+    | "kundli";
   icon: LucideIcon;
   match: (pathname: string) => boolean;
 };
@@ -129,6 +130,12 @@ const FEATURE_ITEMS: FeatureItem[] = [
     labelKey: "wallpaper",
     icon: Image,
     match: (pathname) => pathname.startsWith("/wallpaper"),
+  },
+  {
+    path: "/kundli",
+    labelKey: "kundli",
+    icon: Sparkles,
+    match: (pathname) => pathname.startsWith("/kundli"),
   },
 ];
 
@@ -334,7 +341,11 @@ export default function MobileBottomNav() {
                       <Icon className="h-5 w-5" strokeWidth={2.25} />
                     </span>
                     <span className="max-w-full truncate">
-                      {item.labelKey === "wallpaper" ? (language === "hi" ? "वॉलपेपर" : "Wallpapers") : t(item.labelKey)}
+                      {item.labelKey === "kundli"
+                        ? (language === "hi" ? "जन्म कुंडली" : "Kundli")
+                        : item.labelKey === "wallpaper"
+                        ? (language === "hi" ? "वॉलपेपर" : "Wallpapers")
+                        : t(item.labelKey)}
                     </span>
                   </Link>
                 </SheetClose>

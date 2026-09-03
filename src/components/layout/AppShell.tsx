@@ -33,6 +33,7 @@ export default function AppShell() {
   const isLiveAarti = resolvedPath === "/live-aarti";
   const isCommunityPage = resolvedPath.startsWith("/community") || resolvedPath === "/join-community";
   const isUploadPage = resolvedPath === "/upload-bhajan";
+  const isKundliPage = resolvedPath === "/kundli";
   const hideHeaderGlobally =
     isFullScreenApp ||
     isMantraJapaSection ||
@@ -40,7 +41,7 @@ export default function AppShell() {
     isSearchPage ||
     isShortsPage ||
     isLiveAarti;
-  const hideHeaderMobileOnly = isCommunityPage || isUploadPage;
+  const hideHeaderMobileOnly = isCommunityPage || isUploadPage || isKundliPage;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");

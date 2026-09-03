@@ -94,7 +94,7 @@ export interface AggregatedStats {
 
 // ─── API Functions ────────────────────────────────────────────────────
 
-import { slugify } from "./mantraSlugs";
+import { slugify, getCanonicalMantraSlug } from "./mantraSlugs";
 
 /** Fetch all active mantras (public, no auth needed) */
 export async function fetchMantras(): Promise<Mantra[]> {
@@ -107,7 +107,7 @@ export async function fetchMantras(): Promise<Mantra[]> {
   if (error) throw error;
   return ((data ?? []) as any[]).map((row) => ({
     ...row,
-    slug: row.slug || slugify(row.name_english || row.id),
+    slug: getCanonicalMantraSlug(row),
   })) as Mantra[];
 }
 
