@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-02",
+  "date": "2026-09-03",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Panchimi",
-  "tithi_number": 0,
-  "nakshatra": "Bharani - 1",
-  "yoga": "Dhruva",
-  "karana": "Taitula",
-  "paksha": "Krishna",
+  "tithi": "Saptami",
+  "tithi_number": 7,
+  "nakshatra": "Krithika - 1",
+  "yoga": "Vyagatha",
+  "karana": "Visti",
+  "paksha": "Shukla",
   "sunrise": "06:12 AM",
-  "sunset": "06:26 PM",
-  "rahu_kaal": "10:47 AM - 12:19 PM",
+  "sunset": "06:25 PM",
+  "rahu_kaal": "12:18 PM - 01:50 PM",
   "brahma_muhurat": "04:36 AM - 05:24 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-09-02T06:42:28+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-09-03T06:46:48+05:30"
 }

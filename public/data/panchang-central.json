@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-02",
+  "date": "2026-09-03",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Panchimi",
-  "tithi_number": 0,
-  "nakshatra": "Bharani - 1",
-  "yoga": "Dhruva",
-  "karana": "Taitula",
-  "paksha": "Krishna",
+  "tithi": "Saptami",
+  "tithi_number": 7,
+  "nakshatra": "Krithika - 1",
+  "yoga": "Vyagatha",
+  "karana": "Visti",
+  "paksha": "Shukla",
   "sunrise": "06:01 AM",
-  "sunset": "06:25 PM",
-  "rahu_kaal": "10:40 AM - 12:13 PM",
+  "sunset": "06:24 PM",
+  "rahu_kaal": "12:12 PM - 01:45 PM",
   "brahma_muhurat": "04:25 AM - 05:13 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-09-02T06:42:28+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-09-03T06:46:48+05:30"
 }
