@@ -38,6 +38,16 @@ export interface GuruJiFacts {
   sadeSatiPhase?: 'rising' | 'peak' | 'setting' | 'none';
   kaalSarpPresent?: boolean;
   kaalSarpType?: 'full' | 'partial' | 'none';
+  aboutYou?: {
+    archetype: string;
+    archetypeHi: string;
+    coreStrengths: string[];
+    coreStrengthsHi: string[];
+    growthEdges: string[];
+    growthEdgesHi: string[];
+    lifeOrientation: string;
+    isPartialProfile: boolean;
+  };
 }
 
 export interface GuruJiAppliedRules {

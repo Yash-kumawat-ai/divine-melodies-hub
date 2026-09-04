@@ -173,6 +173,65 @@ export function calculateAtmakaraka(planets: Record<string, { longitude: number 
 }
 
 /**
+ * Determine the classical ruling planet of a Rashi index (0-11) or sign name
+ */
+export function getSignLord(rashiIndexOrName: number | string): {
+  lord: string;
+  lordHi: string;
+  rashi: number;
+  rashiName: string;
+  rashiNameHi: string;
+} {
+  let idx = 0;
+  if (typeof rashiIndexOrName === 'number') {
+    idx = ((rashiIndexOrName % 12) + 12) % 12;
+  } else if (typeof rashiIndexOrName === 'string') {
+    const found = RASHI_NAMES.find(
+      (r) => r.en.toLowerCase() === rashiIndexOrName.toLowerCase() || r.hi === rashiIndexOrName
+    );
+    if (found) idx = found.index;
+  }
+  const meta = RASHI_NAMES[idx] || RASHI_NAMES[0];
+  return {
+    lord: meta.lord,
+    lordHi: meta.lordHi,
+    rashi: meta.index,
+    rashiName: meta.en,
+    rashiNameHi: meta.hi,
+  };
+}
+
+/**
+ * Retrieve the ruling lord and details of any house (1-12) from Kundli data
+ */
+export function getHouseLord(
+  kundli: { houses?: VedicHouseData[]; ascendant?: VedicAscendant },
+  houseNum: number
+): {
+  lord?: string;
+  lordHi?: string;
+  rashi?: number;
+  rashiName?: string;
+  rashiNameHi?: string;
+} {
+  const house = kundli.houses?.find((h) => h.number === houseNum);
+  if (house) {
+    return {
+      lord: house.lord,
+      lordHi: house.lordHi,
+      rashi: house.rashi,
+      rashiName: house.rashiName,
+      rashiNameHi: house.rashiNameHi,
+    };
+  }
+  if (kundli.ascendant && typeof kundli.ascendant.rashi === 'number') {
+    const houseRashi = (kundli.ascendant.rashi + (houseNum - 1)) % 12;
+    return getSignLord(houseRashi);
+  }
+  return {};
+}
+
+/**
  * Classical Jaimini Karakamsha Ishta Devata Calculation
  * 1. Find Atmakaraka (AK) in D1.
  * 2. Find Karakamsha sign (sign of AK in Navamsha D9).
@@ -766,8 +825,11 @@ export function calculateCompleteKundli(input: BirthProfileInput): CompleteKundl
 
     planets[pName] = {
       name: pName,
+      nameHindi: PLANET_NAMES_HI[pName] || pName,
       sign: pData.rashiName || rMeta.en,
       signNumber: rashiIdx,
+      signLord: rMeta.lord,
+      signLordHi: rMeta.lordHi,
       rashiNameHindi: rMeta.hi,
       degree: pData.degree ?? (pData.longitude % 30),
       longitude: pData.longitude,
@@ -916,31 +978,88 @@ export function calculateCompleteKundli(input: BirthProfileInput): CompleteKundl
     ],
   };
 
-  try {
-    const doshaCheck = checkMangalDosha(rawKundli);
-    if (doshaCheck && typeof doshaCheck === 'object') {
+  if (input.birth_time_accuracy === 'unknown') {
+    // When birth time is unknown, Lagna is unknown. Check Mars relative to Moon and Venus only.
+    const marsLon = planets.Mars?.longitude ?? 0;
+    const moonLon = planets.Moon?.longitude ?? 0;
+    const venusLon = planets.Venus?.longitude ?? 0;
+    const getPos = (pLon: number, refLon: number) => {
+      let diff = Math.floor(pLon / 30) - Math.floor(refLon / 30);
+      if (diff < 0) diff += 12;
+      return diff + 1;
+    };
+    const posMoon = getPos(marsLon, moonLon);
+    const posVenus = getPos(marsLon, venusLon);
+    const doshaHouses = [1, 2, 4, 7, 8, 12];
+    const isMoonDosha = doshaHouses.includes(posMoon);
+    const isVenusDosha = doshaHouses.includes(posVenus);
+    const marsRashi = Math.floor(marsLon / 30);
+    const isOwnOrExalted = [0, 7, 9].includes(marsRashi);
+
+    if ((isMoonDosha || isVenusDosha) && !isOwnOrExalted) {
       mangalDosha = {
-        hasDosha: Boolean(doshaCheck.hasDosha),
-        isHigh: Boolean(doshaCheck.isHigh),
-        description: doshaCheck.description || (doshaCheck.hasDosha ? 'Mangal Dosha present in birth chart.' : 'No Mangal Dosha present.'),
-        descriptionHi: doshaCheck.hasDosha
-          ? `मंगल दोष उपस्थित (${doshaCheck.isHigh ? 'उच्च' : 'सामान्य'})`
-          : 'मंगल दोष रहित कुण्डली',
-        factors: [doshaCheck.description || 'Mars placement relative to Lagna/Moon/Venus'],
+        hasDosha: true,
+        isHigh: false,
+        description: `Chandra/Shukra Mangal Dosha (Lagna unverified due to unknown birth time): Moon(H${posMoon}), Venus(H${posVenus})`,
+        descriptionHi: `चन्द्र/शुक्र आधारित आंशिक मंगल विचार (जन्म समय अज्ञात होने से लग्न अप्रमाणित)`,
+        factors: [`Mars in House ${posMoon} from Moon, House ${posVenus} from Venus`],
         remedies: [
           'Chant Hanuman Chalisa daily',
-          'Fast or observe discipline on Tuesdays',
           'Recite Mangal Gayatri Mantra: Om Angarakaya Namaha',
         ],
         remediesHi: [
           'प्रतिदिन श्री हनुमान चालीसा का पाठ करें',
-          'मंगलवार को सात्विक व्रत व सुंदरकांड का पाठ करें',
           'ॐ क्रां क्रीं क्रौं सः भौमाय नमः मंत्र का जप करें',
         ],
       };
+    } else {
+      mangalDosha = {
+        hasDosha: false,
+        isHigh: false,
+        description: isOwnOrExalted
+          ? 'Mangal Dosha cancelled: Mars is in own/exalted sign.'
+          : 'No Mangal Dosha observed from Moon or Venus (Lagna unverified due to unknown birth time).',
+        descriptionHi: isOwnOrExalted
+          ? 'मंगल दोष परिहार: मंगल स्वराशि अथवा उच्च राशि में स्थित है।'
+          : 'चन्द्र अथवा शुक्र से कोई मंगल दोष नहीं पाया गया (जन्म समय अज्ञात)।',
+        factors: [],
+        remedies: [
+          'Chant Hanuman Chalisa on Tuesdays',
+          'Offer red flowers to Lord Hanuman',
+        ],
+        remediesHi: [
+          'मंगलवार को श्री हनुमान चालीसा का पाठ करें',
+          'हनुमान जी को सिन्दूर व लाल पुष्प अर्पित करें',
+        ],
+      };
     }
-  } catch {
-    // Graceful fallback
+  } else {
+    try {
+      const doshaCheck = checkMangalDosha(rawKundli);
+      if (doshaCheck && typeof doshaCheck === 'object') {
+        mangalDosha = {
+          hasDosha: Boolean(doshaCheck.hasDosha),
+          isHigh: Boolean(doshaCheck.isHigh),
+          description: doshaCheck.description || (doshaCheck.hasDosha ? 'Mangal Dosha present in birth chart.' : 'No Mangal Dosha present.'),
+          descriptionHi: doshaCheck.hasDosha
+            ? `मंगल दोष उपस्थित (${doshaCheck.isHigh ? 'उच्च' : 'सामान्य'})`
+            : 'मंगल दोष रहित कुण्डली',
+          factors: [doshaCheck.description || 'Mars placement relative to Lagna/Moon/Venus'],
+          remedies: [
+            'Chant Hanuman Chalisa daily',
+            'Fast or observe discipline on Tuesdays',
+            'Recite Mangal Gayatri Mantra: Om Angarakaya Namaha',
+          ],
+          remediesHi: [
+            'प्रतिदिन श्री हनुमान चालीसा का पाठ करें',
+            'मंगलवार को सात्विक व्रत व सुंदरकांड का पाठ करें',
+            'ॐ क्रां क्रीं क्रौं सः भौमाय नमः मंत्र का जप करें',
+          ],
+        };
+      }
+    } catch {
+      // Graceful fallback
+    }
   }
 
   // 7. Janma Panchanga using getPanchangam with exact birth instant transit matching

@@ -94,7 +94,7 @@ const NavagrahaTableInner: React.FC<NavagrahaTableProps> = ({ planets, isHi }) =
 
                   <div className="font-semibold text-foreground/90">
                     {isHi ? data.rashiNameHindi || data.sign : data.sign}
-                    {data.signLord && <span className="text-[10px] text-muted-foreground ml-1">({data.signLord})</span>}
+                    {data.signLord && <span className="text-[10px] text-muted-foreground ml-1">({isHi ? data.signLordHi || data.signLord : data.signLord})</span>}
                   </div>
 
                   <div className="font-mono text-muted-foreground">

@@ -9,11 +9,13 @@ import {
   Sun,
   Flame,
   UserCheck,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type KundliTabId =
   | 'overview'
+  | 'about'
   | 'charts'
   | 'panchang'
   | 'planets'
@@ -32,6 +34,7 @@ export interface KundliTabItem {
 
 export const KUNDLI_TABS: KundliTabItem[] = [
   { id: 'overview', labelHi: 'सारांश', labelEn: 'Overview', icon: <Sparkles className="h-3.5 w-3.5" /> },
+  { id: 'about',    labelHi: 'व्यक्तित्व', labelEn: 'About You', icon: <User className="h-3.5 w-3.5" /> },
   { id: 'charts',   labelHi: 'कुंडली', labelEn: 'Charts',   icon: <Compass className="h-3.5 w-3.5" /> },
   { id: 'panchang', labelHi: 'पंचांग', labelEn: 'Panchang', icon: <CalendarDays className="h-3.5 w-3.5" /> },
   { id: 'planets',  labelHi: 'ग्रह',   labelEn: 'Planets',  icon: <Orbit className="h-3.5 w-3.5" /> },

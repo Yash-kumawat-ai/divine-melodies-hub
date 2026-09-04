@@ -30,8 +30,11 @@ export type PlanetDignity = 'exalted' | 'moolatrikona' | 'own' | 'friend' | 'neu
 
 export interface NormalizedPlanet {
   name?: string;
+  nameHindi?: string;
   sign: string;
   signNumber?: number;
+  signLord?: string;
+  signLordHi?: string;
   rashiNameHindi?: string;
   degree: number;
   longitude?: number;

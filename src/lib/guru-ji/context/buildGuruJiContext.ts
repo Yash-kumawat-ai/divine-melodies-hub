@@ -15,6 +15,7 @@ import type {
   GuruJiAppliedRules,
 } from '../types';
 import type { CompleteKundliData } from '../../astrology/types';
+import { generateAboutYouIntelligence } from '../../astrology/interpretation/aboutYouInterpreter';
 
 interface BuildContextOptions {
   classification: GuruJiClassification;
@@ -95,6 +96,23 @@ export function buildGuruJiContext({
     facts.activeAntardashaHi = dasha.currentAntardasha.planetHi || dasha.currentAntardasha.planet;
   }
 
+  // Personality Intelligence (Domain 1: About You)
+  try {
+    const aboutYouIntel = generateAboutYouIntelligence(kundli);
+    facts.aboutYou = {
+      archetype: aboutYouIntel.archetype.en,
+      archetypeHi: aboutYouIntel.archetype.hi,
+      coreStrengths: aboutYouIntel.coreStrengths.map(s => s.en),
+      coreStrengthsHi: aboutYouIntel.coreStrengths.map(s => s.hi),
+      growthEdges: aboutYouIntel.growthEdges.map(e => e.en),
+      growthEdgesHi: aboutYouIntel.growthEdges.map(e => e.hi),
+      lifeOrientation: aboutYouIntel.lifeOrientation.en,
+      isPartialProfile: aboutYouIntel.isPartialProfile,
+    };
+  } catch {
+    // Non-fatal if personality interpretation calculation fails
+  }
+
   // Sub-Category Scoped Facts & Rules
   switch (subCategory) {
     case 'career': {
@@ -132,8 +150,9 @@ export function buildGuruJiContext({
     }
 
     case 'dasha': {
-      if (dasha?.currentMahadasha?.endDate) {
-        const endYear = new Date(dasha.currentMahadasha.endDate).getFullYear();
+      const mdEnd = dasha?.currentMahadasha?.endTime || (dasha?.currentMahadasha as any)?.endDate;
+      if (mdEnd) {
+        const endYear = new Date(mdEnd).getFullYear();
         if (!isNaN(endYear)) facts.dashaEndYear = endYear;
       }
       appliedRules.dashaInfluence = `वर्तमान में ${facts.activeMahadashaHi || facts.activeMahadasha} महादशा एवं ${facts.activeAntardashaHi || facts.activeAntardasha} अंतर्दशा का प्रभाव सक्रिय है।`;

@@ -20,6 +20,7 @@ import { VimshottariDashaSection } from '@/components/astrology/VimshottariDasha
 import { YogaDoshaSection } from '@/components/astrology/YogaDoshaSection';
 import { RemediesSadhanaSection } from '@/components/astrology/RemediesSadhanaSection';
 import { GuruJiConsultationSection } from '@/components/astrology/GuruJiConsultationSection';
+import { AboutYouSection } from '@/components/astrology/AboutYouSection';
 
 const VEDIC_PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 
@@ -297,6 +298,17 @@ export default function KundliPage() {
 
               {/* Guru Ji AI Deep Guidance */}
               <GuruJiConsultationSection isHi={isHi} />
+            </div>
+          )}
+
+          {/* TAB: ABOUT YOU (DOMAIN 1 — PERSONALITY INTELLIGENCE) */}
+          {activeTab === 'about' && kundli && (
+            <div className="max-w-4xl mx-auto">
+              <AboutYouSection
+                kundli={kundli}
+                isHi={isHi}
+                onAddExactTime={() => navigate('/kundli/setup?edit=1')}
+              />
             </div>
           )}
 

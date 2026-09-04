@@ -253,8 +253,8 @@ export function generateGuruJiResponse(
   const hasExactTime = kundli.birthDetails?.birthTimeAccuracy !== 'unknown';
   const lagnaName = kundli.ascendant?.rashiName || 'Ascendant';
   const lagnaNameHi = kundli.ascendant?.rashiNameHi || 'लग्न';
-  const lagnaLord = kundli.ascendant?.lord || (kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[kundli.ascendant.rashi]?.lord : 'Mercury') || 'Mercury';
-  const lagnaLordHi = kundli.ascendant?.lordHi || (kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[kundli.ascendant.rashi]?.lordHi : 'बुध') || VEDIC_PLANET_NAMES_HI[lagnaLord] || lagnaLord;
+  const lagnaLord = hasExactTime ? (kundli.ascendant?.lord || (kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[kundli.ascendant.rashi]?.lord : undefined)) : undefined;
+  const lagnaLordHi = hasExactTime && lagnaLord ? (VEDIC_PLANET_NAMES_HI[lagnaLord] || kundli.ascendant?.lordHi || lagnaLord) : undefined;
 
   const moonSign = kundli.planets.Moon?.sign || 'Moon Sign';
   const moonSignHi = kundli.planets.Moon?.rashiNameHindi || 'चन्द्र राशि';
@@ -284,14 +284,14 @@ export function generateGuruJiResponse(
   const isHighMangal = Boolean(kundli.mangalDosha?.isHigh);
 
   // Identify 10th House (Career) and 7th House (Partnership) planets
-  const tenthHouse = kundli.houses?.find((h) => h.houseNumber === 10);
-  const tenthHouseLord = tenthHouse?.signLord || 'Mercury';
-  const tenthHouseLordHi = VEDIC_PLANET_NAMES_HI[tenthHouseLord] || tenthHouseLord;
+  const tenthHouse = kundli.houses?.find((h) => h.number === 10);
+  const tenthHouseLord = tenthHouse?.lord || (hasExactTime && kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[(kundli.ascendant.rashi + 9) % 12]?.lord : undefined);
+  const tenthHouseLordHi = tenthHouse?.lordHi || (tenthHouseLord ? (VEDIC_PLANET_NAMES_HI[tenthHouseLord] || tenthHouseLord) : undefined);
   const tenthHousePlanets = tenthHouse?.planets || [];
 
-  const seventhHouse = kundli.houses?.find((h) => h.houseNumber === 7);
-  const seventhHouseLord = seventhHouse?.signLord || 'Venus';
-  const seventhHouseLordHi = VEDIC_PLANET_NAMES_HI[seventhHouseLord] || seventhHouseLord;
+  const seventhHouse = kundli.houses?.find((h) => h.number === 7);
+  const seventhHouseLord = seventhHouse?.lord || (hasExactTime && kundli.ascendant?.rashi !== undefined ? RASHI_NAMES[(kundli.ascendant.rashi + 6) % 12]?.lord : undefined);
+  const seventhHouseLordHi = seventhHouse?.lordHi || (seventhHouseLord ? (VEDIC_PLANET_NAMES_HI[seventhHouseLord] || seventhHouseLord) : undefined);
 
   // ── 1. CAREER & PROFESSION ──────────────────────────────────────────────────
   if (
@@ -307,7 +307,7 @@ export function generateGuruJiResponse(
     if (isHi) {
       return {
         reply: `शुभम्! वैदिक ज्योतिष के अनुसार कर्म क्षेत्र का विचार दशम भाव एवं सूर्य से किया जाता है।\n\n` +
-          `• **लग्न एवं राशि स्थिति**: आपकी कुण्डली में ${hasExactTime ? `${lagnaNameHi} लग्न एवं ` : ''}${moonSignHi} चन्द्र राशि (${nakshatra} नक्षत्र) है। यह संयोजन आपको कर्मठ और व्यावहारिक बुद्धि प्रदान करता है।\n` +
+          `• **लग्न एवं राशि स्थिति**: आपकी कुण्डली में ${hasExactTime ? `${lagnaNameHi} लग्न${lagnaLordHi ? ` (स्वामी: ${lagnaLordHi})` : ''} एवं ` : ''}${moonSignHi} चन्द्र राशि (${nakshatra} नक्षत्र) है। यह संयोजन आपको कर्मठ और व्यावहारिक बुद्धि प्रदान करता है।\n` +
           `• **दशम कर्म भाव विचार**: ${planetsIn10th} यह संकेत करता है कि आपकी आजीविका में योजनाबद्ध परिश्रम और धैर्य से निरंतर उन्नति के योग हैं।\n` +
           `• **सक्रिय विंशोत्तरी दशा प्रभाव**: वर्तमान में आप **${currentMDHi} महादशा** के अंतर्गत **${currentADHi} अंतर्दशा** के प्रभाव में हैं। यह समयावधि व्यावसायिक कौशल निखारने और नई जिम्मेदारियों को स्वीकार करने के लिए अत्यंत अनुकूल है।\n\n` +
           `**कल्याणकारी उपाय**:\n` +
@@ -340,7 +340,7 @@ export function generateGuruJiResponse(
 
     return {
       reply: `Blessings! In Vedic astrology, professional trajectory is governed by the 10th House (Karmasthana) and Surya Dev (natural Karaka of authority).\n\n` +
-        `• **Ascendant & Moon Configuration**: Your chart anchors in ${hasExactTime ? `${lagnaName} Ascendant and ` : ''}${moonSign} Moon (${nakshatra} Nakshatra), endowing you with strong focus and strategic execution.\n` +
+        `• **Ascendant & Moon Configuration**: Your chart anchors in ${hasExactTime ? `${lagnaName} Ascendant${lagnaLord ? ` (ruled by ${lagnaLord})` : ''} and ` : ''}${moonSign} Moon (${nakshatra} Nakshatra), endowing you with strong focus and strategic execution.\n` +
         `• **10th House karmic influence**: ${planetsIn10th} points to solid growth through structured discipline and integrity.\n` +
         `• **Active Vimshottari Dasha**: You are currently operating under **${currentMD} Mahadasha** and **${currentAD} Antardasha**. This cycle fosters constructive professional opportunities and skill consolidation.\n\n` +
         `**Recommended Vedic Remedies**:\n` +
@@ -564,7 +564,7 @@ export function generateGuruJiResponse(
 
     return {
       reply: `Blessings! In Vedic astrology, marital harmony is examined through the 7th House (Kalatrasthana), its ruler, and natural Karakas Venus/Jupiter:\n\n` +
-        `• **7th House & Ruler**: Governed by **${seventhHouseLord}**, highlighting emotional maturity and transparent communication as keys to enduring joy.\n` +
+        `• **7th House & Ruler**: Governed by **${seventhHouseLord || 'its respective sign lord'}**, highlighting emotional maturity and transparent communication as keys to enduring joy.\n` +
         `• **Mangal Dosha Assessment**: ${mangalDetailEn}\n` +
         `• **Harmony Remedies**: Worshipping Goddess Lakshmi on Fridays and offering prayers together fosters mutual auspiciousness.`,
       domain: 'MARRIAGE',
