@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-04",
+  "date": "2026-09-05",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Ashtami",
-  "tithi_number": 8,
-  "nakshatra": "Rohini - 1",
-  "yoga": "Harshana",
-  "karana": "Balava",
+  "tithi": "Navami",
+  "tithi_number": 9,
+  "nakshatra": "Mrigasira - 2",
+  "yoga": "Vajra",
+  "karana": "Taitula",
   "paksha": "Shukla",
   "sunrise": "06:27 AM",
-  "sunset": "06:47 PM",
-  "rahu_kaal": "02:10 PM - 03:42 PM",
+  "sunset": "06:46 PM",
+  "rahu_kaal": "09:32 AM - 11:04 AM",
   "brahma_muhurat": "04:51 AM - 05:39 AM",
-  "vara": "Shukravaar",
-  "updated_at": "2026-09-04T06:39:07+05:30"
+  "vara": "Shanivaar",
+  "updated_at": "2026-09-05T06:43:35+05:30"
 }
