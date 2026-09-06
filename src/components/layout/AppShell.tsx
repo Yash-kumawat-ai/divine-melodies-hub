@@ -34,6 +34,7 @@ export default function AppShell() {
   const isCommunityPage = resolvedPath.startsWith("/community") || resolvedPath === "/join-community";
   const isUploadPage = resolvedPath === "/upload-bhajan";
   const isKundliPage = resolvedPath === "/kundli";
+  const isAskGita = resolvedPath.startsWith("/ask-gita");
   const hideHeaderGlobally =
     isFullScreenApp ||
     isMantraJapaSection ||
@@ -41,14 +42,14 @@ export default function AppShell() {
     isSearchPage ||
     isShortsPage ||
     isLiveAarti;
-  const hideHeaderMobileOnly = isCommunityPage || isUploadPage || isKundliPage;
+  const hideHeaderMobileOnly = isCommunityPage || isUploadPage || isKundliPage || isAskGita;
 
   const isAdminRoute = resolvedPath.startsWith("/admin");
   const isAccountRoute = resolvedPath.startsWith("/account");
   const isNotifications = resolvedPath === "/notifications";
-  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage || isBhajanModalOpen;
+  const hideFooter = isFullScreenApp || isAdminRoute || isAccountRoute || isNotifications || isShortsPage || isBhajanModalOpen || isAskGita;
 
-  const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath === "/meditation") && !isBhajanModalOpen && !isAskGuruJi;
+  const showMobileBottomNav = (!isFullScreenApp || isTemplePage || isShortsPage || resolvedPath === "/meditation") && !isBhajanModalOpen && !isAskGuruJi && !isAskGita;
 
   useEffect(() => {
     clearRadixBodyLocks();

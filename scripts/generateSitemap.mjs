@@ -34,6 +34,25 @@ const staticRoutes = [
   { loc: '/about', changefreq: 'monthly', priority: '0.6' },
   { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
   { loc: '/terms', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/ask-gita', changefreq: 'daily', priority: '0.9' },
+];
+
+const gitaCategorySlugs = [
+  'exam_failure',
+  'grief',
+  'overthinking',
+  'indecision',
+  'anger',
+  'imposter_syndrome',
+  'burnout',
+  'fear_of_death',
+  'jealousy',
+  'greed_attachment',
+  'laziness',
+  'ego_pride',
+  'relationship_conflict',
+  'career_confusion',
+  'loneliness',
 ];
 
 const deitySlugs = [
@@ -99,6 +118,11 @@ async function run() {
   // 4. Mantra Japa Canonical Pages
   for (const mSlug of canonicalMantraSlugs) {
     entries.push(`  <url><loc>${BASE_URL}/meditation/mantra-japa/${mSlug}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`);
+  }
+
+  // 5. Ask Gita Category Pages
+  for (const gSlug of gitaCategorySlugs) {
+    entries.push(`  <url><loc>${BASE_URL}/ask-gita/${gSlug}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>`);
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

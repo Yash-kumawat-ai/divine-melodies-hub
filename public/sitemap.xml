@@ -25,6 +25,7 @@
   <url><loc>https://raghavam.com/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://raghavam.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://raghavam.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://raghavam.com/ask-gita</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://raghavam.com/deity/krishna</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/deity/shiva</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/deity/hanuman</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
@@ -75,4 +76,19 @@
   <url><loc>https://raghavam.com/meditation/mantra-japa/om-namo-narayanaya</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/meditation/mantra-japa/gayatri-mantra</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://raghavam.com/meditation/mantra-japa/shri-ganesha-mantra</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/exam_failure</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/grief</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/overthinking</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/indecision</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/anger</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/imposter_syndrome</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/burnout</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/fear_of_death</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/jealousy</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/greed_attachment</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/laziness</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/ego_pride</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/relationship_conflict</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/career_confusion</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://raghavam.com/ask-gita/loneliness</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
 </urlset>

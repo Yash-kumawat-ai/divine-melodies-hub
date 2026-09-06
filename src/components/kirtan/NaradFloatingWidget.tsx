@@ -169,6 +169,7 @@ export default function NaradFloatingWidget() {
     isDrawerOpen ||
     isMoreDrawerOpen ||
     isBhajanModalOpen ||
+    (isMobile && (pathname === ROUTES.ASK_GITA || pathname.startsWith("/ask-gita"))) ||
     pathname === "/kirtan-ai" ||
     pathname === "/narad-ai" ||
     pathname.startsWith("/auth") ||

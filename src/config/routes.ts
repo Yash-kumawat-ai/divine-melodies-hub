@@ -26,6 +26,7 @@ export const ROUTES = {
   KUNDLI: '/kundli',
   KUNDLI_SETUP: '/kundli/setup',
   SEARCH: '/search',
+  ASK_GITA: '/ask-gita',
 
   // Personal
   LIKED: '/account/liked',

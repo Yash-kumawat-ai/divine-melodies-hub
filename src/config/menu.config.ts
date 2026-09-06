@@ -62,6 +62,16 @@ export const MAIN_NAV_ITEMS: NavigationItem[] = [
     visible: true,
   },
   {
+    id: 'ask-gita',
+    titleKey: 'askGita' as any,
+    titleFallback: 'Ask Gita (गीता समाधान)',
+    route: ROUTES.ASK_GITA,
+    icon: Sparkles,
+    group: 'main',
+    permission: 'public',
+    visible: true,
+  },
+  {
     id: 'katha',
     titleKey: 'katha',
     titleFallback: 'Katha & Leela',

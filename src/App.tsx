@@ -86,6 +86,9 @@ const KundliPage = lazy(() => import("./pages/KundliPage"));
 const KundliSetupPage = lazy(() => import("./pages/KundliSetupPage"));
 const AskGuruJiPage = lazy(() => import("./pages/AskGuruJiPage"));
 
+// Ask Gita Feature lazy load
+const AskGitaPage = lazy(() => import("./pages/AskGitaPage"));
+
 
 function DeferredNaradWidget() {
   const [ready, setReady] = useState(false);
@@ -248,6 +251,8 @@ function AppContent() {
             <Route path="/aarti-chalisa" element={<AartiChalisaPage defaultTab="all" />} />
             <Route path="/katha" element={<KathaPage />} />
             <Route path="/live-aarti" element={<LiveAartiPage />} />
+            <Route path="/ask-gita" element={<AskGitaPage />} />
+            <Route path="/ask-gita/:categoryId" element={<AskGitaPage />} />
             <Route
               path="/temple"
               element={
