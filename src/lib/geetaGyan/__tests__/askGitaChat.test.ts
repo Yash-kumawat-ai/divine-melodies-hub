@@ -68,4 +68,30 @@ describe('askGitaChat Streaming Client', () => {
 
     global.fetch = originalFetch;
   });
+
+  it('hard-gates RAG and makes ZERO network calls when VITE_ASK_GITA_LLM_ENABLED is false', async () => {
+    const originalFetch = global.fetch;
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy;
+
+    let completedMessage: any = null;
+
+    await streamAskGitaChat({
+      userQuery: 'mera jeevan ka lakshya kya hai',
+      userName: 'Yash',
+      preferredLanguage: 'hi',
+      onDelta: () => {},
+      onDone: (msg) => {
+        completedMessage = msg;
+      },
+    });
+
+    // Zero network calls made
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(completedMessage).not.toBeNull();
+    expect(completedMessage.role).toBe('assistant');
+    expect(completedMessage.shloka).toBeDefined();
+
+    global.fetch = originalFetch;
+  });
 });

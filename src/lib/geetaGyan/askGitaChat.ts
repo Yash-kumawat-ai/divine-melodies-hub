@@ -132,6 +132,18 @@ export async function streamAskGitaChat({
   const cleanName = (userName || '').trim() || (isHi ? 'प्रिय मित्र' : 'Dear Friend');
   const greeting = isHi ? `प्रिय ${cleanName},` : `Dear ${cleanName},`;
 
+  // HARD KILL-SWITCH: When VITE_ASK_GITA_LLM_ENABLED is not explicitly 'true',
+  // immediately serve through the local, copyright-clean 15-category wisdom engine.
+  // Under NO circumstance will any visitor reach /functions/v1/ask-gita through the UI.
+  const isLlmEnabled = import.meta.env.VITE_ASK_GITA_LLM_ENABLED === 'true';
+  if (!isLlmEnabled) {
+    const localMsg = await generateKrishnaResponseLocal(userQuery, userName, preferredLanguage);
+    onDelta(localMsg.content);
+    if (localMsg.shloka && onShloka) onShloka(localMsg.shloka);
+    onDone(localMsg);
+    return;
+  }
+
   try {
     // 1. Session Token & Client Session Identifier
     const { data: { session } } = await supabase.auth.getSession();
