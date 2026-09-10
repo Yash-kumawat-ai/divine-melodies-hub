@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-09",
+  "date": "2026-09-10",
   "zone": "west",
   "city": "Mumbai",
-  "tithi": "Triodasi",
-  "tithi_number": 13,
-  "nakshatra": "Aslesha - 3",
-  "yoga": "Siva",
-  "karana": "Vanija",
-  "paksha": "Shukla",
+  "tithi": "Chaturdasi",
+  "tithi_number": 0,
+  "nakshatra": "Makha - 3",
+  "yoga": "Siddha",
+  "karana": "Sakuna",
+  "paksha": "Krishna",
   "sunrise": "06:28 AM",
   "sunset": "06:42 PM",
-  "rahu_kaal": "11:03 AM - 12:35 PM",
+  "rahu_kaal": "12:35 PM - 02:07 PM",
   "brahma_muhurat": "04:52 AM - 05:40 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-09-09T06:51:25+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-09-10T06:47:02+05:30"
 }

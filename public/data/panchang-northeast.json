@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-09",
+  "date": "2026-09-10",
   "zone": "northeast",
   "city": "Kolkata",
-  "tithi": "Triodasi",
-  "tithi_number": 13,
-  "nakshatra": "Aslesha - 3",
-  "yoga": "Siva",
-  "karana": "Vanija",
-  "paksha": "Shukla",
+  "tithi": "Chaturdasi",
+  "tithi_number": 0,
+  "nakshatra": "Makha - 3",
+  "yoga": "Siddha",
+  "karana": "Sakuna",
+  "paksha": "Krishna",
   "sunrise": "05:25 AM",
-  "sunset": "05:42 PM",
-  "rahu_kaal": "10:01 AM - 11:34 AM",
+  "sunset": "05:41 PM",
+  "rahu_kaal": "11:33 AM - 01:05 PM",
   "brahma_muhurat": "03:49 AM - 04:37 AM",
-  "vara": "Budhvaar",
-  "updated_at": "2026-09-09T06:51:25+05:30"
+  "vara": "Guruvaar",
+  "updated_at": "2026-09-10T06:47:02+05:30"
 }
