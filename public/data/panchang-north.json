@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-10",
+  "date": "2026-09-11",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Chaturdasi",
-  "tithi_number": 0,
-  "nakshatra": "Makha - 3",
-  "yoga": "Siddha",
-  "karana": "Sakuna",
-  "paksha": "Krishna",
+  "tithi": "Amavasya",
+  "tithi_number": 15,
+  "nakshatra": "Pubba - 3",
+  "yoga": "Sadhya",
+  "karana": "Naga",
+  "paksha": "Shukla",
   "sunrise": "06:07 AM",
-  "sunset": "06:28 PM",
-  "rahu_kaal": "12:18 PM - 01:50 PM",
+  "sunset": "06:27 PM",
+  "rahu_kaal": "01:50 PM - 03:22 PM",
   "brahma_muhurat": "04:31 AM - 05:19 AM",
-  "vara": "Guruvaar",
-  "updated_at": "2026-09-10T06:47:02+05:30"
+  "vara": "Shukravaar",
+  "updated_at": "2026-09-11T06:49:05+05:30"
 }
