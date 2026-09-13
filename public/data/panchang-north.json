@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-12",
+  "date": "2026-09-13",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Padyami",
+  "tithi": "Vidiya",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 3",
-  "yoga": "Subha",
-  "karana": "Bava",
+  "nakshatra": "Hasta - 3",
+  "yoga": "Sukla",
+  "karana": "Kaulava",
   "paksha": "Krishna",
   "sunrise": "06:08 AM",
-  "sunset": "06:26 PM",
-  "rahu_kaal": "09:12 AM - 10:45 AM",
+  "sunset": "06:25 PM",
+  "rahu_kaal": "04:53 PM - 06:25 PM",
   "brahma_muhurat": "04:32 AM - 05:20 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-09-12T06:50:45+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-09-13T06:46:08+05:30"
 }

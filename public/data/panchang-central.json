@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-12",
+  "date": "2026-09-13",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Padyami",
+  "tithi": "Vidiya",
   "tithi_number": 0,
-  "nakshatra": "Uttara - 3",
-  "yoga": "Subha",
-  "karana": "Bava",
+  "nakshatra": "Hasta - 3",
+  "yoga": "Sukla",
+  "karana": "Kaulava",
   "paksha": "Krishna",
   "sunrise": "06:03 AM",
-  "sunset": "06:16 PM",
-  "rahu_kaal": "09:06 AM - 10:38 AM",
+  "sunset": "06:15 PM",
+  "rahu_kaal": "04:44 PM - 06:15 PM",
   "brahma_muhurat": "04:27 AM - 05:15 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-09-12T06:50:45+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-09-13T06:46:08+05:30"
 }
