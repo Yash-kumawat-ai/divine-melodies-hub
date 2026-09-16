@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-15",
+  "date": "2026-09-16",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Chavithi",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Swathi - 3",
-  "yoga": "Indra",
-  "karana": "Visti",
+  "nakshatra": "Vishhaka - 3",
+  "yoga": "Vaidhriti",
+  "karana": "Balava",
   "paksha": "Krishna",
   "sunrise": "06:04 AM",
-  "sunset": "06:13 PM",
-  "rahu_kaal": "03:11 PM - 04:42 PM",
+  "sunset": "06:12 PM",
+  "rahu_kaal": "10:37 AM - 12:08 PM",
   "brahma_muhurat": "04:28 AM - 05:16 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-09-15T07:11:12+05:30"
+  "vara": "Budhvaar",
+  "updated_at": "2026-09-16T07:00:59+05:30"
 }

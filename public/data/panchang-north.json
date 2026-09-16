@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-15",
+  "date": "2026-09-16",
   "zone": "north",
   "city": "Delhi",
-  "tithi": "Chavithi",
+  "tithi": "Panchimi",
   "tithi_number": 0,
-  "nakshatra": "Swathi - 3",
-  "yoga": "Indra",
-  "karana": "Visti",
+  "nakshatra": "Vishhaka - 3",
+  "yoga": "Vaidhriti",
+  "karana": "Balava",
   "paksha": "Krishna",
-  "sunrise": "06:09 AM",
-  "sunset": "06:22 PM",
-  "rahu_kaal": "03:19 PM - 04:50 PM",
-  "brahma_muhurat": "04:33 AM - 05:21 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-09-15T07:11:12+05:30"
+  "sunrise": "06:10 AM",
+  "sunset": "06:21 PM",
+  "rahu_kaal": "10:44 AM - 12:16 PM",
+  "brahma_muhurat": "04:34 AM - 05:22 AM",
+  "vara": "Budhvaar",
+  "updated_at": "2026-09-16T07:00:59+05:30"
 }
