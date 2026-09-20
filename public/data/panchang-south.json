@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-19",
+  "date": "2026-09-20",
   "zone": "south",
   "city": "Bengaluru",
-  "tithi": "Ashtami",
-  "tithi_number": 8,
-  "nakshatra": "Moola - 1",
-  "yoga": "Ayushman",
-  "karana": "Bava",
+  "tithi": "Navami",
+  "tithi_number": 9,
+  "nakshatra": "Poorvashada - 1",
+  "yoga": "Saubhagya",
+  "karana": "Kaulava",
   "paksha": "Shukla",
   "sunrise": "06:12 AM",
-  "sunset": "06:14 PM",
-  "rahu_kaal": "09:12 AM - 10:43 AM",
+  "sunset": "06:13 PM",
+  "rahu_kaal": "04:43 PM - 06:13 PM",
   "brahma_muhurat": "04:36 AM - 05:24 AM",
-  "vara": "Shanivaar",
-  "updated_at": "2026-09-19T06:52:49+05:30"
+  "vara": "Ravivaar",
+  "updated_at": "2026-09-20T06:51:51+05:30"
 }
