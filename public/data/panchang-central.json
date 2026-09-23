@@ -1,17 +1,17 @@
 {
-  "date": "2026-09-22",
+  "date": "2026-09-23",
   "zone": "central",
   "city": "Nagpur",
-  "tithi": "Ekadasi",
+  "tithi": "Dwadasi",
   "tithi_number": 0,
-  "nakshatra": "Uttarashada - 4",
-  "yoga": "Atiganda",
-  "karana": "Vanija",
+  "nakshatra": "Sravana - 4",
+  "yoga": "Sukarma",
+  "karana": "Bava",
   "paksha": "Krishna",
-  "sunrise": "06:05 AM",
-  "sunset": "06:06 PM",
-  "rahu_kaal": "03:06 PM - 04:36 PM",
-  "brahma_muhurat": "04:29 AM - 05:17 AM",
-  "vara": "Mangalvaar",
-  "updated_at": "2026-09-22T07:12:37+05:30"
+  "sunrise": "06:06 AM",
+  "sunset": "06:05 PM",
+  "rahu_kaal": "10:36 AM - 12:06 PM",
+  "brahma_muhurat": "04:30 AM - 05:18 AM",
+  "vara": "Budhvaar",
+  "updated_at": "2026-09-23T07:07:41+05:30"
 }
